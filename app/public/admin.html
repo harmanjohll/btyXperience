@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Beatty Presenter Console</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            btyBlue: '#000C53',
+            btyYellow: '#FFE200',
+            btyRed: '#EC3237',
+            midnight: '#070B24'
+          },
+          fontFamily: {
+            sans: ['Lato', 'ui-sans-serif', 'system-ui']
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="min-h-screen bg-gradient-to-br from-midnight via-btyBlue/80 to-black font-sans text-white/90">
+  <main class="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-10">
+    <header class="flex flex-col gap-4 rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex items-center gap-4">
+        <img src="/content/assets/BTlogo.png" class="h-14 w-14 rounded-full border border-white/20 bg-white/20 p-1" alt="Beatty crest" />
+        <div>
+          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Presenter Console</p>
+          <h1 class="text-2xl font-black text-white">Guide the outreach experience</h1>
+          <p class="text-xs text-white/60">Automated flow + manual controls + tech checks</p>
+        </div>
+      </div>
+      <div class="grid gap-2 text-xs text-white/70" id="snapshot-pill">
+        <span>Audience: <span id="snapshot-total" class="font-semibold text-white">0</span> - Students: <span id="snapshot-students">0</span> - Parents: <span id="snapshot-parents">0</span></span>
+        <span>Journey cards saved: <span id="journey-count" class="font-semibold text-btyYellow">0</span></span>
+        <span>Current scene: <span id="current-scene" class="font-semibold text-white">join</span></span>
+      </div>
+    </header>
+
+    <section class="rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Auto flow</p>
+          <h2 class="text-xl font-black text-white">Run scripted experience</h2>
+          <p id="timeline-status" class="text-sm text-white/60">Idle - ready to launch.</p>
+        </div>
+        <div class="flex gap-3">
+          <button id="play-flow" class="rounded-2xl bg-btyYellow px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-btyBlue hover:bg-yellow-300">Play flow</button>
+          <button id="stop-flow" class="rounded-2xl border border-white/25 px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Stop flow</button>
+        </div>
+      </div>
+      <ol class="mt-4 grid gap-2 text-xs text-white/60 sm:grid-cols-2">
+        <li>1. Welcome & profile the room</li>
+        <li>2. Feelings pulse</li>
+        <li>3. Persona spotlight</li>
+        <li>4. Imagine - Create - Explore tracks</li>
+        <li>5. Matched opportunities</li>
+        <li>6. Social proof carousel</li>
+        <li>7. Wow-factor poll & reveal</li>
+        <li>8. Finale & Journey Cards</li>
+      </ol>
+    </section>
+
+    <section class="grid gap-6 md:grid-cols-2">
+      <article class="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Scene quick jump</p>
+            <h3 class="text-lg font-semibold text-white">Swap scenes instantly</h3>
+          </div>
+        </div>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <button class="scene-btn" data-scene="join">Join</button>
+          <button class="scene-btn" data-scene="pulse">Feelings pulse</button>
+          <button class="scene-btn" data-scene="persona">Persona spotlight</button>
+          <button class="scene-btn" data-scene="tracks">Tracks showcase</button>
+          <button class="scene-btn" data-scene="recommend">Matched opportunities</button>
+          <button class="scene-btn" data-scene="social">Social proof</button>
+          <button class="scene-btn" data-scene="poll">Poll</button>
+          <button class="scene-btn" data-scene="finale">Finale</button>
+        </div>
+      </article>
+
+      <article class="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl">
+        <div>
+          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Media & spotlights</p>
+          <h3 class="text-lg font-semibold text-white">Cue multimedia moments</h3>
+          <ol class="mt-2 list-decimal space-y-1 pl-5 text-xs text-white/60">
+            <li>Play the corporate story when introducing Imagine/Create/Explore.</li>
+            <li>Use collaboration video when celebrating student voices.</li>
+            <li>Trigger a social highlight to match the story you tell.</li>
+          </ol>
+        </div>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <button class="media-btn" data-id="corporate" data-title="What makes Beatty Secondary School truly special?" data-url="https://www.youtube.com/embed/6xpckUCGIlE?rel=0&modestbranding=1">Play "What makes Beatty..."</button>
+          <button class="media-btn" data-id="collaboration" data-title="BT70 Anniversary Music Video" data-url="https://www.youtube.com/embed/qp-OKBmFdA8?rel=0&modestbranding=1">Play "BT70 Anniversary"</button>
+          <button id="stop-media" class="rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Stop media</button>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Social highlight</p>
+          <p class="text-xs text-white/60">Matches Stage &ldquo;Beatty in action&rdquo; scene with examples.</p>
+          <div class="mt-2 flex flex-wrap gap-2" id="social-buttons">
+            <button class="social-btn" data-id="cross-disciplinary">Cross-disciplinary story</button>
+            <button class="social-btn" data-id="estonia-exchange">Estonia e-Exchange</button>
+            <button class="social-btn" data-id="nx101-critical">NX101 inquiry</button>
+            <button class="social-btn" data-id="football-champions">Football champions</button>
+            <button class="social-btn" data-id="dreams-concert">DREAMS concert</button>
+            <button class="social-btn" data-id="">Reset highlight</button>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl">
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Poll controls</p>
+          <h3 class="text-lg font-semibold text-white">Run wow-factor poll</h3>
+        </div>
+        <p id="poll-status" class="text-xs text-white/60">No poll active.</p>
+      </div>
+      <div class="grid gap-3 sm:grid-cols-3">
+        <button class="preset-btn" data-preset="cca">1st/2nd choice CCA?</button>
+        <button class="preset-btn" data-preset="g3jc">G3 qualify for JC?</button>
+        <button class="preset-btn" data-preset="g3poly">G3 qualify for Poly?</button>
+        <button class="preset-btn" data-preset="g2pfp">G2 qualify for PFP?</button>
+        <button class="preset-btn" data-preset="nexus">Join NEXUS 301/302?</button>
+        <button id="reveal-poll" class="rounded-2xl border border-btyYellow bg-btyYellow/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-btyYellow hover:bg-btyYellow/30">Reveal answer</button>
+      </div>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <label class="text-xs text-white/60">Question
+          <input id="poll-question" class="mt-1 w-full rounded-2xl border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-btyYellow" value="Which opportunity excites you most?" />
+        </label>
+        <div class="grid gap-2 text-xs text-white/60">
+          <label>Option 1 <input id="opt1" class="mt-1 w-full rounded-2xl border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-btyYellow" value="ALP: Machine Learning" /></label>
+          <label>Option 2 <input id="opt2" class="mt-1 w-full rounded-2xl border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-btyYellow" value="LLP: Leadership" /></label>
+          <label>Option 3 <input id="opt3" class="mt-1 w-full rounded-2xl border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-btyYellow" value="NEXUS@BTY exchanges" /></label>
+          <label>Option 4 <input id="opt4" class="mt-1 w-full rounded-2xl border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-btyYellow" value="CCA distinctions" /></label>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <button id="start-poll" class="rounded-2xl bg-btyBlue px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white hover:bg-btyBlue/80">Start custom poll</button>
+        <button id="stop-poll" class="rounded-2xl border border-white/25 px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Stop poll</button>
+      </div>
+    </section>
+
+    <section class="grid gap-6 md:grid-cols-2">
+      <article class="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl">
+        <div>
+          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Live snapshot</p>
+          <h3 class="text-lg font-semibold text-white">Persona mix</h3>
+        </div>
+        <div id="persona-bars" class="space-y-3 text-xs text-white/70"></div>
+      </article>
+      <article class="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl">
+        <div>
+          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Tech ops</p>
+          <h3 class="text-lg font-semibold text-white">Quick checks & safety</h3>
+        </div>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <button id="ping-audio" class="rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Ping stage (Audio check)</button>
+          <button id="ping-visual" class="rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Ping stage (Visual check)</button>
+          <button id="reset-social" class="rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Reset social highlight</button>
+          <button id="close-loop" class="rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Jump to finale</button>
+        </div>
+        <p id="ops-status" class="text-xs text-white/60">No tech pings yet.</p>
+      </article>
+      <article class="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl">
+        <div>
+          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Follow-up data</p>
+          <h3 class="text-lg font-semibold text-white">Journey Card submissions</h3>
+          <p class="text-xs text-white/60">Download responses or clear them after exporting.</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <button id="download-journey" class="rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Download log</button>
+          <button id="clear-journey" class="rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Clear log</button>
+        </div>
+        <p id="journey-status" class="text-xs text-white/60">Log stored at data/journey_submissions.jsonl.</p>
+      </article>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+  <script>
+    const playFlow = document.getElementById('play-flow');
+    const stopFlow = document.getElementById('stop-flow');
+    const timelineStatus = document.getElementById('timeline-status');
+    const currentScene = document.getElementById('current-scene');
+    const snapshotTotal = document.getElementById('snapshot-total');
+    const snapshotStudents = document.getElementById('snapshot-students');
+    const snapshotParents = document.getElementById('snapshot-parents');
+    const journeyCount = document.getElementById('journey-count');
+    const pollStatus = document.getElementById('poll-status');
+    const personaBars = document.getElementById('persona-bars');
+    const opsStatus = document.getElementById('ops-status');
+    const downloadJourneyBtn = document.getElementById('download-journey');
+    const clearJourneyBtn = document.getElementById('clear-journey');
+    const journeyStatus = document.getElementById('journey-status');
+
+    const pollQuestionInput = document.getElementById('poll-question');
+    const optInputs = [document.getElementById('opt1'), document.getElementById('opt2'), document.getElementById('opt3'), document.getElementById('opt4')];
+
+    let activePresetButton = null;
+
+    playFlow.addEventListener('click', () => API.send('timeline', { action: 'start' }));
+    stopFlow.addEventListener('click', () => API.send('timeline', { action: 'stop' }));
+
+    document.querySelectorAll('.scene-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        API.send('scene', { scene: btn.dataset.scene });
+      });
+    });
+
+    document.querySelectorAll('.media-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        API.send('media:play', { id: btn.dataset.id, title: btn.dataset.title, url: btn.dataset.url });
+      });
+    });
+
+    document.getElementById('stop-media').addEventListener('click', () => API.send('media:stop', {}));
+
+    document.querySelectorAll('.social-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        API.send('social:feature', { id: btn.dataset.id || null });
+      });
+    });
+
+    const PRESETS = {
+      cca: { q: 'How many students get their 1st or 2nd choice CCA?', opts: ['50%', '70%', '90%', '100%'], answer: '90%' },
+      g3jc: { q: 'What percentage of majority G3 students qualify for JC?', opts: ['60%', '75%', '90%'], answer: '90%' },
+      g3poly: { q: 'What percentage of majority G3 students qualify for Poly?', opts: ['70%', '85%', '99%'], answer: '99%' },
+      g2pfp: { q: 'What percentage of majority G2 students qualify for PFP?', opts: ['10%', '25%', '40%'], answer: '25%' },
+      nexus: { q: 'What percentage of students participate in NEXUS 301/302 (International Exchange / Industry Attachment)?', opts: ['20%', '35%', '50%'], answer: '50%' }
+    };
+
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const preset = PRESETS[btn.dataset.preset];
+        if (!preset) return;
+        pollQuestionInput.value = preset.q;
+        preset.opts.forEach((opt, idx) => {
+          if (optInputs[idx]) optInputs[idx].value = opt;
+        });
+        API.send('scene', { scene: 'poll' });
+        const options = preset.opts.map((label, idx) => ({ id: idx + 1, label }));
+        API.send('poll:start', { id: Date.now(), question: preset.q, options, durationMs: 20000 });
+        if (activePresetButton) activePresetButton.classList.remove('ring-2', 'ring-btyYellow');
+        activePresetButton = btn;
+        btn.classList.add('ring-2', 'ring-btyYellow');
+        btn.dataset.answer = preset.answer;
+        pollStatus.textContent = `Live poll: ${preset.q}`;
+      });
+    });
+
+    document.getElementById('reveal-poll').addEventListener('click', () => {
+      const answer = activePresetButton?.dataset.answer || '';
+      API.send('poll:reveal', { answerText: answer ? `Correct: ${answer}` : 'Check the official answer.' });
+      if (answer) {
+        pollStatus.textContent = `Revealed answer: ${answer}`;
+      }
+    });
+
+    document.getElementById('start-poll').addEventListener('click', () => {
+      const opts = optInputs.map((input, idx) => input.value).filter(Boolean).map((label, idx) => ({ id: idx + 1, label }));
+      API.send('scene', { scene: 'poll' });
+      API.send('poll:start', { id: Date.now(), question: pollQuestionInput.value, options: opts, durationMs: 20000 });
+      pollStatus.textContent = `Live poll: ${pollQuestionInput.value}`;
+      if (activePresetButton) {
+        activePresetButton.classList.remove('ring-2', 'ring-btyYellow');
+        activePresetButton = null;
+      }
+    });
+
+    document.getElementById('stop-poll').addEventListener('click', () => {
+      API.send('poll:stop', {});
+      pollStatus.textContent = 'Poll stopped.';
+      if (activePresetButton) {
+        activePresetButton.classList.remove('ring-2', 'ring-btyYellow');
+        activePresetButton = null;
+      }
+    });
+
+    document.getElementById('ping-audio').addEventListener('click', () => {
+      API.send('ops:ping', { note: 'Audio check' });
+      opsStatus.textContent = 'Audio check ping sent to Stage.';
+    });
+    document.getElementById('ping-visual').addEventListener('click', () => {
+      API.send('ops:ping', { note: 'Visual check' });
+      opsStatus.textContent = 'Visual check ping sent to Stage.';
+    });
+    document.getElementById('reset-social').addEventListener('click', () => {
+      API.send('social:feature', { id: null });
+      opsStatus.textContent = 'Social highlight reset.';
+    });
+    document.getElementById('close-loop').addEventListener('click', () => {
+      API.send('scene', { scene: 'finale' });
+      pollStatus.textContent = 'Jumped to finale.';
+    });
+
+    downloadJourneyBtn.addEventListener('click', async () => {
+      journeyStatus.textContent = 'Preparing download...';
+      try {
+        const res = await fetch('/journey');
+        if (!res.ok) throw new Error('Request failed');
+        const entries = await res.json();
+        const blob = new Blob([JSON.stringify(entries, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `journey-log-${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        journeyStatus.textContent = `Downloaded ${entries.length} entr${entries.length === 1 ? 'y' : 'ies'}.`;
+      } catch (err) {
+        journeyStatus.textContent = 'Download failed. Please try again.';
+      }
+    });
+
+    clearJourneyBtn.addEventListener('click', async () => {
+      journeyStatus.textContent = 'Clearing log...';
+      try {
+        const res = await fetch('/journey/clear', { method: 'POST' });
+        if (!res.ok) throw new Error('Request failed');
+        journeyStatus.textContent = 'Journey log cleared.';
+      } catch (err) {
+        journeyStatus.textContent = 'Could not clear log right now.';
+      }
+    });
+
+    function renderPersonaBars(personas) {
+      const total = Object.values(personas).reduce((acc,val) => acc + val, 0) || 1;
+      personaBars.innerHTML = Object.entries(personas).map(([key, count]) => {
+        const pct = Math.round((count / total) * 100);
+        const label = key.charAt(0).toUpperCase() + key.slice(1);
+        return `
+          <div>
+            <div class="flex items-center justify-between"><span>${label}</span><span>${count}</span></div>
+            <div class="mt-1 h-2 w-full overflow-hidden rounded-full bg-white/10">
+              <div class="h-full rounded-full bg-gradient-to-r from-btyBlue via-btyYellow to-btyRed" style="width:${pct}%"></div>
+            </div>
+            <p class="mt-1 text-[10px] uppercase tracking-[0.2em] text-white/50">${pct}% of votes</p>
+          </div>`;
+      }).join('');
+    }
+
+    API.onEvent((type, data) => {
+      if (type === 'scene') {
+        currentScene.textContent = data.scene;
+      }
+
+      if (type === 'timeline:status') {
+        if (data.active) {
+          timelineStatus.textContent = `Running - ${data.label}`;
+        } else {
+          timelineStatus.textContent = data.label || 'Stopped';
+        }
+      }
+
+      if (type === 'join') {
+        snapshotTotal.textContent = data.audienceCounts?.total || 0;
+        snapshotStudents.textContent = data.audienceCounts?.students || 0;
+        snapshotParents.textContent = data.audienceCounts?.parents || 0;
+      }
+
+      if (type === 'persona') {
+        if (data.personaCounts) {
+          renderPersonaBars(data.personaCounts);
+        }
+      }
+
+      if (type === 'init') {
+        snapshotTotal.textContent = data.audienceCounts?.total || 0;
+        snapshotStudents.textContent = data.audienceCounts?.students || 0;
+        snapshotParents.textContent = data.audienceCounts?.parents || 0;
+        currentScene.textContent = data.scene || 'join';
+        if (data.timeline) {
+          timelineStatus.textContent = data.timeline.active ? `Running - ${data.timeline.label}` : (data.timeline.label || 'Idle');
+        }
+        if (data.personaCounts) renderPersonaBars(data.personaCounts);
+        const initialJourney = data.journeyCount || 0;
+        journeyCount.textContent = initialJourney;
+        journeyStatus.textContent = `Journey cards saved: ${initialJourney}`;
+      }
+
+      if (type === 'journey:summary') {
+        const count = data.count || 0;
+        journeyCount.textContent = count;
+        journeyStatus.textContent = `Journey cards saved: ${count}`;
+      }
+
+      if (type === 'poll:start') {
+        pollStatus.textContent = `Live poll: ${data.question}`;
+      }
+
+      if (type === 'poll:stop') {
+        pollStatus.textContent = 'Poll stopped.';
+        if (activePresetButton) {
+          activePresetButton.classList.remove('ring-2', 'ring-btyYellow');
+          activePresetButton = null;
+        }
+      }
+
+      if (type === 'poll:reveal') {
+        pollStatus.textContent = data?.answerText ? `Answer revealed: ${data.answerText}` : 'Answer revealed.';
+        if (activePresetButton) {
+          activePresetButton.classList.remove('ring-2', 'ring-btyYellow');
+          activePresetButton = null;
+        }
+      }
+
+      if (type === 'ops:ping') {
+        opsStatus.textContent = `${data.note} confirmed at ${new Date(data.ts).toLocaleTimeString()}`;
+      }
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

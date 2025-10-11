@@ -1,0 +1,116 @@
+:root {
+  --bty-blue: #000C53;
+  --bty-yellow: #FFE200;
+  --bty-red: #EC3237;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(900px 600px at 80% -10%, rgba(255, 226, 0, 0.18), transparent),
+    radial-gradient(800px 500px at 0% 120%, rgba(236, 50, 55, 0.18), transparent),
+    radial-gradient(500px 500px at 20% 10%, rgba(0, 12, 83, 0.5), transparent),
+    linear-gradient(160deg, #05081f, #01030d 45%, #070B24 90%);
+  min-height: 100vh;
+}
+
+.scene.hidden {
+  display: none;
+}
+
+.choice-btn,
+.choice-card {
+  display: block;
+  width: 100%;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 14px 16px;
+  text-align: left;
+  color: rgba(255, 255, 255, 0.85);
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.choice-btn:hover,
+.choice-card:hover {
+  border-color: rgba(255, 226, 0, 0.6);
+  transform: translateY(-2px);
+}
+
+.choice-btn.selected,
+.choice-card.selected {
+  border-color: rgba(255, 226, 0, 0.9);
+  background: rgba(255, 226, 0, 0.18);
+  color: #FFE200;
+  font-weight: 600;
+}
+
+.choice-btn.disabled,
+.choice-card.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.role-option,
+.interest-option {
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.role-option input,
+.interest-option input {
+  pointer-events: none;
+}
+
+.role-option:hover,
+.interest-option:hover {
+  border-color: rgba(255, 226, 0, 0.4);
+}
+
+.scene-btn,
+.media-btn,
+.preset-btn,
+.social-btn {
+  display: inline-block;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 10px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.08);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.scene-btn:hover,
+.media-btn:hover,
+.preset-btn:hover,
+.social-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 226, 0, 0.6);
+}
+
+.preset-btn.active {
+  border-color: rgba(255, 226, 0, 0.8);
+  background: rgba(255, 226, 0, 0.18);
+  color: #FFE200;
+}
+
+.media-overlay {
+  display: none;
+}
+
+.media-overlay.show {
+  display: flex;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+input,
+textarea {
+  font-family: inherit;
+}

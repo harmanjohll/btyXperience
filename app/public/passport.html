@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Beatty Passport</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            btyBlue: '#000C53',
+            btyYellow: '#FFE200',
+            btyRed: '#EC3237',
+            midnight: '#070B24'
+          },
+          fontFamily: {
+            sans: ['Lato', 'ui-sans-serif', 'system-ui']
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="min-h-screen bg-gradient-to-br from-midnight via-btyBlue/80 to-black font-sans text-white/90">
+  <main class="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 py-12">
+    <header class="flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <img src="/content/assets/BTlogo.png" class="h-12 w-12 rounded-full border border-white/20 bg-white/20 p-1" alt="Beatty crest" />
+        <div>
+          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Beatty Passport</p>
+          <h1 class="text-xl font-bold text-white">Shape today&#39;s experience with us</h1>
+        </div>
+      </div>
+      <div id="timeline-banner" class="hidden rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs text-white/70"></div>
+    </header>
+
+    <section id="join-card" class="space-y-6 rounded-3xl border border-white/15 bg-white/8 p-6 shadow-lg">
+      <div>
+        <h2 class="text-2xl font-black text-white">Quick set-up</h2>
+        <p class="mt-1 text-sm text-white/70">Select your role and up to three interests. Everything stays anonymous.</p>
+      </div>
+      <div>
+        <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Role</p>
+        <div class="mt-3 flex gap-3">
+          <label class="role-option flex-1 cursor-pointer rounded-2xl border border-white/20 bg-white/5 p-4 text-center">
+            <input type="radio" name="role" value="student" class="hidden" checked />
+            <span class="block text-sm font-semibold text-white">Student</span>
+            <span class="mt-1 block text-xs text-white/60">I want to explore what secondary school could unlock for me.</span>
+          </label>
+          <label class="role-option flex-1 cursor-pointer rounded-2xl border border-white/20 bg-white/5 p-4 text-center">
+            <input type="radio" name="role" value="parent" class="hidden" />
+            <span class="block text-sm font-semibold text-white">Parent</span>
+            <span class="mt-1 block text-xs text-white/60">I guide and cheer on a child choosing the next step.</span>
+          </label>
+        </div>
+      </div>
+      <div>
+        <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Interests (pick up to three)</p>
+        <div id="interest-grid" class="mt-3 grid grid-cols-2 gap-3 text-sm"></div>
+        <p id="selection-summary" class="mt-3 text-sm text-white/70">You have 0 interests selected.</p>
+      </div>
+      <button id="join-btn" class="w-full rounded-2xl bg-btyYellow py-3 text-center text-xs font-bold uppercase tracking-[0.3em] text-btyBlue transition hover:bg-yellow-300">Join session</button>
+    </section>
+
+    <section id="live-card" class="hidden space-y-5 rounded-3xl border border-white/15 bg-white/8 p-6 shadow-lg">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Live interaction</p>
+          <h2 id="live-title" class="text-2xl font-black text-white">Welcome!</h2>
+        </div>
+        <span id="status-chip" class="rounded-full border border-white/20 px-3 py-1 text-xs text-white/60">Standby</span>
+      </div>
+      <div id="live-panel" class="space-y-4 text-sm text-white/80"></div>
+      <p class="text-xs text-white/50">Prompts update automatically &mdash; stay on this page.</p>
+    </section>
+
+    <section id="journey-card" class="hidden space-y-5 rounded-3xl border border-white/15 bg-white/8 p-6 shadow-lg">
+      <div id="journey-preview" class="space-y-5">
+        <div>
+          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Your Journey Card</p>
+          <h2 class="text-2xl font-black text-white">Snapshot of your choices</h2>
+          <p class="mt-1 text-sm text-white/70">Show this to a Beatty teacher or student host to dive deeper.</p>
+        </div>
+        <div id="journey-summary" class="space-y-3 text-sm text-white/80"></div>
+      </div>
+      <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-3 sm:flex-row">
+          <button id="download-png" class="flex-1 rounded-2xl border border-btyYellow bg-btyYellow/20 py-3 text-sm font-semibold text-btyYellow hover:bg-btyYellow/30">Download PNG</button>
+          <button id="download-pdf" class="flex-1 rounded-2xl border border-btyYellow bg-btyYellow/10 py-3 text-sm font-semibold text-btyYellow/80 hover:bg-btyYellow/20">Download PDF</button>
+          <button id="download-json" class="flex-1 rounded-2xl border border-white/20 bg-white/10 py-3 text-sm font-semibold text-white/80 hover:bg-white/15">Download JSON</button>
+        </div>
+        <button id="save-followup" class="rounded-2xl border border-white/20 bg-white/10 py-3 text-sm font-semibold text-white/80 hover:bg-white/15">Share my details for follow-up (optional)</button>
+      </div>
+      <form id="followup-form" class="hidden space-y-3 rounded-2xl border border-white/15 bg-white/5 p-4">
+        <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Follow-up details</p>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <label class="text-xs text-white/60">Name
+            <input type="text" name="name" class="mt-1 w-full rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-btyYellow" />
+          </label>
+          <label class="text-xs text-white/60">Email
+            <input type="email" name="email" class="mt-1 w-full rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-btyYellow" />
+          </label>
+          <label class="text-xs text-white/60">Contact number (optional)
+            <input type="text" name="contact" class="mt-1 w-full rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-btyYellow" />
+          </label>
+          <label class="text-xs text-white/60">Any notes or questions
+            <textarea name="notes" class="mt-1 w-full rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-btyYellow" rows="2"></textarea>
+          </label>
+        </div>
+        <button type="submit" class="w-full rounded-2xl bg-btyBlue py-2 text-sm font-semibold uppercase tracking-[0.3em] text-white hover:bg-btyBlue/80">Submit</button>
+        <p id="followup-status" class="text-xs text-white/60"></p>
+      </form>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNa5oLSFe3cy8CXU7a2fjS3tM3+E1Jd+Y5S2sHPyU6CI9+VFeReyqYhB1tZEDf9y25epB7IrJ0Z2nEJ7prNruA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>\n  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-PTG7dYBeb5GsyhQOdE31E4n4t4tPcNI0YvrFica8FWHQrFMizxgxYkWwaP42gnikIze8ih/7gToYtYjDjN8asA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>\n  <script src="/app.js"></script>
+  <script>
+    const INTERESTS = ['Robotics','AI','Design & Making','Sports','Performing Arts','Visual Arts','Leadership','Service','Nature','Computing','Media','Debate'];
+    const interestGrid = document.getElementById('interest-grid');
+    const roleOptions = document.querySelectorAll('.role-option');
+    const roleInputs = document.querySelectorAll('input[name="role"]');
+    const joinBtn = document.getElementById('join-btn');
+    const joinCard = document.getElementById('join-card');
+    const liveCard = document.getElementById('live-card');
+    const livePanel = document.getElementById('live-panel');
+    const liveTitle = document.getElementById('live-title');
+    const statusChip = document.getElementById('status-chip');
+    const interestSummary = document.getElementById('selection-summary');
+    const timelineBanner = document.getElementById('timeline-banner');
+    const journeyCard = document.getElementById('journey-card');
+    const journeyPreview = document.getElementById('journey-preview');
+    const journeySummary = document.getElementById('journey-summary');
+    const downloadPngButton = document.getElementById('download-png');
+    const downloadPdfButton = document.getElementById('download-pdf');
+    const downloadJsonButton = document.getElementById('download-json');
+    const saveFollowup = document.getElementById('save-followup');
+    const followupForm = document.getElementById('followup-form');
+    const followupStatus = document.getElementById('followup-status');
+
+    const moodList = [
+      { id: 'curiosity', label: 'Curiosity' },
+      { id: 'confidence', label: 'Confidence' },
+      { id: 'belonging', label: 'Belonging' },
+      { id: 'joy', label: 'Joy' },
+      { id: 'purpose', label: 'Purpose' },
+      { id: 'growth', label: 'Growth' }
+    ];
+
+    const personaOptions = [
+      { id: 'explorer', label: 'Explorer', blurb: 'I jump into new spaces and learn by doing.', tie: 'NEXUS expeditions and AI immersions' },
+      { id: 'creator', label: 'Creator', blurb: 'I build, prototype, and iterate fast.', tie: 'ALP makerspace and DREAMS production' },
+      { id: 'guardian', label: 'Guardian', blurb: 'I rally friends and keep teams thriving.', tie: 'LLP leadership and community service' },
+      { id: 'trailblazer', label: 'Trailblazer', blurb: 'I analyse, plan, and lead the next move.', tie: 'Industry attachments and stretch programmes' }
+    ];
+
+    INTERESTS.forEach(label => {
+      const id = `interest-${label.replace(/\s+/g, '-')}`;
+      const wrapper = document.createElement('label');
+      wrapper.className = 'interest-option flex cursor-pointer items-center gap-2 rounded-2xl border border-white/20 bg-white/5 px-3 py-3 text-sm text-white/80 hover:border-btyYellow/60';
+      wrapper.innerHTML = `<input type="checkbox" value="${label}" id="${id}" class="hidden" /><span>${label}</span>`;
+      interestGrid.appendChild(wrapper);
+    });
+
+    const interestInputs = Array.from(document.querySelectorAll('#interest-grid input'));
+
+    const user = {
+      role: 'student',
+      interests: [],
+      persona: null,
+      mood: null,
+      pollChoice: null,
+      stamps: []
+    };
+
+    function updateRoleUI() {
+      roleOptions.forEach(option => option.classList.remove('ring-2', 'ring-btyYellow', 'bg-btyYellow/10'));
+      roleInputs.forEach(input => {
+        if (input.checked) {
+          const label = input.closest('label');
+          if (label) label.classList.add('ring-2', 'ring-btyYellow', 'bg-btyYellow/10');
+          user.role = input.value;
+        }
+      });
+    }
+
+    function updateInterestUI() {
+      const selected = interestInputs.filter(input => input.checked).slice(0, 3);
+      interestInputs.forEach(input => {
+        const label = input.closest('label');
+        if (!label) return;
+        if (selected.includes(input)) label.classList.add('border-btyYellow/60', 'bg-btyYellow/10');
+        else label.classList.remove('border-btyYellow/60', 'bg-btyYellow/10');
+      });
+      user.interests = selected.map(input => input.value);
+      if (selected.length >= 3) {
+        interestInputs.forEach(input => {
+          if (!user.interests.includes(input.value)) input.checked = false;
+        });
+      }
+      if (user.interests.length) {
+        interestSummary.textContent = `You selected ${user.interests.length} interest${user.interests.length > 1 ? 's' : ''}: ${user.interests.join(', ')}.`;
+      } else {
+        interestSummary.textContent = 'You have 0 interests selected.';
+      }
+    }
+
+    roleInputs.forEach(input => input.addEventListener('change', updateRoleUI));
+    interestInputs.forEach(input => input.addEventListener('change', () => {
+      const selected = interestInputs.filter(i => i.checked);
+      if (selected.length > 3) {
+        input.checked = false;
+      }
+      updateInterestUI();
+    }));
+
+    updateRoleUI();
+    updateInterestUI();
+
+    joinBtn.addEventListener('click', async () => {
+      await API.send('join', { role: user.role, interests: user.interests });
+      joinCard.classList.add('hidden');
+      liveCard.classList.remove('hidden');
+      liveTitle.textContent = 'Welcome!';
+      livePanel.innerHTML = '<p class="text-sm text-white/70">Thanks for joining. A feelings pulse is coming up - tap the emotion you want most in secondary school.</p>';
+      statusChip.textContent = 'Connected';
+      statusChip.classList.add('border-btyYellow/60', 'text-btyYellow');
+    });
+
+    function renderMoodPrompt() {
+      liveTitle.textContent = 'How do you want to feel?';
+      statusChip.textContent = 'Mood pulse';
+      livePanel.innerHTML = `<p class="text-sm text-white/70">Choose the feeling you want to experience more often at Beatty.</p><div class="grid gap-3 md:grid-cols-2" id="mood-grid"></div><p id="mood-feedback" class="text-xs text-white/60">One tap only - we lock it in immediately.</p>`;
+      const grid = document.getElementById('mood-grid');
+      grid.innerHTML = moodList.map(m => `<button class="choice-btn" data-mood="${m.id}">${m.label}</button>`).join('');
+      grid.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (user.mood) return;
+          user.mood = btn.dataset.mood;
+          API.send('mood', { id: user.mood });
+          btn.classList.add('selected');
+          grid.querySelectorAll('button').forEach(other => {
+            if (other !== btn) other.disabled = true;
+            other.classList.add('disabled');
+          });
+          document.getElementById('mood-feedback').textContent = `Locked in: ${btn.textContent}.`;
+          user.stamps.push(`Mood-${user.mood}`);
+        }, { once: true });
+      });
+    }
+
+    function renderPersonaPrompt() {
+      liveTitle.textContent = 'Which response feels like you?';
+      statusChip.textContent = 'Persona';
+      livePanel.innerHTML = `<p class="text-sm text-white/70">When a challenge pops up, what do you tend to do first?</p><div class="grid gap-3" id="persona-grid"></div><p id="persona-feedback" class="text-xs text-white/60">Pick one persona. We will match opportunities to it.</p>`;
+      const grid = document.getElementById('persona-grid');
+      grid.innerHTML = personaOptions.map(option => `
+        <button class="choice-card" data-persona="${option.id}">
+          <strong class="text-sm font-semibold text-white">${option.label}</strong>
+          <span class="text-xs text-white/70">${option.blurb}</span>
+          <span class="text-xs text-white/50">${option.tie}</span>
+        </button>`).join('');
+      grid.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (user.persona) return;
+          user.persona = btn.dataset.persona;
+          API.send('persona', { id: user.persona });
+          grid.querySelectorAll('button').forEach(other => {
+            if (other !== btn) other.disabled = true;
+            other.classList.add('disabled');
+          });
+          btn.classList.add('selected');
+          document.getElementById('persona-feedback').textContent = `You chose ${btn.querySelector('strong').textContent}.`;
+          user.stamps.push(`Persona-${user.persona}`);
+        }, { once: true });
+      });
+    }
+
+    function renderRecommendations() {
+      liveTitle.textContent = 'Recommendations for you';
+      statusChip.textContent = 'Matched pathways';
+      const picks = [];
+      if (user.persona === 'creator') picks.push('ALP - Machine Learning & Design Thinking');
+      if (user.persona === 'guardian') picks.push('LLP - Leadership Houses & Service');
+      if (user.persona === 'explorer') picks.push('NEXUS - Sec 3 International Programmes');
+      if (user.persona === 'trailblazer') picks.push('Industry Attachments - Rockwell, A*STAR, Media Newsrooms');
+      if (user.interests.includes('AI')) picks.push('AI & Robotics Club');
+      if (user.interests.includes('Sports')) picks.push('Football Champions & Sports CCAs');
+      if (user.interests.includes('Performing Arts') || user.interests.includes('Visual Arts')) picks.push('DREAMS Concert Production Team');
+      const unique = [...new Set(picks)].slice(0, 4);
+      livePanel.innerHTML = `<p class="text-sm text-white/70">Based on your choices, check these out:</p><ul class="space-y-2 text-sm text-white/80">${unique.map(item => `<li class=\"rounded-xl border border-white/15 bg-white/5 px-3 py-2\">${item}</li>`).join('') || '<li class="rounded-xl border border-white/15 bg-white/5 px-3 py-2">Talk to us about where you want to grow most.</li>'}</ul>`;
+    }
+
+    function renderPoll(poll) {
+      if (!poll) return;
+      user.pollChoice = null;
+      liveTitle.textContent = 'Live poll';
+      statusChip.textContent = 'Poll';
+      livePanel.innerHTML = `<p class="text-sm text-white/70">${poll.question}</p><div id="poll-grid" class="grid gap-3 md:grid-cols-2"></div><p id="poll-feedback" class="text-xs text-white/60">Tap the option you believe is correct.</p>`;
+      const grid = document.getElementById('poll-grid');
+      grid.innerHTML = poll.options.map(opt => `<button class="choice-btn" data-opt="${opt.id}">${opt.label}</button>`).join('');
+      grid.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (user.pollChoice) return;
+          user.pollChoice = btn.textContent;
+          API.send('poll:vote', { optionId: Number(btn.dataset.opt) });
+          btn.classList.add('selected');
+          grid.querySelectorAll('button').forEach(other => {
+            if (other !== btn) other.disabled = true;
+            other.classList.add('disabled');
+          });
+          document.getElementById('poll-feedback').textContent = `Locked in: ${user.pollChoice}.`;
+          user.stamps.push('Poll');
+        }, { once: true });
+      });
+    }
+
+    function renderFinale() {
+      liveTitle.textContent = 'Thank you!';
+      statusChip.textContent = 'Finale';
+      livePanel.innerHTML = '<p class="text-sm text-white/70">We just sent a final highlight to the Stage. Review your Journey Card below and speak to a teacher or student buddy.</p>';
+      journeyCard.classList.remove('hidden');
+      const personaLabel = personaOptions.find(p => p.id === user.persona)?.label || 'Explorer at heart';
+      const moodLabel = moodList.find(m => m.id === user.mood)?.label || 'Growth';
+      journeySummary.innerHTML = `
+        <p class="text-sm">Role: <span class="font-semibold text-white">${user.role}</span></p>
+        <p class="text-sm">Interests: <span class="font-semibold text-white">${user.interests.join(', ') || 'To be discovered'}</span></p>
+        <p class="text-sm">Persona: <span class="font-semibold text-white">${personaLabel}</span></p>
+        <p class="text-sm">Feeling chosen: <span class="font-semibold text-white">${moodLabel}</span></p>
+        <p class="text-sm">Poll pick: <span class="font-semibold text-white">${user.pollChoice || 'To be revealed'}</span></p>
+        <p class="text-sm">Moments captured: <span class="font-semibold text-white">${user.stamps.join(' | ') || 'Keep exploring'}</span></p>`;
+    }
+
+    async function exportJourneyCard(format) {
+      const target = journeyPreview;
+      if (!target) return;
+      if (format === 'json') {
+        const data = {
+          role: user.role,
+          interests: user.interests,
+          persona: user.persona,
+          mood: user.mood,
+          pollChoice: user.pollChoice,
+          stamps: user.stamps,
+          generatedAt: new Date().toISOString()
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `beatty-journey-card-${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        return;
+      }
+      if (typeof html2canvas !== 'function') {
+        alert('Download not ready yet. Please try again in a moment.');
+        return;
+      }
+      const previousStatus = statusChip.textContent;
+      statusChip.textContent = 'Preparing download';
+      try {
+        const canvas = await html2canvas(target, { backgroundColor: '#070B24', scale: 2 });
+        if (format === 'png') {
+          const url = canvas.toDataURL('image/png');
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `beatty-journey-card-${Date.now()}.png`;
+          a.click();
+        } else if (format === 'pdf' && window.jspdf && window.jspdf.jsPDF) {
+          const imgData = canvas.toDataURL('image/png');
+          const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const pageHeight = pdf.internal.pageSize.getHeight();
+          const aspect = canvas.width / canvas.height;
+          let renderWidth = pageWidth - 20;
+          let renderHeight = renderWidth / aspect;
+          if (renderHeight > pageHeight - 20) {
+            renderHeight = pageHeight - 20;
+            renderWidth = renderHeight * aspect;
+          }
+          pdf.addImage(imgData, 'PNG', (pageWidth - renderWidth) / 2, 10, renderWidth, renderHeight);
+          pdf.save(`beatty-journey-card-${Date.now()}.pdf`);
+        }
+        statusChip.textContent = 'Download ready';
+      } catch (err) {
+        statusChip.textContent = 'Download failed';
+      } finally {
+        setTimeout(() => {
+          statusChip.textContent = previousStatus;
+        }, 2000);
+      }
+    }
+
+    downloadPngButton.addEventListener('click', () => exportJourneyCard('png'));
+    downloadPdfButton.addEventListener('click', () => exportJourneyCard('pdf'));
+    downloadJsonButton.addEventListener('click', () => exportJourneyCard('json'));
+
+    saveFollowup.addEventListener('click', () => {
+      followupForm.classList.toggle('hidden');
+      followupStatus.textContent = '';
+    });
+
+    followupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(followupForm);
+      const payload = {
+        name: formData.get('name') || '',
+        email: formData.get('email') || '',
+        contact: formData.get('contact') || '',
+        notes: formData.get('notes') || '',
+        role: user.role,
+        interests: user.interests,
+        persona: user.persona,
+        mood: user.mood,
+        pollChoice: user.pollChoice
+      };
+      followupStatus.textContent = 'Saving...';
+      try {
+        await fetch('/journey', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        followupStatus.textContent = 'Thank you! We will be in touch.';
+        followupForm.reset();
+      } catch (err) {
+        followupStatus.textContent = 'Could not save right now. Please tell a teacher instead.';
+      }
+    });
+
+    API.onEvent((type, data) => {
+      if (type === 'scene') {
+        if (data.scene === 'pulse') {
+          renderMoodPrompt();
+        } else if (data.scene === 'persona') {
+          renderPersonaPrompt();
+        } else if (data.scene === 'tracks') {
+          liveTitle.textContent = 'Imagine - Create - Explore';
+          livePanel.innerHTML = '<p class="text-sm text-white/70">Watch the Stage for track highlights. We will send your matched opportunities shortly.</p>';
+          statusChip.textContent = 'Track reveal';
+        } else if (data.scene === 'recommend') {
+          renderRecommendations();
+        } else if (data.scene === 'social') {
+          liveTitle.textContent = 'Beatty in action';
+          livePanel.innerHTML = '<p class="text-sm text-white/70">Stories from our community are on the Stage screen now.</p>';
+          statusChip.textContent = 'Highlights';
+        } else if (data.scene === 'finale') {
+          renderFinale();
+        }
+      }
+
+      if (type === 'poll:start') {
+        renderPoll(data);
+      }
+
+      if (type === 'poll:reveal') {
+        const answer = data?.answerText || 'Answer revealed.';
+        statusChip.textContent = 'Poll results';
+        if (data?.options) {
+          const total = data.options.reduce((sum, opt) => sum + (opt.count || 0), 0) || 1;
+          const list = data.options.map(opt => {
+            const pct = Math.round(((opt.count || 0) / total) * 100);
+            return `<li class="rounded-xl border border-white/15 bg-white/5 px-3 py-2 flex justify-between"><span>${opt.label}</span><span>${opt.count || 0} (${pct}%)</span></li>`;
+          }).join('');
+          livePanel.innerHTML = `<p class="text-sm text-white/70">${answer}</p><ul class="mt-3 space-y-2 text-sm text-white/80">${list}</ul>`;
+        } else {
+          livePanel.innerHTML = `<p class="text-sm text-white/70">${answer}</p>`;
+        }
+      }
+
+      if (type === 'timeline:status') {
+        if (data.active) {
+          timelineBanner.classList.remove('hidden');
+          timelineBanner.textContent = `Auto flow - ${data.label}`;
+        } else {
+          timelineBanner.classList.add('hidden');
+        }
+      }
+    });
+  </script>
+</body>
+</html>
+
