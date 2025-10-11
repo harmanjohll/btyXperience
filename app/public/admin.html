@@ -62,10 +62,9 @@
         <li>2. Feelings pulse</li>
         <li>3. Persona spotlight</li>
         <li>4. Imagine - Create - Explore tracks</li>
-        <li>5. Matched opportunities</li>
-        <li>6. Social proof carousel</li>
-        <li>7. Wow-factor poll & reveal</li>
-        <li>8. Finale & Journey Cards</li>
+        <li>5. Social proof carousel</li>
+        <li>6. Wow-factor poll & reveal</li>
+        <li>7. Finale & Journey Cards</li>
       </ol>
     </section>
 
@@ -82,10 +81,35 @@
           <button class="scene-btn" data-scene="pulse">Feelings pulse</button>
           <button class="scene-btn" data-scene="persona">Persona spotlight</button>
           <button class="scene-btn" data-scene="tracks">Tracks showcase</button>
-          <button class="scene-btn" data-scene="recommend">Matched opportunities</button>
           <button class="scene-btn" data-scene="social">Social proof</button>
           <button class="scene-btn" data-scene="poll">Poll</button>
           <button class="scene-btn" data-scene="finale">Finale</button>
+        </div>
+      </article>
+      <article class="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl">
+        <div>
+          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Stage preview</p>
+          <h3 class="text-lg font-semibold text-white">What the audience sees</h3>
+        </div>
+        <div class="space-y-4 text-xs text-white/70">
+          <div>
+            <p class="text-sm font-semibold text-white">Tracks showcase</p>
+            <ul class="mt-2 space-y-1 list-disc pl-4">
+              <li><span class="font-semibold text-btyYellow">Imagine</span>: Applied Learning Programme, ML studios, NX101 labs.</li>
+              <li><span class="font-semibold text-btyYellow">Create</span>: DREAMS concert, President&#39;s Challenge storytelling.</li>
+              <li><span class="font-semibold text-btyYellow">Explore</span>: NEXUS e-Exchanges and overseas industry attachments.</li>
+            </ul>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-white">Social proof carousel</p>
+            <ul class="mt-2 space-y-1 list-disc pl-4">
+              <li>Cross-disciplinary project (Button: Cross-disciplinary story)</li>
+              <li>Estonia e-Exchange (Button: Estonia e-Exchange)</li>
+              <li>NX101 inquiry showcase (Button: NX101 inquiry)</li>
+              <li>League 3 champions (Button: Football champions)</li>
+              <li>DREAMS concert highlight (Button: DREAMS concert)</li>
+            </ul>
+          </div>
         </div>
       </article>
 
@@ -94,9 +118,9 @@
           <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Media & spotlights</p>
           <h3 class="text-lg font-semibold text-white">Cue multimedia moments</h3>
           <ol class="mt-2 list-decimal space-y-1 pl-5 text-xs text-white/60">
-            <li>Play the corporate story when introducing Imagine/Create/Explore.</li>
-            <li>Use collaboration video when celebrating student voices.</li>
-            <li>Trigger a social highlight to match the story you tell.</li>
+            <li>Open Imagine - Create - Explore with the corporate story video.</li>
+            <li>Use the BT70 music video to showcase Beatty spirit and arts.</li>
+            <li>Tap a social highlight to mirror the story on the Stage screen.</li>
           </ol>
         </div>
         <div class="grid gap-3 sm:grid-cols-2">
@@ -127,13 +151,76 @@
         </div>
         <p id="poll-status" class="text-xs text-white/60">No poll active.</p>
       </div>
-      <div class="grid gap-3 sm:grid-cols-3">
-        <button class="preset-btn" data-preset="cca">1st/2nd choice CCA?</button>
-        <button class="preset-btn" data-preset="g3jc">G3 qualify for JC?</button>
-        <button class="preset-btn" data-preset="g3poly">G3 qualify for Poly?</button>
-        <button class="preset-btn" data-preset="g2pfp">G2 qualify for PFP?</button>
-        <button class="preset-btn" data-preset="nexus">Join NEXUS 301/302?</button>
-        <button id="reveal-poll" class="rounded-2xl border border-btyYellow bg-btyYellow/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-btyYellow hover:bg-btyYellow/30">Reveal answer</button>
+      <div id="poll-presets" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <article class="preset-card flex flex-col justify-between rounded-3xl border border-white/15 bg-white/5 p-4" data-preset="cca" data-answer="90%">
+          <div class="space-y-2 text-xs text-white/70">
+            <p class="uppercase tracking-[0.3em] text-btyYellow">Preset poll</p>
+            <h4 class="text-sm font-semibold text-white">How many students get their 1st or 2nd choice CCA?</h4>
+            <ul class="list-disc pl-4">
+              <li>50%</li>
+              <li>70%</li>
+              <li>90%</li>
+              <li>100%</li>
+            </ul>
+            <p class="text-[11px] text-btyYellow">Answer: 90%</p>
+          </div>
+          <button class="preset-launch mt-3 rounded-2xl border border-btyYellow bg-btyYellow/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-btyYellow hover:bg-btyYellow/20">Launch poll</button>
+        </article>
+        <article class="preset-card flex flex-col justify-between rounded-3xl border border-white/15 bg-white/5 p-4" data-preset="g3jc" data-answer="90%">
+          <div class="space-y-2 text-xs text-white/70">
+            <p class="uppercase tracking-[0.3em] text-btyYellow">Preset poll</p>
+            <h4 class="text-sm font-semibold text-white">What percentage of majority G3 students qualify for JC?</h4>
+            <ul class="list-disc pl-4">
+              <li>60%</li>
+              <li>75%</li>
+              <li>90%</li>
+            </ul>
+            <p class="text-[11px] text-btyYellow">Answer: 90%</p>
+          </div>
+          <button class="preset-launch mt-3 rounded-2xl border border-btyYellow bg-btyYellow/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-btyYellow hover:bg-btyYellow/20">Launch poll</button>
+        </article>
+        <article class="preset-card flex flex-col justify-between rounded-3xl border border-white/15 bg-white/5 p-4" data-preset="g3poly" data-answer="99%">
+          <div class="space-y-2 text-xs text-white/70">
+            <p class="uppercase tracking-[0.3em] text-btyYellow">Preset poll</p>
+            <h4 class="text-sm font-semibold text-white">What percentage of majority G3 students qualify for Poly?</h4>
+            <ul class="list-disc pl-4">
+              <li>70%</li>
+              <li>85%</li>
+              <li>99%</li>
+            </ul>
+            <p class="text-[11px] text-btyYellow">Answer: 99%</p>
+          </div>
+          <button class="preset-launch mt-3 rounded-2xl border border-btyYellow bg-btyYellow/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-btyYellow hover:bg-btyYellow/20">Launch poll</button>
+        </article>
+        <article class="preset-card flex flex-col justify-between rounded-3xl border border-white/15 bg-white/5 p-4" data-preset="g2pfp" data-answer="25%">
+          <div class="space-y-2 text-xs text-white/70">
+            <p class="uppercase tracking-[0.3em] text-btyYellow">Preset poll</p>
+            <h4 class="text-sm font-semibold text-white">What percentage of majority G2 students qualify for PFP?</h4>
+            <ul class="list-disc pl-4">
+              <li>10%</li>
+              <li>25%</li>
+              <li>40%</li>
+            </ul>
+            <p class="text-[11px] text-btyYellow">Answer: 25%</p>
+          </div>
+          <button class="preset-launch mt-3 rounded-2xl border border-btyYellow bg-btyYellow/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-btyYellow hover:bg-btyYellow/20">Launch poll</button>
+        </article>
+        <article class="preset-card flex flex-col justify-between rounded-3xl border border-white/15 bg-white/5 p-4" data-preset="nexus" data-answer="50%">
+          <div class="space-y-2 text-xs text-white/70">
+            <p class="uppercase tracking-[0.3em] text-btyYellow">Preset poll</p>
+            <h4 class="text-sm font-semibold text-white">What percentage of students join NEXUS 301/302 exchanges or attachments?</h4>
+            <ul class="list-disc pl-4">
+              <li>20%</li>
+              <li>35%</li>
+              <li>50%</li>
+            </ul>
+            <p class="text-[11px] text-btyYellow">Answer: 50%</p>
+          </div>
+          <button class="preset-launch mt-3 rounded-2xl border border-btyYellow bg-btyYellow/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-btyYellow hover:bg-btyYellow/20">Launch poll</button>
+        </article>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <button id="reveal-poll" class="rounded-2xl border border-btyYellow bg-btyYellow/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-btyYellow hover:bg-btyYellow/30">Reveal preset answer</button>
       </div>
       <div class="grid gap-3 sm:grid-cols-2">
         <label class="text-xs text-white/60">Question
@@ -241,9 +328,10 @@
       nexus: { q: 'What percentage of students participate in NEXUS 301/302 (International Exchange / Industry Attachment)?', opts: ['20%', '35%', '50%'], answer: '50%' }
     };
 
-    document.querySelectorAll('.preset-btn').forEach(btn => {
+    document.querySelectorAll('.preset-launch').forEach(btn => {
       btn.addEventListener('click', () => {
-        const preset = PRESETS[btn.dataset.preset];
+        const card = btn.closest('.preset-card');
+        const preset = PRESETS[card?.dataset.preset || btn.dataset.preset];
         if (!preset) return;
         pollQuestionInput.value = preset.q;
         preset.opts.forEach((opt, idx) => {
@@ -252,16 +340,20 @@
         API.send('scene', { scene: 'poll' });
         const options = preset.opts.map((label, idx) => ({ id: idx + 1, label }));
         API.send('poll:start', { id: Date.now(), question: preset.q, options, durationMs: 20000 });
-        if (activePresetButton) activePresetButton.classList.remove('ring-2', 'ring-btyYellow');
+        if (activePresetButton) {
+          activePresetButton.classList.remove('ring-2', 'ring-btyYellow');
+          activePresetButton.closest('.preset-card')?.classList.remove('ring-2', 'ring-btyYellow');
+        }
         activePresetButton = btn;
         btn.classList.add('ring-2', 'ring-btyYellow');
+        card?.classList.add('ring-2', 'ring-btyYellow');
         btn.dataset.answer = preset.answer;
         pollStatus.textContent = `Live poll: ${preset.q}`;
       });
     });
 
     document.getElementById('reveal-poll').addEventListener('click', () => {
-      const answer = activePresetButton?.dataset.answer || '';
+      const answer = activePresetButton?.dataset.answer || activePresetButton?.closest('.preset-card')?.dataset.answer || '';
       API.send('poll:reveal', { answerText: answer ? `Correct: ${answer}` : 'Check the official answer.' });
       if (answer) {
         pollStatus.textContent = `Revealed answer: ${answer}`;
@@ -284,6 +376,7 @@
       pollStatus.textContent = 'Poll stopped.';
       if (activePresetButton) {
         activePresetButton.classList.remove('ring-2', 'ring-btyYellow');
+        activePresetButton.closest('.preset-card')?.classList.remove('ring-2', 'ring-btyYellow');
         activePresetButton = null;
       }
     });
@@ -404,6 +497,7 @@
         pollStatus.textContent = 'Poll stopped.';
         if (activePresetButton) {
           activePresetButton.classList.remove('ring-2', 'ring-btyYellow');
+          activePresetButton.closest('.preset-card')?.classList.remove('ring-2', 'ring-btyYellow');
           activePresetButton = null;
         }
       }
@@ -412,6 +506,7 @@
         pollStatus.textContent = data?.answerText ? `Answer revealed: ${data.answerText}` : 'Answer revealed.';
         if (activePresetButton) {
           activePresetButton.classList.remove('ring-2', 'ring-btyYellow');
+          activePresetButton.closest('.preset-card')?.classList.remove('ring-2', 'ring-btyYellow');
           activePresetButton = null;
         }
       }
@@ -423,15 +518,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
