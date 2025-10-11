@@ -29,127 +29,154 @@
 </head>
 <body class="min-h-screen bg-gradient-to-br from-midnight via-btyBlue/80 to-black font-sans text-white/90">
   <main class="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-10">
-    <header class="flex flex-col gap-4 rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl sm:flex-row sm:items-center sm:justify-between">
-      <div class="flex items-center gap-4">
-        <img src="/content/assets/BTlogo.png" class="h-14 w-14 rounded-full border border-white/20 bg-white/20 p-1" alt="Beatty crest" />
+    <header id="section-overview" class="flex flex-col gap-6 rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl lg:flex-row lg:items-center lg:justify-between">
+      <div class="space-y-4">
         <div>
-          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Presenter Console</p>
-          <h1 class="text-2xl font-black text-white">Guide the outreach experience</h1>
-          <p class="text-xs text-white/60">Automated flow + manual controls + tech checks</p>
+          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Presenter console</p>
+          <h1 class="text-3xl font-black text-white">Guide the Beatty experience with confidence</h1>
         </div>
+        <ul class="space-y-2 text-sm text-white/70">
+          <li>&bull; Move through the Join &rarr; Feelings &rarr; Persona &rarr; NEXUS &rarr; Poll &rarr; Finale flow.</li>
+          <li>&bull; Use each section's stage trigger when you are ready to change what the audience sees.</li>
+          <li>&bull; Capture highlights as you go so the finale recap and Journey Cards stay current.</li>
+        </ul>
       </div>
-      <div class="grid gap-2 text-xs text-white/70" id="snapshot-pill">
-        <span>Audience: <span id="snapshot-total" class="font-semibold text-white">0</span> - Students: <span id="snapshot-students">0</span> - Parents: <span id="snapshot-parents">0</span></span>
-        <span>Journey cards saved: <span id="journey-count" class="font-semibold text-btyYellow">0</span></span>
-        <span>Current scene: <span id="current-scene" class="font-semibold text-white">join</span></span>
+      <div class="grid gap-3 rounded-3xl border border-white/15 bg-white/5 p-5 text-sm text-white/70">
+        <div class="flex flex-col gap-1">
+          <span class="text-xs uppercase tracking-[0.3em] text-btyYellow">Current scene</span>
+          <span id="current-scene" class="text-2xl font-black text-white">join</span>
+        </div>
+        <div class="flex flex-col gap-1">
+          <span class="text-xs uppercase tracking-[0.3em] text-btyYellow">Flow status</span>
+          <span id="timeline-status">Manual control active.</span>
+        </div>
+        <div class="flex flex-col gap-1">
+          <span class="text-xs uppercase tracking-[0.3em] text-btyYellow">Journey cards saved</span>
+          <span class="text-xl font-semibold text-white" id="journey-count">0</span>
+        </div>
       </div>
     </header>
 
-    <section class="rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl">
+    <nav id="section-nav" class="sticky top-4 z-40 rounded-3xl border border-white/15 bg-white/10 p-4 backdrop-blur-md">
+      <div class="flex flex-wrap gap-3">
+        <button class="jump-btn rounded-2xl border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:border-btyYellow hover:text-white" data-target="section-join">Join</button>
+        <button class="jump-btn rounded-2xl border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:border-btyYellow hover:text-white" data-target="section-feelings">Feelings pulse</button>
+        <button class="jump-btn rounded-2xl border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:border-btyYellow hover:text-white" data-target="section-persona">Persona spotlight</button>
+        <button class="jump-btn rounded-2xl border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:border-btyYellow hover:text-white" data-target="section-nexus">NEXUS showcase</button>
+        <button class="jump-btn rounded-2xl border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:border-btyYellow hover:text-white" data-target="section-poll">Poll</button>
+        <button class="jump-btn rounded-2xl border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:border-btyYellow hover:text-white" data-target="section-finale">Finale</button>
+      </div>
+    </nav>
+
+    <section id="section-join" class="rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Auto flow</p>
-          <h2 class="text-xl font-black text-white">Run scripted experience</h2>
-          <p id="timeline-status" class="text-sm text-white/60">Idle - ready to launch.</p>
+          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Join checkpoint</p>
+          <h2 class="text-2xl font-black text-white">Who is already on board?</h2>
+          <p class="text-sm text-white/60">Refresh this after each welcome round so you know when to move on.</p>
         </div>
-        <div class="flex gap-3">
-          <button id="play-flow" class="rounded-2xl bg-btyYellow px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-btyBlue hover:bg-yellow-300">Play flow</button>
-          <button id="stop-flow" class="rounded-2xl border border-white/25 px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Stop flow</button>
-        </div>
+        <button class="scene-btn rounded-2xl border border-btyYellow bg-btyYellow/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-btyYellow hover:bg-btyYellow/30" data-scene="join">Show join screen</button>
       </div>
-      <ol class="mt-4 grid gap-2 text-xs text-white/60 sm:grid-cols-2">
-        <li>1. Welcome & profile the room</li>
-        <li>2. Feelings pulse</li>
-        <li>3. Persona spotlight</li>
-        <li>4. Imagine - Create - Explore tracks</li>
-        <li>5. Social proof carousel</li>
-        <li>6. Wow-factor poll & reveal</li>
-        <li>7. Finale & Journey Cards</li>
-      </ol>
+      <div class="mt-6 grid gap-6 sm:grid-cols-3">
+        <article class="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-inner">
+          <p class="text-xs uppercase tracking-[0.3em] text-white/60">Total participants</p>
+          <p class="mt-2 text-4xl font-black text-white" id="snapshot-total">0</p>
+        </article>
+        <article class="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-inner">
+          <p class="text-xs uppercase tracking-[0.3em] text-white/60">Students</p>
+          <p class="mt-2 text-4xl font-black text-white" id="snapshot-students">0</p>
+        </article>
+        <article class="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-inner">
+          <p class="text-xs uppercase tracking-[0.3em] text-white/60">Parents</p>
+          <p class="mt-2 text-4xl font-black text-white" id="snapshot-parents">0</p>
+        </article>
+      </div>
     </section>
 
-    <section class="grid gap-6 md:grid-cols-2">
-      <article class="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Scene quick jump</p>
-            <h3 class="text-lg font-semibold text-white">Swap scenes instantly</h3>
-          </div>
-        </div>
-        <div class="grid gap-3 sm:grid-cols-2">
-          <button class="scene-btn" data-scene="join">Join</button>
-          <button class="scene-btn" data-scene="pulse">Feelings pulse</button>
-          <button class="scene-btn" data-scene="persona">Persona spotlight</button>
-          <button class="scene-btn" data-scene="tracks">Tracks showcase</button>
-          <button class="scene-btn" data-scene="social">Social proof</button>
-          <button class="scene-btn" data-scene="poll">Poll</button>
-          <button class="scene-btn" data-scene="finale">Finale</button>
-        </div>
-      </article>
-      <article class="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl">
+    <section id="section-feelings" class="rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Stage preview</p>
-          <h3 class="text-lg font-semibold text-white">What the audience sees</h3>
+          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Feelings pulse</p>
+          <h2 class="text-2xl font-black text-white">What the room hopes to feel</h2>
+          <p class="text-sm text-white/60">Use these live inputs to connect programmes with values like discipline, adaptability, mindfulness, and resilience.</p>
         </div>
-        <div class="space-y-4 text-xs text-white/70">
-          <div>
-            <p class="text-sm font-semibold text-white">Tracks showcase</p>
-            <ul class="mt-2 space-y-1 list-disc pl-4">
-              <li><span class="font-semibold text-btyYellow">Imagine</span>: Applied Learning Programme, ML studios, NX101 labs.</li>
-              <li><span class="font-semibold text-btyYellow">Create</span>: DREAMS concert, President&#39;s Challenge storytelling.</li>
-              <li><span class="font-semibold text-btyYellow">Explore</span>: NEXUS e-Exchanges and overseas industry attachments.</li>
-            </ul>
-          </div>
-          <div>
-            <p class="text-sm font-semibold text-white">Social proof carousel</p>
-            <ul class="mt-2 space-y-1 list-disc pl-4">
-              <li>Cross-disciplinary project (Button: Cross-disciplinary story)</li>
-              <li>Estonia e-Exchange (Button: Estonia e-Exchange)</li>
-              <li>NX101 inquiry showcase (Button: NX101 inquiry)</li>
-              <li>League 3 champions (Button: Football champions)</li>
-              <li>DREAMS concert highlight (Button: DREAMS concert)</li>
-            </ul>
-          </div>
-        </div>
-      </article>
+        <button class="scene-btn rounded-2xl border border-btyYellow bg-btyYellow/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-btyYellow hover:bg-btyYellow/30" data-scene="pulse">Show pulse screen</button>
+      </div>
+      <div id="mood-summary" class="mt-6 grid gap-4 md:grid-cols-2"></div>
+    </section>
 
-      <article class="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl">
+    <section id="section-persona" class="rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Media & spotlights</p>
-          <h3 class="text-lg font-semibold text-white">Cue multimedia moments</h3>
-          <ol class="mt-2 list-decimal space-y-1 pl-5 text-xs text-white/60">
-            <li>Open Imagine - Create - Explore with the corporate story video.</li>
-            <li>Use the BT70 music video to showcase Beatty spirit and arts.</li>
-            <li>Tap a social highlight to mirror the story on the Stage screen.</li>
-          </ol>
+          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Persona spotlight</p>
+          <h2 class="text-2xl font-black text-white">Who is surfacing in the room?</h2>
+          <p class="text-sm text-white/60">Celebrate the dominant persona and acknowledge runner-ups when you reveal the spotlight on Stage.</p>
         </div>
-        <div class="grid gap-3 sm:grid-cols-2">
-          <button class="media-btn" data-id="corporate" data-title="What makes Beatty Secondary School truly special?" data-url="https://www.youtube.com/embed/6xpckUCGIlE?rel=0&modestbranding=1">Play "What makes Beatty..."</button>
-          <button class="media-btn" data-id="collaboration" data-title="BT70 Anniversary Music Video" data-url="https://www.youtube.com/embed/qp-OKBmFdA8?rel=0&modestbranding=1">Play "BT70 Anniversary"</button>
-          <button id="stop-media" class="rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Stop media</button>
-        </div>
-        <div>
-          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Social highlight</p>
-          <p class="text-xs text-white/60">Matches Stage &ldquo;Beatty in action&rdquo; scene with examples.</p>
-          <div class="mt-2 flex flex-wrap gap-2" id="social-buttons">
-            <button class="social-btn" data-id="cross-disciplinary">Cross-disciplinary story</button>
-            <button class="social-btn" data-id="estonia-exchange">Estonia e-Exchange</button>
-            <button class="social-btn" data-id="nx101-critical">NX101 inquiry</button>
-            <button class="social-btn" data-id="football-champions">Football champions</button>
-            <button class="social-btn" data-id="dreams-concert">DREAMS concert</button>
-            <button class="social-btn" data-id="">Reset highlight</button>
-          </div>
-        </div>
+        <button class="scene-btn rounded-2xl border border-btyYellow bg-btyYellow/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-btyYellow hover:bg-btyYellow/30" data-scene="persona">Show persona spotlight</button>
+      </div>
+      <div id="persona-bars" class="mt-6 grid gap-4 md:grid-cols-2"></div>
+      <article class="mt-6 space-y-3 rounded-3xl border border-white/15 bg-white/5 p-5">
+        <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Stage preview</p>
+        <p class="text-sm text-white/70">The Stage highlights the Imagine - Create - Explore pathways after the persona reveal. Cue the right story beats:</p>
+        <ul class="list-disc space-y-1 pl-5 text-sm text-white/60">
+          <li><span class="text-white">Imagine:</span> Applied Learning Programme, ML studios, NX101 labs.</li>
+          <li><span class="text-white">Create:</span> DREAMS Concert, President's Challenge storytelling.</li>
+          <li><span class="text-white">Explore:</span> NEXUS exchanges, e-Exchange with Estonia, industry attachments.</li>
+        </ul>
       </article>
     </section>
 
-    <section class="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl">
+    <section id="section-nexus" class="space-y-6 rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">NEXUS / Imagine • Create • Explore</p>
+          <h2 class="text-2xl font-black text-white">Showcase moments</h2>
+          <p class="text-sm text-white/60">Use this space to line up media cues and the stories you want to emphasise. More assets can slot in here later.</p>
+        </div>
+        <button class="scene-btn rounded-2xl border border-btyYellow bg-btyYellow/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-btyYellow hover:bg-btyYellow/30" data-scene="tracks">Show Imagine • Create • Explore</button>
+      </div>
+      <div class="grid gap-6 lg:grid-cols-2">
+        <article class="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-5">
+          <div>
+            <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Media & spotlights</p>
+            <h3 class="text-lg font-semibold text-white">Cue multimedia beats</h3>
+            <ol class="mt-2 list-decimal space-y-1 pl-5 text-xs text-white/60">
+              <li>Open the showcase with “What makes Beatty Secondary School truly special?”</li>
+              <li>Use the BT70 Anniversary music video when celebrating arts and community spirit.</li>
+              <li>Match your narration to the social proof highlight you trigger.</li>
+            </ol>
+          </div>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <button class="media-btn rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10" data-id="corporate" data-title="What makes Beatty Secondary School truly special?" data-url="https://www.youtube.com/embed/6xpckUCGIlE?rel=0&modestbranding=1">Play "What makes Beatty..."</button>
+            <button class="media-btn rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10" data-id="collaboration" data-title="BT70 Anniversary Music Video" data-url="https://www.youtube.com/embed/qp-OKBmFdA8?rel=0&modestbranding=1">Play "BT70 Anniversary"</button>
+            <button id="stop-media" class="rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Stop media</button>
+          </div>
+        </article>
+        <article class="space-y-3 rounded-3xl border border-white/15 bg-white/5 p-5">
+          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Social proof spotlight</p>
+          <p class="text-sm text-white/70">Mirror the story on Stage by selecting a highlight below.</p>
+          <div class="flex flex-wrap gap-2" id="social-buttons">
+            <button class="social-btn rounded-2xl border border-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:border-btyYellow hover:text-white" data-id="cross-disciplinary">Cross-disciplinary story</button>
+            <button class="social-btn rounded-2xl border border-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:border-btyYellow hover:text-white" data-id="estonia-exchange">Estonia e-Exchange</button>
+            <button class="social-btn rounded-2xl border border-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:border-btyYellow hover:text-white" data-id="nx101-critical">NX101 inquiry</button>
+            <button class="social-btn rounded-2xl border border-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:border-btyYellow hover:text-white" data-id="football-champions">Football champions</button>
+            <button class="social-btn rounded-2xl border border-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:border-btyYellow hover:text-white" data-id="dreams-concert">DREAMS concert</button>
+            <button class="social-btn rounded-2xl border border-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:border-btyYellow hover:text-white" data-id="">Reset highlight</button>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section id="section-poll" class="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl">
       <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Poll controls</p>
-          <h3 class="text-lg font-semibold text-white">Run wow-factor poll</h3>
+          <h3 class="text-2xl font-black text-white">Run wow-factor poll</h3>
+          <p class="text-sm text-white/60">Launch a preset or craft a custom question. Reveal the answer once the room has committed.</p>
         </div>
-        <p id="poll-status" class="text-xs text-white/60">No poll active.</p>
+        <div class="grid gap-1 text-xs text-white/60">
+          <button class="scene-btn rounded-2xl border border-btyYellow bg-btyYellow/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-btyYellow hover:bg-btyYellow/30" data-scene="poll">Show poll on Stage</button>
+          <p id="poll-status">No poll active.</p>
+        </div>
       </div>
       <div id="poll-presets" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <article class="preset-card flex flex-col justify-between rounded-3xl border border-white/15 bg-white/5 p-4" data-preset="cca" data-answer="90%">
@@ -223,7 +250,7 @@
         <button id="reveal-poll" class="rounded-2xl border border-btyYellow bg-btyYellow/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-btyYellow hover:bg-btyYellow/30">Reveal preset answer</button>
       </div>
       <div class="grid gap-3 sm:grid-cols-2">
-        <label class="text-xs text-white/60">Question
+        <label class="text-xs text-white/60">Custom question
           <input id="poll-question" class="mt-1 w-full rounded-2xl border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-btyYellow" value="Which opportunity excites you most?" />
         </label>
         <div class="grid gap-2 text-xs text-white/60">
@@ -239,66 +266,65 @@
       </div>
     </section>
 
-    <section class="grid gap-6 md:grid-cols-2">
-      <article class="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl">
+    <section id="section-finale" class="rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Live snapshot</p>
-          <h3 class="text-lg font-semibold text-white">Persona mix</h3>
+          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Finale & wrap-up</p>
+          <h2 class="text-2xl font-black text-white">Close the loop with clarity</h2>
+          <p class="text-sm text-white/60">When the poll reveal lands, cue the finale and invite everyone to pull up their Journey Cards.</p>
         </div>
-        <div id="persona-bars" class="space-y-3 text-xs text-white/70"></div>
-      </article>
-      <article class="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl">
-        <div>
+        <button id="close-loop" class="rounded-2xl border border-btyYellow bg-btyYellow/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-btyYellow hover:bg-btyYellow/30">Move Stage to finale</button>
+      </div>
+      <div class="mt-6 grid gap-6 lg:grid-cols-2">
+        <article class="space-y-3 rounded-3xl border border-white/15 bg-white/5 p-5">
+          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Journey Cards</p>
+          <p class="text-sm text-white/70">Download entries before you clear them. Each card helps the team follow up quickly.</p>
+          <div class="flex flex-wrap gap-3">
+            <button id="download-journey" class="rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Download log</button>
+            <button id="clear-journey" class="rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Clear log</button>
+          </div>
+          <p id="journey-status" class="text-xs text-white/60">Log stored at data/journey_submissions.jsonl.</p>
+        </article>
+        <article class="space-y-3 rounded-3xl border border-white/15 bg-white/5 p-5">
           <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Tech ops</p>
-          <h3 class="text-lg font-semibold text-white">Quick checks & safety</h3>
-        </div>
-        <div class="grid gap-3 sm:grid-cols-2">
-          <button id="ping-audio" class="rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Ping stage (Audio check)</button>
-          <button id="ping-visual" class="rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Ping stage (Visual check)</button>
-          <button id="reset-social" class="rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Reset social highlight</button>
-          <button id="close-loop" class="rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Jump to finale</button>
-        </div>
-        <p id="ops-status" class="text-xs text-white/60">No tech pings yet.</p>
-      </article>
-      <article class="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-6 shadow-xl">
-        <div>
-          <p class="text-xs uppercase tracking-[0.3em] text-btyYellow">Follow-up data</p>
-          <h3 class="text-lg font-semibold text-white">Journey Card submissions</h3>
-          <p class="text-xs text-white/60">Download responses or clear them after exporting.</p>
-        </div>
-        <div class="flex flex-wrap gap-3">
-          <button id="download-journey" class="rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Download log</button>
-          <button id="clear-journey" class="rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Clear log</button>
-        </div>
-        <p id="journey-status" class="text-xs text-white/60">Log stored at data/journey_submissions.jsonl.</p>
-      </article>
+          <p class="text-sm text-white/70">Send quick pings during transitions so the AV crew stays aligned.</p>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <button id="ping-audio" class="rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Ping stage (Audio check)</button>
+            <button id="ping-visual" class="rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Ping stage (Visual check)</button>
+            <button id="reset-social" class="rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10">Reset social highlight</button>
+            <button class="scene-btn rounded-2xl border border-white/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 hover:bg-white/10" data-scene="social">Show social carousel</button>
+          </div>
+          <p id="ops-status" class="text-xs text-white/60">No tech pings yet.</p>
+        </article>
+      </div>
     </section>
   </main>
 
   <script src="/app.js"></script>
   <script>
-    const playFlow = document.getElementById('play-flow');
-    const stopFlow = document.getElementById('stop-flow');
-    const timelineStatus = document.getElementById('timeline-status');
     const currentScene = document.getElementById('current-scene');
+    const timelineStatus = document.getElementById('timeline-status');
     const snapshotTotal = document.getElementById('snapshot-total');
     const snapshotStudents = document.getElementById('snapshot-students');
     const snapshotParents = document.getElementById('snapshot-parents');
     const journeyCount = document.getElementById('journey-count');
     const pollStatus = document.getElementById('poll-status');
     const personaBars = document.getElementById('persona-bars');
+    const moodSummary = document.getElementById('mood-summary');
     const opsStatus = document.getElementById('ops-status');
     const downloadJourneyBtn = document.getElementById('download-journey');
     const clearJourneyBtn = document.getElementById('clear-journey');
     const journeyStatus = document.getElementById('journey-status');
-
     const pollQuestionInput = document.getElementById('poll-question');
     const optInputs = [document.getElementById('opt1'), document.getElementById('opt2'), document.getElementById('opt3'), document.getElementById('opt4')];
-
     let activePresetButton = null;
 
-    playFlow.addEventListener('click', () => API.send('timeline', { action: 'start' }));
-    stopFlow.addEventListener('click', () => API.send('timeline', { action: 'stop' }));
+    document.querySelectorAll('.jump-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = document.getElementById(btn.dataset.target);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
 
     document.querySelectorAll('.scene-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -367,6 +393,7 @@
       pollStatus.textContent = `Live poll: ${pollQuestionInput.value}`;
       if (activePresetButton) {
         activePresetButton.classList.remove('ring-2', 'ring-btyYellow');
+        activePresetButton.closest('.preset-card')?.classList.remove('ring-2', 'ring-btyYellow');
         activePresetButton = null;
       }
     });
@@ -380,6 +407,42 @@
         activePresetButton = null;
       }
     });
+
+    const MOODS = [
+      { id: 'curiosity', label: 'Curiosity' },
+      { id: 'confidence', label: 'Confidence' },
+      { id: 'belonging', label: 'Belonging' },
+      { id: 'joy', label: 'Joy' },
+      { id: 'purpose', label: 'Purpose' },
+      { id: 'growth', label: 'Growth' },
+      { id: 'focused', label: 'Focused Discipline' },
+      { id: 'adaptable', label: 'Adaptable Spirit' },
+      { id: 'mindful', label: 'Calm & Mindful' },
+      { id: 'resilient', label: 'Resilient Heart' }
+    ];
+
+    const moodCounts = Object.fromEntries(MOODS.map(m => [m.id, 0]));
+
+    function renderMoodSummary() {
+      const total = Object.values(moodCounts).reduce((acc, val) => acc + val, 0) || 1;
+      moodSummary.innerHTML = MOODS.map(mood => {
+        const count = moodCounts[mood.id] || 0;
+        const pct = Math.round((count / total) * 100);
+        return `
+          <div class="rounded-3xl border border-white/10 bg-white/5 p-4">
+            <div class="flex items-center justify-between text-sm text-white/70">
+              <span class="font-semibold text-white">${mood.label}</span>
+              <span>${count}</span>
+            </div>
+            <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-white/10">
+              <div class="h-full rounded-full bg-gradient-to-r from-btyRed via-btyYellow to-white" style="width:${pct}%"></div>
+            </div>
+            <p class="mt-2 text-xs uppercase tracking-[0.2em] text-white/50">${pct}% of picks</p>
+          </div>`;
+      }).join('');
+    }
+
+    renderMoodSummary();
 
     document.getElementById('ping-audio').addEventListener('click', () => {
       API.send('ops:ping', { note: 'Audio check' });
@@ -428,18 +491,21 @@
       }
     });
 
-    function renderPersonaBars(personas) {
-      const total = Object.values(personas).reduce((acc,val) => acc + val, 0) || 1;
+    function renderPersonaMix(personas) {
+      const total = Object.values(personas).reduce((acc, val) => acc + val, 0) || 1;
       personaBars.innerHTML = Object.entries(personas).map(([key, count]) => {
         const pct = Math.round((count / total) * 100);
         const label = key.charAt(0).toUpperCase() + key.slice(1);
         return `
-          <div>
-            <div class="flex items-center justify-between"><span>${label}</span><span>${count}</span></div>
-            <div class="mt-1 h-2 w-full overflow-hidden rounded-full bg-white/10">
+          <div class="rounded-3xl border border-white/10 bg-white/5 p-4">
+            <div class="flex items-center justify-between text-sm text-white/70">
+              <span class="font-semibold text-white">${label}</span>
+              <span>${count}</span>
+            </div>
+            <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-white/10">
               <div class="h-full rounded-full bg-gradient-to-r from-btyBlue via-btyYellow to-btyRed" style="width:${pct}%"></div>
             </div>
-            <p class="mt-1 text-[10px] uppercase tracking-[0.2em] text-white/50">${pct}% of votes</p>
+            <p class="mt-2 text-xs uppercase tracking-[0.2em] text-white/50">${pct}% of votes</p>
           </div>`;
       }).join('');
     }
@@ -453,7 +519,7 @@
         if (data.active) {
           timelineStatus.textContent = `Running - ${data.label}`;
         } else {
-          timelineStatus.textContent = data.label || 'Stopped';
+          timelineStatus.textContent = data.label || 'Manual control active.';
         }
       }
 
@@ -463,9 +529,17 @@
         snapshotParents.textContent = data.audienceCounts?.parents || 0;
       }
 
+      if (type === 'mood') {
+        const id = data.id;
+        if (id && Object.prototype.hasOwnProperty.call(moodCounts, id)) {
+          moodCounts[id] += 1;
+          renderMoodSummary();
+        }
+      }
+
       if (type === 'persona') {
         if (data.personaCounts) {
-          renderPersonaBars(data.personaCounts);
+          renderPersonaMix(data.personaCounts);
         }
       }
 
@@ -475,9 +549,9 @@
         snapshotParents.textContent = data.audienceCounts?.parents || 0;
         currentScene.textContent = data.scene || 'join';
         if (data.timeline) {
-          timelineStatus.textContent = data.timeline.active ? `Running - ${data.timeline.label}` : (data.timeline.label || 'Idle');
+          timelineStatus.textContent = data.timeline.active ? `Running - ${data.timeline.label}` : (data.timeline.label || 'Manual control active.');
         }
-        if (data.personaCounts) renderPersonaBars(data.personaCounts);
+        if (data.personaCounts) renderPersonaMix(data.personaCounts);
         const initialJourney = data.journeyCount || 0;
         journeyCount.textContent = initialJourney;
         journeyStatus.textContent = `Journey cards saved: ${initialJourney}`;
