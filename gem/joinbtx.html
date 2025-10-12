@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTYX Join</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" xintegrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoVBL5gI9kLmbG0CzdlIQHNi1HTY1g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        :root { --bty-blue: #000C53; --bty-yellow: #FFE200; --bty-red: #EC3237; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bty-blue); color: #f0f0f0; }
+        .action-option { transition: background-color 0.2s, transform 0.2s; }
+        .action-option:hover { background-color: rgba(255, 226, 0, 0.2); transform: scale(1.03); }
+        .action-option:disabled { opacity: 0.5; cursor: not-allowed; }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .slide-in { animation: slideIn 0.5s ease-in-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        #memento-card {
+             background-color: #1a202c; /* A dark slate for canvas background */
+             background-image: 
+                radial-gradient(circle at 100% 0%, rgba(255, 226, 0, 0.1) 0%, transparent 30%),
+                radial-gradient(circle at 0% 100%, rgba(0, 12, 83, 0.5) 0%, transparent 40%);
+        }
+    </style>
+</head>
+<body class="antialiased text-white">
+
+    <div id="app" class="min-h-screen flex flex-col items-center justify-center p-4">
+        <!-- Content dynamically populated by JavaScript -->
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, setDoc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBjHO57QKoMW-u4oLGGdgDSqw5gttqX6Fg", authDomain: "btyx-61dc6.firebaseapp.com", projectId: "btyx-61dc6", storageBucket: "btyx-61dc6.appspot.com", messagingSenderId: "851137405745", appId: "1:851137405745:web:c95b86b6f0462a9bc20610" };
+        let app, db, auth;
+        try { app = initializeApp(firebaseConfig); db = getFirestore(app); auth = getAuth(app); await signInAnonymously(auth); listenToSessionState(); } catch (e) { console.error("Firebase init failed:", e); renderError("Connection Error", "Could not connect. Please try again."); }
+        
+        const appContainer = document.getElementById('app');
+        let userData = JSON.parse(localStorage.getItem('btyxUserData')) || {};
+        let currentQuestionIndex = 0;
+        const userScores = { innovator: 0, leader: 0, steward: 0, analyst: 0, explorer: 0, creator: 0, performer: 0 };
+
+        const quizQuestions = [
+            { question: "Your team faces a tough challenge. Your first instinct is to...", options: [ { text: "...brainstorm a new, tech-driven solution.", archetypes: ["innovator"] }, { text: "...organize the team and create a clear plan.", archetypes: ["leader"] }, { text: "...ensure the solution helps the community.", archetypes: ["steward"] }, { text: "...research the problem's root cause.", archetypes: ["analyst"] } ] },
+            { question: "You have a free afternoon to start a project. You choose to...", options: [ { text: "...explore a new place or culture online.", archetypes: ["explorer"] }, { text: "...write a story or design a piece of art.", archetypes: ["creator"] }, { text: "...practice a speech or a musical piece.", archetypes: ["performer"] }, { text: "...take apart an old gadget to see how it works.", archetypes: ["innovator"] } ] },
+            { question: "You're most energized when you are...", options: [ { text: "...discovering something no one else has noticed.", archetypes: ["analyst", "explorer"] }, { text: "...leading a group to a successful outcome.", archetypes: ["leader"] }, { text: "...making a positive impact on others.", archetypes: ["steward"] }, { text: "...expressing your ideas for an audience.", archetypes: ["creator", "performer"] } ] }
+        ];
+        
+        function listenToSessionState() {
+            onSnapshot(doc(db, "session", "state"), (doc) => {
+                if (doc.exists()) {
+                    renderView(doc.data());
+                } else {
+                    // --- LOGIC CHANGE ---
+                    // If the session is over, but the user finished, show their memento card.
+                    if (userData.aspiration) {
+                        renderMementoCard();
+                    } else if (!userData.archetype) {
+                        renderQuizQuestion();
+                    } else {
+                        renderWaiting(`Waiting for the presentation to begin... You are logged in as a <strong class="text-yellow-300">${userData.archetype}</strong>.`);
+                    }
+                }
+            });
+        }
+        
+        function renderView(state) {
+            if (!userData.archetype) { renderQuizQuestion(); return; }
+
+            switch(state.currentView) {
+                case 'poll':
+                    if (userData.polls && userData.polls[state.pollData.id] !== undefined) renderWaiting(`You have voted. Please watch the main screen.`);
+                    else renderPoll(state.pollData);
+                    break;
+                case 'globe':
+                case 'industry_map':
+                    if (userData[state.nexusData.type]) renderWaiting(`Your choice is on the map! Please watch the main screen.`);
+                    else renderNexus(state.nexusData);
+                    break;
+                case 'finale':
+                     renderAspirationInput();
+                     break;
+                case 'memento':
+                    renderMementoCard(state);
+                    break;
+                default:
+                    renderWaiting(`Please watch the main screen for the next interaction. You are a <strong class="text-yellow-300">${userData.archetype}</strong>.`);
+            }
+        }
+        
+        function renderQuizQuestion() {
+            if (currentQuestionIndex >= quizQuestions.length) { determineArchetype(); return; }
+            const questionData = quizQuestions[currentQuestionIndex];
+            appContainer.innerHTML = `
+                <div class="w-full max-w-md text-center fade-in">
+                    <p class="text-sm font-semibold text-yellow-300 mb-2">Beatty Compass Quiz (${currentQuestionIndex + 1}/${quizQuestions.length})</p>
+                    <h2 class="text-2xl font-bold mb-8">${questionData.question}</h2>
+                    <div class="space-y-4">
+                        ${questionData.options.map((opt) => `
+                            <button data-archetypes='${JSON.stringify(opt.archetypes)}' class="action-option w-full text-left p-4 bg-gray-800/50 border border-gray-700 rounded-lg">
+                                ${opt.text}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>`;
+        }
+        
+        function handleQuizAnswer(archetypes) {
+            archetypes.forEach(arc => userScores[arc]++);
+            currentQuestionIndex++;
+            renderQuizQuestion();
+        }
+
+        async function determineArchetype() {
+            let maxScore = -1, finalArchetype = 'Innovator';
+            for (const type in userScores) { if (userScores[type] > maxScore) { maxScore = userScores[type]; finalArchetype = type.charAt(0).toUpperCase() + type.slice(1); } }
+            userData.archetype = finalArchetype;
+            saveUserData();
+            await setDoc(doc(db, "compassQuiz", auth.currentUser.uid), { archetype: userData.archetype, timestamp: serverTimestamp() });
+            renderResult(userData.archetype);
+        }
+
+        function renderPoll(pollData) {
+            appContainer.innerHTML = `
+                <div class="w-full max-w-md text-center fade-in" data-poll-data='${JSON.stringify(pollData)}'>
+                     <p class="text-sm font-semibold text-yellow-300 mb-2">Live Poll</p>
+                     <h2 class="text-2xl font-bold mb-8">${pollData.question}</h2>
+                     <div class="space-y-4">
+                         ${pollData.options.map((opt, index) => `
+                             <button data-poll-id="${pollData.id}" data-option-index="${index}" class="action-option w-full text-left p-4 bg-gray-800/50 border border-gray-700 rounded-lg">
+                                 ${opt}
+                             </button>
+                         `).join('')}
+                     </div>
+                 </div>`;
+        }
+
+        async function handlePollAnswer(pollId, optionIndex, pollData) {
+            if (!userData.polls) userData.polls = {};
+            const choiceIndex = parseInt(optionIndex);
+            userData.polls[pollId] = {
+                choice: choiceIndex,
+                isCorrect: choiceIndex === pollData.correctAnswer
+            };
+            saveUserData();
+
+            await setDoc(doc(db, "polls", `${pollId}_${auth.currentUser.uid}`), { pollId: pollId, vote: choiceIndex, timestamp: serverTimestamp() });
+            renderWaiting("Thank you! Please watch the main screen.");
+        }
+        
+        function renderNexus(nexusData) {
+            appContainer.innerHTML = `
+                <div class="w-full max-w-md text-center fade-in">
+                    <h2 class="text-2xl font-bold mb-2">Chart Your Course</h2>
+                    <p class="mb-6">As a <strong class="text-yellow-300">${userData.archetype}</strong>, which of these paths excites you most?</p>
+                    <div class="space-y-4">
+                        ${nexusData.options.map(opt => `
+                            <button data-nexus-id="${opt.id}" data-nexus-type="${nexusData.type}" data-nexus-text="${opt.text}" class="action-option w-full text-left p-4 bg-gray-800/50 border border-gray-700 rounded-lg">
+                                ${opt.text}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>`;
+        }
+        
+        async function handleNexusChoice(nexusId, nexusType, nexusText) {
+            userData[nexusType] = { id: nexusId, text: nexusText };
+            saveUserData();
+            await setDoc(doc(db, "nexusVotes", auth.currentUser.uid), { nexusId: nexusId, archetype: userData.archetype, timestamp: serverTimestamp() });
+            renderWaiting("Your choice is on the map! Look at the main screen.");
+        }
+        
+        function renderAspirationInput() {
+            if (userData.aspiration) { renderWaiting('Your aspiration is part of the crest!'); return; }
+            appContainer.innerHTML = `
+                <div class="w-full max-w-md text-center fade-in">
+                    <h2 class="text-2xl font-bold mb-4">What is Your Aspiration?</h2>
+                    <p class="mb-6 text-gray-300">Share one word that represents your future dream or goal. It will become part of our collective crest!</p>
+                    <input type="text" id="aspirationInput" maxlength="20" class="w-full p-3 bg-gray-700 text-white rounded-lg mb-4 text-center text-lg" placeholder="e.g., Doctor, Innovator, Artist">
+                    <button id="submitAspiration" class="w-full p-3 bg-yellow-400 text-blue-900 font-bold rounded-lg">Add to Crest</button>
+                </div>`;
+        }
+
+        async function handleAspirationSubmit() {
+            const input = document.getElementById('aspirationInput');
+            const word = input.value.trim();
+            if (word) {
+                input.disabled = true;
+                document.getElementById('submitAspiration').disabled = true;
+                userData.aspiration = word;
+                saveUserData();
+                await setDoc(doc(db, "aspirations", auth.currentUser.uid), { word: word, timestamp: serverTimestamp() });
+                renderWaiting('Thank you! Your aspiration is now part of our crest.');
+            }
+        }
+
+        function renderMementoCard(sessionState) {
+            const pollNexus = userData.polls?.nexus_count;
+            
+            let nexusResultText = "Beatty has been progressive, and continues to make headway in developing more partnerships for the benefit of students. Today, we have seven international exchanges and seven industry attachments.";
+            if (pollNexus?.isCorrect) {
+                nexusResultText = "And you got it right! Beatty offers an incredible seven international exchanges and seven industry attachments, opening a world of possibilities for your child.";
+            }
+
+            const dreamResultText = "At Beatty, we believe gifts turn to talents when we exercise Discipline, Resilience, Empathy, Adaptability, and Mindfulness. These values allow everyone to D.R.E.A.M. big and turn those dreams into reality.";
+            
+            const archetypeDescriptions = {
+                Innovator: 'a spirit of ingenuity and vision',
+                Leader: 'a spirit of influence and direction',
+                Steward: 'a spirit of service and care',
+                Analyst: 'a spirit of inquiry and precision',
+                Explorer: 'a spirit of adventure and discovery',
+                Creator: 'a spirit of imagination and expression',
+                Performer: 'a spirit of charisma and connection'
+            };
+
+            appContainer.innerHTML = `
+                <div class="w-full max-w-md text-center fade-in">
+                    <div id="memento-card" class="bg-gray-800 border-2 border-yellow-400 rounded-2xl p-6 text-left shadow-2xl">
+                        <h1 class="text-2xl font-black text-yellow-400">BEATTY</h1>
+                        <p class="text-sm text-gray-300 font-semibold mb-4">Your Compass Card</p>
+                        
+                        <p class="text-base mb-3">Your compass reveals you are a natural <strong class="font-bold text-yellow-300">${userData.archetype}</strong>. This suggests ${archetypeDescriptions[userData.archetype] || 'a unique spirit'}.</p>
+                        
+                        <p class="text-base mb-3">Your interest in <strong class="font-bold text-yellow-300">${userData.global?.text || 'global opportunities'}</strong> and <strong class="font-bold text-yellow-300">${userData.local?.text || 'local industry'}</strong> shows your readiness to take on the world.</p>
+                        
+                        <div class="text-xs bg-blue-900/50 p-3 rounded-lg my-3 space-y-2">
+                           <p>${nexusResultText}</p>
+                           <p>${dreamResultText}</p>
+                        </div>
+
+                        <p class="text-center mt-4">Your aspiration: <strong class="text-2xl font-black text-yellow-300 block">"${userData.aspiration || 'Your Future'}"</strong></p>
+                    </div>
+                    <button id="downloadCardBtn" class="mt-6 w-full p-3 bg-yellow-400 text-blue-900 font-bold rounded-lg">Download Your Compass Card</button>
+                    <p class="text-xs text-gray-400 mt-2">A memento of your journey with us today.</p>
+                </div>`;
+        }
+
+        function downloadCard() {
+            const card = document.getElementById('memento-card');
+            const btn = document.getElementById('downloadCardBtn');
+            btn.textContent = "Generating...";
+            btn.disabled = true;
+
+            html2canvas(card, { backgroundColor: '#1A202C', scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Beatty-Compass-Card.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                btn.textContent = "Download Your Compass Card";
+                btn.disabled = false;
+            }).catch(err => {
+                console.error("Failed to generate canvas:", err);
+                btn.textContent = "Download Failed. Try Again.";
+                btn.disabled = false;
+            });
+        }
+
+        function saveUserData() { localStorage.setItem('btyxUserData', JSON.stringify(userData)); }
+
+        function renderResult(archetype) {
+            appContainer.innerHTML = `
+                <div class="w-full max-w-md text-center slide-in">
+                    <h2 class="text-xl font-bold mb-2">Your Compass is Pointing!</h2>
+                    <p class="text-5xl font-black text-yellow-300 my-4">${archetype}</p>
+                    <p class="text-gray-300 mb-6">Thank you! Your result has been shared. Please wait for the presentation to begin.</p>
+                    <button id="retakeQuizBtn" class="text-sm text-gray-400 underline hover:text-white">Not you? Retake the quiz.</button>
+                </div>`;
+        }
+        
+        function renderWaiting(message) {
+            appContainer.innerHTML = `
+                <div class="w-full max-w-md text-center slide-in">
+                     <div class="animate-pulse">
+                         <svg class="mx-auto h-12 w-12 text-yellow-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                         </svg>
+                     </div>
+                     <p class="mt-4 text-lg font-semibold">${message}</p>
+                     <button id="retakeQuizBtn" class="mt-6 text-sm text-gray-400 underline hover:text-white">Click here to retake the quiz.</button>
+                 </div>`;
+        }
+        
+        function renderError(title, message) {
+            appContainer.innerHTML = `<div class="text-center p-4 bg-red-800 rounded-lg"><h2>${title}</h2><p>${message}</p></div>`;
+        }
+
+        function retakeQuiz() {
+            localStorage.removeItem('btyxUserData');
+            // Clear relevant documents from firestore if needed, then reload.
+            location.reload();
+        }
+
+        appContainer.addEventListener('click', (e) => {
+            const target = e.target.closest('button');
+            if (!target) return;
+            
+            if (target.id === 'retakeQuizBtn') { retakeQuiz(); return; }
+            if (target.id === 'downloadCardBtn') { downloadCard(); return; }
+            if (target.id === 'submitAspiration') { handleAspirationSubmit(); return; }
+
+            const pollContainer = target.closest('[data-poll-data]');
+
+            target.disabled = true;
+
+            if (target.dataset.archetypes) handleQuizAnswer(JSON.parse(target.dataset.archetypes));
+            else if (target.dataset.pollId && pollContainer) handlePollAnswer(target.dataset.pollId, target.dataset.optionIndex, JSON.parse(pollContainer.dataset.pollData));
+            else if (target.dataset.nexusId) handleNexusChoice(target.dataset.nexusId, target.dataset.nexusType, target.dataset.nexusText);
+        });
+    </script>
+</body>
+</html>

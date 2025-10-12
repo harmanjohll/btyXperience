@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Beatty Experience: Where Your Aspirations Take Flight</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root { --bty-blue: #000C53; --bty-yellow: #FFE200; --bty-red: #EC3237; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bty-blue); color: #f0f0f0; overflow: hidden; background-image: radial-gradient(circle at top left, rgba(255,255,255,0.05) 0%, transparent 30%); }
+        .bty-text-yellow { color: var(--bty-yellow); }
+        .bty-bg-yellow { background-color: var(--bty-yellow); }
+        .btn-primary { background-color: var(--bty-yellow); color: var(--bty-blue); font-weight: 700; padding: 1rem 2rem; border-radius: 9999px; transition: transform 0.2s, background-color 0.2s; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; }
+        .btn-primary:hover { transform: scale(1.05); background-color: #fff; }
+        .fade-in { animation: fadeIn 1s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .progress-bar-fill { transition: width 0.5s ease-in-out; }
+        .chart-bar { transition: width 0.5s ease-in-out, background-color 0.3s; }
+        .correct-answer-box { border: 2px solid var(--bty-red); border-radius: 0.75rem; padding: 1rem; background-color: rgba(236, 50, 55, 0.1); animation: pulse-red 1.5s 2; }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(236, 50, 55, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(236, 50, 55, 0); } 100% { box-shadow: 0 0 0 0 rgba(236, 50, 55, 0); } }
+        .confirm-modal-overlay, .nexus-modal-overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 100; transition: opacity 0.3s; }
+        .modal-content { background-color: rgba(26, 32, 44, 0.8); padding: 2rem; border-radius: 1rem; border: 1px solid rgba(74, 85, 104, 0.5); text-align: left; max-width: 500px; transform: scale(0.95); transition: transform 0.3s; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }
+        .confirm-modal-overlay:not(.hidden) .modal-content, .nexus-modal-overlay:not(.hidden) .modal-content { transform: scale(1); }
+        #word-cloud { position: relative; width: 100%; max-width: 800px; height: 500px; margin: auto; }
+        .word { position: absolute; transition: opacity 1s, transform 2s cubic-bezier(0.68, -0.55, 0.27, 1.55); will-change: transform, opacity; }
+        #globe-container { cursor: grab; position: relative; }
+        #globe-container:grabbing { cursor: grabbing; }
+        .globe-controls { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 1rem; z-index: 10;}
+        .globe-btn { background: rgba(0,0,0,0.3); border: 1px solid var(--bty-yellow); color: var(--bty-yellow); padding: 0.5rem 1rem; border-radius: 99px; cursor: pointer; backdrop-filter: blur(5px); }
+        .toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: #2D3748; color: white; padding: 1rem 2rem; border-radius: 0.5rem; transition: bottom 0.5s ease-in-out; z-index: 200; }
+        .toast.show { bottom: 20px; }
+
+        .pin { position: absolute; transform: translate(-50%, -100%); cursor: pointer; transition: transform 0.2s, opacity 0.2s; display: flex; flex-direction: column; align-items: center; }
+        .pin:hover { transform: translate(-50%, -100%) scale(1.1); z-index: 1000 !important; }
+        .pin-label { text-align: center; }
+        .pin-stem { background-color: currentColor; }
+        .pin-dot { background-color: currentColor; border-radius: 50%; }
+
+        #globe-pins-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .globe-pin { pointer-events: auto; }
+        .globe-pin .pin-label { background: rgba(0,12,83,0.8); color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; white-space: nowrap; backdrop-filter: blur(2px); border: 1px solid var(--bty-yellow); }
+        .globe-pin .pin-stem { width: 2px; height: 18px; color: var(--bty-yellow); }
+        .globe-pin .pin-dot { width: 10px; height: 10px; margin-top: -5px; color: var(--bty-yellow); }
+
+        #industry-nexus-container { position: relative; width: 100%; max-width: 900px; margin: auto; }
+        .sg-map-pin .pin-dot { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); font-size: 12px; border: 2px solid white; }
+        .sg-map-pin .pin-stem { width: 3px; height: 15px; margin-top: -4px; }
+        .sg-map-pin .pin-label { 
+            font-size: 16px; 
+            color: var(--bty-blue); 
+            margin-bottom: 8px; 
+            font-weight: 900; 
+            text-shadow: none;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 2px solid var(--bty-blue);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="presenterPanel" class="hidden fixed top-4 right-4 bg-red-800 p-4 rounded-lg shadow-lg z-50">
+        <h3 class="font-bold text-white mb-2">Presenter Controls</h3>
+        <button id="resetSessionBtn" class="bg-yellow-400 text-blue-900 font-bold py-2 px-4 rounded hover:bg-white">Reset Live Session</button>
+    </div>
+
+    <div id="customConfirmModal" class="confirm-modal-overlay hidden opacity-0"><div class="modal-content" style="text-align:center;"><h2 class="text-xl font-bold mb-4">Confirm Reset</h2><p class="text-gray-300 mb-6">This action is irreversible. To proceed, please type 'RESET' below.</p><input type="text" id="confirmResetInput" class="bg-gray-700 text-white p-2 rounded w-full mb-4" placeholder="RESET"><di><button id="cancelResetBtn" class="bg-gray-500 text-white font-bold py-2 px-6 rounded mr-2">Cancel</button><button id="confirmResetBtn" class="bg-red-600 text-white font-bold py-2 px-6 rounded">Confirm</button></div></div></div>
+    
+    <div id="nexusModal" class="nexus-modal-overlay hidden opacity-0"><div class="modal-content relative max-w-2xl w-full !text-left !p-8"><button id="closeModalBtn" class="absolute top-4 right-4 text-gray-400 hover:text-white text-3xl leading-none">&times;</button><div id="modalContent"></div></div></div>
+
+    <div id="notificationToast" class="toast"></div>
+
+    <div class="container mx-auto p-4 md:p-8 min-h-screen flex flex-col items-center justify-center">
+        <header class="absolute top-0 left-0 p-6"><h1 class="text-2xl font-black bty-text-yellow">BEATTY</h1><p class="text-sm text-gray-300 font-semibold">SECONDARY SCHOOL</p></header>
+
+        <section id="start" class="text-center w-full max-w-4xl mx-auto fade-in"><h1 class="text-4xl md:text-6xl font-black bty-text-yellow mb-4">The Beatty Experience (BTYX)</h1><p class="text-lg md:text-xl text-gray-200 mb-8">Please scan the QR code with your phone to join the interactive session.</p><div class="flex justify-center"><div class="bg-white p-4 rounded-lg"><canvas id="qr-code"></canvas></div></div><p id="participant-count" class="mt-4 text-gray-400 text-sm">Waiting for you to join...</p><button id="beginBtn" class="btn-primary mt-12">Begin Journey</button></section>
+
+        <section id="journey" class="hidden w-full max-w-6xl mx-auto"><div class="w-full bg-gray-700 rounded-full h-2.5 mb-8"><div id="progressBar" class="bty-bg-yellow h-2.5 rounded-full progress-bar-fill" style="width: 10%"></div></div><div id="journey-content"></div><div class="flex justify-between mt-12"><button id="prevBtn" class="btn-primary" style="background-color: #4A5568; display: none;">Previous</button><button id="nextBtn" class="btn-primary">Next</button></div></section>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, getDocs, writeBatch, onSnapshot, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBjHO57QKoMW-u4oLGGdgDSqw5gttqX6Fg", authDomain: "btyx-61dc6.firebaseapp.com", projectId: "btyx-61dc6", storageBucket: "btyx-61dc6.appspot.com", messagingSenderId: "851137405745", appId: "1:851137405745:web:c95b86b6f0462a9bc20610" };
+        let app, db, auth;
+        try { app = initializeApp(firebaseConfig); db = getFirestore(app); auth = getAuth(app); await signInAnonymously(auth); initializeListeners(); } catch (e) { console.error("Firebase init failed:", e); }
+
+        const journeyContent = document.getElementById('journey-content');
+        const progressBar = document.getElementById('progressBar');
+        const participantCountEl = document.getElementById('participant-count');
+        const nexusModal = document.getElementById('nexusModal');
+        const modalContent = document.getElementById('modalContent');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        
+        let currentStep = 0;
+        let liveData = { compass: {}, polls: {}, nexus: {}, aspirations: [] };
+
+        const modalData = { 
+            GeoBali: { title: "Geography/Literature @ Bali", studentCount: 30, duration: "1 Week", description: "Embark on an immersive exploration of Bali's dynamic landscape, where students hone geographical inquiry skills amidst tectonic activity. Through field sketching and observations, they will grasp the island's geological intricacies. Students will also engage with locals to learn how communities navigate tectonic risks and embrace the benefits of their natural environment. This hands-on investigation fosters a deep understanding of Bali's tectonic environment, highlighting the delicate balance between nature and society while advocating for sustainable development practices in tectonically active regions.", highlights: ["Understand Bali's volcanic history and the opportunities and risks brought about by tectonic activity.", "Evaluate how local communities in Bali have adapted and developed resilience to coexist with tectonic activity.", "Experience an actual field site, and deepen geographical investigation and critical thinking skills."] }, 
+            NZ: { title: "Leadership/Sustainability @ Aorere College, New Zealand", studentCount: 10, duration: "1 Week", description: "The exchange programme, crafted in collaboration with Aorere College in Auckland, blends leadership and language studies. Themes such as mythology, storytelling, language, cultural identity, and the evolution of language and leadership drive exploration, fostering cultural understanding and personal growth. Singaporean students experience Kiwi hospitality, staying with their New Zealand counterparts throughout the entire trip, forming bonds and broadening perspectives. An inquiry project, a core aspect of the exchange, demands time and dedication as Beattyians collaborate with their Aorere College peers to delve into chosen themes, generating new insights. Navigating leadership, language, and culture, students leverage international collaboration to share discoveries. Enriched with knowledge and equipped with skills, they emerge poised to shape the future as global citizens and leaders. The Beatty-Aorere exchange transcends boundaries, leaving a lasting impact on all participants.", highlights: ["Sharpen their disposition to think critically and creatively.", "Develop essential leadership qualities such as increased self-awareness as well as self- and peer-empowerment.", "Understand the pivotal role language plays in shaping the leadership landscape.", "Become more confident in their communication with overseas counterparts through project collaborations and presentations.", "Develop a more acute sense of global and cultural awareness and sensitivities."] }, 
+            Korea: { title: "A.I. @ South Korea", studentCount: 12, duration: "1 Week", description: "Dive into the future of technology in one of the world's most innovative hubs. Explore artificial intelligence, robotics, and machine learning with hands-on workshops and industry visits.", highlights: [] }, 
+            MiharaJapan: { title: "Social Sciences @ Mihara, Japan", studentCount: 14, duration: "1 Week", description: "Embark on a transformative journey with our exchange programme with Hiroshima University High School, renowned for its Super Science curriculum shaping future leaders in science and technology innovation. Students will engage in collaborative research projects spanning recycling, transportation, water conservation, green spaces, sustainable tourism, food culture, and historical preservation, under the mentorship of SSH staff and students. Following the enriching exchange in Hiroshima, we unite with Mihara City council for a cultural immersion and homestay experience, fostering bonds with peers from all over Mihara City. This cross-disciplinary approach nurtures holistic learning, fostering a deeper understanding of sustainability and cultural exchange, vital for tomorrow's leaders.", highlights: ["Deepen global and cultural literacies through working on a research project with students from Mihara City.", "Develop social-emotional competencies, and sharpen critical thinking and communication skills.", "Experience the rich heritage of Japanese culture, in Mihara City, Hiroshima."] },
+            MutsuzawaJapan: { title: "STEM @ Mutsuzawa, Japan", studentCount: 14, duration: "1 Week", description: "Embark on a transformative journey with our exchange programme, shaping future leaders in science and technology innovation. Students will engage in collaborative research projects spanning various STEM fields. Following the enriching exchange, we unite with Mutsuzawa Town for a cultural immersion and homestay experience, fostering bonds with local peers. This cross-disciplinary approach nurtures holistic learning, fostering a deeper understanding of sustainability and cultural exchange, vital for tomorrow's leaders.", highlights: ["Deepen global and cultural literacies through working on a research project with students from Mutsuzawa Town.", "Develop social-emotional competencies, and sharpen critical thinking and communication skills.", "Experience the rich heritage of Japanese culture, in Mutsuzawa Town."] },
+            Estonia: { title: "Cybersecurity @ Estonia", studentCount: 16, duration: "1 Week", description: "Learn from the world's leading digital society and dive deep into cybersecurity.", highlights: ["Cookouts and cultural exchange activities.", "Explore the world of Estonian Film.", "Research related to digital citizenship and digital sustainability."] }, 
+            Rockwell: { title: "Engineering @ Rockwell Automation", studentCount: 12, duration: "7-8 months", description: "Get a head start in industrial automation, focusing on cybersecurity, digital twinning, and sustainability." }, 
+            PIL: { title: "Maritime Sustainability, Materials & Corporate Communications @ Pacific International Lines", studentCount: 12, duration: "7-8 months", description: "Understand global trade, focusing on sustainable logistics, innovative materials, and corporate engagement." }, 
+            ASTAR: { title: "Research @ A*STAR", studentCount: 6, duration: "7-8 months", description: "Experience life as a research scientist at Singapore's premier R&D agency." }, 
+            Journalism: { title: "Media & Journalism @ Berita Harian", studentCount: 8, duration: "7-8 months", description: "Discover the fast-paced world of news and ethical reporting in Malay language media." }, 
+            TamilMurasu: { title: "Media & Journalism @ Tamil Murasu", studentCount: 8, duration: "7-8 months", description: "Engage with the vibrant world of news and media within the Tamil language community." }, 
+            Makita: { title: "Mechatronics @ ITE West & Makita", studentCount: 16, duration: "7-8 months", description: "A deep dive into modern mechatronics and manufacturing processes with industry giant Makita." } 
+        };
+        
+        const journeySteps = [
+            { id: 'compass', type: 'chart', title: "Our Audience Compass", description: "This is a live reflection of our collective personality in the room today." },
+            { id: 'values', type: 'static', title: "Our Foundation: The D.R.E.A.M. Values", content: `<div class="flex flex-wrap justify-center gap-4 text-center">${['Discipline', 'Resilience', 'Empathy', 'Adaptability', 'Mindfulness'].map(v => `<div class="p-4 bg-gray-800/50 rounded-lg w-40"><h3 class="text-5xl font-black bty-text-yellow">${v.charAt(0)}</h3><p class="mt-2 font-semibold text-gray-200">${v}</p></div>`).join('')}</div><p class="mt-8 text-center text-gray-400 italic">Motto: Non Vi Sed Arte (Not with force but with skill)</p>`},
+            // --- POLLS MOVED TO AFTER NEXUS INTRODUCTIONS ---
+            { id: 'nexus_global', type: 'globe', title: "Chart Your Course: International Exchanges", description: "Click on a pin to learn more. Audience, please select your preferred exchange on your device.", 
+                nexusData: {
+                    type: 'global',
+                    options: [
+                        {id: 'GeoBali', text: 'Geography/Literature @ Bali'},
+                        {id: 'NZ', text: 'Leadership/Sustainability @ New Zealand'},
+                        {id: 'Korea', text: 'A.I. @ South Korea'},
+                        {id: 'MiharaJapan', text: 'Social Sciences @ Mihara, Japan'},
+                        {id: 'MutsuzawaJapan', text: 'STEM @ Mutsuzawa, Japan'},
+                        {id: 'Estonia', text: 'Cybersecurity @ Estonia'}
+                    ]
+                }
+            },
+            { id: 'nexus_local', type: 'industry_map', title: "Your Future, Built in Singapore", description: "Explore our local industry attachments. Audience, please select your preferred attachment on your device.", 
+                localData: [
+                    // --- PINS SHIFTED UPWARD ---
+                    { id: "Rockwell", name: "Rockwell", position: { x: 20, y: 47 }, color: "#ef4444" }, 
+                    { id: "PIL", name: "PIL", position: { x: 50, y: 63 }, color: "#8b5cf6" },
+                    { id: "Journalism", name: "BH", position: { x: 48, y: 43 }, color: "#06b6d4" }, 
+                    { id: "TamilMurasu", name: "TM", position: { x: 55, y: 43 }, color: "#f59e0b" },
+                    { id: "Makita", name: "Makita", position: { x: 28, y: 33 }, color: "#10b981" },
+                    { id: "ASTAR", name: "A*STAR", position: { x: 43, y: 57 }, color: "#3b82f6" }
+                ],
+                nexusData: {
+                    type: 'local',
+                    options: [
+                        {id: 'Rockwell', text: 'Engineering @ Rockwell Automation'},
+                        {id: 'PIL', text: 'Maritime Sustainability @ PIL'},
+                        {id: 'Journalism', text: 'Media & Journalism @ Berita Harian'},
+                        {id: 'TamilMurasu', text: 'Media & Journalism @ Tamil Murasu'},
+                        {id: 'Makita', text: 'Mechatronics @ ITE West & Makita'},
+                        {id: 'ASTAR', text: 'Research @ A*STAR'}
+                    ]
+                }
+            },
+            { id: 'poll_nexus_count', type: 'poll', title: "Live Poll: Our Opportunities", pollData: { 
+                id: 'nexus_count', 
+                question: "How many international exchanges and industry attachments does Beatty offer?", 
+                options: ["Three exchanges and three attachments", "Five exchanges and five attachments", "Seven exchanges and seven attachments"], 
+                correctAnswer: 2,
+                answers: [
+                    { text: "Three exchanges and three attachments" },
+                    { text: "Five exchanges and five attachments" },
+                    { text: "Seven exchanges and seven attachments" } // Correct answer text for memento
+                ]
+            }},
+            { id: 'poll_dream', type: 'poll', title: "Live Poll: Our Core Values", pollData: { 
+                id: 'dream', 
+                question: "What does our D.R.E.A.M. acronym stand for?", 
+                options: [
+                    "Determination, Respect, Excellence, Ambition, Motivation", 
+                    "Discipline, Resilience, Empathy, Adaptability, Mindfulness", 
+                    "Drive, Responsibility, Eagerness, Articulacy, Mastery"
+                ], 
+                correctAnswer: 1 
+            }},
+            { id: 'finale', type: 'finale', title: "Our Aspirations Crest", description: "Let's build a symbol of our collective future by submitting one word." },
+            // --- FINAL STEP CHANGED TO 'memento' ---
+            { id: 'card', type: 'memento', title: "Your Journey Begins", description: "Please check your phone for your personalized Beatty Compass Card." }
+        ];
+
+        function initializeListeners() {
+            onSnapshot(collection(db, "compassQuiz"), snap => handleSnapshot(snap, 'compass', 'archetype'));
+            onSnapshot(collection(db, "polls"), snap => handleSnapshot(snap, 'polls', 'vote', 'pollId'));
+            onSnapshot(collection(db, "nexusVotes"), snap => { 
+                handleSnapshot(snap, 'nexus', 'nexusId', 'archetype');
+                if (journeySteps[currentStep]?.id.startsWith('nexus')) { updateJourneyStep(); }
+            });
+            onSnapshot(collection(db, "aspirations"), snap => { liveData.aspirations = snap.docs.map(d => d.data().word); if (journeySteps[currentStep]?.type === 'finale') { updateJourneyStep(); } });
+        }
+        
+        function handleSnapshot(snapshot, dataType, property, groupBy = 'default') {
+            const results = {};
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const key = data[groupBy] || 'default';
+                if (!results[key]) results[key] = { total: 0, breakdown: {} };
+                results[key].total++;
+                results[key].breakdown[data[property]] = (results[key].breakdown[data[property]] || 0) + 1;
+            });
+            liveData[dataType] = results;
+            participantCountEl.textContent = `${liveData.compass.default?.total || 0} participant(s) have joined!`;
+        }
+
+        function renderContent(step) {
+            switch(step.type) {
+                case 'chart': return renderCompassChart(liveData.compass.default);
+                case 'poll': return renderPollChart(step.pollData, liveData.polls[step.pollData.id], step.revealed);
+                case 'globe': return renderNexusGlobe(liveData.nexus);
+                case 'industry_map': return renderIndustryNexusMap(step.localData, liveData.nexus);
+                case 'finale': return renderAspirationsCrest(liveData.aspirations);
+                case 'card_qr': return `<div class="text-center text-2xl font-bold bty-text-yellow">Please check your phone!</div>`;
+                case 'static': return step.content;
+                default: return '';
+            }
+        }
+        
+        function renderCompassChart(data = { breakdown: {} }) {
+            const archetypes = ['Innovator', 'Leader', 'Steward', 'Analyst', 'Explorer', 'Creator', 'Performer'];
+            const colors = ['#FFE200', '#EC3237', '#4299E1', '#9F7AEA', '#48BB78', '#ED8936', '#F56565'];
+            const total = data.total || 0;
+            if (total === 0) return `<p class="text-center text-gray-400">Waiting for results...</p>`;
+            return `<div class="space-y-4 max-w-3xl mx-auto">${archetypes.map((type, i) => {
+                const count = data.breakdown[type] || 0;
+                const pct = total > 0 ? (count / total) * 100 : 0;
+                return `<div class="text-left"><div class="flex justify-between items-center mb-1"><span class="font-bold text-lg">${type}</span><span class="text-sm font-semibold">${count}</span></div><div class="w-full bg-gray-700 rounded-full h-6"><div class="chart-bar text-right pr-2 font-bold text-sm text-blue-900 leading-6 rounded-full" style="width: ${pct}%; background-color: ${colors[i]};">${pct.toFixed(0)}%</div></div></div>`;
+            }).join('')}</div>`;
+        }
+
+        function renderPollChart(pollData, data = { breakdown: {} }, isRevealed = false) {
+             const total = data.total || 0;
+            let pollHTML = `<h3 class="text-2xl font-semibold mb-6">${pollData.question}</h3>`;
+            pollHTML += `<div class="space-y-4 max-w-3xl mx-auto">${pollData.options.map((opt, i) => {
+                const count = data.breakdown[i] || 0;
+                const pct = total > 0 ? (count / total) * 100 : 0;
+                const isCorrect = i === pollData.correctAnswer;
+                const wrapperClass = isCorrect && isRevealed ? 'correct-answer-box' : '';
+                return `<div class="${wrapperClass}"><div class="text-left"><div class="flex justify-between items-center mb-1"><span class="font-bold text-lg">${opt} ${isCorrect && isRevealed ? '🏆' : ''}</span><span class="text-sm font-semibold">${count} vote(s)</span></div><div class="w-full bg-gray-700 rounded-full h-8"><div class="chart-bar text-center p-1 font-bold text-lg text-blue-900 leading-6 rounded-full ${isCorrect && isRevealed ? 'correct' : ''}" style="width: ${pct}%; background-color: ${isCorrect && isRevealed ? 'var(--bty-yellow)' : '#A0AEC0'};">${pct.toFixed(0)}%</div></div></div></div>`;
+            }).join('')}</div>`;
+            if (total === 0) { pollHTML += '<p class="text-center text-gray-400 mt-4">Waiting for votes...</p>'; }
+            return pollHTML;
+        }
+
+        function renderAspirationsCrest(words = []) {
+            let cloudHTML = `<div id="word-cloud-container" class="relative w-full max-w-4xl h-[500px] mx-auto"></div>`;
+            setTimeout(() => {
+                const cloud = document.getElementById('word-cloud-container');
+                if(!cloud) return;
+                words.forEach((word) => {
+                    if (document.getElementById(`word-${word.replace(/\s/g, "")}`)) return;
+                    const el = document.createElement('span');
+                    el.id = `word-${word.replace(/\s/g, "")}`;
+                    el.className = 'word absolute opacity-0 transition-all duration-1000 transform-gpu';
+                    el.textContent = word;
+                    el.style.left = `50%`; el.style.top = `50%`;
+                    el.style.transform = `translate(-50%, -50%) scale(0)`;
+                    cloud.appendChild(el);
+                });
+                const elements = Array.from(cloud.children);
+                let angle = 0; let radius = 5;
+                elements.forEach((el) => {
+                    const t = angle / (elements.length * (0.5 + Math.random() * 0.2));
+                    let r = 1; if (t < 0.5) r = 0.5 + t; else r = 1 - (t - 0.5);
+                    const x = 50 + (radius * r) * Math.cos(angle) * 1.2;
+                    const y = 50 + (radius * r) * Math.sin(angle);
+                    el.style.left = `${x}%`; el.style.top = `${y}%`; el.style.opacity = '1';
+                    el.style.transform = `translate(-50%, -50%) scale(1) rotate(${Math.random() * 40 - 20}deg)`;
+                    el.style.fontSize = `${12 + Math.random() * 24}px`;
+                    angle += 0.5 + Math.random() * 0.2; radius += 1.5 + Math.random();
+                });
+            }, 100);
+            return cloudHTML;
+        }
+
+        let globe, scene, camera, renderer, animationFrameId;
+        let isSpinning = true;
+        const globePinsData = [];
+        
+        function renderNexusGlobe(data = {}) {
+            setTimeout(() => initGlobe(data), 50);
+            return `<div id="globe-container" class="w-full h-[500px]"><div id="globe-pins-container"></div></div>`;
+        }
+        
+        function renderIndustryNexusMap(localData, liveNexusData = {}) {
+            const pinsHTML = localData.map(industry => {
+                let count = 0;
+                for (const archetype in liveNexusData) { count += liveNexusData[archetype].breakdown[industry.id] || 0; }
+                const hasVotes = count > 0;
+                // HTML structure changed: label is now first for top positioning
+                return `<div class="pin sg-map-pin" style="left: ${industry.position.x}%; top: ${industry.position.y}%;" onclick="showNexusModal('${industry.id}')">
+                            <div class="pin-label">${industry.name}</div>
+                            <div class="pin-dot" style="background-color: ${industry.color}; transform: scale(${hasVotes ? 1.2 : 1});">
+                                ${count > 0 ? count : ''}
+                            </div>
+                            <div class="pin-stem" style="background-color: ${industry.color};"></div>
+                        </div>`;
+            }).join('');
+
+            const mapImage = `<img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/611f5fa27aa0bcf1c9854ab5458a9898f600389b/gem/sgmap.png" alt="Singapore Map" class="absolute top-0 left-0 w-full h-full object-contain -z-10" />`;
+
+            return `<div id="industry-nexus-container" style="aspect-ratio: 1005/693;">${mapImage}${pinsHTML}</div>`;
+        }
+
+        function initGlobe(data = {}) {
+            const container = document.getElementById('globe-container');
+            const pinsContainer = document.getElementById('globe-pins-container');
+            if (!container || !THREE) return;
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            
+            while (container.firstChild && container.firstChild.id !== 'globe-pins-container') { container.removeChild(container.firstChild); }
+            pinsContainer.innerHTML = '';
+            
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.z = 3.5;
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.insertBefore(renderer.domElement, pinsContainer);
+            
+            const textureLoader = new THREE.TextureLoader();
+            const earthTexture = textureLoader.load('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg');
+            const earthMaterial = new THREE.MeshStandardMaterial({ map: earthTexture, metalness: 0.1, roughness: 0.9 });
+            globe = new THREE.Mesh(new THREE.SphereGeometry(1.5, 64, 64), earthMaterial);
+            scene.add(globe);
+
+            const glowMaterial = new THREE.ShaderMaterial({
+                vertexShader: `varying vec3 vNormal; void main() { vNormal = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+                fragmentShader: `varying vec3 vNormal; void main() { float intensity = pow(0.7 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0); gl_FragColor = vec4(0.3, 0.6, 1.0, 1.0) * intensity; }`,
+                side: THREE.BackSide, blending: THREE.AdditiveBlending, transparent: true
+            });
+            const glow = new THREE.Mesh(new THREE.SphereGeometry(1.5, 64, 64), glowMaterial);
+            glow.scale.set(1.15, 1.15, 1.15);
+            scene.add(glow);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+            dirLight.position.set(5, 3, 5);
+            scene.add(dirLight);
+
+            const destinations = { Korea: { lat: 37.56, lon: 126.97, id: 'Korea', name: 'A.I. @ Korea', color: '#f59e0b' }, NZ: { lat: -41.28, lon: 174.77, id: 'NZ', name: 'Sustainability @ NZ', color: '#10b981' }, MiharaJapan: { lat: 34.40, lon: 133.08, id: 'MiharaJapan', name: 'Soc. Sci. @ Japan', color: '#ef4444' }, MutsuzawaJapan: { lat: 35.43, lon: 140.32, id: 'MutsuzawaJapan', name: 'STEM @ Mutsuzawa', color: '#f472b6' }, GeoBali: { lat: -8.67, lon: 115.22, id: 'GeoBali', name: 'Geog. @ Bali', color: '#3b82f6' }, Estonia: { lat: 59.43, lon: 24.75, id: 'Estonia', name: 'Cybersecurity @ Estonia', color: '#8b5cf6' }};
+            
+            globePinsData.length = 0;
+            Object.values(destinations).forEach(dest => {
+                const pinEl = document.createElement('div');
+                pinEl.className = 'pin globe-pin';
+                pinEl.innerHTML = `<div class="pin-label">${dest.name}</div><div class="pin-stem" style="color:${dest.color}"></div><div class="pin-dot" style="color:${dest.color}"></div>`;
+                pinEl.onclick = () => showNexusModal(dest.id);
+                pinsContainer.appendChild(pinEl);
+                globePinsData.push({ ...dest, element: pinEl, vector: latLonToVector3(dest.lat, dest.lon, 1.5) });
+            });
+
+            let isDragging = false, previousMousePosition = { x: 0, y: 0 };
+            const onPointerDown = (e) => { isDragging = true; isSpinning = false; previousMousePosition = { x: e.clientX, y: e.clientY }; };
+            const onPointerUp = () => { isDragging = false; };
+            const onPointerMove = (e) => { if (!isDragging) return; const delta = { x: e.clientX - previousMousePosition.x, y: e.clientY - previousMousePosition.y }; globe.rotation.y += delta.x * 0.005; globe.rotation.x += delta.y * 0.005; previousMousePosition = { x: e.clientX, y: e.clientY }; };
+            renderer.domElement.addEventListener('pointerdown', onPointerDown);
+            window.addEventListener('pointerup', onPointerUp);
+            renderer.domElement.addEventListener('pointermove', onPointerMove);
+            
+            const controls = document.createElement('div');
+            controls.className = 'globe-controls';
+            controls.innerHTML = `<button id="spinBtn" class="globe-btn">Stop Spin</button>`;
+            container.appendChild(controls);
+            document.getElementById('spinBtn').addEventListener('click', () => { isSpinning = !isSpinning; document.getElementById('spinBtn').textContent = isSpinning ? 'Stop Spin' : 'Start Spin'; });
+
+            function animate() {
+                animationFrameId = requestAnimationFrame(animate);
+                if (isSpinning) globe.rotation.y += 0.0005;
+                globePinsData.forEach(pin => {
+                    const pos = pin.vector.clone().applyEuler(globe.rotation);
+                    const screenPos = pos.clone().project(camera);
+                    if (pos.z > -0.3) {
+                        const x = (screenPos.x * container.clientWidth/2) + container.clientWidth/2;
+                        const y = -(screenPos.y * container.clientHeight/2) + container.clientHeight/2;
+                        pin.element.style.transform = `translate(${x}px, ${y}px) translate(-50%, -100%)`;
+                        pin.element.style.opacity = '1';
+                    } else {
+                        pin.element.style.opacity = '0';
+                    }
+                });
+                renderer.render(scene, camera);
+            }
+            animate();
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        }
+        
+        function latLonToVector3(lat, lon, radius) {
+            const phi = (90 - lat) * (Math.PI / 180);
+            const theta = (lon + 180) * (Math.PI / 180); 
+            const x = -(radius * Math.sin(phi) * Math.cos(theta));
+            const z = radius * Math.sin(phi) * Math.sin(theta);
+            const y = radius * Math.cos(phi);
+            return new THREE.Vector3(x, y, z);
+        }
+
+        function updateJourneyStep() {
+            if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; }
+            if (currentStep >= journeySteps.length) return;
+            const step = journeySteps[currentStep];
+            setDoc(doc(db, "session", "state"), { currentView: step.type, pollData: step.pollData || null, nexusData: step.nexusData || null, localData: step.localData || null });
+            const contentHTML = renderContent(step);
+            if (contentHTML) { journeyContent.innerHTML = `<div class="text-center fade-in"><h2 class="text-3xl md:text-5xl font-black bty-text-yellow mb-4">${step.title}</h2><p class="text-md md:text-lg text-gray-300 max-w-3xl mx-auto mb-8">${step.description}</p>${contentHTML}</div>`; }
+            progressBar.style.width = `${((currentStep + 1) / journeySteps.length) * 100}%`;
+            prevBtn.style.display = currentStep > 0 ? 'inline-block' : 'none';
+            nextBtn.textContent = (step.type === 'poll' && !step.revealed) ? 'Reveal Answer' : (currentStep === journeySteps.length - 1 ? 'Finish' : 'Next');
+        }
+        
+        window.showNexusModal = (id) => {
+            const data = modalData[id];
+            if (!data) return;
+            
+            let highlightsHTML = '';
+            if (data.highlights && data.highlights.length > 0) {
+                highlightsHTML = `<ul class="list-disc list-inside mt-4 text-gray-400 text-sm space-y-2">${data.highlights.map(h => `<li>${h}</li>`).join('')}</ul>`;
+            }
+
+            let infoBadges = '';
+            if (data.studentCount) {
+                infoBadges += `<span class="bg-blue-900 text-blue-300 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full">👥 ${data.studentCount} Students</span>`;
+            }
+            if (data.duration) {
+                infoBadges += `<span class="bg-purple-900 text-purple-300 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full">⏳ ${data.duration}</span>`;
+            }
+
+            modalContent.innerHTML = `
+                <h2 class="text-2xl font-bold bty-text-yellow mb-2">${data.title}</h2>
+                <div class="mb-4">${infoBadges}</div>
+                <p class="text-gray-300 text-base">${data.description || ''}</p>
+                ${highlightsHTML}
+            `;
+            nexusModal.classList.remove('hidden', 'opacity-0');
+        }
+
+        document.getElementById('beginBtn').addEventListener('click', () => { document.getElementById('start').classList.add('hidden'); document.getElementById('journey').classList.remove('hidden'); updateJourneyStep(); });
+        nextBtn.addEventListener('click', () => { 
+            const step = journeySteps[currentStep];
+            if (step.type === 'poll' && !step.revealed) { step.revealed = true; updateJourneyStep(); return; }
+            if (currentStep < journeySteps.length - 1) { currentStep++; updateJourneyStep(); } 
+            else {
+                journeyContent.innerHTML = `<div class="text-center fade-in"><h2 class="text-4xl md:text-6xl font-black bty-text-yellow mb-4">Your Journey Begins Now.</h2><p class="text-lg md:text-xl text-gray-200 mb-8">Thank you for exploring The Beatty Experience. <br>We invite you to join our family and discover where your aspirations will take you.</p><a href="https://www.beattysec.moe.edu.sg/" target="_blank" class="btn-primary">Visit Our Website</a></div>`;
+                setDoc(doc(db, "session", "state"), { currentView: 'end' });
+                prevBtn.style.display = 'none'; nextBtn.style.display = 'none'; progressBar.style.width = '100%';
+            }
+        });
+        prevBtn.addEventListener('click', () => { if (currentStep > 0) { journeySteps[currentStep].revealed = false; currentStep--; updateJourneyStep(); } });
+        document.getElementById('closeModalBtn').addEventListener('click', () => nexusModal.classList.add('hidden', 'opacity-0'));
+        
+        const presenterPanel = document.getElementById('presenterPanel');
+        if (new URLSearchParams(window.location.search).get('presenter') === 'true') { presenterPanel.classList.remove('hidden'); }
+        const customConfirmModal = document.getElementById('customConfirmModal');
+        document.getElementById('resetSessionBtn').addEventListener('click', () => { customConfirmModal.classList.remove('hidden', 'opacity-0'); });
+        document.getElementById('cancelResetBtn').addEventListener('click', () => { customConfirmModal.classList.add('hidden', 'opacity-0'); });
+        
+        function showToast(message, duration = 3000) { const toast = document.getElementById('notificationToast'); toast.textContent = message; toast.classList.add('show'); setTimeout(() => { toast.classList.remove('show'); }, duration); }
+        document.getElementById('confirmResetBtn').addEventListener('click', async () => {
+            if (document.getElementById('confirmResetInput').value !== 'RESET') { showToast('Input does not match. Reset cancelled.'); return; }
+            const collections = ['compassQuiz', 'polls', 'nexusVotes', 'aspirations', 'session'];
+            try {
+                for (const c of collections) { const snapshot = await getDocs(collection(db, c)); const batch = writeBatch(db); snapshot.forEach(doc => batch.delete(doc.ref)); await batch.commit(); }
+                customConfirmModal.classList.add('hidden', 'opacity-0'); showToast("Session Reset! Reloading..."); setTimeout(() => location.reload(), 1500);
+            } catch (error) { console.error("Error resetting session: ", error); showToast("Error resetting session. Check console."); }
+        });
+
+        let joinUrl = window.location.href.includes('btx.html') ? window.location.href.replace('btx.html', 'join.html') : new URL(window.location.href.replace(/\/[^/]*$/, '/join.html')).href;
+        new QRious({ element: document.getElementById('qr-code'), value: joinUrl, size: 200, foreground: 'var(--bty-blue)', background: '#FFFFFF' });
+    </script>
+</body>
+</html>
