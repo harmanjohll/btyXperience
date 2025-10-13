@@ -58,10 +58,11 @@
         @keyframes crest-glow { 0%, 100% { filter: drop-shadow(0 0 5px rgba(255, 226, 0, 0.2)); } 50% { filter: drop-shadow(0 0 20px rgba(255, 226, 0, 0.5)); } }
         
         .dream-card { position: relative; background-color: #1a202c; border-radius: 0.5rem; overflow: hidden; transition: transform 0.3s; }
-        .dream-card:hover { transform: translateY(-10px); }
-        .dream-card .dream-bg { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 0.5s ease-in-out; }
-        .dream-card:hover .dream-bg { opacity: 0.15; }
-        .dream-card-content { position: relative; z-index: 2; }
+        .dream-card:hover { transform: translateY(-10px) scale(1.05); }
+        .dream-card .dream-bg { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 0.5s ease-in-out, transform 0.5s; transform: scale(1.1); }
+        .dream-card:hover .dream-bg { opacity: 0.15; transform: scale(1); }
+        .dream-card-content { position: relative; z-index: 2; transition: transform 0.3s; }
+        .dream-card:hover .dream-card-content { transform: scale(1.1); }
     </style>
 </head>
 <body class="antialiased">
@@ -87,7 +88,7 @@
         </header>
 
         <section id="start" class="w-full max-w-5xl mx-auto fade-in">
-            <div class="text-center">
+            <div class="text-center pb-24">
                 <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/fc98005f3682a779482dd1bf5e7cff5f9adb8451/gem/BTlogo.png" alt="Beatty School Crest" class="h-32 w-auto mx-auto mb-4 crest-glow">
                 <p class="font-semibold text-gray-300 italic mb-2">Non Vi Sed Arte (Not with Force, but with Skill)</p>
                 <h1 class="text-5xl md:text-7xl font-black bty-text-yellow mb-2">Come On Board @ Beatty</h1>
@@ -289,11 +290,11 @@
             }).join('')}</div>`;
         }
 
-        function renderPollChart(pollData, data = { breakdown: {} }, isRevealed = false) {
-             const total = data.total || 0;
+        function renderPollChart(pollData, data, isRevealed = false) {
+            const total = (data && data.total) || 0;
             let pollHTML = `<h3 class="text-2xl font-semibold mb-6">${pollData.question}</h3>`;
             pollHTML += `<div class="space-y-4 max-w-3xl mx-auto">${pollData.options.map((opt, i) => {
-                const count = (data.breakdown && data.breakdown[i]) || 0;
+                const count = (data && data.breakdown && data.breakdown[i]) || 0;
                 const pct = total > 0 ? (count / total) * 100 : 0;
                 const isCorrect = i === pollData.correctAnswer;
                 const wrapperClass = isCorrect && isRevealed ? 'correct-answer-box' : '';
@@ -319,16 +320,16 @@
                     cloud.appendChild(el);
                 });
                 const elements = Array.from(cloud.children);
-                let angle = 0; let radius = 5;
-                elements.forEach((el) => {
-                    const t = angle / (elements.length * (0.5 + Math.random() * 0.2));
-                    let r = 1; if (t < 0.5) r = 0.5 + t; else r = 1 - (t - 0.5);
-                    const x = 50 + (radius * r) * Math.cos(angle) * 1.2;
-                    const y = 50 + (radius * r) * Math.sin(angle);
+                let angle = Math.random() * Math.PI * 2; 
+                let radius = elements.length > 0 ? 50 / Math.sqrt(elements.length) : 5;
+                elements.forEach((el, i) => {
+                    const x = 50 + radius * Math.cos(angle);
+                    const y = 50 + radius * Math.sin(angle);
                     el.style.left = `${x}%`; el.style.top = `${y}%`; el.style.opacity = '1';
-                    el.style.transform = `translate(-50%, -50%) scale(1) rotate(${Math.random() * 40 - 20}deg)`;
-                    el.style.fontSize = `${12 + Math.random() * 24}px`;
-                    angle += 0.5 + Math.random() * 0.2; radius += 1.5 + Math.random();
+                    el.style.transform = `translate(-50%, -50%) scale(1) rotate(${Math.random() * 30 - 15}deg)`;
+                    el.style.fontSize = `${14 + Math.random() * 28}px`;
+                    angle += (Math.PI * 2) / (elements.length + 1) + (Math.random() - 0.5) * 0.1;
+                    radius += (200 / elements.length);
                 });
             }, 100);
             return cloudHTML;
@@ -422,6 +423,13 @@
             renderer.domElement.addEventListener('pointerdown', onPointerDown);
             window.addEventListener('pointerup', onPointerUp);
             renderer.domElement.addEventListener('pointermove', onPointerMove);
+
+            // Add zoom functionality with mouse wheel
+            renderer.domElement.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                camera.position.z += e.deltaY * 0.005;
+                camera.position.z = Math.max(2.0, Math.min(camera.position.z, 6.0)); // Clamp zoom
+            });
             
             const controls = document.createElement('div');
             controls.className = 'globe-controls';
