@@ -1,5 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +6,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root { --bty-blue: #000C53; --bty-yellow: #FFE200; --bty-red: #EC3237; }
@@ -71,7 +68,7 @@
         <button id="resetSessionBtn" class="bg-yellow-400 text-blue-900 font-bold py-2 px-4 rounded hover:bg-white">Reset Live Session</button>
     </div>
 
-    <div id="customConfirmModal" class="confirm-modal-overlay hidden opacity-0"><div class="modal-content" style="text-align:center;"><h2 class="text-xl font-bold mb-4">Confirm Reset</h2><p class="text-gray-300 mb-6">This action is irreversible. To proceed, please type 'RESET' below.</p><input type="text" id="confirmResetInput" class="bg-gray-700 text-white p-2 rounded w-full mb-4" placeholder="RESET"><di><button id="cancelResetBtn" class="bg-gray-500 text-white font-bold py-2 px-6 rounded mr-2">Cancel</button><button id="confirmResetBtn" class="bg-red-600 text-white font-bold py-2 px-6 rounded">Confirm</button></div></div></div>
+    <div id="customConfirmModal" class="confirm-modal-overlay hidden opacity-0"><div class="modal-content" style="text-align:center;"><h2 class="text-xl font-bold mb-4">Confirm Reset</h2><p class="text-gray-300 mb-6">This action is irreversible. To proceed, please type 'RESET' below.</p><input type="text" id="confirmResetInput" class="bg-gray-700 text-white p-2 rounded w-full mb-4" placeholder="RESET"><div><button id="cancelResetBtn" class="bg-gray-500 text-white font-bold py-2 px-6 rounded mr-2">Cancel</button><button id="confirmResetBtn" class="bg-red-600 text-white font-bold py-2 px-6 rounded">Confirm</button></div></div></div>
     
     <div id="nexusModal" class="nexus-modal-overlay hidden opacity-0"><div class="modal-content relative max-w-2xl w-full !text-left !p-8"><button id="closeModalBtn" class="absolute top-4 right-4 text-gray-400 hover:text-white text-3xl leading-none">&times;</button><div id="modalContent"></div></div></div>
 
@@ -80,11 +77,32 @@
     <div class="container mx-auto p-4 md:p-8 min-h-screen flex flex-col items-center justify-center">
         <header class="absolute top-0 left-0 p-6"><h1 class="text-2xl font-black bty-text-yellow">BEATTY</h1><p class="text-sm text-gray-300 font-semibold">SECONDARY SCHOOL</p></header>
 
-        <section id="start" class="text-center w-full max-w-4xl mx-auto fade-in"><h1 class="text-4xl md:text-6xl font-black bty-text-yellow mb-4">The <b>B</b>ea<b>t</b>ty E<b>x</b>perience</h1><p class="text-lg md:text-xl text-gray-200 mb-8">Please scan the QR code with your phone to join the interactive session.</p><div class="flex justify-center"><div class="bg-white p-4 rounded-lg"><canvas id="qr-code"></canvas></div></div><p id="participant-count" class="mt-4 text-gray-400 text-sm">Waiting for you to join...</p><button id="beginBtn" class="btn-primary mt-12">Begin Journey</button></section>
+        <section id="start" class="text-center w-full max-w-4xl mx-auto fade-in">
+            <h1 class="text-4xl md:text-6xl font-black bty-text-yellow mb-4">The Beatty Experience</h1>
+            <p class="text-lg md:text-xl text-gray-200 mb-8">Please scan the QR code with your phone to join the interactive session.</p>
+            <div class="flex justify-center">
+                <div class="bg-white p-4 rounded-lg">
+                    <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/6896dfb0489f15d284c674573fea7605c984fa45/gem/joinbtyqr.png" alt="QR Code to Join Session" class="w-48 h-48">
+                </div>
+            </div>
+            <p id="participant-count" class="mt-4 text-gray-400 text-sm">Waiting for you to join...</p>
+            <button id="beginBtn" class="btn-primary mt-12">Begin Journey</button>
+        </section>
 
-        <section id="journey" class="hidden w-full max-w-6xl mx-auto"><div class="w-full bg-gray-700 rounded-full h-2.5 mb-8"><div id="progressBar" class="bty-bg-yellow h-2.5 rounded-full progress-bar-fill" style="width: 10%"></div></div><div id="journey-content"></div><div class="flex justify-between mt-12"><button id="prevBtn" class="btn-primary" style="background-color: #4A5568; display: none;">Previous</button><button id="nextBtn" class="btn-primary">Next</button></div></section>
+        <!-- HTML structure for the journey section is restored -->
+        <section id="journey" class="hidden w-full max-w-6xl mx-auto">
+            <div class="w-full bg-gray-700 rounded-full h-2.5 mb-8">
+                <div id="progressBar" class="bty-bg-yellow h-2.5 rounded-full progress-bar-fill" style="width: 10%"></div>
+            </div>
+            <div id="journey-content"></div>
+            <div class="flex justify-between mt-12">
+                <button id="prevBtn" class="btn-primary" style="background-color: #4A5568; display: none;">Previous</button>
+                <button id="nextBtn" class="btn-primary">Next</button>
+            </div>
+        </section>
     </div>
 
+    <!-- All JavaScript is now correctly placed inside the script tag -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, getDocs, writeBatch, onSnapshot, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -123,7 +141,6 @@
         const journeySteps = [
             { id: 'compass', type: 'chart', title: "Our Audience Compass", description: "This is a live reflection of our collective personality in the room today." },
             { id: 'values', type: 'static', title: "Our Foundation: The D.R.E.A.M. Values", content: `<div class="flex flex-wrap justify-center gap-4 text-center">${['Discipline', 'Resilience', 'Empathy', 'Adaptability', 'Mindfulness'].map(v => `<div class="p-4 bg-gray-800/50 rounded-lg w-40"><h3 class="text-5xl font-black bty-text-yellow">${v.charAt(0)}</h3><p class="mt-2 font-semibold text-gray-200">${v}</p></div>`).join('')}</div><p class="mt-8 text-center text-gray-400 italic">Motto: Non Vi Sed Arte (Not with force but with skill)</p>`},
-            // --- POLLS MOVED TO AFTER NEXUS INTRODUCTIONS ---
             { id: 'nexus_global', type: 'globe', title: "Chart Your Course: International Exchanges", description: "Click on a pin to learn more. Audience, please select your preferred exchange on your device.", 
                 nexusData: {
                     type: 'global',
@@ -139,7 +156,6 @@
             },
             { id: 'nexus_local', type: 'industry_map', title: "Your Future, Built in Singapore", description: "Explore our local industry attachments. Audience, please select your preferred attachment on your device.", 
                 localData: [
-                    // --- PINS SHIFTED UPWARD ---
                     { id: "Rockwell", name: "Rockwell", position: { x: 20, y: 47 }, color: "#ef4444" }, 
                     { id: "PIL", name: "PIL", position: { x: 50, y: 63 }, color: "#8b5cf6" },
                     { id: "Journalism", name: "BH", position: { x: 48, y: 43 }, color: "#06b6d4" }, 
@@ -167,7 +183,7 @@
                 answers: [
                     { text: "Three exchanges and three attachments" },
                     { text: "Five exchanges and five attachments" },
-                    { text: "Seven exchanges and seven attachments" } // Correct answer text for memento
+                    { text: "Seven exchanges and seven attachments" }
                 ]
             }},
             { id: 'poll_dream', type: 'poll', title: "Live Poll: Our Core Values", pollData: { 
@@ -181,7 +197,6 @@
                 correctAnswer: 1 
             }},
             { id: 'finale', type: 'finale', title: "Our Aspirations Crest", description: "Let's build a symbol of our collective future by submitting one word." },
-            // --- FINAL STEP CHANGED TO 'memento' ---
             { id: 'card', type: 'memento', title: "Your Journey Begins", description: "Please check your phone for your personalized Beatty Compass Card." }
         ];
 
@@ -215,7 +230,7 @@
                 case 'globe': return renderNexusGlobe(liveData.nexus);
                 case 'industry_map': return renderIndustryNexusMap(step.localData, liveData.nexus);
                 case 'finale': return renderAspirationsCrest(liveData.aspirations);
-                case 'card_qr': return `<div class="text-center text-2xl font-bold bty-text-yellow">Please check your phone!</div>`;
+                case 'memento': return `<div class="text-center text-2xl font-bold bty-text-yellow">Please check your phone!</div>`;
                 case 'static': return step.content;
                 default: return '';
             }
@@ -292,7 +307,6 @@
                 let count = 0;
                 for (const archetype in liveNexusData) { count += liveNexusData[archetype].breakdown[industry.id] || 0; }
                 const hasVotes = count > 0;
-                // HTML structure changed: label is now first for top positioning
                 return `<div class="pin sg-map-pin" style="left: ${industry.position.x}%; top: ${industry.position.y}%;" onclick="showNexusModal('${industry.id}')">
                             <div class="pin-label">${industry.name}</div>
                             <div class="pin-dot" style="background-color: ${industry.color}; transform: scale(${hasVotes ? 1.2 : 1});">
@@ -471,10 +485,6 @@
                 customConfirmModal.classList.add('hidden', 'opacity-0'); showToast("Session Reset! Reloading..."); setTimeout(() => location.reload(), 1500);
             } catch (error) { console.error("Error resetting session: ", error); showToast("Error resetting session. Check console."); }
         });
-
-        let joinUrl = window.location.href.includes('btx.html') ? window.location.href.replace('btx.html', 'join.html') : new URL(window.location.href.replace(/\/[^/]*$/, '/join.html')).href;
-        new QRious({ element: document.getElementById('qr-code'), value: joinUrl, size: 200, foreground: 'var(--bty-blue)', background: '#FFFFFF' });
     </script>
 </body>
-
 </html>
