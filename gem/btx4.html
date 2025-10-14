@@ -57,12 +57,16 @@
         .crest-glow { animation: crest-glow 4s ease-in-out infinite; }
         @keyframes crest-glow { 0%, 100% { filter: drop-shadow(0 0 5px rgba(255, 226, 0, 0.2)); } 50% { filter: drop-shadow(0 0 20px rgba(255, 226, 0, 0.5)); } }
         
-        .dream-card { position: relative; background-color: #1a202c; border-radius: 0.5rem; overflow: hidden; transition: transform 0.3s; }
-        .dream-card:hover { transform: translateY(-10px) scale(1.05); }
-        .dream-card .dream-bg { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 0.5s ease-in-out, transform 0.5s; transform: scale(1.1); }
-        .dream-card:hover .dream-bg { opacity: 0.15; transform: scale(1); }
-        .dream-card-content { position: relative; z-index: 2; transition: transform 0.3s; }
-        .dream-card:hover .dream-card-content { transform: scale(1.1); }
+        .dream-card-container { perspective: 1000px; cursor: pointer; }
+        .dream-card { position: relative; width: 100%; height: 100%; transition: transform 0.8s; transform-style: preserve-3d; }
+        .dream-card.is-flipped { transform: rotateY(180deg); }
+        .dream-card-front, .dream-card-back { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; border: 1px solid #4A5568; }
+        .dream-card-front { background-color: #1a202c; overflow: hidden; }
+        .dream-card-back { background-color: #2d3748; transform: rotateY(180deg); padding: 1rem; text-align: left; font-size: 0.8rem; line-height: 1.4; flex-direction: column; justify-content: start; }
+        .dream-card-back ul { list-style-type: '✔ '; padding-left: 1rem; }
+        .dream-card-back li { margin-bottom: 0.5rem; }
+        .dream-bg { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 0.4s ease-in-out; }
+        .dream-card-container:hover .dream-bg { opacity: 0.15; }
     </style>
 </head>
 <body class="antialiased">
@@ -181,36 +185,31 @@
         };
 
         const dreamValues = [
-            { name: 'Discipline', img: 'https://raw.githubusercontent.com/harmanjohll/btyXperience/570c03c522bce9cbcd8946d0d9cfa42c6d4537bc/gem/Discipline.png' },
-            { name: 'Resilience', img: 'https://raw.githubusercontent.com/harmanjohll/btyXperience/570c03c522bce9cbcd8946d0d9cfa42c6d4537bc/gem/Resilience.png' },
-            { name: 'Empathy', img: 'https://raw.githubusercontent.com/harmanjohll/btyXperience/570c03c522bce9cbcd8946d0d9cfa42c6d4537bc/gem/Empathy.png' },
-            { name: 'Adaptability', img: 'https://raw.githubusercontent.com/harmanjohll/btyXperience/570c03c522bce9cbcd8946d0d9cfa42c6d4537bc/gem/Adaptability.png' },
-            { name: 'Mindfulness', img: 'https://raw.githubusercontent.com/harmanjohll/btyXperience/570c03c522bce9cbcd8946d0d9cfa42c6d4537bc/gem/Mindfulness.png' }
+            { name: 'Discipline', img: 'https://raw.githubusercontent.com/harmanjohll/btyXperience/570c03c522bce9cbcd8946d0d9cfa42c6d4537bc/gem/Discipline.png', points: ["Purposeful in thoughts and actions", "Demonstrates self-control", "Focused in pursuit of goals"] },
+            { name: 'Resilience', img: 'https://raw.githubusercontent.com/harmanjohll/btyXperience/570c03c522bce9cbcd8946d0d9cfa42c6d4537bc/gem/Resilience.png', points: ["Recovers from misfortune", "Persistent through challenges", "Courageous in overcoming adversity"] },
+            { name: 'Empathy', img: 'https://raw.githubusercontent.com/harmanjohll/btyXperience/570c03c522bce9cbcd8946d0d9cfa42c6d4537bc/gem/Empathy.png', points: ["Understands feelings of others", "Shows care and concern", "An active contributor"] },
+            { name: 'Adaptability', img: 'https://raw.githubusercontent.com/harmanjohll/btyXperience/570c03c522bce9cbcd8946d0d9cfa42c6d4537bc/gem/Adaptability.png', points: ["Adjusts to new conditions", "A versatile and agile learner", "Open to new ideas"] },
+            { name: 'Mindfulness', img: 'https://raw.githubusercontent.com/harmanjohll/btyXperience/570c03c522bce9cbcd8946d0d9cfa42c6d4537bc/gem/Mindfulness.png', points: ["Aware of thoughts and emotions", "A self-directed learner", "Reflects and learns from experience"] }
         ];
         
         const journeySteps = [
             { id: 'compass', type: 'chart', title: "Our Audience Compass", description: "This is a live reflection of our collective personality in the room today." },
-            { id: 'values', type: 'static', title: "Our Foundation: The D.R.E.A.M. Values", content: `<div class="flex flex-wrap justify-center gap-6 text-center">${dreamValues.map(v => `<div class="dream-card w-48 h-48 flex items-center justify-center p-4 border border-gray-700"><div class="dream-bg" style="background-image: url('${v.img}')"></div><div class="dream-card-content"><h3 class="text-5xl font-black bty-text-yellow">${v.name.charAt(0)}</h3><p class="mt-2 font-semibold text-gray-200">${v.name}</p></div></div>`).join('')}</div><p class="mt-8 text-center text-gray-400 italic">Motto: Non Vi Sed Arte (Not with force but with skill)</p>`},
-            { id: 'poll_cca', type: 'poll', title: "Live Poll: Pursuing Passions", pollData: { 
+            { id: 'values', type: 'static', title: "Our Foundation: The D.R.E.A.M. Values", description: "Hover to see the image, click to see the details.", content: `<div class="flex flex-wrap justify-center gap-6 text-center">${dreamValues.map(v => `<div class="dream-card-container w-48 h-48"><div class="dream-card"><div class="dream-card-front"><div class="dream-bg" style="background-image: url('${v.img}')"></div><div class="relative z-10 text-center"><h3 class="text-5xl font-black bty-text-yellow">${v.name.charAt(0)}</h3><p class="mt-2 font-semibold text-gray-200">${v.name}</p></div></div><div class="dream-card-back"><ul>${v.points.map(p=>`<li>${p}</li>`).join('')}</ul></div></div></div>`).join('')}</div><p class="mt-8 text-center text-gray-400 italic">Motto: Non Vi Sed Arte (Not with force but with skill)</p>`},
+            { id: 'poll_cca', type: 'poll', title: "Live Poll: Pursuing Passions", description: "", pollData: { 
                 id: 'cca', 
                 question: "What % of students get their 1st or 2nd choice CCA?", 
                 options: ["50%", "70%", "90%", "100%"], 
                 correctAnswer: 2,
                 insight: "This means 9 out of 10 Beattyians pursue their passions!"
             }},
-            { id: 'poll_dream', type: 'poll', title: "Live Poll: Our Core Values", pollData: { 
+            { id: 'poll_dream', type: 'poll', title: "Live Poll: Our Core Values", description: "", pollData: { 
                 id: 'dream', 
                 question: "What does D.R.E.A.M. stand for in Beatty's core values?", 
-                options: [
-                    "Discipline, Respect, Excellence, Achievement, Mindfulness", 
-                    "Discipline, Resilience, Empathy, Adaptability, Mindfulness", 
-                    "Diligence, Respect, Empathy, Adaptability, Mastery",
-                    "Determination, Resilience, Excellence, Ambition, Mindfulness"
-                ], 
+                options: [ "Discipline, Respect, Excellence, Achievement, Mindfulness", "Discipline, Resilience, Empathy, Adaptability, Mindfulness", "Diligence, Respect, Empathy, Adaptability, Mastery", "Determination, Resilience, Excellence, Ambition, Mindfulness" ], 
                 correctAnswer: 1,
                 insight: "D.R.E.A.M. - Discipline, Resilience, Empathy, Adaptability, Mindfulness - guides every Beattyian's journey to success!"
             }},
-            { id: 'poll_nexus_count', type: 'poll', title: "Live Poll: Our Opportunities", pollData: { 
+            { id: 'poll_nexus_count', type: 'poll', title: "Live Poll: Our Opportunities", description: "", pollData: { 
                 id: 'nexus_count', 
                 question: "How many international exchanges and industry attachments does Beatty offer?", 
                 options: ["None", "3 & 3", "7 & 7", "10 & 15"], 
@@ -231,7 +230,7 @@
                 ],
                 nexusData: { type: 'local', options: [ {id: 'Rockwell', text: 'Engineering @ Rockwell Automation'}, {id: 'PIL', text: 'Maritime Sustainability @ PIL'}, {id: 'Journalism', text: 'Media & Journalism @ Berita Harian'}, {id: 'TamilMurasu', text: 'Media & Journalism @ Tamil Murasu'}, {id: 'Makita', text: 'Mechatronics @ ITE West & Makita'}, {id: 'ASTAR', text: 'Research @ A*STAR'} ] }
             },
-            { id: 'poll_industry', type: 'poll', title: "Live Poll: Our Pathways", pollData: {
+            { id: 'poll_industry', type: 'poll', title: "Live Poll: Our Pathways", description: "", pollData: {
                 id: 'industry',
                 question: "Which is NOT an area that students can dive deeper into?",
                 options: ["Sustainability", "Journalism & Media", "Engineering & AI", "None of the Above"],
@@ -424,11 +423,10 @@
             window.addEventListener('pointerup', onPointerUp);
             renderer.domElement.addEventListener('pointermove', onPointerMove);
 
-            // Add zoom functionality with mouse wheel
             renderer.domElement.addEventListener('wheel', (e) => {
                 e.preventDefault();
                 camera.position.z += e.deltaY * 0.005;
-                camera.position.z = Math.max(2.0, Math.min(camera.position.z, 6.0)); // Clamp zoom
+                camera.position.z = Math.max(2.0, Math.min(camera.position.z, 6.0)); 
             });
             
             const controls = document.createElement('div');
@@ -477,7 +475,19 @@
             const step = journeySteps[currentStep];
             setDoc(doc(db, "session", "state"), { currentView: step.type, pollData: step.pollData || null, nexusData: step.nexusData || null, localData: step.localData || null });
             const contentHTML = renderContent(step);
-            if (contentHTML) { journeyContent.innerHTML = `<div class="text-center fade-in"><h2 class="text-3xl md:text-5xl font-black bty-text-yellow mb-4">${step.title}</h2><p class="text-md md:text-lg text-gray-300 max-w-3xl mx-auto mb-8">${step.description}</p>${contentHTML}</div>`; }
+            const descriptionHTML = (typeof step.description === 'string' && step.description.length > 0) 
+                ? `<p class="text-md md:text-lg text-gray-300 max-w-3xl mx-auto mb-8">${step.description}</p>` 
+                : '';
+            if (contentHTML) { journeyContent.innerHTML = `<div class="text-center fade-in"><h2 class="text-3xl md:text-5xl font-black bty-text-yellow mb-4">${step.title}</h2>${descriptionHTML}${contentHTML}</div>`; }
+            
+            // Re-attach listeners for dynamically created cards
+             if (step.id === 'values') {
+                const dreamCards = journeyContent.querySelectorAll('.dream-card');
+                dreamCards.forEach(card => {
+                    card.addEventListener('click', () => card.classList.toggle('is-flipped'));
+                });
+            }
+
             progressBar.style.width = `${((currentStep + 1) / journeySteps.length) * 100}%`;
             prevBtn.style.display = currentStep > 0 ? 'inline-block' : 'none';
             nextBtn.textContent = (step.type === 'poll' && !step.revealed) ? 'Reveal Answer' : (currentStep === journeySteps.length - 1 ? 'Finish' : 'Next');
