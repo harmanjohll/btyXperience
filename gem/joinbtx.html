@@ -20,7 +20,7 @@
         .slide-in { animation: slideIn 0.5s ease-in-out; }
         @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         #memento-card {
-             background-color: #1a202c; /* A dark slate for canvas background */
+             background-color: #1a202c;
              background-image: 
                 radial-gradient(circle at 100% 0%, rgba(255, 226, 0, 0.1) 0%, transparent 30%),
                 radial-gradient(circle at 0% 100%, rgba(0, 12, 83, 0.5) 0%, transparent 40%);
@@ -43,14 +43,28 @@
         try { app = initializeApp(firebaseConfig); db = getFirestore(app); auth = getAuth(app); await signInAnonymously(auth); listenToSessionState(); } catch (e) { console.error("Firebase init failed:", e); renderError("Connection Error", "Could not connect. Please try again."); }
         
         const appContainer = document.getElementById('app');
-        let userData = JSON.parse(localStorage.getItem('btyxUserData')) || {};
+        let userData = JSON.parse(localStorage.getItem('btyxUserData_v4_final')) || {};
         let currentQuestionIndex = 0;
-        const userScores = { innovator: 0, leader: 0, steward: 0, analyst: 0, explorer: 0, creator: 0, performer: 0 };
+        const quizChoices = [];
+
+        // --- Final V4.1 Data Structures ---
+        const archetypes = {
+            "The Innovator": { color: "#f59e0b", quote: "Machine Learning opened my eyes to what's possible. Now I use data to build solutions for real problems.", description: "You are driven by technology, using data and problem-solving to build new and better ways to do things." , recommendations: ["A.I. @ South Korea", "Engineering @ Rockwell Automation"]},
+            "The Global Explorer": { color: "#10b981", quote: "Studying abroad taught me that leadership transcends borders. Every culture has wisdom to share.", description: "You have a deep cultural curiosity and a desire to understand the world through international exchange." , recommendations: ["Leadership @ New Zealand", "Social Sciences @ Mihara, Japan"]},
+            "The Industry Trailblazer": { color: "#3b82f6", quote: "My industry attachment showed me engineering isn't just theory - it's changing lives every day.", description: "You are focused on practical application and making a real-world impact through hands-on industry experience.", recommendations: ["Mechatronics @ ITE West & Makita", "Maritime Sustainability @ PIL"] },
+            "The Community Steward": { color: "#ef4444", quote: "D.R.E.A.M. isn't just our values - it's how we lift each other up. That's true leadership.", description: "You are motivated by community service, mentorship, and empowering others to achieve their best.", recommendations: ["Leading school initiatives", "Mentoring junior students"] },
+            "The Creative Artist": { color: "#ec4899", quote: "Through Symphony of Dreams, I learned my voice matters. Art changes hearts.", description: "You find energy in performance, artistic expression, and bringing creative visions to life.", recommendations: ["Geography/Literature @ Bali", "Symphony of Dreams (CCA)"] },
+            "The STEM Futurist": { color: "#8b5cf6", quote: "Science isn't about memorizing facts - it's the thrill of discovery, of using data to prove the impossible possible.", description: "You thrive on research, data analysis, and systematic investigation to solve complex problems and shape the future.", recommendations: ["Research @ A*STAR", "Cybersecurity @ Estonia"] },
+            "The Voice Amplifier": { color: "#06b6d4", quote: "Journalism taught me every story deserves to be told. Your voice can change the world.", description: "You are passionate about journalism, storytelling, and advocating for important ideas.", recommendations: ["Media & Journalism @ Berita Harian", "Media & Journalism @ Tamil Murasu"] },
+            "The Eco-Strategist": { color: "#22c55e", quote: "We don't inherit the Earth from our ancestors; we borrow it from our children.", description: "You are passionate about finding sustainable solutions, analyzing environmental systems, and advocating for a greener future.", recommendations: ["Sustainability @ New Zealand", "Developing green campaigns"] }
+        };
 
         const quizQuestions = [
-            { question: "Your team faces a tough challenge. Your first instinct is to...", options: [ { text: "...brainstorm a new, tech-driven solution.", archetypes: ["innovator"] }, { text: "...organize the team and create a clear plan.", archetypes: ["leader"] }, { text: "...ensure the solution helps the community.", archetypes: ["steward"] }, { text: "...research the problem's root cause.", archetypes: ["analyst"] } ] },
-            { question: "You have a free afternoon to start a project. You choose to...", options: [ { text: "...explore a new place or culture online.", archetypes: ["explorer"] }, { text: "...write a story or design a piece of art.", archetypes: ["creator"] }, { text: "...practice a speech or a musical piece.", archetypes: ["performer"] }, { text: "...take apart an old gadget to see how it works.", archetypes: ["innovator"] } ] },
-            { question: "You're most energized when you are...", options: [ { text: "...discovering something no one else has noticed.", archetypes: ["analyst", "explorer"] }, { text: "...leading a group to a successful outcome.", archetypes: ["leader"] }, { text: "...making a positive impact on others.", archetypes: ["steward"] }, { text: "...expressing your ideas for an audience.", archetypes: ["creator", "performer"] } ] }
+            { question: "When facing a challenge, I first...", options: [ { text: "Look for a tech solution", archetype: "The Innovator" }, { text: "Seek different perspectives", archetype: "The Global Explorer" }, { text: "Consider real applications", archetype: "The Industry Trailblazer" }, { text: "Think who needs help", archetype: "The Community Steward" }, { text: "Imagine a creative response", archetype: "The Creative Artist" }, { text: "Analyze patterns", archetype: "The STEM Futurist" }, { text: "Ask what story matters", archetype: "The Voice Amplifier" }, { text: "Assess the environmental impact", archetype: "The Eco-Strategist" }] },
+            { question: "I feel most energized when...", options: [ { text: "Building something new", archetype: "The Innovator" }, { text: "Learning about cultures", archetype: "The Global Explorer" }, { text: "Seeing my work in action", archetype: "The Industry Trailblazer" }, { text: "Helping others grow", archetype: "The Community Steward" }, { text: "Performing or creating", archetype: "The Creative Artist" }, { text: "Solving complex puzzles", archetype: "The STEM Futurist" }, { text: "Sharing important ideas", archetype: "The Voice Amplifier" }, { text: "Working on a green initiative", archetype: "The Eco-Strategist" }] },
+            { question: "My ideal Beatty experience includes...", options: [ { text: "Machine Learning projects", archetype: "The Innovator" }, { text: "International exchanges", archetype: "The Global Explorer" }, { text: "Industry attachments", archetype: "The Industry Trailblazer" }, { text: "Leading initiatives", archetype: "The Community Steward" }, { text: "Symphony of Dreams", archetype: "The Creative Artist" }, { text: "Science research", archetype: "The STEM Futurist" }, { text: "Journalism opportunities", archetype: "The Voice Amplifier" }, { text: "A school-wide sustainability project", archetype: "The Eco-Strategist" }] },
+            { question: "I learn best by...", options: [ { text: "Tinkering, experimenting, and building prototypes.", archetype: "The Innovator" }, { text: "Immersing myself in new environments and talking to people.", archetype: "The Global Explorer" }, { text: "Working on real-world projects with professionals.", archetype: "The Industry Trailblazer" }, { text: "Leading a group and learning from my team.", archetype: "The Community Steward" }, { text: "Practicing, rehearsing, and expressing my ideas.", archetype: "The Creative Artist" }, { text: "Conducting deep research and finding evidence.", archetype: "The STEM Futurist" }, { text: "Interviewing experts and telling their stories.", archetype: "The Voice Amplifier" }, { text: "Analyzing systems and finding ways to improve them for the planet.", archetype: "The Eco-Strategist" }] },
+            { question: "For me, a successful future is one where I am...", options: [ { text: "Creating technology that changes how we live.", archetype: "The Innovator" }, { text: "Building bridges between different cultures.", archetype: "The Global Explorer" }, { text: "At the top of my chosen industry.", archetype: "The Industry Trailblazer" }, { text: "Lifting up my community and making a difference.", archetype: "The Community Steward" }, { text: "Inspiring people through my creative work.", archetype: "The Creative Artist" }, { text: "Contributing to the world's knowledge and understanding.", archetype: "The STEM Futurist" }, { text: "Giving a voice to the voiceless.", archetype: "The Voice Amplifier" }, { text: "Helping to create a more sustainable world.", archetype: "The Eco-Strategist" }] }
         ];
         
         function listenToSessionState() {
@@ -58,38 +72,26 @@
                 if (doc.exists()) {
                     renderView(doc.data());
                 } else {
-                    // --- LOGIC CHANGE ---
-                    // If the session is over, but the user finished, show their memento card.
-                    if (userData.aspiration) {
-                        renderMementoCard();
-                    } else if (!userData.archetype) {
-                        renderQuizQuestion();
-                    } else {
-                        renderWaiting(`Waiting for the presentation to begin... You are logged in as a <strong class="text-yellow-300">${userData.archetype}</strong>.`);
-                    }
+                    if (userData.aspiration) { renderMementoCard(); } 
+                    else if (!userData.archetype) { renderQuizQuestion(); } 
+                    else { renderWaiting(`Waiting for the presentation to begin... You are logged in as a <strong class="text-yellow-300">${userData.archetype}</strong>.`); }
                 }
             });
         }
         
         function renderView(state) {
             if (!userData.archetype) { renderQuizQuestion(); return; }
-
             switch(state.currentView) {
                 case 'poll':
                     if (userData.polls && userData.polls[state.pollData.id] !== undefined) renderWaiting(`You have voted. Please watch the main screen.`);
                     else renderPoll(state.pollData);
                     break;
-                case 'globe':
-                case 'industry_map':
+                case 'globe': case 'industry_map':
                     if (userData[state.nexusData.type]) renderWaiting(`Your choice is on the map! Please watch the main screen.`);
                     else renderNexus(state.nexusData);
                     break;
-                case 'finale':
-                     renderAspirationInput();
-                     break;
-                case 'memento':
-                    renderMementoCard(state);
-                    break;
+                case 'finale': renderAspirationInput(); break;
+                case 'memento': case 'end': renderMementoCard(); break;
                 default:
                     renderWaiting(`Please watch the main screen for the next interaction. You are a <strong class="text-yellow-300">${userData.archetype}</strong>.`);
             }
@@ -99,12 +101,12 @@
             if (currentQuestionIndex >= quizQuestions.length) { determineArchetype(); return; }
             const questionData = quizQuestions[currentQuestionIndex];
             appContainer.innerHTML = `
-                <div class="w-full max-w-md text-center fade-in">
+                <div class="w-full max-w-lg text-center fade-in">
                     <p class="text-sm font-semibold text-yellow-300 mb-2">Beatty Compass Quiz (${currentQuestionIndex + 1}/${quizQuestions.length})</p>
                     <h2 class="text-2xl font-bold mb-8">${questionData.question}</h2>
-                    <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-3">
                         ${questionData.options.map((opt) => `
-                            <button data-archetypes='${JSON.stringify(opt.archetypes)}' class="action-option w-full text-left p-4 bg-gray-800/50 border border-gray-700 rounded-lg">
+                            <button data-archetype='${opt.archetype}' class="action-option w-full h-full text-left p-4 bg-gray-800/50 border border-gray-700 rounded-lg text-sm flex items-center justify-center">
                                 ${opt.text}
                             </button>
                         `).join('')}
@@ -112,15 +114,19 @@
                 </div>`;
         }
         
-        function handleQuizAnswer(archetypes) {
-            archetypes.forEach(arc => userScores[arc]++);
+        function handleQuizAnswer(archetype) {
+            quizChoices.push(archetype);
             currentQuestionIndex++;
             renderQuizQuestion();
         }
 
         async function determineArchetype() {
-            let maxScore = -1, finalArchetype = 'Innovator';
-            for (const type in userScores) { if (userScores[type] > maxScore) { maxScore = userScores[type]; finalArchetype = type.charAt(0).toUpperCase() + type.slice(1); } }
+            const counts = {};
+            for (const choice of quizChoices) { counts[choice] = (counts[choice] || 0) + 1; }
+            let maxCount = 0;
+            let finalArchetype = "The Innovator";
+            for (const archetype in counts) { if (counts[archetype] > maxCount) { maxCount = counts[archetype]; finalArchetype = archetype; } }
+            
             userData.archetype = finalArchetype;
             saveUserData();
             await setDoc(doc(db, "compassQuiz", auth.currentUser.uid), { archetype: userData.archetype, timestamp: serverTimestamp() });
@@ -147,10 +153,10 @@
             const choiceIndex = parseInt(optionIndex);
             userData.polls[pollId] = {
                 choice: choiceIndex,
-                isCorrect: choiceIndex === pollData.correctAnswer
+                isCorrect: choiceIndex === pollData.correctAnswer,
+                insight: pollData.insight
             };
             saveUserData();
-
             await setDoc(doc(db, "polls", `${pollId}_${auth.currentUser.uid}`), { pollId: pollId, vote: choiceIndex, timestamp: serverTimestamp() });
             renderWaiting("Thank you! Please watch the main screen.");
         }
@@ -173,7 +179,7 @@
         async function handleNexusChoice(nexusId, nexusType, nexusText) {
             userData[nexusType] = { id: nexusId, text: nexusText };
             saveUserData();
-            await setDoc(doc(db, "nexusVotes", auth.currentUser.uid), { nexusId: nexusId, archetype: userData.archetype, timestamp: serverTimestamp() });
+            await setDoc(doc(db, "nexusVotes", auth.currentUser.uid), { nexusId: nexusId, timestamp: serverTimestamp() });
             renderWaiting("Your choice is on the map! Look at the main screen.");
         }
         
@@ -201,42 +207,40 @@
             }
         }
 
-        function renderMementoCard(sessionState) {
-            const pollNexus = userData.polls?.nexus_count;
+        function renderMementoCard() {
+            const archetypeData = archetypes[userData.archetype];
+            if (!archetypeData) { renderError("Error", "Could not load your profile."); return; }
             
-            let nexusResultText = "Beatty has been progressive, and continues to make headway in developing more partnerships for the benefit of students. Today, we have seven international exchanges and seven industry attachments.";
-            if (pollNexus?.isCorrect) {
-                nexusResultText = "And you got it right! Beatty offers an incredible seven international exchanges and seven industry attachments, opening a world of possibilities for your child.";
-            }
-
-            const dreamResultText = "At Beatty, we believe gifts turn to talents when we exercise Discipline, Resilience, Empathy, Adaptability, and Mindfulness. These values allow everyone to D.R.E.A.M. big and turn those dreams into reality.";
-            
-            const archetypeDescriptions = {
-                Innovator: 'a spirit of ingenuity and vision',
-                Leader: 'a spirit of influence and direction',
-                Steward: 'a spirit of service and care',
-                Analyst: 'a spirit of inquiry and precision',
-                Explorer: 'a spirit of adventure and discovery',
-                Creator: 'a spirit of imagination and expression',
-                Performer: 'a spirit of charisma and connection'
-            };
+            let insightsHTML = Object.values(userData.polls || {}).map(poll => `<p class="border-l-2 border-yellow-400/50 pl-2">${poll.insight}</p>`).join('');
 
             appContainer.innerHTML = `
                 <div class="w-full max-w-md text-center fade-in">
-                    <div id="memento-card" class="bg-gray-800 border-2 border-yellow-400 rounded-2xl p-6 text-left shadow-2xl">
-                        <h1 class="text-2xl font-black text-yellow-400">BEATTY</h1>
-                        <p class="text-sm text-gray-300 font-semibold mb-4">Your Compass Card</p>
+                    <div id="memento-card" class="bg-gray-800 border-2 rounded-2xl p-6 text-left shadow-2xl" style="border-color:${archetypeData.color};">
+                        <div class="flex items-center gap-4 mb-4">
+                             <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/fc98005f3682a779482dd1bf5e7cff5f9adb8451/gem/BTlogo.png" alt="Beatty Crest" class="h-12 w-12">
+                            <div>
+                                <h1 class="text-2xl font-black" style="color:${archetypeData.color};">${userData.archetype}</h1>
+                                <p class="text-sm text-gray-300 font-semibold">Your Beatty Compass Card</p>
+                            </div>
+                        </div>
                         
-                        <p class="text-base mb-3">Your compass reveals you are a natural <strong class="font-bold text-yellow-300">${userData.archetype}</strong>. This suggests ${archetypeDescriptions[userData.archetype] || 'a unique spirit'}.</p>
-                        
-                        <p class="text-base mb-3">Your interest in <strong class="font-bold text-yellow-300">${userData.global?.text || 'global opportunities'}</strong> and <strong class="font-bold text-yellow-300">${userData.local?.text || 'local industry'}</strong> shows your readiness to take on the world.</p>
-                        
-                        <div class="text-xs bg-blue-900/50 p-3 rounded-lg my-3 space-y-2">
-                           <p>${nexusResultText}</p>
-                           <p>${dreamResultText}</p>
+                        <div class="bg-black/20 p-3 rounded-lg">
+                            <p class="text-base italic">"${archetypeData.quote}"</p>
                         </div>
 
-                        <p class="text-center mt-4">Your aspiration: <strong class="text-2xl font-black text-yellow-300 block">"${userData.aspiration || 'Your Future'}"</strong></p>
+                        <p class="text-sm my-4">${archetypeData.description}</p>
+                        
+                        <div class="text-xs bg-blue-900/50 p-3 rounded-lg my-3 space-y-2">
+                           <h4 class="font-bold text-yellow-400">Your Insights:</h4>
+                           ${insightsHTML || '<p>You explored the Beatty Experience!</p>'}
+                        </div>
+                        
+                        <div class="text-xs bg-blue-900/50 p-3 rounded-lg my-3 space-y-2">
+                            <h4 class="font-bold text-yellow-400">Recommended Pathways:</h4>
+                            <p>${archetypeData.recommendations.join(' • ')}</p>
+                        </div>
+
+                        <p class="text-center mt-4">Your Aspiration: <strong class="text-2xl font-black block" style="color:${archetypeData.color};">"${userData.aspiration || 'Your Future'}"</strong></p>
                     </div>
                     <button id="downloadCardBtn" class="mt-6 w-full p-3 bg-yellow-400 text-blue-900 font-bold rounded-lg">Download Your Compass Card</button>
                     <p class="text-xs text-gray-400 mt-2">A memento of your journey with us today.</p>
@@ -249,7 +253,7 @@
             btn.textContent = "Generating...";
             btn.disabled = true;
 
-            html2canvas(card, { backgroundColor: '#1A202C', scale: 2 }).then(canvas => {
+            html2canvas(card, { backgroundColor: '#1a202c', scale: 3 }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = 'Beatty-Compass-Card.png';
                 link.href = canvas.toDataURL('image/png');
@@ -263,13 +267,13 @@
             });
         }
 
-        function saveUserData() { localStorage.setItem('btyxUserData', JSON.stringify(userData)); }
+        function saveUserData() { localStorage.setItem('btyxUserData_v4_final', JSON.stringify(userData)); }
 
         function renderResult(archetype) {
             appContainer.innerHTML = `
                 <div class="w-full max-w-md text-center slide-in">
                     <h2 class="text-xl font-bold mb-2">Your Compass is Pointing!</h2>
-                    <p class="text-5xl font-black text-yellow-300 my-4">${archetype}</p>
+                    <p class="text-5xl font-black my-4" style="color: ${archetypes[archetype].color}">${archetype}</p>
                     <p class="text-gray-300 mb-6">Thank you! Your result has been shared. Please wait for the presentation to begin.</p>
                     <button id="retakeQuizBtn" class="text-sm text-gray-400 underline hover:text-white">Not you? Retake the quiz.</button>
                 </div>`;
@@ -278,11 +282,7 @@
         function renderWaiting(message) {
             appContainer.innerHTML = `
                 <div class="w-full max-w-md text-center slide-in">
-                     <div class="animate-pulse">
-                         <svg class="mx-auto h-12 w-12 text-yellow-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                         </svg>
-                     </div>
+                     <div class="animate-pulse"><svg class="mx-auto h-12 w-12 text-yellow-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
                      <p class="mt-4 text-lg font-semibold">${message}</p>
                      <button id="retakeQuizBtn" class="mt-6 text-sm text-gray-400 underline hover:text-white">Click here to retake the quiz.</button>
                  </div>`;
@@ -293,8 +293,7 @@
         }
 
         function retakeQuiz() {
-            localStorage.removeItem('btyxUserData');
-            // Clear relevant documents from firestore if needed, then reload.
+            localStorage.removeItem('btyxUserData_v4_final');
             location.reload();
         }
 
@@ -307,10 +306,9 @@
             if (target.id === 'submitAspiration') { handleAspirationSubmit(); return; }
 
             const pollContainer = target.closest('[data-poll-data]');
-
             target.disabled = true;
 
-            if (target.dataset.archetypes) handleQuizAnswer(JSON.parse(target.dataset.archetypes));
+            if (target.dataset.archetype) handleQuizAnswer(target.dataset.archetype);
             else if (target.dataset.pollId && pollContainer) handlePollAnswer(target.dataset.pollId, target.dataset.optionIndex, JSON.parse(pollContainer.dataset.pollData));
             else if (target.dataset.nexusId) handleNexusChoice(target.dataset.nexusId, target.dataset.nexusType, target.dataset.nexusText);
         });
