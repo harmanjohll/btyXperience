@@ -261,7 +261,10 @@
                 const key = data[groupBy] || 'default';
                 if (!results[key]) results[key] = { total: 0, breakdown: {} };
                 results[key].total++;
-                results[key].breakdown[data[property]] = (results[key].breakdown[data[property]] || 0) + 1;
+                // FIX: Add check to ensure data property exists before incrementing
+                if (data[property] !== undefined && data[property] !== null) {
+                    results[key].breakdown[data[property]] = (results[key].breakdown[data[property]] || 0) + 1;
+                }
             });
             liveData[dataType] = results;
             participantCountEl.textContent = `${liveData.compass?.default?.total || 0} participant(s) have joined!`;
