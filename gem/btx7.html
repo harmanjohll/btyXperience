@@ -246,43 +246,45 @@
             { id: 'card', type: 'memento', title: "Your Journey Begins", description: "Please check your phone for your personalized Beatty Compass Card." }
         ];
 
-        // --- FIX START: Centralized logic for updating the UI on data change ---
-        function handleDataUpdate(dataType) {
-            const currentStepType = journeySteps[currentStep]?.type;
-            const relevantTypes = {
-                'poll': ['poll'],
-                'nexus': ['globe', 'industry_map'],
-                'finale': ['finale']
-            };
-
-            if (relevantTypes[dataType] && relevantTypes[dataType].includes(currentStepType)) {
-                updateJourneyStep();
-            }
-        }
-
+        // --- ROBUST FIX: Simplified, direct-check listeners ---
         function initializeListeners() {
             onSnapshot(collection(db, "compassQuiz"), snap => {
                 handleSnapshot(snap, 'compass', 'archetype');
-                // Compass chart is the first step, so an update here is always relevant if visible
-                if(currentStep === 0) updateJourneyStep();
+                // Update participant count on start screen
+                if (document.getElementById('start').classList.contains('hidden') === false) {
+                     participantCountEl.textContent = `${liveData.compass?.default?.total || 0} participant(s) have joined!`;
+                }
+                // Update chart on the first journey step
+                if (currentStep === 0) {
+                    updateJourneyStep();
+                }
             });
             
             onSnapshot(collection(db, "polls"), snap => {
                 handleSnapshot(snap, 'polls', 'vote', 'pollId');
-                handleDataUpdate('poll');
+                // If the current step is ANY poll, force a re-render. This eliminates race conditions.
+                if (journeySteps[currentStep]?.type === 'poll') {
+                    updateJourneyStep();
+                }
             });
 
             onSnapshot(collection(db, "nexusVotes"), snap => { 
                 handleSnapshot(snap, 'nexus', 'nexusId');
-                handleDataUpdate('nexus');
+                const currentStepType = journeySteps[currentStep]?.type;
+                // If the current step is the globe OR the map, force a re-render.
+                if (currentStepType === 'globe' || currentStepType === 'industry_map') {
+                    updateJourneyStep();
+                }
             });
             
             onSnapshot(collection(db, "aspirations"), snap => { 
                 liveData.aspirations = snap.docs.map(d => d.data().word); 
-                handleDataUpdate('finale');
+                // If the current step is the finale, force a re-render.
+                if (journeySteps[currentStep]?.type === 'finale') {
+                    updateJourneyStep();
+                }
             });
         }
-        // --- FIX END ---
         
         function handleSnapshot(snapshot, dataType, property, groupBy = 'default') {
             const results = {};
@@ -296,7 +298,10 @@
                 }
             });
             liveData[dataType] = results;
-            participantCountEl.textContent = `${liveData.compass?.default?.total || 0} participant(s) have joined!`;
+            // The participant count is now handled more specifically in the compassQuiz listener
+            if (dataType === 'compass') {
+                participantCountEl.textContent = `${results.default?.total || 0} participant(s) have joined!`;
+            }
         }
 
         function renderContent(step) {
@@ -362,7 +367,6 @@
                 if (elements.length === 0) return;
 
                 let angle = Math.random() * Math.PI * 2; 
-                // --- FIX: Increased initial radius for better centering of first few words ---
                 let radius = 50;
                 const radiusIncrement = (elements.length > 1) ? 250 / (elements.length) : 0;
 
