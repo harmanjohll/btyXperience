@@ -144,7 +144,7 @@
                              </button>
                          `).join('')}
                      </div>
-                 </div>`;
+                </div>`;
         }
 
         async function handlePollAnswer(pollId, optionIndex, pollData) {
@@ -212,6 +212,18 @@
             
             let insightsHTML = Object.values(userData.polls || {}).map(poll => `<p class="border-l-2 border-yellow-400/50 pl-2">${poll.insight}</p>`).join('');
             
+            // --- FEATURE: Add user's Nexus choices to the memento card ---
+            const globalChoice = userData.global ? userData.global.text : "No exchange selected";
+            const localChoice = userData.local ? userData.local.text : "No attachment selected";
+            const nexusChoicesHTML = `
+                <div class="text-xs bg-blue-900/50 p-3 rounded-lg my-3 space-y-2">
+                    <h4 class="font-bold text-yellow-400">Your Chosen Pathways:</h4>
+                    <p><strong>Global:</strong> ${globalChoice}</p>
+                    <p><strong>Local:</strong> ${localChoice}</p>
+                    <p class="text-gray-400 pt-1">From 7 international exchanges and 7 industry attachments to choose from!</p>
+                </div>
+            `;
+
             appContainer.innerHTML = `
                 <div class="w-full max-w-md text-center fade-in">
                     <div id="memento-card" class="bg-gray-800 border-2 rounded-2xl p-6 text-left shadow-2xl" style="border-color:${archetypeData.color};">
@@ -234,6 +246,8 @@
                            ${insightsHTML || '<p>You explored the Beatty Experience!</p>'}
                         </div>
                         
+                        ${nexusChoicesHTML}
+
                         <div class="text-xs bg-blue-900/50 p-3 rounded-lg my-3 space-y-2">
                             <h4 class="font-bold text-yellow-400">Recommended Pathways:</h4>
                             <p>${archetypeData.recommendations.join(' • ')}</p>
@@ -284,7 +298,7 @@
                      <div class="animate-pulse"><svg class="mx-auto h-12 w-12 text-yellow-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
                      <p class="mt-4 text-lg font-semibold">${message}</p>
                      <button id="retakeQuizBtn" class="mt-6 text-sm text-gray-400 underline hover:text-white">Click here to retake the quiz.</button>
-                 </div>`;
+                </div>`;
         }
         
         function renderError(title, message) {
