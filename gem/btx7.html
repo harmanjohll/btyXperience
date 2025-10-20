@@ -581,8 +581,7 @@
 
             progressBar.style.width = `${((currentStep + 1) / journeySteps.length) * 100}%`;
             prevBtn.style.display = currentStep > 0 ? 'inline-block' : 'none';
-            //nextBtn.textContent = (step.type === 'poll' && !step.revealed) ? 'Reveal Answer' : (currentStep === journeySteps.length - 1 ? 'Finish' : 'Next');
-            nextBtn.textContent = (step.type === 'poll') ? 'Reveal Answer' : (currentStep === journeySteps.length - 1 ? 'Finish' : 'Next');
+            nextBtn.textContent = (step.type === 'poll' && !step.revealed) ? 'Reveal Answer' : (currentStep === journeySteps.length - 1 ? 'Finish' : 'Next');            
         }
         
         window.showNexusModal = (id) => {
@@ -597,8 +596,7 @@
         document.getElementById('beginBtn').addEventListener('click', () => { document.getElementById('start').classList.add('hidden'); document.getElementById('journey').classList.remove('hidden'); updateJourneyStep(); });
         nextBtn.addEventListener('click', () => { 
             const step = journeySteps[currentStep];
-            //if (step.type === 'poll' && !step.revealed) { step.revealed = true; updateJourneyStep(); return; }
-            if (step.type === 'poll') { step.revealed = true; updateJourneyStep(); return; }
+            if (step.type === 'poll' && !step.revealed) { step.revealed = true; updateJourneyStep(); return; }            
             if (currentStep < journeySteps.length - 1) { currentStep++; updateJourneyStep(); } 
             else {
                 journeyContent.innerHTML = `<div class="text-center fade-in"><h2 class="text-4xl md:text-6xl font-black bty-text-yellow mb-4">Your Journey Begins Now.</h2><p class="text-lg md:text-xl text-gray-200 mb-8">Thank you for exploring The Beatty Experience. <br>We invite you to join our family and discover where your aspirations will take you.</p><a href="https://www.beattysec.moe.edu.sg/" target="_blank" class="btn-primary">Visit Our Website</a></div>`;
