@@ -150,10 +150,23 @@
         async function handlePollAnswer(pollId, optionIndex, pollData) {
             if (!userData.polls) userData.polls = {};
             const choiceIndex = parseInt(optionIndex);
+            const choiceText = pollData.options[choiceIndex]; // Get the text of the chosen option
+            
+            // A map to create custom incorrect messages based on pollId
+            const incorrectMessages = {
+                'cca': `It is quite common to think that only ${choiceText.toLowerCase()} of students secure their CCA, but we are indeed able to have 9 in 10 Beattyians pursue their passions.`,
+                'dream_v2': `While ${choiceText.toLowerCase()} includes some great values, our D.R.E.A.M. stands for Discipline, Resilience, Empathy, Adaptability, and Mindfulness.`,
+                'nexus_count_v2': `It's easy to underestimate the opportunities! While you chose ${choiceText}, Beatty actually offers 7 international exchanges and 7 industry attachments.`,
+                'industry': `You chose ${choiceText.toLowerCase()}, but at Beatty, we offer ALL these areas - Sustainability, Journalism & Media, Engineering & AI, and more. Every passion has a pathway here!`
+            };
+
+            const isCorrect = choiceIndex === pollData.correctAnswer;
+            
             userData.polls[pollId] = {
                 choice: choiceIndex,
-                isCorrect: choiceIndex === pollData.correctAnswer,
-                insight: pollData.insight
+                choiceText: choiceText,
+                isCorrect: isCorrect,
+                insight: isCorrect ? pollData.insight : (incorrectMessages[pollId] || `That's a good guess! The correct insight is: ${pollData.insight}`)
             };
             saveUserData();
             await setDoc(doc(db, "polls", `${pollId}_${auth.currentUser.uid}`), { pollId: pollId, vote: choiceIndex, timestamp: serverTimestamp() });
@@ -212,17 +225,8 @@
             
             let insightsHTML = Object.values(userData.polls || {}).map(poll => `<p class="border-l-2 border-yellow-400/50 pl-2">${poll.insight}</p>`).join('');
             
-            // --- FEATURE: Add user's Nexus choices to the memento card ---
-            const globalChoice = userData.global ? userData.global.text : "No exchange selected";
-            const localChoice = userData.local ? userData.local.text : "No attachment selected";
-            const nexusChoicesHTML = `
-                <div class="text-xs bg-blue-900/50 p-3 rounded-lg my-3 space-y-2">
-                    <h4 class="font-bold text-yellow-400">Your Chosen Pathways:</h4>
-                    <p><strong>Global:</strong> ${globalChoice}</p>
-                    <p><strong>Local:</strong> ${localChoice}</p>
-                    <p class="text-gray-400 pt-1">From 7 international exchanges and 7 industry attachments to choose from!</p>
-                </div>
-            `;
+            const globalChoice = userData.global ? userData.global.text : "a future global exchange";
+            const localChoice = userData.local ? userData.local.text : "a future industry attachment";
 
             appContainer.innerHTML = `
                 <div class="w-full max-w-md text-center fade-in">
@@ -246,14 +250,17 @@
                            ${insightsHTML || '<p>You explored the Beatty Experience!</p>'}
                         </div>
                         
-                        ${nexusChoicesHTML}
+                        <div class="text-xs bg-blue-900/50 p-3 rounded-lg my-3 space-y-2">
+                            <h4 class="font-bold text-yellow-400">Your Chosen Pathways:</h4>
+                            <p>Brilliant! You've already set your sights on a global exchange to <strong>${globalChoice}</strong> and an industry attachment at <strong>${localChoice}</strong>. With 7 international exchanges and 7 industry attachments to choose from, we can't wait for you to pursue these opportunities to uncover your talents.</p>
+                        </div>
 
                         <div class="text-xs bg-blue-900/50 p-3 rounded-lg my-3 space-y-2">
                             <h4 class="font-bold text-yellow-400">Recommended Pathways:</h4>
-                            <p>${archetypeData.recommendations.join(' • ')}</p>
+                            <p>Keep in mind these options: ${archetypeData.recommendations.join(' • ')}. Get ready for your aspirations to take flight.</p>
                         </div>
 
-                        <p class="text-center mt-4">Your Aspiration: <strong class="text-2xl font-black block" style="color:${archetypeData.color};">"${userData.aspiration || 'Your Future'}"</strong></p>
+                        <p class="text-center mt-4 text-sm">Join us at Beatty Secondary and have your aspiration to become a/an <strong class="text-2xl font-black block" style="color:${archetypeData.color};">${userData.aspiration || 'Your Future Self'}</strong> take flight!</p>
                     </div>
                     <button id="downloadCardBtn" class="mt-6 w-full p-3 bg-yellow-400 text-blue-900 font-bold rounded-lg">Download Your Compass Card</button>
                     <p class="text-xs text-gray-400 mt-2">A memento of your journey with us today.</p>
