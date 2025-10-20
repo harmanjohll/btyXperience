@@ -246,7 +246,7 @@
             { id: 'card', type: 'memento', title: "Your Journey Begins", description: "Please check your phone for your personalized Beatty Compass Card." }
         ];
 
-        // --- ROBUST FIX: Simplified, direct-check listeners ---
+        // --- FINAL ROBUST FIX: Simplified, direct-check listeners ---
         function initializeListeners() {
             onSnapshot(collection(db, "compassQuiz"), snap => {
                 handleSnapshot(snap, 'compass', 'archetype');
@@ -260,11 +260,42 @@
                 }
             });
             
+            // --- This is the new, robust listener for polls ---
             onSnapshot(collection(db, "polls"), snap => {
                 handleSnapshot(snap, 'polls', 'vote', 'pollId');
-                // If the current step is ANY poll, force a re-render. This eliminates race conditions.
-                if (journeySteps[currentStep]?.type === 'poll') {
-                    updateJourneyStep();
+
+                // Check if a poll is currently being displayed on the screen
+                const displayedPollContainer = journeyContent.querySelector('[data-poll-id]');
+                if (!displayedPollContainer) return; // If not on a poll page, do nothing.
+
+                const displayedPollId = displayedPollContainer.dataset.pollId;
+                const pollDataForDisplay = liveData.polls[displayedPollId];
+                const total = pollDataForDisplay?.total || 0;
+
+                // Perform a targeted DOM update to avoid full re-renders and race conditions.
+                const totalVotesEl = displayedPollContainer.querySelector('.total-votes-display');
+                if (totalVotesEl) {
+                    totalVotesEl.textContent = `Total Votes: ${total}`;
+                }
+
+                const pollStepData = journeySteps.find(step => step.pollData?.id === displayedPollId);
+                if (pollStepData && pollStepData.pollData) {
+                    pollStepData.pollData.options.forEach((opt, i) => {
+                        const count = pollDataForDisplay?.breakdown?.[i] || 0;
+                        const pct = total > 0 ? (count / total) * 100 : 0;
+                        
+                        const optionWrapper = displayedPollContainer.querySelector(`[data-option-index='${i}']`);
+                        if(optionWrapper) {
+                            const voteCountEl = optionWrapper.querySelector('.vote-count');
+                            const barEl = optionWrapper.querySelector('.chart-bar');
+
+                            if (voteCountEl) voteCountEl.textContent = `${count} vote(s)`;
+                            if (barEl) {
+                                barEl.style.width = `${pct}%`;
+                                barEl.textContent = `${pct.toFixed(0)}%`;
+                            }
+                        }
+                    });
                 }
             });
 
@@ -331,16 +362,19 @@
 
         function renderPollChart(pollData, data, isRevealed = false) {
             const total = (data && data.total) || 0;
-            let pollHTML = `<h2 class="text-2xl font-semibold mb-6">${pollData.question}</h2>`;
-            pollHTML += `<div class="text-right mb-4 font-bold text-lg bty-text-yellow">Total Votes: ${total}</div>`;
+            // Add data-poll-id to the main container and a class to the total votes display
+            let pollHTML = `<div data-poll-id="${pollData.id}"><h2 class="text-2xl font-semibold mb-6">${pollData.question}</h2>`;
+            pollHTML += `<div class="text-right mb-4 font-bold text-lg bty-text-yellow total-votes-display">Total Votes: ${total}</div>`;
             pollHTML += `<div class="space-y-4 max-w-3xl mx-auto">${pollData.options.map((opt, i) => {
                 const count = (data && data.breakdown && data.breakdown[i]) || 0;
                 const pct = total > 0 ? (count / total) * 100 : 0;
                 const isCorrect = i === pollData.correctAnswer;
                 const wrapperClass = isCorrect && isRevealed ? 'correct-answer-box' : '';
-                return `<div class="${wrapperClass}"><div class="text-left"><div class="flex justify-between items-center mb-1"><span class="font-bold text-lg">${opt} ${isCorrect && isRevealed ? '🏆' : ''}</span><span class="text-sm font-semibold">${count} vote(s)</span></div><div class="w-full bg-gray-700 rounded-full h-8"><div class="chart-bar text-center p-1 font-bold text-lg text-blue-900 leading-6 rounded-full ${isCorrect && isRevealed ? 'correct' : ''}" style="width: ${pct}%; background-color: ${isCorrect && isRevealed ? 'var(--bty-yellow)' : '#A0AEC0'};">${pct.toFixed(0)}%</div></div></div></div>`;
+                // Add data-option-index to the wrapper and a class to the vote count span
+                return `<div class="${wrapperClass}" data-option-index="${i}"><div class="text-left"><div class="flex justify-between items-center mb-1"><span class="font-bold text-lg">${opt} ${isCorrect && isRevealed ? '🏆' : ''}</span><span class="text-sm font-semibold vote-count">${count} vote(s)</span></div><div class="w-full bg-gray-700 rounded-full h-8"><div class="chart-bar text-center p-1 font-bold text-lg text-blue-900 leading-6 rounded-full ${isCorrect && isRevealed ? 'correct' : ''}" style="width: ${pct}%; background-color: ${isCorrect && isRevealed ? 'var(--bty-yellow)' : '#A0AEC0'};">${pct.toFixed(0)}%</div></div></div></div>`;
             }).join('')}</div>`;
             if (total === 0 && !isRevealed) { pollHTML += '<p class="text-center text-gray-400 mt-4">Waiting for votes...</p>'; }
+            pollHTML += '</div>'; // Close the main container
             return pollHTML;
         }
 
