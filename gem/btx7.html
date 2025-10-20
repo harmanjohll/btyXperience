@@ -298,7 +298,8 @@
             if (!step) return;
 
             // Check if the current step is a poll and if it's not revealed yet
-            if (step.type === 'poll' && !step.revealed) {
+            //if (step.type === 'poll' && !step.revealed) {
+            if (step.type === 'poll') {
                 const pollContainer = journeyContent.querySelector(`[data-poll-id="${step.pollData.id}"]`);
                 if (pollContainer) { // Only update if the poll is actually on the screen
                     updatePollDOM(step.pollData.id);
