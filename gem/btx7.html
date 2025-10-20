@@ -249,20 +249,22 @@
         function initializeListeners() {
             onSnapshot(collection(db, "compassQuiz"), snap => handleSnapshot(snap, 'compass', 'archetype'));
             
-            // --- FIX START ---
-            // This listener now triggers a UI update if the current step is a poll.
             onSnapshot(collection(db, "polls"), snap => {
                 handleSnapshot(snap, 'polls', 'vote', 'pollId');
                 if (journeySteps[currentStep]?.type === 'poll') {
                     updateJourneyStep();
                 }
             });
-            // --- FIX END ---
 
+            // --- FIX: Standardized the condition to check for step type ---
             onSnapshot(collection(db, "nexusVotes"), snap => { 
                 handleSnapshot(snap, 'nexus', 'nexusId');
-                if (journeySteps[currentStep]?.id.startsWith('nexus')) { updateJourneyStep(); }
+                const currentStepType = journeySteps[currentStep]?.type;
+                if (currentStepType === 'globe' || currentStepType === 'industry_map') { 
+                    updateJourneyStep(); 
+                }
             });
+            
             onSnapshot(collection(db, "aspirations"), snap => { liveData.aspirations = snap.docs.map(d => d.data().word); if (journeySteps[currentStep]?.type === 'finale') { updateJourneyStep(); } });
         }
         
