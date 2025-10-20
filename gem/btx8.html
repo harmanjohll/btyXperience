@@ -159,18 +159,16 @@
         import { getFirestore, collection, getDocs, writeBatch, onSnapshot, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-        console.log("presenter build v2"); // sanity: ensure this file is loaded
-
         const firebaseConfig = { apiKey: "AIzaSyBjHO57QKoMW-u4oLGGdgDSqw5gttqX6Fg", authDomain: "btyx-61dc6.firebaseapp.com", projectId: "btyx-61dc6", storageBucket: "btyx-61dc6.appspot.com", messagingSenderId: "851137405745", appId: "1:851137405745:web:c95b86b6f0462a9bc20610" };
         let app, db, auth;
+        let heartbeatInterval = null; // To hold our heartbeat timer
+
         try { 
             app = initializeApp(firebaseConfig); 
             db = getFirestore(app); 
             auth = getAuth(app); 
             await signInAnonymously(auth); 
             initializeListeners(); 
-            // --- HEARTBEAT FIX ---
-            setInterval(heartbeatUpdate, 500);
         } catch (e) { console.error("Firebase init failed:", e); }
 
         const journeyContent = document.getElementById('journey-content');
@@ -218,14 +216,14 @@
                 insight: "This means 9 out of 10 Beattyians pursue their passions!"
             }},
             { id: 'poll_dream', type: 'poll', title: "Live Poll: Our Core Values", description: "", pollData: { 
-                id: 'dream', 
+                id: 'dream_v2', // HOTFIX
                 question: "What does D.R.E.A.M. stand for in Beatty's core values?", 
                 options: [ "Discipline, Respect, Excellence, Achievement, Mindfulness", "Discipline, Resilience, Empathy, Adaptability, Mindfulness", "Diligence, Respect, Empathy, Adaptability, Mastery", "Determination, Resilience, Excellence, Ambition, Mindfulness" ], 
                 correctAnswer: 1,
                 insight: "D.R.E.A.M. - Discipline, Resilience, Empathy, Adaptability, Mindfulness - guides every Beattyian's journey to success!"
             }},
             { id: 'poll_nexus_count', type: 'poll', title: "Live Poll: Our Opportunities", description: "", pollData: { 
-                id: 'nexus_count', 
+                id: 'nexus_count_v2', // HOTFIX
                 question: "How many international exchanges and industry attachments does Beatty offer?", 
                 options: ["None", "3 & 3", "7 & 7", "10 & 15"], 
                 correctAnswer: 2,
@@ -256,10 +254,13 @@
             { id: 'card', type: 'memento', title: "Your Journey Begins", description: "Please check your phone for your personalized Beatty Compass Card." }
         ];
 
-        // --- Listeners update data. Heartbeat handles the screen. ---
+        // --- HEARTBEAT FIX: Listeners only update data. Heartbeat handles the screen. ---
         function initializeListeners() {
             onSnapshot(collection(db, "compassQuiz"), snap => {
                 handleSnapshot(snap, 'compass', 'archetype');
+                 if (document.getElementById('start').classList.contains('hidden') === false) {
+                     participantCountEl.textContent = `${liveData.compass?.default?.total || 0} participant(s) have joined!`;
+                }
             });
             
             onSnapshot(collection(db, "polls"), snap => {
@@ -268,84 +269,33 @@
 
             onSnapshot(collection(db, "nexusVotes"), snap => { 
                 handleSnapshot(snap, 'nexus', 'nexusId');
+                if (journeySteps[currentStep]?.type === 'globe' || journeySteps[currentStep]?.type === 'industry_map') {
+                    updateJourneyStep();
+                }
             });
             
             onSnapshot(collection(db, "aspirations"), snap => { 
                 liveData.aspirations = snap.docs.map(d => d.data().word); 
+                 if (journeySteps[currentStep]?.type === 'finale') {
+                    updateJourneyStep();
+                }
             });
         }
         
-        // CHANGE #3: numeric coercion for robustness
         function handleSnapshot(snapshot, dataType, property, groupBy = 'default') {
             const results = {};
-            snapshot.forEach(docSnap => {
-                const data = docSnap.data();
-                const key = data[groupBy] ?? 'default';
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const key = data[groupBy] || 'default';
                 if (!results[key]) results[key] = { total: 0, breakdown: {} };
                 results[key].total++;
                 if (data[property] !== undefined && data[property] !== null) {
-                    const raw = data[property];
-                    const val = Number.isFinite(Number(raw)) ? Number(raw) : raw; // "1" => 1
-                    results[key].breakdown[val] = (results[key].breakdown[val] || 0) + 1;
+                    results[key].breakdown[data[property]] = (results[key].breakdown[data[property]] || 0) + 1;
                 }
             });
             liveData[dataType] = results;
         }
-
-        // --- HEARTBEAT: runs every 500ms ---
-        function heartbeatUpdate() {
-            // Update participant count on start screen
-            if (!document.getElementById('start').classList.contains('hidden')) {
-                 participantCountEl.textContent = `${liveData.compass?.default?.total || 0} participant(s) have joined!`;
-            }
-
-            const step = journeySteps[currentStep];
-            if (!step) return;
-
-            // CHANGE #1: keep updating polls even after reveal
-            if (step.type === 'poll') {
-                const pollContainer = journeyContent.querySelector(`[data-poll-id="${step.pollData.id}"]`);
-                if (pollContainer) {
-                    updatePollDOM(step.pollData.id);
-                }
-            }
-        }
-
-        function updatePollDOM(pollId) {
-            const pollDataForDisplay = liveData.polls[pollId];
-            const total = pollDataForDisplay?.total || 0;
-            const pollContainer = journeyContent.querySelector(`[data-poll-id="${pollId}"]`);
-            if(!pollContainer) return;
-
-            const totalVotesEl = pollContainer.querySelector('.total-votes-display');
-            if (totalVotesEl) {
-                totalVotesEl.textContent = `Total Votes: ${total}`;
-            }
-
-            const pollStepData = journeySteps.find(step => step.pollData?.id === pollId);
-            if (pollStepData && pollStepData.pollData) {
-                pollStepData.pollData.options.forEach((opt, i) => {
-                    const count = pollDataForDisplay?.breakdown?.[i] || 0;
-                    const pct = total > 0 ? (count / total) * 100 : 0;
-                    
-                    const optionWrapper = pollContainer.querySelector(`[data-option-index='${i}']`);
-                    if(optionWrapper) {
-                        const voteCountEl = optionWrapper.querySelector('.vote-count');
-                        const barEl = optionWrapper.querySelector('.chart-bar');
-
-                        if (voteCountEl) voteCountEl.textContent = `${count} vote(s)`;
-                        if (barEl) {
-                            const currentWidth = parseFloat(barEl.style.width) || 0;
-                            if (Math.abs(currentWidth - pct) > 0.1) {
-                                barEl.style.width = `${pct}%`;
-                            }
-                            barEl.textContent = `${pct.toFixed(0)}%`;
-                        }
-                    }
-                });
-            }
-        }
-
+       
         function renderContent(step) {
             switch(step.type) {
                 case 'chart': return renderCompassChart(liveData.compass?.default);
@@ -388,7 +338,7 @@
         }
 
         function renderAspirationsCrest(words = []) {
-            let cloudHTML = `<div id="word-cloud-container" class="relative w-full max-w-4xl h-[500px] mx-auto"></div>`;
+             let cloudHTML = `<div id="word-cloud-container" class="relative w-full max-w-4xl h-[500px] mx-auto"></div>`;
             setTimeout(() => {
                 const cloud = document.getElementById('word-cloud-container');
                 if(!cloud) return;
@@ -562,6 +512,12 @@
         }
 
         function updateJourneyStep() {
+            // --- HEARTBEAT FIX: Stop the old heartbeat when the page changes ---
+            if (heartbeatInterval) {
+                clearInterval(heartbeatInterval);
+                heartbeatInterval = null;
+            }
+
             if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; }
             if (currentStep >= journeySteps.length) return;
             const step = journeySteps[currentStep];
@@ -571,17 +527,22 @@
                 ? `<p class="text-md md:text-lg text-gray-300 max-w-3xl mx-auto mb-8">${step.description}</p>` 
                 : '';
             if (contentHTML) { journeyContent.innerHTML = `<div class="text-center fade-in"><h2 class="text-3xl md:text-5xl font-black bty-text-yellow mb-4">${step.title}</h2>${descriptionHTML}${contentHTML}</div>`; }
-
-            // CHANGE #2: after rendering a poll, immediately sync its DOM once
-            if (step.type === 'poll') {
-                updatePollDOM(step.pollData.id);
-            }
             
-            if (step.id === 'values') {
+             if (step.id === 'values') {
                 const dreamCards = journeyContent.querySelectorAll('.dream-card');
                 dreamCards.forEach(card => {
                     card.addEventListener('click', () => card.classList.toggle('is-flipped'));
                 });
+            }
+
+            // --- HEARTBEAT FIX: Start a new, dedicated heartbeat ONLY if on a poll page ---
+            if (step.type === 'poll') {
+                heartbeatInterval = setInterval(() => {
+                    const pollContainer = journeyContent.querySelector(`[data-poll-id="${step.pollData.id}"]`);
+                     if (pollContainer) { // Only update if the poll is actually on the screen
+                        updatePollDOM(step.pollData.id);
+                    }
+                }, 500);
             }
 
             progressBar.style.width = `${((currentStep + 1) / journeySteps.length) * 100}%`;
