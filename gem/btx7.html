@@ -161,7 +161,15 @@
 
         const firebaseConfig = { apiKey: "AIzaSyBjHO57QKoMW-u4oLGGdgDSqw5gttqX6Fg", authDomain: "btyx-61dc6.firebaseapp.com", projectId: "btyx-61dc6", storageBucket: "btyx-61dc6.appspot.com", messagingSenderId: "851137405745", appId: "1:851137405745:web:c95b86b6f0462a9bc20610" };
         let app, db, auth;
-        try { app = initializeApp(firebaseConfig); db = getFirestore(app); auth = getAuth(app); await signInAnonymously(auth); initializeListeners(); } catch (e) { console.error("Firebase init failed:", e); }
+        try { 
+            app = initializeApp(firebaseConfig); 
+            db = getFirestore(app); 
+            auth = getAuth(app); 
+            await signInAnonymously(auth); 
+            initializeListeners(); 
+            // --- HEARTBEAT FIX ---
+            setInterval(heartbeatUpdate, 500);
+        } catch (e) { console.error("Firebase init failed:", e); }
 
         const journeyContent = document.getElementById('journey-content');
         const progressBar = document.getElementById('progressBar');
@@ -246,74 +254,22 @@
             { id: 'card', type: 'memento', title: "Your Journey Begins", description: "Please check your phone for your personalized Beatty Compass Card." }
         ];
 
-        // --- FINAL ROBUST FIX: Simplified, direct-check listeners ---
+        // --- HEARTBEAT FIX: Listeners only update data. Heartbeat handles the screen. ---
         function initializeListeners() {
             onSnapshot(collection(db, "compassQuiz"), snap => {
                 handleSnapshot(snap, 'compass', 'archetype');
-                // Update participant count on start screen
-                if (document.getElementById('start').classList.contains('hidden') === false) {
-                     participantCountEl.textContent = `${liveData.compass?.default?.total || 0} participant(s) have joined!`;
-                }
-                // Update chart on the first journey step
-                if (currentStep === 0) {
-                    updateJourneyStep();
-                }
             });
             
-            // --- This is the new, robust listener for polls ---
             onSnapshot(collection(db, "polls"), snap => {
                 handleSnapshot(snap, 'polls', 'vote', 'pollId');
-
-                // Check if a poll is currently being displayed on the screen
-                const displayedPollContainer = journeyContent.querySelector('[data-poll-id]');
-                if (!displayedPollContainer) return; // If not on a poll page, do nothing.
-
-                const displayedPollId = displayedPollContainer.dataset.pollId;
-                const pollDataForDisplay = liveData.polls[displayedPollId];
-                const total = pollDataForDisplay?.total || 0;
-
-                // Perform a targeted DOM update to avoid full re-renders and race conditions.
-                const totalVotesEl = displayedPollContainer.querySelector('.total-votes-display');
-                if (totalVotesEl) {
-                    totalVotesEl.textContent = `Total Votes: ${total}`;
-                }
-
-                const pollStepData = journeySteps.find(step => step.pollData?.id === displayedPollId);
-                if (pollStepData && pollStepData.pollData) {
-                    pollStepData.pollData.options.forEach((opt, i) => {
-                        const count = pollDataForDisplay?.breakdown?.[i] || 0;
-                        const pct = total > 0 ? (count / total) * 100 : 0;
-                        
-                        const optionWrapper = displayedPollContainer.querySelector(`[data-option-index='${i}']`);
-                        if(optionWrapper) {
-                            const voteCountEl = optionWrapper.querySelector('.vote-count');
-                            const barEl = optionWrapper.querySelector('.chart-bar');
-
-                            if (voteCountEl) voteCountEl.textContent = `${count} vote(s)`;
-                            if (barEl) {
-                                barEl.style.width = `${pct}%`;
-                                barEl.textContent = `${pct.toFixed(0)}%`;
-                            }
-                        }
-                    });
-                }
             });
 
             onSnapshot(collection(db, "nexusVotes"), snap => { 
                 handleSnapshot(snap, 'nexus', 'nexusId');
-                const currentStepType = journeySteps[currentStep]?.type;
-                // If the current step is the globe OR the map, force a re-render.
-                if (currentStepType === 'globe' || currentStepType === 'industry_map') {
-                    updateJourneyStep();
-                }
             });
             
             onSnapshot(collection(db, "aspirations"), snap => { 
                 liveData.aspirations = snap.docs.map(d => d.data().word); 
-                // If the current step is the finale, force a re-render.
-                if (journeySteps[currentStep]?.type === 'finale') {
-                    updateJourneyStep();
-                }
             });
         }
         
@@ -329,11 +285,65 @@
                 }
             });
             liveData[dataType] = results;
-            // The participant count is now handled more specifically in the compassQuiz listener
-            if (dataType === 'compass') {
-                participantCountEl.textContent = `${results.default?.total || 0} participant(s) have joined!`;
+        }
+
+        // --- HEARTBEAT FIX: This function runs every 500ms ---
+        function heartbeatUpdate() {
+            // Update participant count on start screen
+            if (document.getElementById('start').classList.contains('hidden') === false) {
+                 participantCountEl.textContent = `${liveData.compass?.default?.total || 0} participant(s) have joined!`;
+            }
+
+            const step = journeySteps[currentStep];
+            if (!step) return;
+
+            // Check if the current step is a poll and if it's not revealed yet
+            if (step.type === 'poll' && !step.revealed) {
+                const pollContainer = journeyContent.querySelector(`[data-poll-id="${step.pollData.id}"]`);
+                if (pollContainer) { // Only update if the poll is actually on the screen
+                    updatePollDOM(step.pollData.id);
+                }
+            }
+            
+            // You can add similar logic for other live elements here if needed
+        }
+
+        function updatePollDOM(pollId) {
+            const pollDataForDisplay = liveData.polls[pollId];
+            const total = pollDataForDisplay?.total || 0;
+            const pollContainer = journeyContent.querySelector(`[data-poll-id="${pollId}"]`);
+            if(!pollContainer) return;
+
+            const totalVotesEl = pollContainer.querySelector('.total-votes-display');
+            if (totalVotesEl) {
+                totalVotesEl.textContent = `Total Votes: ${total}`;
+            }
+
+            const pollStepData = journeySteps.find(step => step.pollData?.id === pollId);
+            if (pollStepData && pollStepData.pollData) {
+                pollStepData.pollData.options.forEach((opt, i) => {
+                    const count = pollDataForDisplay?.breakdown?.[i] || 0;
+                    const pct = total > 0 ? (count / total) * 100 : 0;
+                    
+                    const optionWrapper = pollContainer.querySelector(`[data-option-index='${i}']`);
+                    if(optionWrapper) {
+                        const voteCountEl = optionWrapper.querySelector('.vote-count');
+                        const barEl = optionWrapper.querySelector('.chart-bar');
+
+                        if (voteCountEl) voteCountEl.textContent = `${count} vote(s)`;
+                        if (barEl) {
+                            // Only update bar width if it has changed to avoid jitter
+                            const currentWidth = parseFloat(barEl.style.width) || 0;
+                            if (Math.abs(currentWidth - pct) > 0.1) {
+                                barEl.style.width = `${pct}%`;
+                            }
+                            barEl.textContent = `${pct.toFixed(0)}%`;
+                        }
+                    }
+                });
             }
         }
+
 
         function renderContent(step) {
             switch(step.type) {
@@ -362,7 +372,6 @@
 
         function renderPollChart(pollData, data, isRevealed = false) {
             const total = (data && data.total) || 0;
-            // Add data-poll-id to the main container and a class to the total votes display
             let pollHTML = `<div data-poll-id="${pollData.id}"><h2 class="text-2xl font-semibold mb-6">${pollData.question}</h2>`;
             pollHTML += `<div class="text-right mb-4 font-bold text-lg bty-text-yellow total-votes-display">Total Votes: ${total}</div>`;
             pollHTML += `<div class="space-y-4 max-w-3xl mx-auto">${pollData.options.map((opt, i) => {
@@ -370,11 +379,10 @@
                 const pct = total > 0 ? (count / total) * 100 : 0;
                 const isCorrect = i === pollData.correctAnswer;
                 const wrapperClass = isCorrect && isRevealed ? 'correct-answer-box' : '';
-                // Add data-option-index to the wrapper and a class to the vote count span
                 return `<div class="${wrapperClass}" data-option-index="${i}"><div class="text-left"><div class="flex justify-between items-center mb-1"><span class="font-bold text-lg">${opt} ${isCorrect && isRevealed ? '🏆' : ''}</span><span class="text-sm font-semibold vote-count">${count} vote(s)</span></div><div class="w-full bg-gray-700 rounded-full h-8"><div class="chart-bar text-center p-1 font-bold text-lg text-blue-900 leading-6 rounded-full ${isCorrect && isRevealed ? 'correct' : ''}" style="width: ${pct}%; background-color: ${isCorrect && isRevealed ? 'var(--bty-yellow)' : '#A0AEC0'};">${pct.toFixed(0)}%</div></div></div></div>`;
             }).join('')}</div>`;
             if (total === 0 && !isRevealed) { pollHTML += '<p class="text-center text-gray-400 mt-4">Waiting for votes...</p>'; }
-            pollHTML += '</div>'; // Close the main container
+            pollHTML += '</div>';
             return pollHTML;
         }
 
