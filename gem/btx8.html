@@ -295,6 +295,42 @@
             });
             liveData[dataType] = results;
         }
+
+        // --- HEARTBEAT FIX: This new function will handle all DOM updates for polls ---
+        function updatePollDOM(pollId) {
+            const pollDataForDisplay = liveData.polls[pollId];
+            const total = pollDataForDisplay?.total || 0;
+            const pollContainer = journeyContent.querySelector(`[data-poll-id="${pollId}"]`);
+            if(!pollContainer) return;
+
+            const totalVotesEl = pollContainer.querySelector('.total-votes-display');
+            if (totalVotesEl) {
+                totalVotesEl.textContent = `Total Votes: ${total}`;
+            }
+
+            const pollStepData = journeySteps.find(step => step.pollData?.id === pollId);
+            if (pollStepData && pollStepData.pollData) {
+                pollStepData.pollData.options.forEach((opt, i) => {
+                    const count = pollDataForDisplay?.breakdown?.[i] || 0;
+                    const pct = total > 0 ? (count / total) * 100 : 0;
+                    
+                    const optionWrapper = pollContainer.querySelector(`[data-option-index='${i}']`);
+                    if(optionWrapper) {
+                        const voteCountEl = optionWrapper.querySelector('.vote-count');
+                        const barEl = optionWrapper.querySelector('.chart-bar');
+
+                        if (voteCountEl) voteCountEl.textContent = `${count} vote(s)`;
+                        if (barEl) {
+                            const currentWidth = parseFloat(barEl.style.width) || 0;
+                            if (Math.abs(currentWidth - pct) > 0.1) { // Prevent jitter on rapid updates
+                                barEl.style.width = `${pct}%`;
+                            }
+                            barEl.textContent = `${pct.toFixed(0)}%`;
+                        }
+                    }
+                });
+            }
+        }
        
         function renderContent(step) {
             switch(step.type) {
@@ -538,8 +574,9 @@
             // --- HEARTBEAT FIX: Start a new, dedicated heartbeat ONLY if on a poll page ---
             if (step.type === 'poll') {
                 heartbeatInterval = setInterval(() => {
+                    // This check is crucial: only update if the poll is actually on the screen
                     const pollContainer = journeyContent.querySelector(`[data-poll-id="${step.pollData.id}"]`);
-                     if (pollContainer) { // Only update if the poll is actually on the screen
+                    if (pollContainer) { 
                         updatePollDOM(step.pollData.id);
                     }
                 }, 500);
