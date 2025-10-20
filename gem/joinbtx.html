@@ -211,12 +211,12 @@
             if (!archetypeData) { renderError("Error", "Could not load your profile."); return; }
             
             let insightsHTML = Object.values(userData.polls || {}).map(poll => `<p class="border-l-2 border-yellow-400/50 pl-2">${poll.insight}</p>`).join('');
-
+            
             appContainer.innerHTML = `
                 <div class="w-full max-w-md text-center fade-in">
                     <div id="memento-card" class="bg-gray-800 border-2 rounded-2xl p-6 text-left shadow-2xl" style="border-color:${archetypeData.color};">
                         <div class="flex items-center gap-4 mb-4">
-                             <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/fc98005f3682a779482dd1bf5e7cff5f9adb8451/gem/BTlogo.png" alt="Beatty Crest" class="h-12 w-12">
+                             <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/fc98005f3682a779482dd1bf5e7cff5f9adb8451/gem/BTlogo.png" alt="Beatty Crest" class="h-12 w-12" crossorigin="anonymous">
                             <div>
                                 <h1 class="text-2xl font-black" style="color:${archetypeData.color};">${userData.archetype}</h1>
                                 <p class="text-sm text-gray-300 font-semibold">Your Beatty Compass Card</p>
@@ -252,7 +252,7 @@
             btn.textContent = "Generating...";
             btn.disabled = true;
 
-            html2canvas(card, { backgroundColor: '#1a202c', scale: 3 }).then(canvas => {
+            html2canvas(card, { backgroundColor: '#1a202c', scale: 3, useCORS: true }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = 'Beatty-Compass-Card.png';
                 link.href = canvas.toDataURL('image/png');
@@ -314,4 +314,3 @@
     </script>
 </body>
 </html>
-
