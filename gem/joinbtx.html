@@ -19,10 +19,10 @@
         .fade-in { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         #memento-card {
-             background-color: #1a202c;
+             background-color: #0f172a; /* Slate 900 */
              background-image: 
-                radial-gradient(circle at 100% 0%, rgba(255, 226, 0, 0.1) 0%, transparent 30%),
-                radial-gradient(circle at 0% 100%, rgba(0, 12, 83, 0.5) 0%, transparent 40%);
+                radial-gradient(circle at 100% 0%, rgba(255, 226, 0, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 0% 100%, rgba(0, 12, 83, 0.4) 0%, transparent 50%);
         }
         .mirror-content { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; padding: 1.5rem; text-align: center; }
     </style>
@@ -186,8 +186,6 @@
         }
 
         function renderPoll(pollData) {
-            // Store the WHOLE poll data object in the dataset so we can access the 'insight' later
-            // We use encodeURIComponent to be safe with JSON in HTML attributes
             appContainer.innerHTML = `
                 <div class="w-full max-w-md text-center fade-in" data-poll-json='${JSON.stringify(pollData).replace(/'/g, "&apos;")}'>
                      <p class="text-sm font-bold text-yellow-300 mb-2 uppercase tracking-widest">Live Poll</p>
@@ -208,10 +206,7 @@
             const choiceText = pollData.options[choiceIndex]; 
             const isCorrect = choiceIndex === pollData.correctAnswer;
             
-            // GENERIC INSIGHT LOGIC: Use the insight sent from the Host
             let insightText = pollData.insight || "Thanks for voting!";
-            
-            // If incorrect, we can optionally prepend a "Good guess" message, but the core insight remains the same
             if (!isCorrect && pollData.correctAnswer !== undefined) {
                  insightText = `Good guess! <br><br>${pollData.insight}`;
             }
@@ -279,51 +274,80 @@
             const archetypeData = archetypes[userData.archetype];
             if (!archetypeData) { renderError("Error", "Could not load your profile."); return; }
             
-            // Use saved insights from polls
+            // 1. Insights Logic (Aggregated from polls)
             let insightsHTML = "";
-            if(userData.polls) {
-                 // Just show the first 2 insights to keep card clean
-                 const keys = Object.keys(userData.polls);
-                 if(keys.length > 0) {
-                     insightsHTML += `<div class="text-xs bg-blue-900/40 p-3 rounded-lg my-2 space-y-2 text-left"><h4 class="font-bold text-yellow-400 uppercase tracking-wide mb-1">Key Takeaway</h4><p>${userData.polls[keys[0]].insight}</p></div>`;
-                 }
+            const pollKeys = Object.keys(userData.polls || {});
+            
+            if (pollKeys.length > 0) {
+                 const rawInsights = pollKeys.map(k => userData.polls[k].insight.replace("Good guess! <br><br>", "")); // Clean up formatting slightly
+                 const uniqueInsights = [...new Set(rawInsights)].slice(0, 3); // Limit to 3 max
+                 
+                 insightsHTML = `
+                 <div class="bg-slate-800 border-l-4 border-yellow-400 rounded-r-lg p-4 mb-4 shadow-lg">
+                    <h4 class="font-bold text-yellow-400 uppercase tracking-wide text-xs mb-2">Your Insights</h4>
+                    <ul class="space-y-3 text-xs text-gray-200 leading-relaxed">
+                        ${uniqueInsights.map(txt => `<li>${txt}</li>`).join('')}
+                    </ul>
+                 </div>`;
             }
 
-            const globalChoice = userData.global ? userData.global.text : "Global Exchange";
-            const localChoice = userData.local ? userData.local.text : "Industry Attachment";
+            // 2. Relational Pathways Logic
+            const globalChoice = userData.global ? userData.global.text : "a future global exchange";
+            const localChoice = userData.local ? userData.local.text : "a future industry attachment";
+            const relationalText = `Brilliant! You've already set your sights on a global exchange to <strong>${globalChoice}</strong> and an industry attachment at <strong>${localChoice}</strong>. With 7 international exchanges and 7 industry attachments to choose from, we can't wait for you to pursue these opportunities to uncover your talents.`;
+
+            // 3. Recommendations Logic
+            const recommendationsText = `Keep in mind these options: ${archetypeData.recommendations.join(' • ')}. Get ready for your aspirations to take flight.`;
 
             appContainer.innerHTML = `
                 <div class="w-full max-w-md text-center fade-in pb-8">
-                    <div id="memento-card" class="bg-gray-800 border-4 rounded-3xl p-6 text-left shadow-2xl relative overflow-hidden" style="border-color:${archetypeData.color};">
-                        <div class="flex items-center gap-4 mb-4 relative z-10">
-                             <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/fc98005f3682a779482dd1bf5e7cff5f9adb8451/gem/BTlogo.png" alt="Beatty Crest" class="h-14 w-14" crossorigin="anonymous">
-                            <div>
-                                <h1 class="text-2xl font-black leading-none" style="color:${archetypeData.color};">${safeText(userData.archetype)}</h1>
-                                <p class="text-xs text-gray-300 font-semibold uppercase tracking-wider mt-1">Beatty Compass Card</p>
-                            </div>
-                        </div>
+                    <!-- Card Container -->
+                    <div id="memento-card" class="relative overflow-hidden rounded-3xl border-4 shadow-2xl text-left" style="border-color:${archetypeData.color}; background-color: #0f172a;">
                         
-                        <div class="bg-black/30 p-4 rounded-xl mb-4 relative z-10 backdrop-blur-sm">
-                            <p class="text-base italic text-gray-100">"${archetypeData.quote}"</p>
-                        </div>
-
-                        <p class="text-sm mb-4 text-gray-200 relative z-10">${archetypeData.description}</p>
-                        
-                        <div class="relative z-10">
-                             ${insightsHTML}
-                             <div class="text-xs bg-blue-900/40 p-3 rounded-lg my-2 space-y-1 text-left">
-                                <h4 class="font-bold text-yellow-400 uppercase tracking-wide">Your Path</h4>
-                                <p>Global: <strong>${globalChoice}</strong></p>
-                                <p>Local: <strong>${localChoice}</strong></p>
+                        <!-- Header -->
+                        <div class="p-6 pb-4 relative z-10">
+                            <div class="flex items-center gap-4 mb-1">
+                                <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/fc98005f3682a779482dd1bf5e7cff5f9adb8451/gem/BTlogo.png" alt="Beatty Crest" class="h-12 w-12 filter drop-shadow-md">
+                                <div>
+                                    <h1 class="text-2xl font-black leading-none tracking-tight" style="color:${archetypeData.color};">${safeText(userData.archetype)}</h1>
+                                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Your Beatty Compass Card</p>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="mt-6 pt-4 border-t border-white/10 text-center relative z-10">
-                             <p class="text-xs text-gray-400 uppercase mb-1">Future Aspiration</p>
-                             <p class="text-3xl font-black" style="color:${archetypeData.color};">${safeText(userData.aspiration) || 'Future Leader'}</p>
+                        <!-- Quote Block -->
+                        <div class="bg-slate-900/50 mx-4 p-4 rounded-xl border border-white/5 relative z-10">
+                            <p class="text-sm italic text-gray-100 font-serif">"${archetypeData.quote}"</p>
+                        </div>
+
+                        <!-- Body Content -->
+                        <div class="p-6 pt-4 relative z-10">
+                            <p class="text-xs text-gray-300 mb-4 font-medium">${archetypeData.description}</p>
+
+                            <!-- The Three Pillars -->
+                            ${insightsHTML}
+
+                            <div class="bg-blue-900/30 border border-blue-500/30 rounded-lg p-4 mb-4 shadow-lg">
+                                <h4 class="font-bold text-yellow-400 uppercase tracking-wide text-xs mb-2">Your Chosen Pathways</h4>
+                                <p class="text-xs text-gray-200 leading-relaxed">${relationalText}</p>
+                            </div>
+
+                            <div class="bg-slate-800/50 border-l-4 border-gray-500 rounded-r-lg p-4 shadow-lg">
+                                <h4 class="font-bold text-yellow-400 uppercase tracking-wide text-xs mb-2">Recommended Pathways</h4>
+                                <p class="text-xs text-gray-400 leading-relaxed">${recommendationsText}</p>
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="bg-black/40 p-6 text-center relative z-10 border-t border-white/10">
+                             <p class="text-xs text-gray-400 mb-2">Join us at Beatty Secondary and have your aspiration to become a/an</p>
+                             <p class="text-3xl font-black uppercase tracking-wide" style="color:${archetypeData.color}; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">${safeText(userData.aspiration) || 'FUTURE LEADER'}</p>
+                             <p class="text-xs text-gray-400 mt-1">take flight!</p>
                         </div>
                     </div>
-                    <button id="downloadCardBtn" class="mt-6 w-full p-4 bg-yellow-400 text-blue-900 font-bold rounded-xl shadow-lg text-lg uppercase">Download Card ⬇</button>
+
+                    <!-- Download Actions -->
+                    <button id="downloadCardBtn" class="mt-8 w-full p-4 bg-yellow-400 text-blue-900 font-black rounded-xl shadow-xl text-lg uppercase tracking-wide hover:bg-white transition-colors">Download Card ⬇</button>
                     <p class="text-xs text-gray-500 mt-3">Show this card at our booth for a gift!</p>
                 </div>`;
         }
@@ -334,7 +358,7 @@
             btn.textContent = "Generating...";
             btn.disabled = true;
 
-            html2canvas(card, { backgroundColor: '#1a202c', scale: 3, useCORS: true }).then(canvas => {
+            html2canvas(card, { backgroundColor: '#0f172a', scale: 3, useCORS: true }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = 'Beatty-Compass-Card.png';
                 link.href = canvas.toDataURL('image/png');
@@ -396,14 +420,11 @@
                 handleQuizAnswer(target.dataset.archetype);
             }
             else if (target.dataset.pollId && pollContainer) {
-                // Parse the Full Poll JSON from the parent container
                 const pollData = JSON.parse(pollContainer.dataset.pollJson);
-                
                 const allButtons = pollContainer.querySelectorAll('button');
                 allButtons.forEach(btn => { btn.disabled = true; btn.classList.add('opacity-50'); });
                 target.classList.remove('opacity-50');
                 target.classList.add('ring-2', 'ring-yellow-400');
-                
                 handlePollAnswer(target.dataset.pollId, target.dataset.optionIndex, pollData);
             }
             else if (target.dataset.nexusId) {
