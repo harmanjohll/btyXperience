@@ -207,7 +207,7 @@
             
             const incorrectMessages = {
                 'cca': `It is quite common to think that only ${choiceText.toLowerCase()} of students secure their CCA, but we are indeed able to have 9 in 10 Beattyians pursue their passions.`,
-                'dream_v2': `While ${choiceText.toLowerCase()} includes some great values, our D.R.E.A.M. stands for Discipline, Resilience, Empathy, Adaptability, and Mindfulness.`,
+                'dream_poll': `While ${choiceText.toLowerCase()} includes some great values, our D.R.E.A.M. stands for Discipline, Resilience, Empathy, Adaptability, and Mindfulness.`,
                 'nexus_count_v2': `It's easy to underestimate the opportunities! While you chose ${choiceText}, Beatty actually offers 7 international exchanges and 7 industry attachments.`,
                 'industry': `You chose ${choiceText.toLowerCase()}, but at Beatty, we offer ALL these areas - Sustainability, Journalism & Media, Engineering & AI, and more. Every passion has a pathway here!`
             };
@@ -385,6 +385,7 @@
                 handleQuizAnswer(target.dataset.archetype);
             }
             else if (target.dataset.pollId && pollContainer) {
+                // --- SINGLE SELECTION LOGIC ---
                 const allButtons = pollContainer.querySelectorAll('button');
                 allButtons.forEach(btn => btn.disabled = true);
                 handlePollAnswer(target.dataset.pollId, target.dataset.optionIndex, JSON.parse(pollContainer.dataset.pollData));
