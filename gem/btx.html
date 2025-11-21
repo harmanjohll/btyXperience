@@ -15,11 +15,17 @@
             font-family: 'Inter', sans-serif; 
             background-color: var(--bty-blue); 
             color: #f0f0f0; 
-            overflow: hidden; 
+            overflow-y: auto; /* Scrollbar enabled */
             background-image: 
                 radial-gradient(circle at top left, rgba(255,255,255,0.05) 0%, transparent 30%),
                 radial-gradient(circle at bottom right, rgba(0, 12, 83, 0.3) 0%, transparent 40%);
         }
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #000C53; }
+        ::-webkit-scrollbar-thumb { background: #4A5568; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--bty-yellow); }
+
         .bty-text-yellow { color: var(--bty-yellow); }
         .bty-text-red { color: var(--bty-red); }
         .bty-bg-yellow { background-color: var(--bty-yellow); }
@@ -77,7 +83,7 @@
         .iframe-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
     </style>
 </head>
-<body class="antialiased overflow-hidden">
+<body class="antialiased">
 
     <div id="presenterPanel" class="hidden fixed top-4 right-4 bg-red-800 p-4 rounded-lg shadow-lg z-50">
         <h3 class="font-bold text-white mb-2">Presenter Controls</h3>
@@ -90,43 +96,45 @@
 
     <div id="notificationToast" class="toast"></div>
 
-    <div class="container mx-auto px-4 min-h-screen flex flex-col items-center justify-center relative">
-        <header class="absolute top-0 left-0 p-8 flex items-center gap-6 z-50 pointer-events-none">
-            <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/fc98005f3682a779482dd1bf5e7cff5f9adb8451/gem/BTlogo.png" alt="Beatty Crest" class="h-28 w-auto drop-shadow-lg">
-            <div>
-                <h1 class="text-5xl font-black bty-text-yellow drop-shadow-md">BEATTY</h1>
-                <p class="text-xl text-gray-200 font-bold tracking-widest">SECONDARY SCHOOL</p>
-            </div>
-        </header>
+    <!-- Floating Header (Top) -->
+    <header class="fixed top-0 left-0 p-8 flex items-center gap-6 z-50 pointer-events-none">
+        <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/fc98005f3682a779482dd1bf5e7cff5f9adb8451/gem/BTlogo.png" alt="Beatty Crest" class="h-32 w-auto drop-shadow-lg">
+        <div>
+            <h1 class="text-6xl font-black bty-text-yellow drop-shadow-md">BEATTY</h1>
+            <p class="text-2xl text-gray-200 font-bold tracking-widest">SECONDARY SCHOOL</p>
+        </div>
+    </header>
 
+    <div class="container mx-auto px-4 min-h-screen flex flex-col items-center justify-center relative">
+        
         <section id="start" class="w-full max-w-6xl mx-auto fade-in mt-20">
             <div class="text-center pb-24">
-                <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/fc98005f3682a779482dd1bf5e7cff5f9adb8451/gem/BTlogo.png" alt="Beatty School Crest" class="h-40 w-auto mx-auto mb-6 crest-glow">
-                <p class="font-semibold text-gray-300 italic mb-4 text-xl">Non Vi Sed Arte (Not with Force, but with Skill)</p>
+                <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/fc98005f3682a779482dd1bf5e7cff5f9adb8451/gem/BTlogo.png" alt="Beatty School Crest" class="h-48 w-auto mx-auto mb-6 crest-glow">
+                <p class="font-semibold text-gray-300 italic mb-4 text-2xl">Non Vi Sed Arte (Not with Force, but with Skill)</p>
                 <h1 class="text-6xl md:text-8xl font-black bty-text-yellow mb-4">Come On Board @ Beatty</h1>
                 <p class="text-2xl md:text-3xl text-gray-200 mb-12">Where Your Aspirations Take Flight</p>
                 
-                <p class="max-w-4xl mx-auto text-gray-300 mb-12 text-lg">We believe that gifts turn to talents when we nurture adaptive thinkers, agile learners, and active contributors. Join us to discover your path.</p>
+                <p class="max-w-4xl mx-auto text-gray-300 mb-12 text-xl">We believe that gifts turn to talents when we nurture adaptive thinkers, agile learners, and active contributors. Join us to discover your path.</p>
 
                 <div class="grid md:grid-cols-3 gap-8 text-left mb-12 max-w-5xl mx-auto">
                     <div class="bg-gray-800/50 p-8 rounded-xl border border-gray-700">
-                        <h3 class="font-bold text-xl bty-text-yellow mb-2">Explore Zones</h3>
-                        <p class="text-base text-gray-300">Navigate pathways in academics, character, CCAs & your future.</p>
+                        <h3 class="font-bold text-2xl bty-text-yellow mb-2">Explore Zones</h3>
+                        <p class="text-lg text-gray-300">Navigate pathways in academics, character, CCAs & your future.</p>
                     </div>
                     <div class="bg-gray-800/50 p-8 rounded-xl border border-gray-700">
-                        <h3 class="font-bold text-xl bty-text-yellow mb-2">Unlock Insights</h3>
-                        <p class="text-base text-gray-300">Discover achievements as you explore our real-world programmes.</p>
+                        <h3 class="font-bold text-2xl bty-text-yellow mb-2">Unlock Insights</h3>
+                        <p class="text-lg text-gray-300">Discover achievements as you explore our real-world programmes.</p>
                     </div>
                     <div class="bg-gray-800/50 p-8 rounded-xl border border-gray-700">
-                        <h3 class="font-bold text-xl bty-text-yellow mb-2">Hear Real Voices</h3>
-                        <p class="text-base text-gray-300">Learn from the authentic experiences of our Beattyians.</p>
+                        <h3 class="font-bold text-2xl bty-text-yellow mb-2">Hear Real Voices</h3>
+                        <p class="text-lg text-gray-300">Learn from the authentic experiences of our Beattyians.</p>
                     </div>
                 </div>
 
                 <div class="flex justify-center items-center gap-8">
                         <div class="text-left">
                             <p class="text-xl md:text-2xl text-gray-200 mb-2">Please scan the QR code to begin.</p>
-                            <p id="participant-count" class="text-gray-400 text-base">Waiting for you to join...</p>
+                            <p id="participant-count" class="text-gray-400 text-lg">Waiting for you to join...</p>
                         </div>
                         <div class="bg-white p-3 rounded-xl shadow-lg">
                             <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/6896dfb0489f15d284c674573fea7605c984fa45/gem/joinbtyqr.png" alt="QR Code to Join Session" class="w-40 h-40">
@@ -139,21 +147,24 @@
             </div>
         </section>
 
-        <section id="journey" class="hidden w-full max-w-[95vw] mx-auto h-[90vh] flex flex-col pt-24 relative">
-            <div id="journey-content" class="flex-grow flex flex-col justify-center w-full"></div>
-            
-            <!-- Footer Navigation Area -->
-            <div class="shrink-0 mt-4 flex flex-col w-full">
-                <div class="w-full bg-gray-700 rounded-full h-3 mb-4">
-                    <div id="progressBar" class="bty-bg-yellow h-3 rounded-full progress-bar-fill" style="width: 10%"></div>
-                </div>
-                <div class="flex justify-between pb-4">
-                    <button id="prevBtn" class="btn-primary py-2 px-6 text-sm" style="background-color: #4A5568; display: none;">Previous</button>
-                    <button id="nextBtn" class="btn-primary py-2 px-6 text-sm">Next</button>
-                </div>
-            </div>
+        <section id="journey" class="hidden w-full max-w-full mx-auto h-[85vh] flex flex-col pt-24 relative">
+            <div id="journey-content" class="flex-grow flex flex-col justify-center w-full h-full"></div>
         </section>
     </div>
+
+    <!-- Sticky Footer for Progress & Nav -->
+    <footer class="fixed bottom-0 left-0 w-full bg-gray-900/90 backdrop-blur-md p-4 z-50 border-t border-gray-800">
+        <div class="max-w-[98vw] mx-auto">
+            <div class="w-full bg-gray-700 rounded-full h-3 mb-4">
+                <div id="progressBar" class="bty-bg-yellow h-3 rounded-full progress-bar-fill" style="width: 10%"></div>
+            </div>
+            <div class="flex justify-between items-center">
+                <button id="prevBtn" class="btn-primary py-2 px-6 text-sm" style="background-color: #4A5568; display: none;">Previous</button>
+                <div id="footerStatus" class="text-gray-400 text-sm font-mono"></div>
+                <button id="nextBtn" class="btn-primary py-2 px-6 text-sm">Next</button>
+            </div>
+        </div>
+    </footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -268,6 +279,17 @@
             { id: 'deck_f', type: 'slide', title: "", description: "", url: "https://docs.google.com/presentation/d/e/2PACX-1vQx7tJCZ8s5AD5S9F7S2kNmAgfEX7KnIP6fLMQfcFCfQr4-9JeUVxFcyYRhzNtZYbBaCvLM1Wz8p1sX/pubembed?start=false&loop=false&delayms=60000" },
             { id: 'card', type: 'memento', title: "Your Journey Begins", description: "Please check your phone for your personalized Beatty Compass Card." }
         ];
+
+        // ... (Standard Listener and Logic, now enhanced with the Global Keydown Event) ...
+        
+        // --- Global Keydown Listener ---
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+                document.getElementById('nextBtn').click();
+            } else if (e.key === 'ArrowLeft') {
+                document.getElementById('prevBtn').click();
+            }
+        });
 
         function initializeListeners() {
             onSnapshot(collection(db, "compassQuiz"), snap => {
@@ -400,8 +422,8 @@
                 case 'finale': return renderAspirationsCrest(liveData.aspirations);
                 case 'memento': return `<div class="text-center text-2xl font-bold bty-text-yellow">Please check your phone!</div>`;
                 case 'static': return step.content;
-                case 'video': return `<div class="max-w-[90vw] mx-auto"><div class="iframe-container h-[70vh]"><iframe src="${step.url}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>`;
-                case 'slide': return `<div class="max-w-full h-full mx-auto"><div class="iframe-container h-full"><iframe src="${step.url}" frameborder="0" width="100%" height="100%" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe></div></div>`;
+                case 'video': return `<div class="max-w-[90vw] mx-auto"><div class="iframe-container h-[85vh]"><iframe src="${step.url}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>`;
+                case 'slide': return `<div class="max-w-full h-full mx-auto"><div class="iframe-container h-[85vh]"><iframe src="${step.url}" frameborder="0" width="100%" height="100%" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe></div></div>`;
                 default: return '';
             }
         }
