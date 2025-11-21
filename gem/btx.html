@@ -15,155 +15,156 @@
             font-family: 'Inter', sans-serif; 
             background-color: var(--bty-blue); 
             color: #f0f0f0; 
-            overflow-y: auto; /* Scrollbar enabled */
-            overflow-x: hidden; /* Prevent horizontal scroll */
+            overflow-y: auto; /* Scrollbar enabled per request */
+            overflow-x: hidden; 
             background-image: 
                 radial-gradient(circle at top left, rgba(255,255,255,0.05) 0%, transparent 30%),
                 radial-gradient(circle at bottom right, rgba(0, 12, 83, 0.3) 0%, transparent 40%);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        /* Scrollbar Styling */
-        ::-webkit-scrollbar { width: 10px; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 12px; }
         ::-webkit-scrollbar-track { background: #000C53; }
-        ::-webkit-scrollbar-thumb { background: #4A5568; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb { background: #4A5568; border-radius: 6px; border: 3px solid #000C53; }
         ::-webkit-scrollbar-thumb:hover { background: var(--bty-yellow); }
 
         .bty-text-yellow { color: var(--bty-yellow); }
         .bty-text-red { color: var(--bty-red); }
         .bty-bg-yellow { background-color: var(--bty-yellow); }
-        .btn-primary { background-color: var(--bty-yellow); color: var(--bty-blue); font-weight: 700; padding: 1rem 2rem; border-radius: 9999px; transition: transform 0.2s, background-color 0.2s; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; }
-        .btn-primary:hover { transform: scale(1.05); background-color: #fff; }
-        .fade-in { animation: fadeIn 1s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .progress-bar-fill { transition: width 0.5s ease-in-out; }
-        .chart-bar { transition: width 0.5s ease-in-out, background-color 0.3s; }
-        .correct-answer-box { border: 2px solid var(--bty-red); border-radius: 0.75rem; padding: 1rem; background-color: rgba(236, 50, 55, 0.1); animation: pulse-red 1.5s 2; }
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(236, 50, 55, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(236, 50, 55, 0); } 100% { box-shadow: 0 0 0 0 rgba(236, 50, 55, 0); } }
-        .confirm-modal-overlay, .nexus-modal-overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 100; transition: opacity 0.3s; }
-        .modal-content { background-color: rgba(26, 32, 44, 0.8); padding: 2rem; border-radius: 1rem; border: 1px solid rgba(74, 85, 104, 0.5); text-align: left; max-width: 500px; transform: scale(0.95); transition: transform 0.3s; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }
-        .confirm-modal-overlay:not(.hidden) .modal-content, .nexus-modal-overlay:not(.hidden) .modal-content { transform: scale(1); }
-        #word-cloud { position: relative; width: 100%; max-width: 800px; height: 500px; margin: auto; }
-        .word { position: absolute; transition: opacity 1s, transform 2s cubic-bezier(0.68, -0.55, 0.27, 1.55); will-change: transform, opacity; }
-        #globe-container { cursor: grab; position: relative; }
-        #globe-container:grabbing { cursor: grabbing; }
-        .globe-controls { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 1rem; z-index: 10;}
-        .globe-btn { background: rgba(0,0,0,0.3); border: 1px solid var(--bty-yellow); color: var(--bty-yellow); padding: 0.5rem 1rem; border-radius: 9999px; cursor: pointer; backdrop-filter: blur(5px); }
-        .toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: #2D3748; color: white; padding: 1rem 2rem; border-radius: 0.5rem; transition: bottom 0.5s ease-in-out; z-index: 200; }
-        .toast.show { bottom: 20px; }
-        .pin { position: absolute; transform: translate(-50%, -100%); cursor: pointer; transition: transform 0.2s, opacity 0.2s; display: flex; flex-direction: column; align-items: center; }
-        .pin:hover { transform: translate(-50%, -100%) scale(1.1); z-index: 1000 !important; }
-        .pin-label { text-align: center; }
-        .pin-stem { background-color: currentColor; }
-        .pin-dot { background-color: currentColor; border-radius: 50%; }
-        #globe-pins-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-        .globe-pin { pointer-events: auto; }
-        .globe-pin .pin-label { background: rgba(0,12,83,0.8); color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; white-space: nowrap; backdrop-filter: blur(2px); border: 1px solid var(--bty-yellow); }
-        .globe-pin .pin-stem { width: 2px; height: 18px; color: var(--bty-yellow); }
-        .globe-pin .pin-dot { width: 10px; height: 10px; margin-top: -5px; color: var(--bty-yellow); }
-        #industry-nexus-container { position: relative; width: 100%; max-width: 900px; margin: auto; }
-        .sg-map-pin .pin-dot { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); font-size: 12px; border: 2px solid white; }
-        .sg-map-pin .pin-stem { width: 3px; height: 15px; margin-top: -4px; }
-        .sg-map-pin .pin-label { font-size: 16px; color: var(--bty-blue); margin-bottom: 8px; font-weight: 900; text-shadow: none; background: rgba(255, 255, 255, 0.9); padding: 4px 8px; border-radius: 6px; border: 2px solid var(--bty-blue); box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-        .crest-glow { animation: crest-glow 4s ease-in-out infinite; }
-        @keyframes crest-glow { 0%, 100% { filter: drop-shadow(0 0 5px rgba(255, 226, 0, 0.2)); } 50% { filter: drop-shadow(0 0 20px rgba(255, 226, 0, 0.5)); } }
         
-        /* DREAM Cards - One Row Full Screen */
-        .dream-card-container { perspective: 1000px; cursor: pointer; width: 100%; height: 100%; }
-        .dream-card { position: relative; width: 100%; height: 100%; transition: transform 0.8s; transform-style: preserve-3d; }
-        .dream-card.is-flipped { transform: rotateY(180deg); }
-        .dream-card-front, .dream-card-back { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: 1rem; display: flex; align-items: center; justify-content: center; border: 2px solid #4A5568; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5); }
-        .dream-card-front { background-color: #1a202c; overflow: hidden; }
-        .dream-card-back { background-color: #2d3748; transform: rotateY(180deg); padding: 1rem; text-align: center; font-size: 1rem; line-height: 1.4; flex-direction: column; overflow-y: auto;}
-        .dream-card-back h4 { font-size: 1.5rem; line-height: 1.2; margin-bottom: 1rem; }
-        .dream-card-back ul { list-style-type: none; padding: 0; font-size: 1.1rem; }
-        .dream-card-back li { margin-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px; }
-        .dream-bg { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 0.4s ease-in-out; }
-        .dream-card-container:hover .dream-bg { opacity: 0.15; }
+        /* Buttons */
+        .btn-primary { background-color: var(--bty-yellow); color: var(--bty-blue); font-weight: 800; padding: 0.75rem 2rem; border-radius: 0.5rem; transition: all 0.2s; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; border: 2px solid transparent; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .btn-primary:hover { transform: translateY(-2px); background-color: #fff; box-shadow: 0 6px 8px rgba(0,0,0,0.4); }
+        .btn-secondary { background-color: #4A5568; color: white; font-weight: 700; padding: 0.75rem 2rem; border-radius: 0.5rem; transition: all 0.2s; text-transform: uppercase; cursor: pointer; }
+        .btn-secondary:hover { background-color: #718096; }
 
-        /* Video and Slide Containers */
-        .iframe-container { position: relative; width: 100%; padding-bottom: 56.25%; /* 16:9 Aspect Ratio */ height: 0; overflow: hidden; border-radius: 1rem; border: 1px solid #4A5568; background: #000; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5); }
-        .iframe-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .fade-in { animation: fadeIn 0.8s ease-out forwards; opacity: 0; transform: translateY(10px); }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+        
+        .progress-bar-fill { transition: width 0.5s ease-in-out; }
+        .chart-bar { transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s; }
+        
+        .correct-answer-box { border: 3px solid var(--bty-red); border-radius: 0.75rem; padding: 1rem; background-color: rgba(236, 50, 55, 0.15); animation: pulse-red 2s infinite; }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(236, 50, 55, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(236, 50, 55, 0); } 100% { box-shadow: 0 0 0 0 rgba(236, 50, 55, 0); } }
+        
+        /* Modals */
+        .confirm-modal-overlay, .nexus-modal-overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 100; transition: opacity 0.3s; }
+        .modal-content { background-color: #1a202c; padding: 2.5rem; border-radius: 1rem; border: 1px solid #4A5568; text-align: left; max-width: 600px; width: 90%; transform: scale(0.95); transition: transform 0.3s; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
+        .confirm-modal-overlay:not(.hidden) .modal-content, .nexus-modal-overlay:not(.hidden) .modal-content { transform: scale(1); }
+        
+        /* Word Cloud */
+        #word-cloud-container { position: relative; width: 100%; height: 100%; overflow: hidden; }
+        .word { position: absolute; transition: all 1.5s ease-out; white-space: nowrap; font-weight: 900; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        
+        /* Globe & Map */
+        #globe-container { cursor: grab; position: relative; width: 100%; height: 100%; }
+        #globe-container:grabbing { cursor: grabbing; }
+        .globe-controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 1rem; z-index: 10; }
+        .globe-btn { background: rgba(0,12,83,0.6); border: 1px solid var(--bty-yellow); color: var(--bty-yellow); padding: 0.5rem 1.5rem; border-radius: 9999px; cursor: pointer; backdrop-filter: blur(4px); font-weight: bold; }
+        
+        .pin { position: absolute; transform: translate(-50%, -100%); cursor: pointer; transition: transform 0.2s; display: flex; flex-direction: column; align-items: center; z-index: 50; }
+        .pin:hover { transform: translate(-50%, -100%) scale(1.2); z-index: 100 !important; }
+        
+        /* Map Pins */
+        .sg-map-pin .pin-dot { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.4); font-size: 14px; border: 3px solid white; border-radius: 50%; }
+        .sg-map-pin .pin-stem { width: 4px; height: 20px; margin-top: -2px; }
+        .sg-map-pin .pin-label { font-size: 18px; color: var(--bty-blue); margin-bottom: 6px; font-weight: 900; background: rgba(255, 255, 255, 0.95); padding: 4px 10px; border-radius: 6px; border: 2px solid var(--bty-blue); box-shadow: 0 4px 6px rgba(0,0,0,0.3); white-space: nowrap; }
+        
+        /* Globe Pins */
+        .globe-pin .pin-label { background: rgba(0,12,83,0.85); color: white; padding: 4px 8px; border-radius: 4px; font-size: 14px; white-space: nowrap; border: 1px solid var(--bty-yellow); font-weight: bold; }
+        .globe-pin .pin-stem { width: 2px; height: 25px; background-color: var(--bty-yellow); }
+        .globe-pin .pin-dot { width: 12px; height: 12px; background-color: var(--bty-yellow); border-radius: 50%; margin-top: -6px; }
+
+        .crest-glow { animation: crest-glow 4s ease-in-out infinite; }
+        @keyframes crest-glow { 0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 226, 0, 0.3)); } 50% { filter: drop-shadow(0 0 25px rgba(255, 226, 0, 0.6)); } }
+        
+        /* DREAM Cards - Huge Grid */
+        .dream-card-container { perspective: 1000px; cursor: pointer; width: 100%; height: 100%; min-height: 350px; }
+        .dream-card { position: relative; width: 100%; height: 100%; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
+        .dream-card.is-flipped { transform: rotateY(180deg); }
+        .dream-card-front, .dream-card-back { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: 1rem; display: flex; align-items: center; justify-content: center; border: 2px solid #4A5568; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5); overflow: hidden; }
+        .dream-card-front { background-color: #1a202c; }
+        .dream-card-back { background-color: #2d3748; transform: rotateY(180deg); padding: 2rem; text-align: center; flex-direction: column; }
+        .dream-bg { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 0.4s; }
+        .dream-card-container:hover .dream-bg { opacity: 0.2; }
+
+        /* Full Screen Iframes */
+        .iframe-wrapper { width: 100%; height: 100%; position: relative; background: #000; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .iframe-wrapper iframe { width: 100%; height: 100%; border: none; }
     </style>
 </head>
-<body class="antialiased overflow-hidden">
+<body>
 
-    <div id="presenterPanel" class="hidden fixed top-4 right-4 bg-red-800 p-4 rounded-lg shadow-lg z-50">
-        <h3 class="font-bold text-white mb-2">Presenter Controls</h3>
-        <button id="resetSessionBtn" class="bg-yellow-400 text-blue-900 font-bold py-2 px-4 rounded hover:bg-white">Reset Live Session</button>
+    <!-- Presenter Reset Panel -->
+    <div id="presenterPanel" class="hidden fixed top-4 right-4 bg-red-900/80 backdrop-blur p-4 rounded-lg shadow-xl z-[100]">
+        <h3 class="font-bold text-white mb-2 text-sm uppercase tracking-wider">Presenter</h3>
+        <button id="resetSessionBtn" class="bg-yellow-400 text-blue-900 font-bold py-2 px-4 rounded hover:bg-white text-sm transition-colors">Reset Session</button>
     </div>
 
-    <div id="customConfirmModal" class="confirm-modal-overlay hidden opacity-0"><div class="modal-content" style="text-align:center;"><h2 class="text-xl font-bold mb-4">Confirm Reset</h2><p class="text-gray-300 mb-6">This action is irreversible. To proceed, please type 'RESET' below.</p><input type="text" id="confirmResetInput" class="bg-gray-700 text-white p-2 rounded w-full mb-4" placeholder="RESET"><div><button id="cancelResetBtn" class="bg-gray-500 text-white font-bold py-2 px-6 rounded mr-2">Cancel</button><button id="confirmResetBtn" class="bg-red-600 text-white font-bold py-2 px-6 rounded">Confirm</button></div></div></div>
+    <div id="customConfirmModal" class="confirm-modal-overlay hidden opacity-0"><div class="modal-content" style="text-align:center;"><h2 class="text-2xl font-bold mb-4 text-white">Confirm Reset</h2><p class="text-gray-300 mb-6">This will wipe all audience data. Type 'RESET' to confirm.</p><input type="text" id="confirmResetInput" class="bg-gray-700 text-white p-3 rounded w-full mb-4 border border-gray-600 focus:border-yellow-400 outline-none" placeholder="RESET"><div><button id="cancelResetBtn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded mr-2">Cancel</button><button id="confirmResetBtn" class="bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-6 rounded">Confirm</button></div></div></div>
     
-    <div id="nexusModal" class="nexus-modal-overlay hidden opacity-0"><div class="modal-content relative max-w-2xl w-full !text-left !p-8"><button id="closeModalBtn" class="absolute top-4 right-4 text-gray-400 hover:text-white text-3xl leading-none">&times;</button><div id="modalContent"></div></div></div>
+    <div id="nexusModal" class="nexus-modal-overlay hidden opacity-0"><div class="modal-content relative"><button id="closeModalBtn" class="absolute top-4 right-4 text-gray-400 hover:text-white text-4xl leading-none">&times;</button><div id="modalContent"></div></div></div>
 
-    <div id="notificationToast" class="toast"></div>
-
-    <!-- Floating Header (Top) -->
-    <header class="fixed top-0 left-0 p-8 flex items-center gap-6 z-50 pointer-events-none w-full">
-        <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/fc98005f3682a779482dd1bf5e7cff5f9adb8451/gem/BTlogo.png" alt="Beatty Crest" class="h-32 w-auto drop-shadow-lg">
+    <!-- Floating Header (Big & Bold) -->
+    <header class="absolute top-0 left-0 p-8 flex items-center gap-6 z-40 pointer-events-none w-full bg-gradient-to-b from-blue-900/50 to-transparent">
+        <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/fc98005f3682a779482dd1bf5e7cff5f9adb8451/gem/BTlogo.png" alt="Beatty Crest" class="h-32 w-auto drop-shadow-2xl filter brightness-110">
         <div>
-            <h1 class="text-6xl font-black bty-text-yellow drop-shadow-md">BEATTY</h1>
-            <p class="text-2xl text-gray-200 font-bold tracking-widest">SECONDARY SCHOOL</p>
+            <h1 class="text-6xl font-black bty-text-yellow drop-shadow-md tracking-tight">BEATTY</h1>
+            <p class="text-2xl text-white font-bold tracking-[0.2em] opacity-90">SECONDARY SCHOOL</p>
         </div>
     </header>
 
-    <div class="container w-full px-0 min-h-screen flex flex-col items-center justify-center relative">
+    <!-- Main Content Area (Flex Grow) -->
+    <main class="flex-grow relative w-full flex flex-col">
         
-        <section id="start" class="w-full max-w-[95vw] mx-auto fade-in mt-20">
-            <div class="text-center pb-24">
-                <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/fc98005f3682a779482dd1bf5e7cff5f9adb8451/gem/BTlogo.png" alt="Beatty School Crest" class="h-48 w-auto mx-auto mb-6 crest-glow">
-                <p class="font-semibold text-gray-300 italic mb-4 text-2xl">Non Vi Sed Arte (Not with Force, but with Skill)</p>
-                <h1 class="text-6xl md:text-8xl font-black bty-text-yellow mb-4">Come On Board @ Beatty</h1>
-                <p class="text-2xl md:text-3xl text-gray-200 mb-12">Where Your Aspirations Take Flight</p>
+        <!-- Start Screen -->
+        <section id="start" class="w-full h-full flex flex-col justify-center items-center fade-in pt-32">
+            <div class="text-center max-w-7xl px-4">
+                <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/fc98005f3682a779482dd1bf5e7cff5f9adb8451/gem/BTlogo.png" alt="Beatty School Crest" class="h-64 w-auto mx-auto mb-8 crest-glow">
+                <p class="font-semibold text-gray-300 italic mb-4 text-3xl">Non Vi Sed Arte (Not with Force, but with Skill)</p>
+                <h1 class="text-7xl md:text-9xl font-black bty-text-yellow mb-6 tracking-tight">Come On Board</h1>
+                <p class="text-3xl md:text-5xl text-white mb-16 font-light">Where Your Aspirations Take Flight</p>
                 
-                <p class="max-w-4xl mx-auto text-gray-300 mb-12 text-xl">We believe that gifts turn to talents when we nurture adaptive thinkers, agile learners, and active contributors. Join us to discover your path.</p>
-
-                <div class="grid md:grid-cols-3 gap-8 text-left mb-12 max-w-5xl mx-auto">
-                    <div class="bg-gray-800/50 p-8 rounded-xl border border-gray-700">
-                        <h3 class="font-bold text-2xl bty-text-yellow mb-2">Explore Zones</h3>
-                        <p class="text-lg text-gray-300">Navigate pathways in academics, character, CCAs & your future.</p>
-                    </div>
-                    <div class="bg-gray-800/50 p-8 rounded-xl border border-gray-700">
-                        <h3 class="font-bold text-2xl bty-text-yellow mb-2">Unlock Insights</h3>
-                        <p class="text-lg text-gray-300">Discover achievements as you explore our real-world programmes.</p>
-                    </div>
-                    <div class="bg-gray-800/50 p-8 rounded-xl border border-gray-700">
-                        <h3 class="font-bold text-2xl bty-text-yellow mb-2">Hear Real Voices</h3>
-                        <p class="text-lg text-gray-300">Learn from the authentic experiences of our Beattyians.</p>
-                    </div>
-                </div>
-
-                <div class="flex justify-center items-center gap-8">
+                <div class="flex justify-center items-center gap-12 bg-gray-900/40 p-8 rounded-2xl backdrop-blur-sm border border-white/10 inline-flex">
                         <div class="text-left">
-                            <p class="text-xl md:text-2xl text-gray-200 mb-2">Please scan the QR code to begin.</p>
-                            <p id="participant-count" class="text-gray-400 text-lg">Waiting for you to join...</p>
+                            <p class="text-3xl text-white mb-2 font-bold">Scan to Join</p>
+                            <p id="participant-count" class="text-gray-300 text-xl">Waiting for audience...</p>
                         </div>
-                        <div class="bg-white p-3 rounded-xl shadow-lg">
-                            <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/6896dfb0489f15d284c674573fea7605c984fa45/gem/joinbtyqr.png" alt="QR Code to Join Session" class="w-40 h-40">
+                        <div class="bg-white p-3 rounded-xl shadow-2xl">
+                            <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/6896dfb0489f15d284c674573fea7605c984fa45/gem/joinbtyqr.png" alt="QR Code" class="w-48 h-48">
                         </div>
                 </div>
-                 <div class="mt-16 space-x-4">
-                    <button id="beginBtn" class="btn-primary text-xl px-10 py-4">Begin Journey</button>
-                    <button id="startResetBtn" class="hidden bg-red-800/70 text-white font-bold py-2 px-4 rounded-lg uppercase text-xs tracking-wider hover:bg-red-700">Reset Session</button>
+                 
+                 <div class="mt-16">
+                    <button id="beginBtn" class="btn-primary text-2xl px-12 py-5 shadow-2xl">Begin Journey</button>
+                    <button id="startResetBtn" class="hidden ml-4 bg-red-900/50 text-red-200 text-sm px-4 py-2 rounded hover:bg-red-800">Reset</button>
                  </div>
             </div>
         </section>
 
-        <section id="journey" class="hidden w-full h-[85vh] flex flex-col pt-24 relative">
-            <div id="journey-content" class="flex-grow flex flex-col justify-center w-full h-full"></div>
+        <!-- Journey Container (Full Screen) -->
+        <section id="journey" class="hidden w-full h-full relative flex flex-col">
+            <!-- Content injected here fills the space -->
+            <div id="journey-content" class="w-full h-full flex flex-col"></div>
         </section>
-    </div>
 
-    <!-- Sticky Footer for Progress & Nav -->
-    <footer class="fixed bottom-0 left-0 w-full bg-gray-900/90 backdrop-blur-md p-4 z-50 border-t border-gray-800">
-        <div class="w-full px-4">
-            <div class="w-full bg-gray-700 rounded-full h-3 mb-4">
-                <div id="progressBar" class="bty-bg-yellow h-3 rounded-full progress-bar-fill" style="width: 10%"></div>
+    </main>
+
+    <!-- Fixed Footer Navigation (Always Visible) -->
+    <footer class="shrink-0 w-full bg-gray-900/95 backdrop-blur-md border-t border-gray-700 p-4 z-50">
+        <div class="w-full flex items-center gap-6">
+            <button id="prevBtn" class="btn-secondary min-w-[120px]" style="display: none;">Previous</button>
+            
+            <div class="flex-grow flex flex-col justify-center">
+                <div class="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+                    <div id="progressBar" class="bty-bg-yellow h-full rounded-full progress-bar-fill" style="width: 0%"></div>
+                </div>
             </div>
-            <div class="flex justify-between items-center">
-                <button id="prevBtn" class="btn-primary py-2 px-6 text-sm" style="background-color: #4A5568; display: none;">Previous</button>
-                <div id="footerStatus" class="text-gray-400 text-sm font-mono"></div>
-                <button id="nextBtn" class="btn-primary py-2 px-6 text-sm">Next</button>
-            </div>
+
+            <button id="nextBtn" class="btn-primary min-w-[120px]">Next</button>
         </div>
     </footer>
 
@@ -195,47 +196,47 @@
         let currentStep = 0;
         let liveData = { compass: {}, polls: {}, nexus: {}, aspirations: [] };
 
-        const modalData = { 
-            GeoBali: { title: "Geography/Literature @ Bali", studentCount: 30, duration: "1 Week", description: "Embark on an immersive exploration of Bali's dynamic landscape...", highlights: ["Understand Bali's volcanic history...", "Evaluate how local communities adapt...", "Experience a real field site..."] }, 
-            NZ: { title: "Leadership/Sustainability @ Aorere College, New Zealand", studentCount: 10, duration: "1 Week", description: "The exchange programme, crafted in collaboration with Aorere College...", highlights: ["Sharpen critical and creative thinking.", "Develop essential leadership qualities.", "Understand language's role in leadership."]}, 
-            Korea: { title: "A.I. @ South Korea", studentCount: 12, duration: "1 Week", description: "Dive into the future of technology in one of the world's most innovative hubs.", highlights: [] }, 
-            MiharaJapan: { title: "Social Sciences @ Mihara, Japan", studentCount: 14, duration: "1 Week", description: "Embark on a transformative journey with our exchange programme with Hiroshima University High School...", highlights: ["Deepen global and cultural literacies.", "Develop social-emotional competencies.", "Experience rich Japanese culture."] },
-            MutsuzawaJapan: { title: "STEM @ Mutsuzawa, Japan", studentCount: 14, duration: "1 Week", description: "Embark on a transformative journey shaping future leaders in science and technology innovation...", highlights: ["Deepen global and cultural literacies.", "Develop social-emotional competencies.", "Experience rich Japanese culture."] },
-            Estonia: { title: "Cybersecurity @ Estonia", studentCount: 16, duration: "1 Week", description: "Learn from the world's leading digital society and dive deep into cybersecurity.", highlights: ["Cultural exchange activities.", "Explore Estonian Film.", "Research digital citizenship."] }, 
-            Rockwell: { title: "Engineering @ Rockwell Automation", studentCount: 12, duration: "7-8 months", description: "Get a head start in industrial automation, focusing on cybersecurity, digital twinning, and sustainability." }, 
-            PIL: { title: "Maritime Sustainability, Materials & Corporate Communications @ Pacific International Lines", studentCount: 12, duration: "7-8 months", description: "Understand global trade, focusing on sustainable logistics, innovative materials, and corporate engagement." }, 
-            ASTAR: { title: "Research @ A*STAR", studentCount: 6, duration: "7-8 months", description: "Experience life as a research scientist at Singapore's premier R&D agency." }, 
-            Journalism: { title: "Media & Journalism @ Berita Harian", studentCount: 8, duration: "7-8 months", description: "Discover the fast-paced world of news and ethical reporting in Malay language media." }, 
-            TamilMurasu: { title: "Media & Journalism @ Tamil Murasu", studentCount: 8, duration: "7-8 months", description: "Engage with the vibrant world of news and media within the Tamil language community." }, 
-            Makita: { title: "Mechatronics @ ITE West & Makita", studentCount: 16, duration: "7-8 months", description: "A deep dive into modern mechatronics and manufacturing processes with industry giant Makita." } 
-        };
-
         const dreamValues = [
-            { name: 'Discipline', img: 'https://raw.githubusercontent.com/harmanjohll/btyXperience/570c03c522bce9cbcd8946d0d9cfa42c6d4537bc/gem/Discipline.png', points: ["Purposeful in thoughts and actions", "Demonstrates self-control", "Focused in pursuit of goals"] },
-            { name: 'Resilience', img: 'https://raw.githubusercontent.com/harmanjohll/btyXperience/570c03c522bce9cbcd8946d0d9cfa42c6d4537bc/gem/Resilience.png', points: ["Recovers from misfortune", "Persistent through challenges", "Courageous in overcoming adversity"] },
-            { name: 'Empathy', img: 'https://raw.githubusercontent.com/harmanjohll/btyXperience/570c03c522bce9cbcd8946d0d9cfa42c6d4537bc/gem/Empathy.png', points: ["Understands feelings of others", "Shows care and concern", "An active contributor"] },
-            { name: 'Adaptability', img: 'https://raw.githubusercontent.com/harmanjohll/btyXperience/570c03c522bce9cbcd8946d0d9cfa42c6d4537bc/gem/Adaptability.png', points: ["Adjusts to new conditions", "A versatile and agile learner", "Open to new ideas"] },
-            { name: 'Mindfulness', img: 'https://raw.githubusercontent.com/harmanjohll/btyXperience/570c03c522bce9cbcd8946d0d9cfa42c6d4537bc/gem/Mindfulness.png', points: ["Aware of thoughts and emotions", "A self-directed learner", "Reflects and learns from experience"] }
+            { name: 'Discipline', img: 'https://raw.githubusercontent.com/harmanjohll/btyXperience/570c03c522bce9cbcd8946d0d9cfa42c6d4537bc/gem/Discipline.png', points: ["Purposeful in thoughts and actions", "Demonstrates self-control"] },
+            { name: 'Resilience', img: 'https://raw.githubusercontent.com/harmanjohll/btyXperience/570c03c522bce9cbcd8946d0d9cfa42c6d4537bc/gem/Resilience.png', points: ["Recovers from misfortune", "Persistent through challenges"] },
+            { name: 'Empathy', img: 'https://raw.githubusercontent.com/harmanjohll/btyXperience/570c03c522bce9cbcd8946d0d9cfa42c6d4537bc/gem/Empathy.png', points: ["Understands feelings of others", "Shows care and concern"] },
+            { name: 'Adaptability', img: 'https://raw.githubusercontent.com/harmanjohll/btyXperience/570c03c522bce9cbcd8946d0d9cfa42c6d4537bc/gem/Adaptability.png', points: ["Adjusts to new conditions", "A versatile and agile learner"] },
+            { name: 'Mindfulness', img: 'https://raw.githubusercontent.com/harmanjohll/btyXperience/570c03c522bce9cbcd8946d0d9cfa42c6d4537bc/gem/Mindfulness.png', points: ["Aware of thoughts and emotions", "A self-directed learner"] }
         ];
         
         const journeySteps = [
-            { id: 'compass', type: 'chart', title: "Our Audience Compass", description: "This is a live reflection of our collective personality in the room today." },
+            { id: 'compass', type: 'chart', title: "Our Audience Compass", description: "Live reflection of our collective personality." },
             { id: 'video_intro', type: 'video', title: "The Beatty Experience", description: "Watch this short introduction.", url: "https://www.youtube.com/embed/6xpckUCGIlE?autoplay=1&modestbranding=1&rel=0" },
             { id: 'deck_a', type: 'slide', title: "", description: "", url: "https://docs.google.com/presentation/d/e/2PACX-1vRpjJ-5NgPJO2LRLdKEcpBgqv-xMAriN5QxdbJSPLS5IE2y2pjNhE0icRG8lKqp0x0dM0KbbS9e1HWK/pubembed?start=false&loop=false&delayms=60000" },
-            
-            // Poll: Dream (Standardized ID)
             { id: 'poll_dream', type: 'poll', title: "Live Poll: Our Core Values", description: "", pollData: { 
-                id: 'dream_poll', // Standardized ID
+                id: 'dream_poll', 
                 question: "What does D.R.E.A.M. stand for in Beatty's core values?", 
                 options: [ "Discipline, Respect, Excellence, Achievement, Mindfulness", "Discipline, Resilience, Empathy, Adaptability, Mindfulness", "Diligence, Respect, Empathy, Adaptability, Mastery", "Determination, Resilience, Excellence, Ambition, Mindfulness" ], 
                 correctAnswer: 1,
                 insight: "D.R.E.A.M. - Discipline, Resilience, Empathy, Adaptability, Mindfulness - guides every Beattyian's journey to success!"
             }},
-            { id: 'values', type: 'static', title: "Our Foundation: The D.R.E.A.M. Values", description: "Click any card to flip.", 
-              content: `<div class="grid grid-cols-5 gap-4 w-full h-[60vh] justify-items-center items-center px-4">
-                 ${dreamValues.map(v => `<div class="dream-card-container"><div class="dream-card"><div class="dream-card-front"><div class="dream-bg" style="background-image: url('${v.img}')"></div><div class="relative z-10 text-center"><h3 class="text-6xl lg:text-8xl font-black bty-text-yellow">${v.name.charAt(0)}</h3><p class="mt-4 text-xl lg:text-2xl font-bold text-white shadow-black drop-shadow-md">${v.name}</p></div></div><div class="dream-card-back"><h4 class="text-2xl font-bold bty-text-yellow mb-4">${v.name}</h4><ul>${v.points.map(p=>`<li>${p}</li>`).join('')}</ul></div></div></div>`).join('')}
-              </div>
-              <p class="mt-8 text-center text-gray-400 italic text-xl">Motto: Non Vi Sed Arte (Not with force but with skill)</p>`
+            { id: 'values', type: 'static', title: "", description: "", // Empty title to maximize space
+              content: `<div class="h-full flex flex-col justify-center items-center pt-20 pb-8 px-8">
+                 <div class="grid grid-cols-5 gap-6 w-full max-w-[95vw] h-[70vh]">
+                 ${dreamValues.map(v => `
+                    <div class="dream-card-container">
+                        <div class="dream-card">
+                            <div class="dream-card-front">
+                                <div class="dream-bg" style="background-image: url('${v.img}')"></div>
+                                <div class="relative z-10 text-center">
+                                    <h3 class="text-7xl lg:text-9xl font-black bty-text-yellow drop-shadow-lg">${v.name.charAt(0)}</h3>
+                                    <p class="mt-2 text-2xl lg:text-3xl font-bold text-white shadow-black drop-shadow-md">${v.name}</p>
+                                </div>
+                            </div>
+                            <div class="dream-card-back">
+                                <h4 class="text-3xl font-bold bty-text-yellow mb-6">${v.name}</h4>
+                                <ul class="text-xl space-y-4">${v.points.map(p=>`<li>${p}</li>`).join('')}</ul>
+                            </div>
+                        </div>
+                    </div>`).join('')}
+                 </div>
+                 <p class="mt-8 text-gray-400 italic text-2xl">Motto: Non Vi Sed Arte (Not with force but with skill)</p>
+              </div>`
             },
             { id: 'deck_b', type: 'slide', title: "", description: "", url: "https://docs.google.com/presentation/d/e/2PACX-1vSrojJmwv5d-ElzN38A8S1Q_YAYl1_VulE6jPSFy6n8dEjPUnzNltCRstS8VC3fUgSg7Xd0fYN4-NWZ/pubembed?start=false&loop=false&delayms=60000" },
             { id: 'poll_cca', type: 'poll', title: "Live Poll: Pursuing Passions", description: "", pollData: { 
@@ -260,10 +261,10 @@
                 correctAnswer: 3,
                 insight: "At Beatty, we offer ALL these areas - Sustainability, Journalism & Media, Engineering & AI, and more. Every passion has a pathway here!"
             }},
-            { id: 'nexus_global', type: 'globe', title: "Chart Your Course: International Exchanges", description: "Click on a pin to learn more. Audience, please select your preferred exchange on your device.", 
-                nexusData: { type: 'global', options: [ {id: 'GeoBali', text: 'Geography/Literature @ Bali'}, {id: 'NZ', text: 'Leadership/Sustainability @ New Zealand'}, {id: 'Korea', text: 'A.I. @ South Korea'}, {id: 'MiharaJapan', text: 'Social Sciences @ Mihara, Japan'}, {id: 'MutsuzawaJapan', text: 'STEM @ Mutsuzawa, Japan'}, {id: 'Estonia', text: 'Cybersecurity @ Estonia'} ] }
+            { id: 'nexus_global', type: 'globe', title: "International Exchanges", description: "Explore our global partnerships.", 
+                nexusData: { type: 'global', options: [ {id: 'GeoBali', text: 'Bali (Geog)'}, {id: 'NZ', text: 'New Zealand'}, {id: 'Korea', text: 'South Korea (AI)'}, {id: 'MiharaJapan', text: 'Japan (Soc. Sci)'}, {id: 'MutsuzawaJapan', text: 'Japan (STEM)'}, {id: 'Estonia', text: 'Estonia (Cyber)'} ] }
             },
-            { id: 'nexus_local', type: 'industry_map', title: "Your Future, Built in Singapore", description: "Explore our local industry attachments. Audience, please select your preferred attachment on your device.", 
+            { id: 'nexus_local', type: 'industry_map', title: "Industry Attachments", description: "Real-world experience in Singapore.", 
                 localData: [
                     { id: "Rockwell", name: "Rockwell", position: { x: 20, y: 47 }, color: "#ef4444" }, 
                     { id: "PIL", name: "PIL", position: { x: 50, y: 63 }, color: "#8b5cf6" },
@@ -272,23 +273,45 @@
                     { id: "Makita", name: "Makita", position: { x: 28, y: 33 }, color: "#10b981" },
                     { id: "ASTAR", name: "A*STAR", position: { x: 43, y: 57 }, color: "#3b82f6" }
                 ],
-                nexusData: { type: 'local', options: [ {id: 'Rockwell', text: 'Engineering @ Rockwell Automation'}, {id: 'PIL', text: 'Maritime Sustainability @ PIL'}, {id: 'Journalism', text: 'Media & Journalism @ Berita Harian'}, {id: 'TamilMurasu', text: 'Media & Journalism @ Tamil Murasu'}, {id: 'Makita', text: 'Mechatronics @ ITE West & Makita'}, {id: 'ASTAR', text: 'Research @ A*STAR'} ] }
+                nexusData: { type: 'local', options: [ {id: 'Rockwell', text: 'Rockwell Automation'}, {id: 'PIL', text: 'PIL (Maritime)'}, {id: 'Journalism', text: 'Berita Harian'}, {id: 'TamilMurasu', text: 'Tamil Murasu'}, {id: 'Makita', text: 'Makita (Mechatronics)'}, {id: 'ASTAR', text: 'A*STAR Research'} ] }
             },
             { id: 'deck_d', type: 'slide', title: "", description: "", url: "https://docs.google.com/presentation/d/e/2PACX-1vRIJppB8CD0rLo6qLaE4eiXeJHcYviqju1Gf3QChKnv7XsJY2cfYQ0eU8M7pSf5Bos2DcyuIxl6ZCPX/pubembed?start=false&loop=false&delayms=60000" },
             { id: 'deck_e', type: 'slide', title: "", description: "", url: "https://docs.google.com/presentation/d/e/2PACX-1vRxw0Yj77fW9I87q0-XgXfqwGPwdi6RPDXBHb7CMGmEJTdBhELve0N5rAg5WbtS2vivKyV5WZO9gB_m/pubembed?start=false&loop=false&delayms=60000" },
-            { id: 'finale', type: 'finale', title: "Our Aspirations Crest", description: "Let's build a symbol of our collective future by submitting one word." },
+            { id: 'finale', type: 'finale', title: "Our Aspirations Crest", description: "Building a symbol of our collective future." },
             { id: 'deck_f', type: 'slide', title: "", description: "", url: "https://docs.google.com/presentation/d/e/2PACX-1vQx7tJCZ8s5AD5S9F7S2kNmAgfEX7KnIP6fLMQfcFCfQr4-9JeUVxFcyYRhzNtZYbBaCvLM1Wz8p1sX/pubembed?start=false&loop=false&delayms=60000" },
             { id: 'card', type: 'memento', title: "Your Journey Begins", description: "Please check your phone for your personalized Beatty Compass Card." }
         ];
 
-        // ... (Standard Listener and Logic, now enhanced with the Global Keydown Event) ...
-        
-        // --- Global Keydown Listener ---
+        const modalData = { 
+            GeoBali: { title: "Geography/Literature @ Bali", studentCount: 30, duration: "1 Week", description: "Embark on an immersive exploration of Bali's dynamic landscape...", highlights: ["Understand Bali's volcanic history...", "Evaluate how local communities adapt...", "Experience a real field site..."] }, 
+            NZ: { title: "Leadership/Sustainability @ Aorere College, New Zealand", studentCount: 10, duration: "1 Week", description: "The exchange programme, crafted in collaboration with Aorere College...", highlights: ["Sharpen critical and creative thinking.", "Develop essential leadership qualities.", "Understand language's role in leadership."]}, 
+            Korea: { title: "A.I. @ South Korea", studentCount: 12, duration: "1 Week", description: "Dive into the future of technology in one of the world's most innovative hubs.", highlights: [] }, 
+            MiharaJapan: { title: "Social Sciences @ Mihara, Japan", studentCount: 14, duration: "1 Week", description: "Embark on a transformative journey with our exchange programme with Hiroshima University High School...", highlights: ["Deepen global and cultural literacies.", "Develop social-emotional competencies.", "Experience rich Japanese culture."] },
+            MutsuzawaJapan: { title: "STEM @ Mutsuzawa, Japan", studentCount: 14, duration: "1 Week", description: "Embark on a transformative journey shaping future leaders in science and technology innovation...", highlights: ["Deepen global and cultural literacies.", "Develop social-emotional competencies.", "Experience rich Japanese culture."] },
+            Estonia: { title: "Cybersecurity @ Estonia", studentCount: 16, duration: "1 Week", description: "Learn from the world's leading digital society and dive deep into cybersecurity.", highlights: ["Cultural exchange activities.", "Explore Estonian Film.", "Research digital citizenship."] }, 
+            Rockwell: { title: "Engineering @ Rockwell Automation", studentCount: 12, duration: "7-8 months", description: "Get a head start in industrial automation, focusing on cybersecurity, digital twinning, and sustainability." }, 
+            PIL: { title: "Maritime Sustainability, Materials & Corporate Communications @ Pacific International Lines", studentCount: 12, duration: "7-8 months", description: "Understand global trade, focusing on sustainable logistics, innovative materials, and corporate engagement." }, 
+            ASTAR: { title: "Research @ A*STAR", studentCount: 6, duration: "7-8 months", description: "Experience life as a research scientist at Singapore's premier R&D agency." }, 
+            Journalism: { title: "Media & Journalism @ Berita Harian", studentCount: 8, duration: "7-8 months", description: "Discover the fast-paced world of news and ethical reporting in Malay language media." }, 
+            TamilMurasu: { title: "Media & Journalism @ Tamil Murasu", studentCount: 8, duration: "7-8 months", description: "Engage with the vibrant world of news and media within the Tamil language community." }, 
+            Makita: { title: "Mechatronics @ ITE West & Makita", studentCount: 16, duration: "7-8 months", description: "A deep dive into modern mechatronics and manufacturing processes with industry giant Makita." } 
+        };
+
+        // --- GLOBAL CLICKER LOGIC ---
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+            if (e.key === 'ArrowRight' || e.key === 'Space' || e.key === 'Enter') {
                 document.getElementById('nextBtn').click();
             } else if (e.key === 'ArrowLeft') {
                 document.getElementById('prevBtn').click();
+            }
+        });
+
+        // --- CLICK ANYWHERE TO ADVANCE (BACKGROUND) ---
+        document.addEventListener('click', (e) => {
+            // Prevent triggering if user clicked a button, card, pin, or inside iframe logic
+            const isInteractive = e.target.closest('button') || e.target.closest('.pin') || e.target.closest('.dream-card') || e.target.closest('#presenterPanel');
+            if (!isInteractive && !document.getElementById('journey').classList.contains('hidden')) {
+                document.getElementById('nextBtn').click();
             }
         });
 
@@ -332,8 +355,8 @@
             });
             liveData[dataType] = results;
 
-            // --- REACTIVE UPDATE FIX (THE SILVER BULLET) ---
             const currentStepObj = journeySteps[currentStep];
+            // Reactive update for Nexus maps
             if (currentStepObj && (currentStepObj.type === 'globe' || currentStepObj.type === 'industry_map') && dataType === 'nexus') {
                  setTimeout(() => {
                     if(results.default) {
@@ -341,7 +364,7 @@
                     }
                 }, 50);
             }
-            
+            // Reactive update for Polls
             if (currentStepObj && currentStepObj.type === 'poll' && dataType === 'polls' && results[currentStepObj.pollData.id]) {
                 updatePollDOM(currentStepObj.pollData.id);
             }
@@ -386,27 +409,25 @@
             const statsContainer = document.getElementById('nexus-stats-container');
             if (!statsContainer) return;
             const total = Object.values(breakdown).reduce((a, b) => a + b, 0);
-            
-            // We need to find the labels for the IDs
             const step = journeySteps[currentStep];
             let options = [];
             if (step.type === 'globe') options = step.nexusData.options;
             else if (step.type === 'industry_map') options = step.nexusData.options;
             
-            let html = `<h3 class="text-xl font-bold bty-text-yellow mb-4">Audience Selections (Total: ${total})</h3>`;
-            html += `<div class="space-y-3">`;
+            let html = `<h3 class="text-2xl font-bold bty-text-yellow mb-6">Live Results (Votes: ${total})</h3>`;
+            html += `<div class="space-y-4">`;
             
             options.forEach(opt => {
                 const count = breakdown[opt.id] || 0;
                 const pct = total > 0 ? (count / total) * 100 : 0;
                 html += `
                 <div>
-                    <div class="flex justify-between text-sm mb-1">
+                    <div class="flex justify-between text-lg mb-1 text-white">
                         <span>${opt.text}</span>
                         <span class="font-bold">${count}</span>
                     </div>
-                    <div class="w-full bg-gray-700 rounded-full h-4">
-                        <div class="bg-blue-500 h-4 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+                    <div class="w-full bg-gray-700 rounded-full h-5">
+                        <div class="bg-blue-500 h-5 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" style="width: ${pct}%"></div>
                     </div>
                 </div>`;
             });
@@ -421,10 +442,10 @@
                 case 'globe': return renderNexusGlobe(liveData.nexus);
                 case 'industry_map': return renderIndustryNexusMap(step.localData, liveData.nexus);
                 case 'finale': return renderAspirationsCrest(liveData.aspirations);
-                case 'memento': return `<div class="text-center text-2xl font-bold bty-text-yellow">Please check your phone!</div>`;
+                case 'memento': return `<div class="text-center text-3xl font-bold bty-text-yellow animate-pulse">Please check your phone!</div>`;
                 case 'static': return step.content;
-                case 'video': return `<div class="w-full h-full"><div class="iframe-container h-full"><iframe src="${step.url}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>`;
-                case 'slide': return `<div class="w-full h-full"><div class="iframe-container h-full"><iframe src="${step.url}" frameborder="0" width="100%" height="100%" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe></div></div>`;
+                case 'video': return `<div class="w-full h-full flex items-center justify-center"><div class="iframe-wrapper max-w-[90vw] max-h-[80vh] aspect-video rounded-xl overflow-hidden"><iframe src="${step.url}" title="Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>`;
+                case 'slide': return `<div class="w-full h-full pt-20 pb-4 px-0"><div class="w-full h-full bg-black shadow-2xl"><iframe src="${step.url}" frameborder="0" width="100%" height="100%" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe></div></div>`;
                 default: return '';
             }
         }
@@ -433,56 +454,63 @@
             const archetypes = ["The Innovator", "The Global Explorer", "The Industry Trailblazer", "The Community Steward", "The Creative Artist", "The STEM Futurist", "The Voice Amplifier", "The Eco-Strategist"];
             const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ef4444', '#ec4899', '#8b5cf6', '#06b6d4', '#22c55e'];
             const total = (data && data.total) || 0;
-            if (total === 0) return `<p class="text-center text-gray-400">Waiting for results...</p>`;
-            return `<div class="space-y-4 max-w-5xl mx-auto">${archetypes.map((type, i) => {
+            if (total === 0) return `<div class="h-full flex items-center justify-center"><p class="text-center text-gray-400 text-2xl animate-pulse">Waiting for results...</p></div>`;
+            return `<div class="h-full flex flex-col justify-center px-12"><div class="space-y-6 max-w-6xl mx-auto w-full">${archetypes.map((type, i) => {
                 const count = (data && data.breakdown && data.breakdown[type]) || 0;
                 const pct = total > 0 ? (count / total) * 100 : 0;
-                return `<div class="text-left"><div class="flex justify-between items-center mb-1"><span class="font-bold text-xl">${type}</span><span class="text-lg font-semibold">${count}</span></div><div class="w-full bg-gray-700 rounded-full h-8"><div class="chart-bar text-right pr-2 font-bold text-lg text-blue-900 leading-8 rounded-full" style="width: ${pct}%; background-color: ${colors[i]};">${pct.toFixed(0)}%</div></div></div>`;
-            }).join('')}</div>`;
+                return `<div class="text-left"><div class="flex justify-between items-center mb-2"><span class="font-bold text-2xl text-white">${type}</span><span class="text-xl font-semibold text-gray-300">${count}</span></div><div class="w-full bg-gray-700/50 rounded-full h-10 backdrop-blur"><div class="chart-bar text-right pr-4 font-bold text-xl text-white leading-10 rounded-full shadow-lg" style="width: ${pct}%; background-color: ${colors[i]}; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">${pct.toFixed(0)}%</div></div></div>`;
+            }).join('')}</div></div>`;
         }
 
         function renderPollChart(pollData, data, isRevealed = false) {
             const total = (data && data.total) || 0;
-            let pollHTML = `<div data-poll-id="${pollData.id}" class="h-full flex flex-col justify-center"><h2 class="text-4xl font-semibold mb-8">${pollData.question}</h2>`;
-            pollHTML += `<div class="text-right mb-6 font-bold text-2xl bty-text-yellow total-votes-display">Total Votes: ${total}</div>`;
-            pollHTML += `<div class="space-y-6 max-w-5xl mx-auto w-full">${pollData.options.map((opt, i) => {
+            let pollHTML = `<div data-poll-id="${pollData.id}" class="h-full flex flex-col justify-center px-12 max-w-7xl mx-auto w-full"><h2 class="text-5xl font-bold mb-12 leading-tight">${pollData.question}</h2>`;
+            pollHTML += `<div class="text-right mb-8 font-bold text-3xl bty-text-yellow total-votes-display">Total Votes: ${total}</div>`;
+            pollHTML += `<div class="space-y-8 w-full">${pollData.options.map((opt, i) => {
                 const count = (data && data.breakdown && data.breakdown[i]) || 0;
                 const pct = total > 0 ? (count / total) * 100 : 0;
                 const isCorrect = i === pollData.correctAnswer;
                 const wrapperClass = isCorrect && isRevealed ? 'correct-answer-box' : '';
-                return `<div class="${wrapperClass}" data-option-index="${i}"><div class="text-left"><div class="flex justify-between items-center mb-2"><span class="font-bold text-2xl">${opt} ${isCorrect && isRevealed ? '🏆' : ''}</span><span class="text-xl font-semibold vote-count">${count} vote(s)</span></div><div class="w-full bg-gray-700 rounded-full h-12"><div class="chart-bar text-center p-1 font-bold text-2xl text-blue-900 leading-10 rounded-full ${isCorrect && isRevealed ? 'correct' : ''}" style="width: ${pct}%; background-color: ${isCorrect && isRevealed ? 'var(--bty-yellow)' : '#A0AEC0'};">${pct.toFixed(0)}%</div></div></div></div>`;
+                return `<div class="${wrapperClass}" data-option-index="${i}"><div class="text-left"><div class="flex justify-between items-center mb-3"><span class="font-bold text-3xl text-white">${opt} ${isCorrect && isRevealed ? '🏆' : ''}</span><span class="text-2xl font-semibold vote-count text-gray-300">${count} vote(s)</span></div><div class="w-full bg-gray-700/50 rounded-full h-16 backdrop-blur"><div class="chart-bar text-center p-1 font-bold text-3xl text-blue-900 leading-[3.5rem] rounded-full shadow-lg ${isCorrect && isRevealed ? 'correct' : ''}" style="width: ${pct}%; background-color: ${isCorrect && isRevealed ? 'var(--bty-yellow)' : '#A0AEC0'};">${pct.toFixed(0)}%</div></div></div></div>`;
             }).join('')}</div>`;
-            if (total === 0 && !isRevealed) { pollHTML += '<p class="text-center text-gray-400 mt-8 text-xl">Waiting for votes...</p>'; }
+            if (total === 0 && !isRevealed) { pollHTML += '<div class="flex justify-center mt-12"><p class="text-center text-gray-400 text-2xl animate-pulse">Waiting for votes...</p></div>'; }
             pollHTML += '</div>';
             return pollHTML;
         }
 
         function renderAspirationsCrest(words = []) {
-             let cloudHTML = `<div id="word-cloud-container" class="relative w-full max-w-[90vw] h-[70vh] mx-auto"></div>`;
+             let cloudHTML = `<div id="word-cloud-container" class="relative w-full h-full overflow-hidden"></div>`;
             setTimeout(() => {
                 const cloud = document.getElementById('word-cloud-container');
                 if(!cloud) return;
                 cloud.innerHTML = '';
                 const uniqueWords = [...new Set(words)]; 
+                if(uniqueWords.length === 0) {
+                    cloud.innerHTML = `<div class="flex h-full items-center justify-center text-gray-500 text-3xl">Waiting for aspirations...</div>`;
+                    return;
+                }
                 uniqueWords.forEach((word) => {
                     const el = document.createElement('span');
-                    el.className = 'word absolute opacity-0 transition-all duration-1000 transform-gpu font-black text-yellow-400';
+                    el.className = 'word absolute opacity-0 transition-all duration-1000 transform-gpu font-black text-yellow-400 drop-shadow-[0_0_10px_rgba(255,255,0,0.5)]';
                     el.textContent = word;
                     el.style.left = `50%`; el.style.top = `50%`;
                     el.style.transform = `translate(-50%, -50%) scale(0)`;
                     cloud.appendChild(el);
                 });
                 const elements = Array.from(cloud.children);
-                if (elements.length === 0) return;
                 let angle = Math.random() * Math.PI * 2; 
                 let radius = 50;
-                const radiusIncrement = (elements.length > 1) ? 350 / (elements.length) : 0;
+                const radiusIncrement = (elements.length > 1) ? 400 / (elements.length) : 0;
                 elements.forEach((el, i) => {
-                    const x = 50 + radius * Math.cos(angle);
+                    const x = 50 + radius * Math.cos(angle); // % based positioning
                     const y = 50 + radius * Math.sin(angle);
-                    el.style.left = `${x}%`; el.style.top = `${y}%`; el.style.opacity = '1';
+                    // Constrain to viewport roughly
+                    const safeX = Math.max(10, Math.min(90, x));
+                    const safeY = Math.max(10, Math.min(90, y));
+                    
+                    el.style.left = `${safeX}%`; el.style.top = `${safeY}%`; el.style.opacity = '1';
                     el.style.transform = `translate(-50%, -50%) scale(1) rotate(${Math.random() * 20 - 10}deg)`;
-                    el.style.fontSize = `${24 + Math.random() * 48}px`;
+                    el.style.fontSize = `${32 + Math.random() * 64}px`;
                     angle += (Math.PI * 2) / (elements.length) * (0.8 + Math.random() * 0.4);
                     radius += radiusIncrement;
                 });
@@ -496,15 +524,18 @@
         
         function renderNexusGlobe(data = {}) {
             setTimeout(() => initGlobe(data), 50);
-            // Split layout: Left Globe, Right Stats
+            // Split layout: Left Globe (Larger), Right Stats (Smaller)
             return `
-            <div class="flex h-full w-full">
-                <div class="w-2/3 h-full relative">
+            <div class="flex h-full w-full pt-20 pb-4 px-4 gap-8">
+                <div class="w-3/4 h-full relative bg-black/20 rounded-3xl overflow-hidden border border-white/10">
                     <div id="globe-container" class="w-full h-full"><div id="globe-pins-container"></div></div>
+                    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
+                        <button id="spinBtn" class="globe-btn hover:bg-blue-900/80 transition-colors">Stop Spin</button>
+                    </div>
                 </div>
-                <div class="w-1/3 h-full bg-gray-800/50 border-l border-gray-700 p-4 overflow-y-auto">
+                <div class="w-1/4 h-full bg-gray-800/80 backdrop-blur-xl border-l border-gray-600 p-6 rounded-3xl overflow-y-auto shadow-2xl">
                     <div id="nexus-stats-container">
-                        <p class="text-gray-400">Waiting for selections...</p>
+                        <p class="text-gray-400 animate-pulse">Waiting for selections...</p>
                     </div>
                 </div>
             </div>`;
@@ -520,15 +551,14 @@
             }).join('');
             const mapImage = `<img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/611f5fa27aa0bcf1c9854ab5458a9898f600389b/gem/sgmap.png" alt="Singapore Map" class="absolute top-0 left-0 w-full h-full object-contain -z-10" />`;
             
-            // Split layout: Left Map, Right Stats
             return `
-            <div class="flex h-full w-full">
-                <div class="w-2/3 h-full relative flex justify-center items-center">
-                    <div id="industry-nexus-container" class="w-full h-full flex justify-center items-center relative">${mapImage}${pinsHTML}</div>
+            <div class="flex h-full w-full pt-20 pb-4 px-4 gap-8">
+                <div class="w-3/4 h-full relative bg-white/5 rounded-3xl border border-white/10 flex justify-center items-center overflow-hidden">
+                    <div id="industry-nexus-container" class="w-full h-full flex justify-center items-center relative scale-90">${mapImage}${pinsHTML}</div>
                 </div>
-                <div class="w-1/3 h-full bg-gray-800/50 border-l border-gray-700 p-4 overflow-y-auto">
+                <div class="w-1/4 h-full bg-gray-800/80 backdrop-blur-xl border-l border-gray-600 p-6 rounded-3xl overflow-y-auto shadow-2xl">
                     <div id="nexus-stats-container">
-                        <p class="text-gray-400">Waiting for selections...</p>
+                        <p class="text-gray-400 animate-pulse">Waiting for selections...</p>
                     </div>
                 </div>
             </div>`;
@@ -545,7 +575,7 @@
             
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-            camera.position.z = 3.5;
+            camera.position.z = 3.2; // Zoomed in slightly more
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(container.clientWidth, container.clientHeight);
             renderer.setPixelRatio(window.devicePixelRatio);
@@ -553,21 +583,22 @@
             
             const textureLoader = new THREE.TextureLoader();
             const earthTexture = textureLoader.load('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg');
-            const earthMaterial = new THREE.MeshStandardMaterial({ map: earthTexture, metalness: 0.1, roughness: 0.9 });
+            const earthMaterial = new THREE.MeshStandardMaterial({ map: earthTexture, metalness: 0.2, roughness: 0.8 }); // Slightly nicer material
             globe = new THREE.Mesh(new THREE.SphereGeometry(1.5, 64, 64), earthMaterial);
             scene.add(globe);
 
+            // Add Atmosphere Glow
             const glowMaterial = new THREE.ShaderMaterial({
                 vertexShader: `varying vec3 vNormal; void main() { vNormal = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-                fragmentShader: `varying vec3 vNormal; void main() { float intensity = pow(0.7 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0); gl_FragColor = vec4(0.3, 0.6, 1.0, 1.0) * intensity; }`,
+                fragmentShader: `varying vec3 vNormal; void main() { float intensity = pow(0.6 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 4.0); gl_FragColor = vec4(0.2, 0.5, 1.0, 1.0) * intensity; }`,
                 side: THREE.BackSide, blending: THREE.AdditiveBlending, transparent: true
             });
             const glow = new THREE.Mesh(new THREE.SphereGeometry(1.5, 64, 64), glowMaterial);
-            glow.scale.set(1.15, 1.15, 1.15);
+            glow.scale.set(1.12, 1.12, 1.12);
             scene.add(glow);
 
-            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-            const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
             dirLight.position.set(5, 3, 5);
             scene.add(dirLight);
 
@@ -606,25 +637,23 @@
                 camera.position.z = Math.max(2.0, Math.min(camera.position.z, 6.0)); 
             });
             
-            const controls = document.createElement('div');
-            controls.className = 'globe-controls';
-            controls.innerHTML = `<button id="spinBtn" class="globe-btn">Stop Spin</button>`;
-            container.appendChild(controls);
             document.getElementById('spinBtn').addEventListener('click', () => { isSpinning = !isSpinning; document.getElementById('spinBtn').textContent = isSpinning ? 'Stop Spin' : 'Start Spin'; });
 
             function animate() {
                 animationFrameId = requestAnimationFrame(animate);
-                if (isSpinning) globe.rotation.y += 0.0005;
+                if (isSpinning) globe.rotation.y += 0.0008; // Slightly faster default spin
                 globePinsData.forEach(pin => {
                     const pos = pin.vector.clone().applyEuler(globe.rotation);
                     const screenPos = pos.clone().project(camera);
-                    if (pos.z > -0.3) {
+                    if (pos.z > -0.35) { // Improved visibility clipping
                         const x = (screenPos.x * container.clientWidth/2) + container.clientWidth/2;
                         const y = -(screenPos.y * container.clientHeight/2) + container.clientHeight/2;
                         pin.element.style.transform = `translate(${x}px, ${y}px) translate(-50%, -100%)`;
                         pin.element.style.opacity = '1';
+                        pin.element.style.display = 'flex';
                     } else {
                         pin.element.style.opacity = '0';
+                        pin.element.style.display = 'none'; // Hide completely to prevent phantom clicks
                     }
                 });
                 renderer.render(scene, camera);
@@ -655,12 +684,30 @@
             if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; }
             if (currentStep >= journeySteps.length) return;
             const step = journeySteps[currentStep];
+            
+            // Update Footer Status text
+            const footerText = document.getElementById('footerStatus');
+            footerText.textContent = `Step ${currentStep + 1} / ${journeySteps.length}`;
+
             setDoc(doc(db, "session", "state"), { currentView: step.type, pollData: step.pollData || null, nexusData: step.nexusData || null, localData: step.localData || null });
             const contentHTML = renderContent(step);
-            const descriptionHTML = (typeof step.description === 'string' && step.description.length > 0) 
-                ? `<p class="text-md md:text-lg text-gray-300 max-w-3xl mx-auto mb-8">${step.description}</p>` 
-                : '';
-            if (contentHTML) { journeyContent.innerHTML = `<div class="text-center fade-in h-full flex flex-col justify-center"><h2 class="text-3xl md:text-6xl font-black bty-text-yellow mb-4">${step.title}</h2>${descriptionHTML}<div class="flex-grow">${contentHTML}</div></div>`; }
+            
+            // Removed title rendering here for cleaner Full Screen slides (logic inside renderContent handles layout)
+            // Specific logic for 'slide' type to go full screen is inside renderContent 'slide' case
+            
+            let wrapperClass = "text-center fade-in h-full flex flex-col justify-center";
+            let titleHTML = `<h2 class="text-3xl md:text-5xl font-black bty-text-yellow mb-4 drop-shadow-md">${step.title}</h2>`;
+            let descHTML = step.description ? `<p class="text-xl text-gray-200 max-w-6xl mx-auto mb-8">${step.description}</p>` : '';
+
+            if(step.type === 'slide') {
+                wrapperClass = "w-full h-full p-0 m-0 fade-in"; // Reset padding for slides
+                titleHTML = ''; // Remove title for slides
+                descHTML = ''; // Remove desc for slides
+            }
+
+            if (contentHTML) { 
+                journeyContent.innerHTML = `<div class="${wrapperClass}">${titleHTML}${descHTML}<div class="flex-grow w-full h-full">${contentHTML}</div></div>`; 
+            }
             
              if (step.id === 'values') {
                 const dreamCards = journeyContent.querySelectorAll('.dream-card');
@@ -680,15 +727,20 @@
 
             progressBar.style.width = `${((currentStep + 1) / journeySteps.length) * 100}%`;
             prevBtn.style.display = currentStep > 0 ? 'inline-block' : 'none';
-            nextBtn.textContent = (step.type === 'poll' && !step.revealed) ? 'Reveal Answer' : (currentStep === journeySteps.length - 1 ? 'Finish' : 'Next');
+            
+            // Special button text logic
+            let btnText = 'Next';
+            if (step.type === 'poll' && !step.revealed) btnText = 'Reveal Answer';
+            else if (currentStep === journeySteps.length - 1) btnText = 'Finish';
+            nextBtn.textContent = btnText;
         }
         
         window.showNexusModal = (id) => {
             const data = modalData[id];
             if (!data) return;
-            let highlightsHTML = data.highlights && data.highlights.length > 0 ? `<ul class="list-disc list-inside mt-4 text-gray-400 text-sm space-y-2">${data.highlights.map(h => `<li>${h}</li>`).join('')}</ul>` : '';
-            let infoBadges = (data.studentCount ? `<span class="bg-blue-900 text-blue-300 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full">👥 ${data.studentCount} Students</span>` : '') + (data.duration ? `<span class="bg-purple-900 text-purple-300 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full">⏳ ${data.duration}</span>` : '');
-            modalContent.innerHTML = `<h2 class="text-2xl font-bold bty-text-yellow mb-2">${data.title}</h2><div class="mb-4">${infoBadges}</div><p class="text-gray-300 text-base">${data.description || ''}</p>${highlightsHTML}`;
+            let highlightsHTML = data.highlights && data.highlights.length > 0 ? `<ul class="list-disc list-inside mt-4 text-gray-300 text-lg space-y-2">${data.highlights.map(h => `<li>${h}</li>`).join('')}</ul>` : '';
+            let infoBadges = (data.studentCount ? `<span class="bg-blue-900 text-blue-200 text-sm font-bold me-2 px-3 py-1 rounded-full border border-blue-500">👥 ${data.studentCount} Students</span>` : '') + (data.duration ? `<span class="bg-purple-900 text-purple-200 text-sm font-bold me-2 px-3 py-1 rounded-full border border-purple-500">⏳ ${data.duration}</span>` : '');
+            modalContent.innerHTML = `<h2 class="text-4xl font-black bty-text-yellow mb-3">${data.title}</h2><div class="mb-6">${infoBadges}</div><p class="text-white text-xl leading-relaxed">${data.description || ''}</p>${highlightsHTML}`;
             nexusModal.classList.remove('hidden', 'opacity-0');
         }
 
@@ -698,7 +750,7 @@
             if (step.type === 'poll' && !step.revealed) { step.revealed = true; updateJourneyStep(); return; }
             if (currentStep < journeySteps.length - 1) { currentStep++; updateJourneyStep(); } 
             else {
-                journeyContent.innerHTML = `<div class="text-center fade-in"><h2 class="text-4xl md:text-6xl font-black bty-text-yellow mb-4">Your Journey Begins Now.</h2><p class="text-lg md:text-xl text-gray-200 mb-8">Thank you for exploring The Beatty Experience. <br>We invite you to join our family and discover where your aspirations will take you.</p><a href="https://www.beattysec.moe.edu.sg/" target="_blank" class="btn-primary">Visit Our Website</a></div>`;
+                journeyContent.innerHTML = `<div class="text-center fade-in h-full flex flex-col justify-center items-center"><h2 class="text-6xl md:text-8xl font-black bty-text-yellow mb-8 drop-shadow-xl">Your Journey Begins Now.</h2><p class="text-2xl md:text-4xl text-gray-200 mb-12 max-w-5xl">Thank you for exploring The Beatty Experience. <br>We invite you to join our family and discover where your aspirations will take you.</p><a href="https://www.beattysec.moe.edu.sg/" target="_blank" class="btn-primary text-2xl px-10 py-4">Visit Our Website</a></div>`;
                 setDoc(doc(db, "session", "state"), { currentView: 'end' });
                 prevBtn.style.display = 'none'; nextBtn.style.display = 'none'; progressBar.style.width = '100%';
             }
