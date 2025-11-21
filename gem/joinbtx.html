@@ -25,6 +25,7 @@
                 radial-gradient(circle at 100% 0%, rgba(255, 226, 0, 0.1) 0%, transparent 30%),
                 radial-gradient(circle at 0% 100%, rgba(0, 12, 83, 0.5) 0%, transparent 40%);
         }
+        .mirror-content { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; padding: 1.5rem; text-align: center; }
     </style>
 </head>
 <body class="antialiased text-white">
@@ -80,10 +81,15 @@
         
         function renderView(state) {
             if (!userData.archetype) { renderQuizQuestion(); return; }
+            
             switch(state.currentView) {
                 case 'poll':
-                    if (userData.polls && userData.polls[state.pollData.id] !== undefined) renderWaiting(`You have voted. Please watch the main screen.`);
-                    else renderPoll(state.pollData);
+                    // Check if vote exists for this specific poll ID
+                    if (userData.polls && userData.polls[state.pollData.id] !== undefined) {
+                        renderWaiting(`You have voted on: ${state.title || 'Poll'}. Please watch the main screen.`);
+                    } else {
+                        renderPoll(state.pollData);
+                    }
                     break;
                 case 'globe': case 'industry_map':
                     if (userData[state.nexusData.type]) renderWaiting(`Your choice is on the map! Please watch the main screen.`);
@@ -91,9 +97,56 @@
                     break;
                 case 'finale': renderAspirationInput(); break;
                 case 'memento': case 'end': renderMementoCard(); break;
+                
+                // --- MIRRORING LOGIC ---
+                case 'chart':
+                    renderMirror(state.title, "Look at the screen to see the live results of our collective persona!");
+                    break;
+                case 'video':
+                    const embedUrl = state.url ? state.url.replace("autoplay=1", "autoplay=0") : ""; 
+                    appContainer.innerHTML = `
+                    <div class="mirror-content fade-in w-full max-w-md">
+                        <h2 class="text-xl font-bold text-yellow-400 mb-2">${state.title}</h2>
+                        <p class="text-sm text-gray-300 mb-4">${state.description}</p>
+                        <div class="relative w-full pb-[56.25%] h-0 overflow-hidden rounded bg-black">
+                            <iframe class="absolute top-0 left-0 w-full h-full" src="${embedUrl}" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Tap to play video on your device.</p>
+                    </div>`;
+                    break;
+                case 'slide':
+                    appContainer.innerHTML = `
+                    <div class="mirror-content fade-in w-full max-w-md">
+                        <h2 class="text-xl font-bold text-yellow-400 mb-4">${state.title}</h2>
+                        <div class="text-4xl mb-4">📄</div>
+                        <p class="text-lg">Presenter is sharing slides.</p>
+                        <p class="text-sm text-gray-400 mt-2">Please focus on the main screen for the presentation.</p>
+                    </div>`;
+                    break;
+                case 'static': // DREAM Values
+                    if (state.staticContent) {
+                        const listHtml = state.staticContent.map(v => `<li class="mb-2"><strong class="text-yellow-300">${v.name}</strong>: ${v.points[0]}</li>`).join('');
+                        appContainer.innerHTML = `
+                        <div class="mirror-content fade-in w-full max-w-md text-left">
+                            <h2 class="text-xl font-bold text-yellow-400 mb-4 text-center">${state.title}</h2>
+                            <ul class="text-sm space-y-2">${listHtml}</ul>
+                        </div>`;
+                    } else {
+                        renderMirror(state.title, state.description);
+                    }
+                    break;
                 default:
-                    renderWaiting(`Please watch the main screen for the next interaction. You are a <strong class="text-yellow-300">${userData.archetype}</strong>.`);
+                    renderWaiting(`Please watch the main screen. You are a <strong class="text-yellow-300">${userData.archetype}</strong>.`);
             }
+        }
+
+        function renderMirror(title, description) {
+            appContainer.innerHTML = `
+                <div class="mirror-content fade-in w-full max-w-md">
+                    <h2 class="text-xl font-bold text-yellow-400 mb-2">${title}</h2>
+                    <p class="text-gray-300">${description}</p>
+                    <div class="mt-6 animate-pulse text-yellow-500 text-2xl">👀</div>
+                </div>`;
         }
         
         function renderQuizQuestion() {
@@ -168,6 +221,7 @@
                 insight: isCorrect ? pollData.insight : (incorrectMessages[pollId] || `That's a good guess! The correct insight is: ${pollData.insight}`)
             };
             saveUserData();
+            // Use composite key to ensure unique vote per poll
             await setDoc(doc(db, "polls", `${pollId}_${auth.currentUser.uid}`), { pollId: pollId, vote: choiceIndex, timestamp: serverTimestamp() });
             renderWaiting("Thank you! Please watch the main screen.");
         }
@@ -331,7 +385,6 @@
                 handleQuizAnswer(target.dataset.archetype);
             }
             else if (target.dataset.pollId && pollContainer) {
-                // --- SINGLE SELECTION LOGIC ---
                 const allButtons = pollContainer.querySelectorAll('button');
                 allButtons.forEach(btn => btn.disabled = true);
                 handlePollAnswer(target.dataset.pollId, target.dataset.optionIndex, JSON.parse(pollContainer.dataset.pollData));
