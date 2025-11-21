@@ -16,6 +16,7 @@
             background-color: var(--bty-blue); 
             color: #f0f0f0; 
             overflow-y: auto; /* Scrollbar enabled */
+            overflow-x: hidden; /* Prevent horizontal scroll */
             background-image: 
                 radial-gradient(circle at top left, rgba(255,255,255,0.05) 0%, transparent 30%),
                 radial-gradient(circle at bottom right, rgba(0, 12, 83, 0.3) 0%, transparent 40%);
@@ -83,7 +84,7 @@
         .iframe-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
     </style>
 </head>
-<body class="antialiased">
+<body class="antialiased overflow-hidden">
 
     <div id="presenterPanel" class="hidden fixed top-4 right-4 bg-red-800 p-4 rounded-lg shadow-lg z-50">
         <h3 class="font-bold text-white mb-2">Presenter Controls</h3>
@@ -97,7 +98,7 @@
     <div id="notificationToast" class="toast"></div>
 
     <!-- Floating Header (Top) -->
-    <header class="fixed top-0 left-0 p-8 flex items-center gap-6 z-50 pointer-events-none">
+    <header class="fixed top-0 left-0 p-8 flex items-center gap-6 z-50 pointer-events-none w-full">
         <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/fc98005f3682a779482dd1bf5e7cff5f9adb8451/gem/BTlogo.png" alt="Beatty Crest" class="h-32 w-auto drop-shadow-lg">
         <div>
             <h1 class="text-6xl font-black bty-text-yellow drop-shadow-md">BEATTY</h1>
@@ -105,9 +106,9 @@
         </div>
     </header>
 
-    <div class="container mx-auto px-4 min-h-screen flex flex-col items-center justify-center relative">
+    <div class="container w-full px-0 min-h-screen flex flex-col items-center justify-center relative">
         
-        <section id="start" class="w-full max-w-6xl mx-auto fade-in mt-20">
+        <section id="start" class="w-full max-w-[95vw] mx-auto fade-in mt-20">
             <div class="text-center pb-24">
                 <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/fc98005f3682a779482dd1bf5e7cff5f9adb8451/gem/BTlogo.png" alt="Beatty School Crest" class="h-48 w-auto mx-auto mb-6 crest-glow">
                 <p class="font-semibold text-gray-300 italic mb-4 text-2xl">Non Vi Sed Arte (Not with Force, but with Skill)</p>
@@ -147,14 +148,14 @@
             </div>
         </section>
 
-        <section id="journey" class="hidden w-full max-w-full mx-auto h-[85vh] flex flex-col pt-24 relative">
+        <section id="journey" class="hidden w-full h-[85vh] flex flex-col pt-24 relative">
             <div id="journey-content" class="flex-grow flex flex-col justify-center w-full h-full"></div>
         </section>
     </div>
 
     <!-- Sticky Footer for Progress & Nav -->
     <footer class="fixed bottom-0 left-0 w-full bg-gray-900/90 backdrop-blur-md p-4 z-50 border-t border-gray-800">
-        <div class="max-w-[98vw] mx-auto">
+        <div class="w-full px-4">
             <div class="w-full bg-gray-700 rounded-full h-3 mb-4">
                 <div id="progressBar" class="bty-bg-yellow h-3 rounded-full progress-bar-fill" style="width: 10%"></div>
             </div>
@@ -422,8 +423,8 @@
                 case 'finale': return renderAspirationsCrest(liveData.aspirations);
                 case 'memento': return `<div class="text-center text-2xl font-bold bty-text-yellow">Please check your phone!</div>`;
                 case 'static': return step.content;
-                case 'video': return `<div class="max-w-[90vw] mx-auto"><div class="iframe-container h-[85vh]"><iframe src="${step.url}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>`;
-                case 'slide': return `<div class="max-w-full h-full mx-auto"><div class="iframe-container h-[85vh]"><iframe src="${step.url}" frameborder="0" width="100%" height="100%" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe></div></div>`;
+                case 'video': return `<div class="w-full h-full"><div class="iframe-container h-full"><iframe src="${step.url}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>`;
+                case 'slide': return `<div class="w-full h-full"><div class="iframe-container h-full"><iframe src="${step.url}" frameborder="0" width="100%" height="100%" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe></div></div>`;
                 default: return '';
             }
         }
