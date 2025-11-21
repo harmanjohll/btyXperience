@@ -214,18 +214,13 @@
             // 3. Show persona distribution on presenter view.
             { id: 'compass', type: 'chart', title: "Our Audience Compass", description: "This is a live reflection of our collective personality in the room today." },
 
-            // 4. Video (Muted for Autoplay Fix)
-            { id: 'video_intro', type: 'video', title: "The Beatty Spirit", description: "Watch this short introduction.", url: "https://www.youtube.com/embed/6xpckUCGIlE?autoplay=1&mute=1&controls=0&rel=0" },
+            // 4. Video (Sound Enabled - No Mute)
+            { id: 'video_intro', type: 'video', title: "The Beatty Spirit", description: "Watch this short introduction.", url: "https://www.youtube.com/embed/6xpckUCGIlE?autoplay=1&modestbranding=1&rel=0" },
 
             // 5. One page to click through Slide Deck A (Embed)
             { id: 'deck_a', type: 'slide', title: "Part A", description: "", url: "https://docs.google.com/presentation/d/e/2PACX-1vRpjJ-5NgPJO2LRLdKEcpBgqv-xMAriN5QxdbJSPLS5IE2y2pjNhE0icRG8lKqp0x0dM0KbbS9e1HWK/pubembed?start=false&loop=false&delayms=60000" },
 
-            // 6. DREAM Cards.
-            { id: 'values', type: 'static', title: "Our Foundation: The D.R.E.A.M. Values", description: "Hover to see the image, click to see the details.", 
-              content: `<div class="flex flex-wrap justify-center gap-8 text-center">${dreamValues.map(v => `<div class="dream-card-container w-64 h-80"><div class="dream-card"><div class="dream-card-front"><div class="dream-bg" style="background-image: url('${v.img}')"></div><div class="relative z-10 text-center"><h3 class="text-6xl font-black bty-text-yellow">${v.name.charAt(0)}</h3><p class="mt-2 text-xl font-semibold text-gray-200">${v.name}</p></div></div><div class="dream-card-back"><ul>${v.points.map(p=>`<li>${p}</li>`).join('')}</ul></div></div></div>`).join('')}</div><p class="mt-8 text-center text-gray-400 italic">Motto: Non Vi Sed Arte (Not with force but with skill)</p>`
-            },
-
-            // (Implied) Poll Dream
+            // Poll: Dream (Moved UP before tiles)
             { id: 'poll_dream', type: 'poll', title: "Live Poll: Our Core Values", description: "", pollData: { 
                 id: 'dream_v2', 
                 question: "What does D.R.E.A.M. stand for in Beatty's core values?", 
@@ -233,6 +228,11 @@
                 correctAnswer: 1,
                 insight: "D.R.E.A.M. - Discipline, Resilience, Empathy, Adaptability, Mindfulness - guides every Beattyian's journey to success!"
             }},
+
+            // 6. DREAM Cards.
+            { id: 'values', type: 'static', title: "Our Foundation: The D.R.E.A.M. Values", description: "Hover to see the image, click to see the details.", 
+              content: `<div class="flex flex-wrap justify-center gap-8 text-center">${dreamValues.map(v => `<div class="dream-card-container w-64 h-80"><div class="dream-card"><div class="dream-card-front"><div class="dream-bg" style="background-image: url('${v.img}')"></div><div class="relative z-10 text-center"><h3 class="text-6xl font-black bty-text-yellow">${v.name.charAt(0)}</h3><p class="mt-2 text-xl font-semibold text-gray-200">${v.name}</p></div></div><div class="dream-card-back"><ul>${v.points.map(p=>`<li>${p}</li>`).join('')}</ul></div></div></div>`).join('')}</div><p class="mt-8 text-center text-gray-400 italic">Motto: Non Vi Sed Arte (Not with force but with skill)</p>`
+            },
 
             // 7. One page to click through Slide Deck B (Embed)
             { id: 'deck_b', type: 'slide', title: "Part B", description: "", url: "https://docs.google.com/presentation/d/e/2PACX-1vSrojJmwv5d-ElzN38A8S1Q_YAYl1_VulE6jPSFy6n8dEjPUnzNltCRstS8VC3fUgSg7Xd0fYN4-NWZ/pubembed?start=false&loop=false&delayms=60000" },
@@ -246,15 +246,24 @@
                 insight: "This means 9 out of 10 Beattyians pursue their passions!"
             }},
 
-            // 9. One page to click through Slide Deck C (Preview)
-            { id: 'deck_c', type: 'slide', title: "Part C", description: "", url: "https://docs.google.com/presentation/d/1MOQ0tKx9oeWGKP2TjU3MLDq6MkUMleBa/preview" },
+            // 9. One page to click through Slide Deck C (Pubembed - Updated)
+            { id: 'deck_c', type: 'slide', title: "Part C", description: "", url: "https://docs.google.com/presentation/d/e/2PACX-1vSPBCKf2jwhgnzADjp6D8QcYaz5aSykXkmBsCCSgYNS5QugQUIPYg1pHoD9i3WBkKxH7BjZaTqQvQZe/pubembed?start=false&loop=false&delayms=60000" },
 
-            // 10. The globe (with all the pins as they are)
+            // 10. Poll: Nexus Count (Moved UP before Globe)
+            { id: 'poll_nexus_count', type: 'poll', title: "Live Poll: Our Opportunities", description: "", pollData: { 
+                id: 'nexus_count_v2', 
+                question: "How many international exchanges and industry attachments does Beatty offer?", 
+                options: ["None", "3 & 3", "7 & 7", "10 & 15"], 
+                correctAnswer: 2,
+                insight: "Beatty offers 7 international exchanges and 7 industry attachments - that's 14 incredible opportunities!"
+            }},
+
+            // 11. The globe (with all the pins as they are)
             { id: 'nexus_global', type: 'globe', title: "Chart Your Course: International Exchanges", description: "Click on a pin to learn more. Audience, please select your preferred exchange on your device.", 
                 nexusData: { type: 'global', options: [ {id: 'GeoBali', text: 'Geography/Literature @ Bali'}, {id: 'NZ', text: 'Leadership/Sustainability @ New Zealand'}, {id: 'Korea', text: 'A.I. @ South Korea'}, {id: 'MiharaJapan', text: 'Social Sciences @ Mihara, Japan'}, {id: 'MutsuzawaJapan', text: 'STEM @ Mutsuzawa, Japan'}, {id: 'Estonia', text: 'Cybersecurity @ Estonia'} ] }
             },
             
-            // 10. ...followed by the SG Map (industry page)
+            // 12. ...followed by the SG Map (industry page)
             { id: 'nexus_local', type: 'industry_map', title: "Your Future, Built in Singapore", description: "Explore our local industry attachments. Audience, please select your preferred attachment on your device.", 
                 localData: [
                     { id: "Rockwell", name: "Rockwell", position: { x: 20, y: 47 }, color: "#ef4444" }, 
@@ -267,15 +276,6 @@
                 nexusData: { type: 'local', options: [ {id: 'Rockwell', text: 'Engineering @ Rockwell Automation'}, {id: 'PIL', text: 'Maritime Sustainability @ PIL'}, {id: 'Journalism', text: 'Media & Journalism @ Berita Harian'}, {id: 'TamilMurasu', text: 'Media & Journalism @ Tamil Murasu'}, {id: 'Makita', text: 'Mechatronics @ ITE West & Makita'}, {id: 'ASTAR', text: 'Research @ A*STAR'} ] }
             },
 
-            // 10. ...and then the questions on international exchange and industry attachment.
-            { id: 'poll_nexus_count', type: 'poll', title: "Live Poll: Our Opportunities", description: "", pollData: { 
-                id: 'nexus_count_v2', 
-                question: "How many international exchanges and industry attachments does Beatty offer?", 
-                options: ["None", "3 & 3", "7 & 7", "10 & 15"], 
-                correctAnswer: 2,
-                insight: "Beatty offers 7 international exchanges and 7 industry attachments - that's 14 incredible opportunities!"
-            }},
-
             { id: 'poll_industry', type: 'poll', title: "Live Poll: Our Pathways", description: "", pollData: {
                 id: 'industry',
                 question: "Which is NOT an area that students can dive deeper into?",
@@ -284,19 +284,19 @@
                 insight: "At Beatty, we offer ALL these areas - Sustainability, Journalism & Media, Engineering & AI, and more. Every passion has a pathway here!"
             }},
 
-            // 11. One page to click through Slide Deck D (Embed)
+            // 13. One page to click through Slide Deck D (Embed)
             { id: 'deck_d', type: 'slide', title: "Part D", description: "", url: "https://docs.google.com/presentation/d/e/2PACX-1vRIJppB8CD0rLo6qLaE4eiXeJHcYviqju1Gf3QChKnv7XsJY2cfYQ0eU8M7pSf5Bos2DcyuIxl6ZCPX/pubembed?start=false&loop=false&delayms=60000" },
 
-            // 12. One page to click through Slide Deck E (Embed)
+            // 14. One page to click through Slide Deck E (Embed)
             { id: 'deck_e', type: 'slide', title: "Part E", description: "", url: "https://docs.google.com/presentation/d/e/2PACX-1vRxw0Yj77fW9I87q0-XgXfqwGPwdi6RPDXBHb7CMGmEJTdBhELve0N5rAg5WbtS2vivKyV5WZO9gB_m/pubembed?start=false&loop=false&delayms=60000" },
 
-            // 13. The board for aspirations.
+            // 15. The board for aspirations.
             { id: 'finale', type: 'finale', title: "Our Aspirations Crest", description: "Let's build a symbol of our collective future by submitting one word." },
 
-            // 14. One page to click through Slide Deck F (Embed)
+            // 16. One page to click through Slide Deck F (Embed)
             { id: 'deck_f', type: 'slide', title: "Part F", description: "", url: "https://docs.google.com/presentation/d/e/2PACX-1vQx7tJCZ8s5AD5S9F7S2kNmAgfEX7KnIP6fLMQfcFCfQr4-9JeUVxFcyYRhzNtZYbBaCvLM1Wz8p1sX/pubembed?start=false&loop=false&delayms=60000" },
 
-            // 15. Download your digital memento.
+            // 17. Download your digital memento.
             { id: 'card', type: 'memento', title: "Your Journey Begins", description: "Please check your phone for your personalized Beatty Compass Card." }
         ];
 
