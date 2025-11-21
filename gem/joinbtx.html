@@ -14,7 +14,7 @@
         body { font-family: 'Inter', sans-serif; background-color: var(--bty-blue); color: #f0f0f0; }
         .action-option { transition: background-color 0.2s, transform 0.2s; }
         .action-option:hover { background-color: rgba(255, 226, 0, 0.2); transform: scale(1.03); }
-        .action-option:disabled { opacity: 0.5; cursor: not-allowed; }
+        .action-option:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; background-color: #2d3748 !important; }
         .fade-in { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .slide-in { animation: slideIn 0.5s ease-in-out; }
@@ -137,7 +137,7 @@
                 <div class="w-full max-w-md text-center fade-in" data-poll-data='${JSON.stringify(pollData)}'>
                      <p class="text-sm font-semibold text-yellow-300 mb-2">Live Poll</p>
                      <h2 class="text-2xl font-bold mb-8">${pollData.question}</h2>
-                     <div class="space-y-4">
+                     <div class="space-y-4 poll-options-container">
                          ${pollData.options.map((opt, index) => `
                              <button data-poll-id="${pollData.id}" data-option-index="${index}" class="action-option w-full text-left p-4 bg-gray-800/50 border border-gray-700 rounded-lg">
                                  ${opt}
@@ -150,9 +150,8 @@
         async function handlePollAnswer(pollId, optionIndex, pollData) {
             if (!userData.polls) userData.polls = {};
             const choiceIndex = parseInt(optionIndex);
-            const choiceText = pollData.options[choiceIndex]; // Get the text of the chosen option
+            const choiceText = pollData.options[choiceIndex]; 
             
-            // A map to create custom incorrect messages based on pollId
             const incorrectMessages = {
                 'cca': `It is quite common to think that only ${choiceText.toLowerCase()} of students secure their CCA, but we are indeed able to have 9 in 10 Beattyians pursue their passions.`,
                 'dream_v2': `While ${choiceText.toLowerCase()} includes some great values, our D.R.E.A.M. stands for Discipline, Resilience, Empathy, Adaptability, and Mindfulness.`,
@@ -326,11 +325,21 @@
             if (target.id === 'submitAspiration') { handleAspirationSubmit(); return; }
 
             const pollContainer = target.closest('[data-poll-data]');
-            target.disabled = true;
-
-            if (target.dataset.archetype) handleQuizAnswer(target.dataset.archetype);
-            else if (target.dataset.pollId && pollContainer) handlePollAnswer(target.dataset.pollId, target.dataset.optionIndex, JSON.parse(pollContainer.dataset.pollData));
-            else if (target.dataset.nexusId) handleNexusChoice(target.dataset.nexusId, target.dataset.nexusType, target.dataset.nexusText);
+            
+            if (target.dataset.archetype) {
+                target.disabled = true;
+                handleQuizAnswer(target.dataset.archetype);
+            }
+            else if (target.dataset.pollId && pollContainer) {
+                // --- SINGLE SELECTION LOGIC ---
+                const allButtons = pollContainer.querySelectorAll('button');
+                allButtons.forEach(btn => btn.disabled = true);
+                handlePollAnswer(target.dataset.pollId, target.dataset.optionIndex, JSON.parse(pollContainer.dataset.pollData));
+            }
+            else if (target.dataset.nexusId) {
+                target.disabled = true;
+                handleNexusChoice(target.dataset.nexusId, target.dataset.nexusType, target.dataset.nexusText);
+            }
         });
     </script>
 </body>
