@@ -59,15 +59,15 @@
         .crest-glow { animation: crest-glow 4s ease-in-out infinite; }
         @keyframes crest-glow { 0%, 100% { filter: drop-shadow(0 0 5px rgba(255, 226, 0, 0.2)); } 50% { filter: drop-shadow(0 0 20px rgba(255, 226, 0, 0.5)); } }
         
-        /* DREAM Cards */
+        /* DREAM Cards - Overhauled */
         .dream-card-container { perspective: 1000px; cursor: pointer; }
         .dream-card { position: relative; width: 100%; height: 100%; transition: transform 0.8s; transform-style: preserve-3d; }
         .dream-card.is-flipped { transform: rotateY(180deg); }
-        .dream-card-front, .dream-card-back { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; border: 1px solid #4A5568; }
+        .dream-card-front, .dream-card-back { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: 1rem; display: flex; align-items: center; justify-content: center; border: 2px solid #4A5568; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5); }
         .dream-card-front { background-color: #1a202c; overflow: hidden; }
-        .dream-card-back { background-color: #2d3748; transform: rotateY(180deg); padding: 1rem; text-align: left; font-size: 0.9rem; line-height: 1.4; flex-direction: column; justify-content: start; }
-        .dream-card-back ul { list-style-type: '✔ '; padding-left: 1rem; }
-        .dream-card-back li { margin-bottom: 0.5rem; }
+        .dream-card-back { background-color: #2d3748; transform: rotateY(180deg); padding: 1.5rem; text-align: center; font-size: 1.1rem; line-height: 1.6; flex-direction: column; }
+        .dream-card-back ul { list-style-type: none; padding: 0; }
+        .dream-card-back li { margin-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px; }
         .dream-bg { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 0.4s ease-in-out; }
         .dream-card-container:hover .dream-bg { opacity: 0.15; }
 
@@ -229,9 +229,15 @@
                 insight: "D.R.E.A.M. - Discipline, Resilience, Empathy, Adaptability, Mindfulness - guides every Beattyian's journey to success!"
             }},
 
-            // 6. DREAM Cards.
-            { id: 'values', type: 'static', title: "Our Foundation: The D.R.E.A.M. Values", description: "Hover to see the image, click to see the details.", 
-              content: `<div class="flex flex-wrap justify-center gap-8 text-center">${dreamValues.map(v => `<div class="dream-card-container w-64 h-80"><div class="dream-card"><div class="dream-card-front"><div class="dream-bg" style="background-image: url('${v.img}')"></div><div class="relative z-10 text-center"><h3 class="text-6xl font-black bty-text-yellow">${v.name.charAt(0)}</h3><p class="mt-2 text-xl font-semibold text-gray-200">${v.name}</p></div></div><div class="dream-card-back"><ul>${v.points.map(p=>`<li>${p}</li>`).join('')}</ul></div></div></div>`).join('')}</div><p class="mt-8 text-center text-gray-400 italic">Motto: Non Vi Sed Arte (Not with force but with skill)</p>`
+            // 6. DREAM Cards (Updated Layout)
+            { id: 'values', type: 'static', title: "Our Foundation: The D.R.E.A.M. Values", description: "Click any card to flip.", 
+              content: `<div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto justify-items-center">
+                 ${dreamValues.slice(0,3).map(v => `<div class="dream-card-container w-72 h-96"><div class="dream-card"><div class="dream-card-front"><div class="dream-bg" style="background-image: url('${v.img}')"></div><div class="relative z-10 text-center"><h3 class="text-8xl font-black bty-text-yellow">${v.name.charAt(0)}</h3><p class="mt-4 text-2xl font-bold text-white shadow-black drop-shadow-md">${v.name}</p></div></div><div class="dream-card-back"><h4 class="text-xl font-bold bty-text-yellow mb-4">${v.name}</h4><ul>${v.points.map(p=>`<li>${p}</li>`).join('')}</ul></div></div></div>`).join('')}
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mt-8 justify-items-center">
+                 ${dreamValues.slice(3).map(v => `<div class="dream-card-container w-72 h-96"><div class="dream-card"><div class="dream-card-front"><div class="dream-bg" style="background-image: url('${v.img}')"></div><div class="relative z-10 text-center"><h3 class="text-8xl font-black bty-text-yellow">${v.name.charAt(0)}</h3><p class="mt-4 text-2xl font-bold text-white shadow-black drop-shadow-md">${v.name}</p></div></div><div class="dream-card-back"><h4 class="text-xl font-bold bty-text-yellow mb-4">${v.name}</h4><ul>${v.points.map(p=>`<li>${p}</li>`).join('')}</ul></div></div></div>`).join('')}
+              </div>
+              <p class="mt-12 text-center text-gray-400 italic">Motto: Non Vi Sed Arte (Not with force but with skill)</p>`
             },
 
             // 7. One page to click through Slide Deck B (Embed)
@@ -258,6 +264,14 @@
                 insight: "Beatty offers 7 international exchanges and 7 industry attachments - that's 14 incredible opportunities!"
             }},
 
+            { id: 'poll_industry', type: 'poll', title: "Live Poll: Our Pathways", description: "", pollData: {
+                id: 'industry',
+                question: "Which is NOT an area that students can dive deeper into?",
+                options: ["Sustainability", "Journalism & Media", "Engineering & AI", "None of the Above"],
+                correctAnswer: 3,
+                insight: "At Beatty, we offer ALL these areas - Sustainability, Journalism & Media, Engineering & AI, and more. Every passion has a pathway here!"
+            }},
+
             // 11. The globe (with all the pins as they are)
             { id: 'nexus_global', type: 'globe', title: "Chart Your Course: International Exchanges", description: "Click on a pin to learn more. Audience, please select your preferred exchange on your device.", 
                 nexusData: { type: 'global', options: [ {id: 'GeoBali', text: 'Geography/Literature @ Bali'}, {id: 'NZ', text: 'Leadership/Sustainability @ New Zealand'}, {id: 'Korea', text: 'A.I. @ South Korea'}, {id: 'MiharaJapan', text: 'Social Sciences @ Mihara, Japan'}, {id: 'MutsuzawaJapan', text: 'STEM @ Mutsuzawa, Japan'}, {id: 'Estonia', text: 'Cybersecurity @ Estonia'} ] }
@@ -275,14 +289,6 @@
                 ],
                 nexusData: { type: 'local', options: [ {id: 'Rockwell', text: 'Engineering @ Rockwell Automation'}, {id: 'PIL', text: 'Maritime Sustainability @ PIL'}, {id: 'Journalism', text: 'Media & Journalism @ Berita Harian'}, {id: 'TamilMurasu', text: 'Media & Journalism @ Tamil Murasu'}, {id: 'Makita', text: 'Mechatronics @ ITE West & Makita'}, {id: 'ASTAR', text: 'Research @ A*STAR'} ] }
             },
-
-            { id: 'poll_industry', type: 'poll', title: "Live Poll: Our Pathways", description: "", pollData: {
-                id: 'industry',
-                question: "Which is NOT an area that students can dive deeper into?",
-                options: ["Sustainability", "Journalism & Media", "Engineering & AI", "None of the Above"],
-                correctAnswer: 3,
-                insight: "At Beatty, we offer ALL these areas - Sustainability, Journalism & Media, Engineering & AI, and more. Every passion has a pathway here!"
-            }},
 
             // 13. One page to click through Slide Deck D (Embed)
             { id: 'deck_d', type: 'slide', title: "Part D", description: "", url: "https://docs.google.com/presentation/d/e/2PACX-1vRIJppB8CD0rLo6qLaE4eiXeJHcYviqju1Gf3QChKnv7XsJY2cfYQ0eU8M7pSf5Bos2DcyuIxl6ZCPX/pubembed?start=false&loop=false&delayms=60000" },
@@ -339,6 +345,12 @@
                 }
             });
             liveData[dataType] = results;
+
+            // --- REACTIVE UPDATE FIX (THE SILVER BULLET) ---
+            const currentStepObj = journeySteps[currentStep];
+            if (currentStepObj && currentStepObj.type === 'poll' && dataType === 'polls' && results[currentStepObj.pollData.id]) {
+                updatePollDOM(currentStepObj.pollData.id);
+            }
         }
 
         function updatePollDOM(pollId) {
