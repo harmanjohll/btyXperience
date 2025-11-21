@@ -13,24 +13,23 @@
         :root { --bty-blue: #000C53; --bty-yellow: #FFE200; --bty-red: #EC3237; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bty-blue); color: #f0f0f0; }
         .action-option { transition: background-color 0.2s, transform 0.2s; }
-        .action-option:hover { background-color: rgba(255, 226, 0, 0.2); transform: scale(1.03); }
+        .action-option:hover { background-color: rgba(255, 226, 0, 0.2); transform: scale(1.02); }
+        .action-option:active { transform: scale(0.98); }
         .action-option:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; background-color: #2d3748 !important; }
         .fade-in { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .slide-in { animation: slideIn 0.5s ease-in-out; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         #memento-card {
              background-color: #1a202c;
              background-image: 
                 radial-gradient(circle at 100% 0%, rgba(255, 226, 0, 0.1) 0%, transparent 30%),
                 radial-gradient(circle at 0% 100%, rgba(0, 12, 83, 0.5) 0%, transparent 40%);
         }
-        .mirror-content { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; padding: 1.5rem; text-align: center; }
+        .mirror-content { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; padding: 1.5rem; text-align: center; }
     </style>
 </head>
 <body class="antialiased text-white">
 
-    <div id="app" class="min-h-screen flex flex-col items-center justify-center p-4">
+    <div id="app" class="min-h-screen flex flex-col items-center justify-center p-4 pb-12">
         <!-- Content dynamically populated by JavaScript -->
     </div>
 
@@ -63,11 +62,10 @@
             { question: "When facing a challenge, I first...", options: [ { text: "look for a tech solution.", archetype: "The Innovator" }, { text: "seek different perspectives.", archetype: "The Global Explorer" }, { text: "consider real applications.", archetype: "The Industry Trailblazer" }, { text: "think who needs help.", archetype: "The Community Steward" }, { text: "imagine a creative response.", archetype: "The Creative Artist" }, { text: "analyse patterns.", archetype: "The STEM Futurist" }, { text: "ask what story matters.", archetype: "The Voice Amplifier" }, { text: "assess the environmental impact.", archetype: "The Eco-Strategist" }] },
             { question: "I feel most energized when...", options: [ { text: "building something new.", archetype: "The Innovator" }, { text: "learning about cultures.", archetype: "The Global Explorer" }, { text: "seeing my work in action.", archetype: "The Industry Trailblazer" }, { text: "helping others grow.", archetype: "The Community Steward" }, { text: "performing or creating.", archetype: "The Creative Artist" }, { text: "solving complex puzzles.", archetype: "The STEM Futurist" }, { text: "sharing important ideas.", archetype: "The Voice Amplifier" }, { text: "working on a green initiative.", archetype: "The Eco-Strategist" }] },
             { question: "My ideal Beatty experience includes...", options: [ { text: "Machine Learning projects.", archetype: "The Innovator" }, { text: "international exchanges.", archetype: "The Global Explorer" }, { text: "industry attachments.", archetype: "The Industry Trailblazer" }, { text: "leading initiatives.", archetype: "The Community Steward" }, { text: "school concert performances.", archetype: "The Creative Artist" }, { text: "science research.", archetype: "The STEM Futurist" }, { text: "journalism opportunities.", archetype: "The Voice Amplifier" }, { text: "a school-wide sustainability project.", archetype: "The Eco-Strategist" }] },
-            { question: "I learn best by...", options: [ { text: "tinkering, experimenting, and building prototypes.", archetype: "The Innovator" }, { text: "immersing myself in new environments and talking to people.", archetype: "The Global Explorer" }, { text: "working on real-world projects with professionals.", archetype: "The Industry Trailblazer" }, { text: "leading a group and learning from my team.", archetype: "The Community Steward" }, { text: "practising, rehearsing, and expressing my ideas.", archetype: "The Creative Artist" }, { text: "conducting deep research and finding evidence.", archetype: "The STEM Futurist" }, { text: "interviewing experts and telling their stories.", archetype: "The Voice Amplifier" }, { text: "analysing systems and finding ways to improve them for the planet.", archetype: "The Eco-Strategist" }] },
-            { question: "For me, a successful future is one where I am...", options: [ { text: "creating technology that changes how we live.", archetype: "The Innovator" }, { text: "building bridges between different cultures.", archetype: "The Global Explorer" }, { text: "at the top of my chosen industry.", archetype: "The Industry Trailblazer" }, { text: "lifting up my community and making a difference.", archetype: "The Community Steward" }, { text: "inspiring people through my creative work.", archetype: "The Creative Artist" }, { text: "contributing to the world's knowledge and understanding.", archetype: "The STEM Futurist" }, { text: "giving a voice to the voiceless.", archetype: "The Voice Amplifier" }, { text: "helping to create a more sustainable world.", archetype: "The Eco-Strategist" }] }
+            { question: "I learn best by...", options: [ { text: "tinkering, experimenting, and building prototypes.", archetype: "The Innovator" }, { text: "immersing myself in new environments.", archetype: "The Global Explorer" }, { text: "working on real-world projects.", archetype: "The Industry Trailblazer" }, { text: "leading a group.", archetype: "The Community Steward" }, { text: "expressing my ideas.", archetype: "The Creative Artist" }, { text: "conducting deep research.", archetype: "The STEM Futurist" }, { text: "interviewing experts.", archetype: "The Voice Amplifier" }, { text: "analysing systems.", archetype: "The Eco-Strategist" }] },
+            { question: "For me, a successful future is one where I am...", options: [ { text: "creating technology.", archetype: "The Innovator" }, { text: "building bridges between cultures.", archetype: "The Global Explorer" }, { text: "at the top of my industry.", archetype: "The Industry Trailblazer" }, { text: "making a difference.", archetype: "The Community Steward" }, { text: "inspiring people.", archetype: "The Creative Artist" }, { text: "contributing to knowledge.", archetype: "The STEM Futurist" }, { text: "giving a voice to the voiceless.", archetype: "The Voice Amplifier" }, { text: "helping create a sustainable world.", archetype: "The Eco-Strategist" }] }
         ];
         
-        // Helper to kill undefined text
         function safeText(text) {
             if (text === undefined || text === null || text === "undefined") return "";
             return text;
@@ -80,7 +78,7 @@
                 } else {
                     if (userData.aspiration) { renderMementoCard(); } 
                     else if (!userData.archetype) { renderQuizQuestion(); } 
-                    else { renderWaiting(`Waiting for the presentation to begin... You are logged in as a <strong class="text-yellow-300">${safeText(userData.archetype)}</strong>.`); }
+                    else { renderWaiting(`Waiting for the presentation... <br><br>You are logged in as a <strong class="text-yellow-300 text-xl block mt-2">${safeText(userData.archetype)}</strong>`); }
                 }
             });
         }
@@ -88,65 +86,57 @@
         function renderView(state) {
             if (!userData.archetype) { renderQuizQuestion(); return; }
             
-            // Clean data before using
             const title = safeText(state.title);
             const desc = safeText(state.description);
 
             switch(state.currentView) {
                 case 'poll':
-                    // Strict check using ID
+                    // Check if user already voted on this specific poll ID
                     if (userData.polls && userData.polls[state.pollData.id] !== undefined) {
-                        renderWaiting(`You have voted on: ${title || 'Poll'}. Please watch the main screen.`);
+                        // Retrieve the saved insight text to show them again
+                        const savedVote = userData.polls[state.pollData.id];
+                        renderWaiting(`Vote Recorded!<br><br>${savedVote.insight || 'Please watch the main screen.'}`);
                     } else {
                         renderPoll(state.pollData);
                     }
                     break;
                 case 'globe': case 'industry_map':
-                    if (userData[state.nexusData.type]) renderWaiting(`Your choice is on the map! Please watch the main screen.`);
+                    if (userData[state.nexusData.type]) renderWaiting(`Your choice is on the map! <br>Watch the big screen.`);
                     else renderNexus(state.nexusData);
                     break;
                 case 'finale': renderAspirationInput(); break;
                 case 'memento': case 'end': renderMementoCard(); break;
                 
-                // --- MIRRORING LOGIC ---
-                case 'chart':
-                    renderMirror(title, "Look at the screen to see the live results of our collective persona!");
-                    break;
+                // --- PASSIVE/MIRRORING STATES ---
                 case 'video':
-                    const embedUrl = state.url ? state.url.replace("autoplay=1", "autoplay=0") : ""; 
                     appContainer.innerHTML = `
                     <div class="mirror-content fade-in w-full max-w-md">
-                        <h2 class="text-xl font-bold text-yellow-400 mb-2">${title}</h2>
-                        <p class="text-sm text-gray-300 mb-4">${desc}</p>
-                        <div class="relative w-full pb-[56.25%] h-0 overflow-hidden rounded bg-black">
-                            <iframe class="absolute top-0 left-0 w-full h-full" src="${embedUrl}" frameborder="0" allowfullscreen></iframe>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-2">Tap to play video on your device.</p>
+                        <h2 class="text-2xl font-bold text-yellow-400 mb-2">Video Playing</h2>
+                        <p class="text-gray-300">Look up at the main screen.</p>
+                        <div class="mt-6 text-6xl animate-pulse">📺</div>
                     </div>`;
                     break;
                 case 'slide':
                     appContainer.innerHTML = `
                     <div class="mirror-content fade-in w-full max-w-md">
-                        <h2 class="text-xl font-bold text-yellow-400 mb-4">${title}</h2>
-                        <div class="text-4xl mb-4">📄</div>
-                        <p class="text-lg">Presenter is sharing slides.</p>
-                        <p class="text-sm text-gray-400 mt-2">Please focus on the main screen for the presentation.</p>
+                        <h2 class="text-2xl font-bold text-yellow-400 mb-4">Presentation</h2>
+                        <p class="text-lg mb-2">Look up at the main screen.</p>
                     </div>`;
                     break;
-                case 'static': // DREAM Values
-                    if (state.staticContent) {
-                        const listHtml = state.staticContent.map(v => `<li class="mb-2"><strong class="text-yellow-300">${v.name}</strong>: ${v.points[0]}</li>`).join('');
-                        appContainer.innerHTML = `
-                        <div class="mirror-content fade-in w-full max-w-md text-left">
-                            <h2 class="text-xl font-bold text-yellow-400 mb-4 text-center">${title}</h2>
-                            <ul class="text-sm space-y-2">${listHtml}</ul>
+                case 'static': 
+                     // Dream Values etc
+                     if (state.staticContent) {
+                         appContainer.innerHTML = `
+                        <div class="mirror-content fade-in w-full max-w-md">
+                            <h2 class="text-2xl font-bold text-yellow-400 mb-4">D.R.E.A.M Values</h2>
+                            <p class="text-lg">Reflect on the values shown on screen.</p>
                         </div>`;
-                    } else {
+                     } else {
                         renderMirror(title, desc);
-                    }
+                     }
                     break;
                 default:
-                    renderWaiting(`Please watch the main screen. You are a <strong class="text-yellow-300">${safeText(userData.archetype)}</strong>.`);
+                    renderWaiting(`Please watch the main screen.`);
             }
         }
 
@@ -155,7 +145,7 @@
                 <div class="mirror-content fade-in w-full max-w-md">
                     <h2 class="text-xl font-bold text-yellow-400 mb-2">${title}</h2>
                     <p class="text-gray-300">${description}</p>
-                    <div class="mt-6 animate-pulse text-yellow-500 text-2xl">👀</div>
+                    <div class="mt-6 animate-pulse text-yellow-500 text-4xl">👀</div>
                 </div>`;
         }
         
@@ -164,11 +154,11 @@
             const questionData = quizQuestions[currentQuestionIndex];
             appContainer.innerHTML = `
                 <div class="w-full max-w-lg text-center fade-in">
-                    <p class="text-sm font-semibold text-yellow-300 mb-2">Beatty Compass Quiz (${currentQuestionIndex + 1}/${quizQuestions.length})</p>
-                    <h2 class="text-2xl font-bold mb-8">${questionData.question}</h2>
-                    <div class="grid grid-cols-2 gap-3">
+                    <p class="text-xs font-bold text-yellow-300 mb-2 tracking-widest uppercase">Beatty Compass Quiz (${currentQuestionIndex + 1}/${quizQuestions.length})</p>
+                    <h2 class="text-2xl font-bold mb-6 leading-tight">${questionData.question}</h2>
+                    <div class="grid grid-cols-1 gap-3">
                         ${questionData.options.map((opt) => `
-                            <button data-archetype='${opt.archetype}' class="action-option w-full h-full text-left p-4 bg-gray-800/50 border border-gray-700 rounded-lg text-sm">
+                            <button data-archetype='${opt.archetype}' class="action-option w-full text-left p-5 bg-gray-800 border border-gray-600 rounded-xl text-base font-semibold shadow-lg active:bg-yellow-600">
                                 ${opt.text}
                             </button>
                         `).join('')}
@@ -196,13 +186,15 @@
         }
 
         function renderPoll(pollData) {
+            // Store the WHOLE poll data object in the dataset so we can access the 'insight' later
+            // We use encodeURIComponent to be safe with JSON in HTML attributes
             appContainer.innerHTML = `
-                <div class="w-full max-w-md text-center fade-in" data-poll-data='${JSON.stringify(pollData)}'>
-                     <p class="text-sm font-semibold text-yellow-300 mb-2">Live Poll</p>
-                     <h2 class="text-2xl font-bold mb-8">${pollData.question}</h2>
-                     <div class="space-y-4 poll-options-container">
+                <div class="w-full max-w-md text-center fade-in" data-poll-json='${JSON.stringify(pollData).replace(/'/g, "&apos;")}'>
+                     <p class="text-sm font-bold text-yellow-300 mb-2 uppercase tracking-widest">Live Poll</p>
+                     <h2 class="text-2xl font-bold mb-8 leading-snug">${pollData.question}</h2>
+                     <div class="space-y-4">
                          ${pollData.options.map((opt, index) => `
-                             <button data-poll-id="${pollData.id}" data-option-index="${index}" class="action-option w-full text-left p-4 bg-gray-800/50 border border-gray-700 rounded-lg">
+                             <button data-poll-id="${pollData.id}" data-option-index="${index}" class="action-option w-full text-left p-5 bg-gray-800 border border-gray-600 rounded-xl shadow-md text-lg font-semibold">
                                  ${opt}
                              </button>
                          `).join('')}
@@ -214,38 +206,36 @@
             if (!userData.polls) userData.polls = {};
             const choiceIndex = parseInt(optionIndex);
             const choiceText = pollData.options[choiceIndex]; 
-            
-            // Mapped correctly to the new IDs from btx.html
-            const incorrectMessages = {
-                'cca': `It is quite common to think that only ${choiceText.toLowerCase()} of students secure their CCA, but we are indeed able to have 9 in 10 Beattyians pursue their passions.`,
-                'dream_poll': `While ${choiceText.toLowerCase()} includes some great values, our D.R.E.A.M. stands for Discipline, Resilience, Empathy, Adaptability, and Mindfulness.`,
-                'nexus_count_v2': `It's easy to underestimate the opportunities! While you chose ${choiceText}, Beatty actually offers 7 international exchanges and 7 industry attachments.`,
-                'industry': `You chose ${choiceText.toLowerCase()}, but at Beatty, we offer ALL these areas - Sustainability, Journalism & Media, Engineering & AI, and more. Every passion has a pathway here!`
-            };
-
             const isCorrect = choiceIndex === pollData.correctAnswer;
             
+            // GENERIC INSIGHT LOGIC: Use the insight sent from the Host
+            let insightText = pollData.insight || "Thanks for voting!";
+            
+            // If incorrect, we can optionally prepend a "Good guess" message, but the core insight remains the same
+            if (!isCorrect && pollData.correctAnswer !== undefined) {
+                 insightText = `Good guess! <br><br>${pollData.insight}`;
+            }
+
             userData.polls[pollId] = {
                 choice: choiceIndex,
                 choiceText: choiceText,
                 isCorrect: isCorrect,
-                insight: isCorrect ? pollData.insight : (incorrectMessages[pollId] || `That's a good guess! The correct insight is: ${pollData.insight}`)
+                insight: insightText
             };
             saveUserData();
             
-            // Composite key matches Presenter expectations
             await setDoc(doc(db, "polls", `${pollId}_${auth.currentUser.uid}`), { pollId: pollId, vote: choiceIndex, timestamp: serverTimestamp() });
-            renderWaiting("Thank you! Please watch the main screen.");
+            renderWaiting(`Vote Recorded!<br><br>${insightText}`);
         }
         
         function renderNexus(nexusData) {
             appContainer.innerHTML = `
                 <div class="w-full max-w-md text-center fade-in">
                     <h2 class="text-2xl font-bold mb-2">Chart Your Course</h2>
-                    <p class="mb-6">As a <strong class="text-yellow-300">${safeText(userData.archetype)}</strong>, which of these paths excites you most?</p>
-                    <div class="space-y-4">
+                    <p class="mb-6 text-gray-300">As a <strong class="text-yellow-300">${safeText(userData.archetype)}</strong>, which excites you?</p>
+                    <div class="space-y-3">
                         ${nexusData.options.map(opt => `
-                            <button data-nexus-id="${opt.id}" data-nexus-type="${nexusData.type}" data-nexus-text="${opt.text}" class="action-option w-full text-left p-4 bg-gray-800/50 border border-gray-700 rounded-lg">
+                            <button data-nexus-id="${opt.id}" data-nexus-type="${nexusData.type}" data-nexus-text="${opt.text}" class="action-option w-full text-left p-4 bg-gray-800 border border-gray-600 rounded-xl shadow-md font-semibold">
                                 ${opt.text}
                             </button>
                         `).join('')}
@@ -257,17 +247,17 @@
             userData[nexusType] = { id: nexusId, text: nexusText };
             saveUserData();
             await setDoc(doc(db, "nexusVotes", auth.currentUser.uid), { nexusId: nexusId, timestamp: serverTimestamp() });
-            renderWaiting("Your choice is on the map! Look at the main screen.");
+            renderWaiting("Your choice is on the map! <br>Look at the main screen.");
         }
         
         function renderAspirationInput() {
             if (userData.aspiration) { renderWaiting('Your aspiration is part of the crest!'); return; }
             appContainer.innerHTML = `
                 <div class="w-full max-w-md text-center fade-in">
-                    <h2 class="text-2xl font-bold mb-4">What is Your Aspiration?</h2>
-                    <p class="mb-6 text-gray-300">Share one word that represents your future dream or goal. It will become part of our collective crest!</p>
-                    <input type="text" id="aspirationInput" maxlength="20" class="w-full p-3 bg-gray-700 text-white rounded-lg mb-4 text-center text-lg" placeholder="e.g., Doctor, Innovator, Artist">
-                    <button id="submitAspiration" class="w-full p-3 bg-yellow-400 text-blue-900 font-bold rounded-lg">Add to Crest</button>
+                    <h2 class="text-3xl font-bold mb-4 text-yellow-400">One Word.</h2>
+                    <p class="mb-8 text-gray-300 text-lg">What is your future aspiration?<br>(e.g. Doctor, Innovator)</p>
+                    <input type="text" id="aspirationInput" maxlength="15" class="w-full p-4 bg-gray-800 text-white border-2 border-blue-500 focus:border-yellow-400 rounded-xl mb-6 text-center text-2xl font-bold outline-none" placeholder="Type here...">
+                    <button id="submitAspiration" class="w-full p-4 bg-yellow-400 text-blue-900 font-black text-xl rounded-xl shadow-lg uppercase tracking-wider">Add to Crest</button>
                 </div>`;
         }
 
@@ -277,10 +267,11 @@
             if (word) {
                 input.disabled = true;
                 document.getElementById('submitAspiration').disabled = true;
+                document.getElementById('submitAspiration').textContent = "Sending...";
                 userData.aspiration = word;
                 saveUserData();
                 await setDoc(doc(db, "aspirations", auth.currentUser.uid), { word: word, timestamp: serverTimestamp() });
-                renderWaiting('Thank you! Your aspiration is now part of our crest.');
+                renderWaiting('Thank you! <br>Your aspiration is now part of our crest.');
             }
         }
 
@@ -288,47 +279,52 @@
             const archetypeData = archetypes[userData.archetype];
             if (!archetypeData) { renderError("Error", "Could not load your profile."); return; }
             
-            let insightsHTML = Object.values(userData.polls || {}).map(poll => `<p class="border-l-2 border-yellow-400/50 pl-2">${poll.insight}</p>`).join('');
-            
-            const globalChoice = userData.global ? userData.global.text : "a future global exchange";
-            const localChoice = userData.local ? userData.local.text : "a future industry attachment";
+            // Use saved insights from polls
+            let insightsHTML = "";
+            if(userData.polls) {
+                 // Just show the first 2 insights to keep card clean
+                 const keys = Object.keys(userData.polls);
+                 if(keys.length > 0) {
+                     insightsHTML += `<div class="text-xs bg-blue-900/40 p-3 rounded-lg my-2 space-y-2 text-left"><h4 class="font-bold text-yellow-400 uppercase tracking-wide mb-1">Key Takeaway</h4><p>${userData.polls[keys[0]].insight}</p></div>`;
+                 }
+            }
+
+            const globalChoice = userData.global ? userData.global.text : "Global Exchange";
+            const localChoice = userData.local ? userData.local.text : "Industry Attachment";
 
             appContainer.innerHTML = `
-                <div class="w-full max-w-md text-center fade-in">
-                    <div id="memento-card" class="bg-gray-800 border-2 rounded-2xl p-6 text-left shadow-2xl" style="border-color:${archetypeData.color};">
-                        <div class="flex items-center gap-4 mb-4">
-                             <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/fc98005f3682a779482dd1bf5e7cff5f9adb8451/gem/BTlogo.png" alt="Beatty Crest" class="h-12 w-12" crossorigin="anonymous">
+                <div class="w-full max-w-md text-center fade-in pb-8">
+                    <div id="memento-card" class="bg-gray-800 border-4 rounded-3xl p-6 text-left shadow-2xl relative overflow-hidden" style="border-color:${archetypeData.color};">
+                        <div class="flex items-center gap-4 mb-4 relative z-10">
+                             <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/fc98005f3682a779482dd1bf5e7cff5f9adb8451/gem/BTlogo.png" alt="Beatty Crest" class="h-14 w-14" crossorigin="anonymous">
                             <div>
-                                <h1 class="text-2xl font-black" style="color:${archetypeData.color};">${safeText(userData.archetype)}</h1>
-                                <p class="text-sm text-gray-300 font-semibold">Your Beatty Compass Card</p>
+                                <h1 class="text-2xl font-black leading-none" style="color:${archetypeData.color};">${safeText(userData.archetype)}</h1>
+                                <p class="text-xs text-gray-300 font-semibold uppercase tracking-wider mt-1">Beatty Compass Card</p>
                             </div>
                         </div>
                         
-                        <div class="bg-black/20 p-3 rounded-lg">
-                            <p class="text-base italic">"${archetypeData.quote}"</p>
+                        <div class="bg-black/30 p-4 rounded-xl mb-4 relative z-10 backdrop-blur-sm">
+                            <p class="text-base italic text-gray-100">"${archetypeData.quote}"</p>
                         </div>
 
-                        <p class="text-sm my-4">${archetypeData.description}</p>
+                        <p class="text-sm mb-4 text-gray-200 relative z-10">${archetypeData.description}</p>
                         
-                        <div class="text-xs bg-blue-900/50 p-3 rounded-lg my-3 space-y-2">
-                           <h4 class="font-bold text-yellow-400">Your Insights:</h4>
-                           ${insightsHTML || '<p>You explored the Beatty Experience!</p>'}
-                        </div>
-                        
-                        <div class="text-xs bg-blue-900/50 p-3 rounded-lg my-3 space-y-2">
-                            <h4 class="font-bold text-yellow-400">Your Chosen Pathways:</h4>
-                            <p>Brilliant! You've already set your sights on a global exchange to <strong>${globalChoice}</strong> and an industry attachment at <strong>${localChoice}</strong>. With 7 international exchanges and 7 industry attachments to choose from, we can't wait for you to pursue these opportunities to uncover your talents.</p>
-                        </div>
-
-                        <div class="text-xs bg-blue-900/50 p-3 rounded-lg my-3 space-y-2">
-                            <h4 class="font-bold text-yellow-400">Recommended Pathways:</h4>
-                            <p>Keep in mind these options: ${archetypeData.recommendations.join(' • ')}. Get ready for your aspirations to take flight.</p>
+                        <div class="relative z-10">
+                             ${insightsHTML}
+                             <div class="text-xs bg-blue-900/40 p-3 rounded-lg my-2 space-y-1 text-left">
+                                <h4 class="font-bold text-yellow-400 uppercase tracking-wide">Your Path</h4>
+                                <p>Global: <strong>${globalChoice}</strong></p>
+                                <p>Local: <strong>${localChoice}</strong></p>
+                            </div>
                         </div>
 
-                        <p class="text-center mt-4 text-sm">Join us at Beatty Secondary and have your aspiration to become a/an <strong class="text-2xl font-black block" style="color:${archetypeData.color};">${safeText(userData.aspiration) || 'Your Future Self'}</strong> take flight!</p>
+                        <div class="mt-6 pt-4 border-t border-white/10 text-center relative z-10">
+                             <p class="text-xs text-gray-400 uppercase mb-1">Future Aspiration</p>
+                             <p class="text-3xl font-black" style="color:${archetypeData.color};">${safeText(userData.aspiration) || 'Future Leader'}</p>
+                        </div>
                     </div>
-                    <button id="downloadCardBtn" class="mt-6 w-full p-3 bg-yellow-400 text-blue-900 font-bold rounded-lg">Download Your Compass Card</button>
-                    <p class="text-xs text-gray-400 mt-2">A memento of your journey with us today.</p>
+                    <button id="downloadCardBtn" class="mt-6 w-full p-4 bg-yellow-400 text-blue-900 font-bold rounded-xl shadow-lg text-lg uppercase">Download Card ⬇</button>
+                    <p class="text-xs text-gray-500 mt-3">Show this card at our booth for a gift!</p>
                 </div>`;
         }
 
@@ -343,11 +339,11 @@
                 link.download = 'Beatty-Compass-Card.png';
                 link.href = canvas.toDataURL('image/png');
                 link.click();
-                btn.textContent = "Download Your Compass Card";
+                btn.textContent = "Download Card ⬇";
                 btn.disabled = false;
             }).catch(err => {
                 console.error("Failed to generate canvas:", err);
-                btn.textContent = "Download Failed. Try Again.";
+                btn.textContent = "Download Failed.";
                 btn.disabled = false;
             });
         }
@@ -357,24 +353,26 @@
         function renderResult(archetype) {
             appContainer.innerHTML = `
                 <div class="w-full max-w-md text-center slide-in">
-                    <h2 class="text-xl font-bold mb-2">Your Compass is Pointing!</h2>
-                    <p class="text-5xl font-black my-4" style="color: ${archetypes[archetype].color}">${archetype}</p>
-                    <p class="text-gray-300 mb-6">Thank you! Your result has been shared. Please wait for the presentation to begin.</p>
-                    <button id="retakeQuizBtn" class="text-sm text-gray-400 underline hover:text-white">Not you? Retake the quiz.</button>
+                    <h2 class="text-xl font-bold mb-2 text-gray-300">Your Compass Points To:</h2>
+                    <p class="text-5xl font-black my-6" style="color: ${archetypes[archetype].color}">${archetype}</p>
+                    <div class="p-4 bg-gray-800 rounded-xl mb-6 border border-gray-700">
+                        <p class="text-gray-300 text-sm">Thank you! Your result has been added to the live chart.</p>
+                    </div>
+                    <p class="text-yellow-400 animate-pulse font-bold">Please watch the main screen.</p>
+                    <button id="retakeQuizBtn" class="mt-8 text-sm text-gray-500 underline hover:text-white">Retake Quiz</button>
                 </div>`;
         }
         
         function renderWaiting(message) {
             appContainer.innerHTML = `
                 <div class="w-full max-w-md text-center slide-in">
-                     <div class="animate-pulse"><svg class="mx-auto h-12 w-12 text-yellow-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
-                     <p class="mt-4 text-lg font-semibold">${message}</p>
-                     <button id="retakeQuizBtn" class="mt-6 text-sm text-gray-400 underline hover:text-white">Click here to retake the quiz.</button>
+                     <div class="animate-pulse mb-6"><svg class="mx-auto h-16 w-16 text-yellow-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
+                     <p class="text-xl font-semibold leading-relaxed">${message}</p>
                 </div>`;
         }
         
         function renderError(title, message) {
-            appContainer.innerHTML = `<div class="text-center p-4 bg-red-800 rounded-lg"><h2>${title}</h2><p>${message}</p></div>`;
+            appContainer.innerHTML = `<div class="text-center p-6 bg-red-900/80 rounded-xl border border-red-500 m-4"><h2 class="text-2xl font-bold mb-2">${title}</h2><p>${message}</p></div>`;
         }
 
         function retakeQuiz() {
@@ -390,17 +388,23 @@
             if (target.id === 'downloadCardBtn') { downloadCard(); return; }
             if (target.id === 'submitAspiration') { handleAspirationSubmit(); return; }
 
-            const pollContainer = target.closest('[data-poll-data]');
+            const pollContainer = target.closest('[data-poll-json]');
             
             if (target.dataset.archetype) {
                 target.disabled = true;
+                target.innerHTML = "Selected";
                 handleQuizAnswer(target.dataset.archetype);
             }
             else if (target.dataset.pollId && pollContainer) {
-                // --- SINGLE SELECTION LOGIC ---
+                // Parse the Full Poll JSON from the parent container
+                const pollData = JSON.parse(pollContainer.dataset.pollJson);
+                
                 const allButtons = pollContainer.querySelectorAll('button');
-                allButtons.forEach(btn => btn.disabled = true);
-                handlePollAnswer(target.dataset.pollId, target.dataset.optionIndex, JSON.parse(pollContainer.dataset.pollData));
+                allButtons.forEach(btn => { btn.disabled = true; btn.classList.add('opacity-50'); });
+                target.classList.remove('opacity-50');
+                target.classList.add('ring-2', 'ring-yellow-400');
+                
+                handlePollAnswer(target.dataset.pollId, target.dataset.optionIndex, pollData);
             }
             else if (target.dataset.nexusId) {
                 target.disabled = true;
