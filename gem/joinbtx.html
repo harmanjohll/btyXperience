@@ -67,6 +67,12 @@
             { question: "For me, a successful future is one where I am...", options: [ { text: "creating technology that changes how we live.", archetype: "The Innovator" }, { text: "building bridges between different cultures.", archetype: "The Global Explorer" }, { text: "at the top of my chosen industry.", archetype: "The Industry Trailblazer" }, { text: "lifting up my community and making a difference.", archetype: "The Community Steward" }, { text: "inspiring people through my creative work.", archetype: "The Creative Artist" }, { text: "contributing to the world's knowledge and understanding.", archetype: "The STEM Futurist" }, { text: "giving a voice to the voiceless.", archetype: "The Voice Amplifier" }, { text: "helping to create a more sustainable world.", archetype: "The Eco-Strategist" }] }
         ];
         
+        // Helper to kill undefined text
+        function safeText(text) {
+            if (text === undefined || text === null || text === "undefined") return "";
+            return text;
+        }
+
         function listenToSessionState() {
             onSnapshot(doc(db, "session", "state"), (doc) => {
                 if (doc.exists()) {
@@ -74,7 +80,7 @@
                 } else {
                     if (userData.aspiration) { renderMementoCard(); } 
                     else if (!userData.archetype) { renderQuizQuestion(); } 
-                    else { renderWaiting(`Waiting for the presentation to begin... You are logged in as a <strong class="text-yellow-300">${userData.archetype}</strong>.`); }
+                    else { renderWaiting(`Waiting for the presentation to begin... You are logged in as a <strong class="text-yellow-300">${safeText(userData.archetype)}</strong>.`); }
                 }
             });
         }
@@ -82,11 +88,15 @@
         function renderView(state) {
             if (!userData.archetype) { renderQuizQuestion(); return; }
             
+            // Clean data before using
+            const title = safeText(state.title);
+            const desc = safeText(state.description);
+
             switch(state.currentView) {
                 case 'poll':
-                    // Check if vote exists for this specific poll ID
+                    // Strict check using ID
                     if (userData.polls && userData.polls[state.pollData.id] !== undefined) {
-                        renderWaiting(`You have voted on: ${state.title || 'Poll'}. Please watch the main screen.`);
+                        renderWaiting(`You have voted on: ${title || 'Poll'}. Please watch the main screen.`);
                     } else {
                         renderPoll(state.pollData);
                     }
@@ -100,14 +110,14 @@
                 
                 // --- MIRRORING LOGIC ---
                 case 'chart':
-                    renderMirror(state.title, "Look at the screen to see the live results of our collective persona!");
+                    renderMirror(title, "Look at the screen to see the live results of our collective persona!");
                     break;
                 case 'video':
                     const embedUrl = state.url ? state.url.replace("autoplay=1", "autoplay=0") : ""; 
                     appContainer.innerHTML = `
                     <div class="mirror-content fade-in w-full max-w-md">
-                        <h2 class="text-xl font-bold text-yellow-400 mb-2">${state.title}</h2>
-                        <p class="text-sm text-gray-300 mb-4">${state.description}</p>
+                        <h2 class="text-xl font-bold text-yellow-400 mb-2">${title}</h2>
+                        <p class="text-sm text-gray-300 mb-4">${desc}</p>
                         <div class="relative w-full pb-[56.25%] h-0 overflow-hidden rounded bg-black">
                             <iframe class="absolute top-0 left-0 w-full h-full" src="${embedUrl}" frameborder="0" allowfullscreen></iframe>
                         </div>
@@ -117,7 +127,7 @@
                 case 'slide':
                     appContainer.innerHTML = `
                     <div class="mirror-content fade-in w-full max-w-md">
-                        <h2 class="text-xl font-bold text-yellow-400 mb-4">${state.title}</h2>
+                        <h2 class="text-xl font-bold text-yellow-400 mb-4">${title}</h2>
                         <div class="text-4xl mb-4">📄</div>
                         <p class="text-lg">Presenter is sharing slides.</p>
                         <p class="text-sm text-gray-400 mt-2">Please focus on the main screen for the presentation.</p>
@@ -128,15 +138,15 @@
                         const listHtml = state.staticContent.map(v => `<li class="mb-2"><strong class="text-yellow-300">${v.name}</strong>: ${v.points[0]}</li>`).join('');
                         appContainer.innerHTML = `
                         <div class="mirror-content fade-in w-full max-w-md text-left">
-                            <h2 class="text-xl font-bold text-yellow-400 mb-4 text-center">${state.title}</h2>
+                            <h2 class="text-xl font-bold text-yellow-400 mb-4 text-center">${title}</h2>
                             <ul class="text-sm space-y-2">${listHtml}</ul>
                         </div>`;
                     } else {
-                        renderMirror(state.title, state.description);
+                        renderMirror(title, desc);
                     }
                     break;
                 default:
-                    renderWaiting(`Please watch the main screen. You are a <strong class="text-yellow-300">${userData.archetype}</strong>.`);
+                    renderWaiting(`Please watch the main screen. You are a <strong class="text-yellow-300">${safeText(userData.archetype)}</strong>.`);
             }
         }
 
@@ -205,6 +215,7 @@
             const choiceIndex = parseInt(optionIndex);
             const choiceText = pollData.options[choiceIndex]; 
             
+            // Mapped correctly to the new IDs from btx.html
             const incorrectMessages = {
                 'cca': `It is quite common to think that only ${choiceText.toLowerCase()} of students secure their CCA, but we are indeed able to have 9 in 10 Beattyians pursue their passions.`,
                 'dream_poll': `While ${choiceText.toLowerCase()} includes some great values, our D.R.E.A.M. stands for Discipline, Resilience, Empathy, Adaptability, and Mindfulness.`,
@@ -221,7 +232,8 @@
                 insight: isCorrect ? pollData.insight : (incorrectMessages[pollId] || `That's a good guess! The correct insight is: ${pollData.insight}`)
             };
             saveUserData();
-            // Use composite key to ensure unique vote per poll
+            
+            // Composite key matches Presenter expectations
             await setDoc(doc(db, "polls", `${pollId}_${auth.currentUser.uid}`), { pollId: pollId, vote: choiceIndex, timestamp: serverTimestamp() });
             renderWaiting("Thank you! Please watch the main screen.");
         }
@@ -230,7 +242,7 @@
             appContainer.innerHTML = `
                 <div class="w-full max-w-md text-center fade-in">
                     <h2 class="text-2xl font-bold mb-2">Chart Your Course</h2>
-                    <p class="mb-6">As a <strong class="text-yellow-300">${userData.archetype}</strong>, which of these paths excites you most?</p>
+                    <p class="mb-6">As a <strong class="text-yellow-300">${safeText(userData.archetype)}</strong>, which of these paths excites you most?</p>
                     <div class="space-y-4">
                         ${nexusData.options.map(opt => `
                             <button data-nexus-id="${opt.id}" data-nexus-type="${nexusData.type}" data-nexus-text="${opt.text}" class="action-option w-full text-left p-4 bg-gray-800/50 border border-gray-700 rounded-lg">
@@ -287,7 +299,7 @@
                         <div class="flex items-center gap-4 mb-4">
                              <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/fc98005f3682a779482dd1bf5e7cff5f9adb8451/gem/BTlogo.png" alt="Beatty Crest" class="h-12 w-12" crossorigin="anonymous">
                             <div>
-                                <h1 class="text-2xl font-black" style="color:${archetypeData.color};">${userData.archetype}</h1>
+                                <h1 class="text-2xl font-black" style="color:${archetypeData.color};">${safeText(userData.archetype)}</h1>
                                 <p class="text-sm text-gray-300 font-semibold">Your Beatty Compass Card</p>
                             </div>
                         </div>
@@ -313,7 +325,7 @@
                             <p>Keep in mind these options: ${archetypeData.recommendations.join(' • ')}. Get ready for your aspirations to take flight.</p>
                         </div>
 
-                        <p class="text-center mt-4 text-sm">Join us at Beatty Secondary and have your aspiration to become a/an <strong class="text-2xl font-black block" style="color:${archetypeData.color};">${userData.aspiration || 'Your Future Self'}</strong> take flight!</p>
+                        <p class="text-center mt-4 text-sm">Join us at Beatty Secondary and have your aspiration to become a/an <strong class="text-2xl font-black block" style="color:${archetypeData.color};">${safeText(userData.aspiration) || 'Your Future Self'}</strong> take flight!</p>
                     </div>
                     <button id="downloadCardBtn" class="mt-6 w-full p-3 bg-yellow-400 text-blue-900 font-bold rounded-lg">Download Your Compass Card</button>
                     <p class="text-xs text-gray-400 mt-2">A memento of your journey with us today.</p>
