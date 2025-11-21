@@ -303,15 +303,18 @@
             });
             liveData[dataType] = results;
 
-            // --- REACTIVE UPDATE FIX ---
+            // --- REACTIVE UPDATE FIX (THE SILVER BULLET) ---
             const currentStepObj = journeySteps[currentStep];
-            if (currentStepObj && currentStepObj.type === 'poll' && dataType === 'polls') {
-                // Wait 50ms to ensure DOM is ready if page just swapped, then update
-                setTimeout(() => {
-                    if(results[currentStepObj.pollData.id]) {
-                        updatePollDOM(currentStepObj.pollData.id);
+            if (currentStepObj && (currentStepObj.type === 'globe' || currentStepObj.type === 'industry_map') && dataType === 'nexus') {
+                 setTimeout(() => {
+                    if(results.default) {
+                       updateNexusStats(results.default.breakdown || {});
                     }
                 }, 50);
+            }
+            
+            if (currentStepObj && currentStepObj.type === 'poll' && dataType === 'polls' && results[currentStepObj.pollData.id]) {
+                updatePollDOM(currentStepObj.pollData.id);
             }
         }
 
@@ -348,6 +351,38 @@
                     }
                 });
             }
+        }
+        
+        function updateNexusStats(breakdown) {
+            const statsContainer = document.getElementById('nexus-stats-container');
+            if (!statsContainer) return;
+            const total = Object.values(breakdown).reduce((a, b) => a + b, 0);
+            
+            // We need to find the labels for the IDs
+            const step = journeySteps[currentStep];
+            let options = [];
+            if (step.type === 'globe') options = step.nexusData.options;
+            else if (step.type === 'industry_map') options = step.nexusData.options;
+            
+            let html = `<h3 class="text-xl font-bold bty-text-yellow mb-4">Audience Selections (Total: ${total})</h3>`;
+            html += `<div class="space-y-3">`;
+            
+            options.forEach(opt => {
+                const count = breakdown[opt.id] || 0;
+                const pct = total > 0 ? (count / total) * 100 : 0;
+                html += `
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span>${opt.text}</span>
+                        <span class="font-bold">${count}</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-4">
+                        <div class="bg-blue-500 h-4 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+                    </div>
+                </div>`;
+            });
+            html += `</div>`;
+            statsContainer.innerHTML = html;
         }
        
         function renderContent(step) {
@@ -432,7 +467,18 @@
         
         function renderNexusGlobe(data = {}) {
             setTimeout(() => initGlobe(data), 50);
-            return `<div id="globe-container" class="w-full h-full"><div id="globe-pins-container"></div></div>`;
+            // Split layout: Left Globe, Right Stats
+            return `
+            <div class="flex h-full w-full">
+                <div class="w-2/3 h-full relative">
+                    <div id="globe-container" class="w-full h-full"><div id="globe-pins-container"></div></div>
+                </div>
+                <div class="w-1/3 h-full bg-gray-800/50 border-l border-gray-700 p-4 overflow-y-auto">
+                    <div id="nexus-stats-container">
+                        <p class="text-gray-400">Waiting for selections...</p>
+                    </div>
+                </div>
+            </div>`;
         }
         
         function renderIndustryNexusMap(localData, liveNexusData = {}) {
@@ -444,7 +490,19 @@
                         </div>`;
             }).join('');
             const mapImage = `<img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/611f5fa27aa0bcf1c9854ab5458a9898f600389b/gem/sgmap.png" alt="Singapore Map" class="absolute top-0 left-0 w-full h-full object-contain -z-10" />`;
-            return `<div id="industry-nexus-container" class="w-full h-full flex justify-center items-center relative">${mapImage}${pinsHTML}</div>`;
+            
+            // Split layout: Left Map, Right Stats
+            return `
+            <div class="flex h-full w-full">
+                <div class="w-2/3 h-full relative flex justify-center items-center">
+                    <div id="industry-nexus-container" class="w-full h-full flex justify-center items-center relative">${mapImage}${pinsHTML}</div>
+                </div>
+                <div class="w-1/3 h-full bg-gray-800/50 border-l border-gray-700 p-4 overflow-y-auto">
+                    <div id="nexus-stats-container">
+                        <p class="text-gray-400">Waiting for selections...</p>
+                    </div>
+                </div>
+            </div>`;
         }
 
         function initGlobe(data = {}) {
@@ -568,7 +626,20 @@
             if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; }
             if (currentStep >= journeySteps.length) return;
             const step = journeySteps[currentStep];
-            setDoc(doc(db, "session", "state"), { currentView: step.type, pollData: step.pollData || null, nexusData: step.nexusData || null, localData: step.localData || null });
+            
+            // Prepare payload for audience mirror
+            const statePayload = { 
+                currentView: step.type, 
+                pollData: step.pollData || null, 
+                nexusData: step.nexusData || null, 
+                localData: step.localData || null,
+                title: step.title || "",
+                description: step.description || "",
+                url: step.url || "", // Pass video/slide URL
+                staticContent: step.id === 'values' ? dreamValues : null // Pass Dream Values explicitly
+            };
+
+            setDoc(doc(db, "session", "state"), statePayload);
             const contentHTML = renderContent(step);
             const descriptionHTML = (typeof step.description === 'string' && step.description.length > 0) 
                 ? `<p class="text-md md:text-xl text-gray-300 max-w-5xl mx-auto mb-8">${step.description}</p>` 
