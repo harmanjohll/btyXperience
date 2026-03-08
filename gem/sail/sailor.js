@@ -1,5 +1,5 @@
 /* === Beatty SAIL — Sailor (Participant) ===
-   Origami fold-on-paper + richer questions + proper layout + robust card.
+   Responsive origami + actionarcnlc two-pick questions + back/next nav.
 */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -22,28 +22,30 @@ try {
 
 // === STATE ===
 const $app = document.getElementById('app');
-const STORAGE_KEY = 'btySail_v4';
-let D = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+const SK = 'btySail_v5';
+let D = JSON.parse(localStorage.getItem(SK)) || {};
 let step = 0;
 
-/*  Step map (14 steps total):
+/*  Step map:
     0  = welcome
-    1  = fold 0 (S)
-    2  = choose S
-    3  = fold 1 (A)
-    4  = choose A main
-    5  = choose A sub (subject)
-    6  = fold 2 (I)
-    7  = choose I main (exchange)
-    8  = choose I sub (industry)
-    9  = fold 3 (L)
-    10 = choose L
+    1  = fold 0 (S)          → paper stage 0→1
+    2  = choose S (two-pick)
+    3  = fold 1 (A)          → paper stage 1→2
+    4  = choose A (two-pick)
+    5  = choose A sub (two-pick)
+    6  = fold 2 (I)          → paper stage 2→3
+    7  = choose I (two-pick)
+    8  = choose I sub (two-pick)
+    9  = fold 3 (L)          → paper stage 3→4 (BOAT REVEAL!)
+    10 = choose L (two-pick)
     11 = aspiration
     12 = launch
     13 = memento
 */
 
-function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(D)); }
+const TOTAL_QUESTIONS = 6; // S, A, A_sub, I, I_sub, L
+
+function save() { localStorage.setItem(SK, JSON.stringify(D)); }
 async function saveToFirebase() {
     if (!auth?.currentUser) return;
     try { await setDoc(doc(db, "sailBoats", auth.currentUser.uid), { ...D, timestamp: serverTimestamp() }); }
@@ -61,25 +63,27 @@ function colors() {
         mast: BOAT_DEFAULTS.mast,
     };
 }
-function oStage() {
-    if (D.learningChoice) return 5;
-    if (D.internationalChoice) return 4;
-    if (D.appliedChoice) return 3;
-    if (D.stewardshipChoice) return 2;
-    return 0;
-}
 function extras() { return { aspiration: D.aspiration, flagIcon: D.flagIcon }; }
 
-function progressHTML(foldsDone) {
-    const L = ['S','A','I','L'];
-    return `<div class="flex items-center justify-center gap-2 mb-2">
-        ${L.map((l,i) => {
-            const s = i < foldsDone ? 'done' : i === foldsDone ? 'active' : '';
-            return `<div class="flex flex-col items-center gap-0.5">
-                <div class="progress-dot ${s}"></div>
-                <span class="text-[9px] font-bold tracking-wider ${s==='active'?'text-yellow-400':s==='done'?'text-yellow-600':'text-gray-600'}">${l}</span>
-            </div>`;
-        }).join('<div class="w-4 h-px bg-gray-700"></div>')}
+function questionsDone() {
+    let n = 0;
+    if (D.stewardshipPick1 !== undefined) n++;
+    if (D.appliedPick1 !== undefined) n++;
+    if (D.subjectPick1 !== undefined) n++;
+    if (D.internationalPick1 !== undefined) n++;
+    if (D.industryPick1 !== undefined) n++;
+    if (D.learningPick1 !== undefined) n++;
+    return n;
+}
+
+function progressBarHTML(qDone) {
+    const pct = Math.round((qDone / TOTAL_QUESTIONS) * 100);
+    return `<div class="mb-4">
+        <div class="flex justify-between items-center mb-1.5">
+            <span class="text-[10px] font-semibold tracking-widest uppercase text-gray-500">Progress</span>
+            <span class="text-[10px] font-medium text-yellow-400">${pct}%</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
     </div>`;
 }
 
@@ -98,26 +102,27 @@ function spawnParticles(container, count = 12) {
 }
 
 /* ============================================================
-   FOLD-ON-PAPER INTERACTION
+   FOLD-ON-PAPER INTERACTION (with paper tilt + crease mark)
    ============================================================ */
 
-function scaleFoldCoords(guide, stageSize) {
-    // FOLD_GUIDES are in 280x280 viewBox. Scale to stageSize.
-    const s = stageSize / 280;
-    return {
+function setupFoldInteraction(stageEl, foldIndex, onComplete) {
+    const guide = FOLD_GUIDES[foldIndex];
+    // Get actual rendered size of the stage element
+    const stageRect = stageEl.getBoundingClientRect();
+    const stageSize = stageRect.width;
+    const s = stageSize / 280; // scale factor
+
+    const sc = {
         from: { x: guide.from.x * s, y: guide.from.y * s },
         to:   { x: guide.to.x * s,   y: guide.to.y * s },
     };
-}
 
-function setupFoldInteraction(stageEl, foldIndex, stageSize, onComplete) {
-    const guide = FOLD_GUIDES[foldIndex];
-    const sc = scaleFoldCoords(guide, stageSize);
     const overlay = stageEl.querySelector('.fold-overlay');
     const dot = stageEl.querySelector('.fold-dot');
     const target = stageEl.querySelector('.fold-target');
     const dragSvg = stageEl.querySelector('.fold-drag-line');
     const ringCircle = stageEl.querySelector('.fold-progress-ring circle');
+    const svgEl = stageEl.querySelector('.origami-svg');
 
     dot.style.left = sc.from.x + 'px';
     dot.style.top = sc.from.y + 'px';
@@ -150,35 +155,55 @@ function setupFoldInteraction(stageEl, foldIndex, stageSize, onComplete) {
         e.preventDefault();
         const pos = getPos(e);
         const d = Math.sqrt((pos.x-sc.from.x)**2 + (pos.y-sc.from.y)**2);
-        if (d > 50) return;
+        if (d > 55) return; // must start near source dot
         isDown = true;
         haptic(15);
         dot.style.animation = 'none';
+        stageEl.classList.add('tilting');
     }
+
     function move(e) {
         if (!isDown || completed) return;
         e.preventDefault();
         const pos = getPos(e);
-        const svbSz = stageSize;
-        dragSvg.innerHTML = `<svg viewBox="0 0 ${svbSz} ${svbSz}" width="${svbSz}" height="${svbSz}">
+
+        // Draw drag line
+        dragSvg.innerHTML = `<svg viewBox="0 0 ${stageSize} ${stageSize}" width="${stageSize}" height="${stageSize}">
             <line x1="${sc.from.x}" y1="${sc.from.y}" x2="${pos.x}" y2="${pos.y}"/>
         </svg>`;
+
+        // Paper tilt effect — tilt toward drag direction
+        const progressX = (pos.x - sc.from.x) / stageSize;
+        const progressY = (pos.y - sc.from.y) / stageSize;
+        const tiltX = -progressY * 12; // tilt forward/back
+        const tiltY = progressX * 8;   // tilt left/right
+        svgEl.style.transform = `perspective(400px) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+
+        // Progress calculation
         const distToTarget = Math.sqrt((pos.x-sc.to.x)**2 + (pos.y-sc.to.y)**2);
         const progress = Math.max(0, Math.min(1, 1 - distToTarget / totalDist));
         ringCircle.style.strokeDashoffset = circ * (1 - progress);
+
+        // Haptic milestones
         if (progress > 0.3 && progress < 0.33) haptic(15);
         if (progress > 0.6 && progress < 0.63) haptic(20);
         if (progress > 0.85 && progress < 0.88) haptic(30);
+
         if (distToTarget < 30) {
             completed = true; isDown = false;
+            svgEl.style.transform = '';
+            stageEl.classList.remove('tilting');
             haptic(80);
             onComplete();
         }
     }
+
     function end() {
         if (!isDown || completed) return;
         isDown = false;
         dragSvg.innerHTML = '';
+        svgEl.style.transform = '';
+        stageEl.classList.remove('tilting');
         dot.style.animation = '';
     }
 
@@ -192,46 +217,28 @@ function setupFoldInteraction(stageEl, foldIndex, stageSize, onComplete) {
 }
 
 /* ============================================================
-   RENDER FUNCTIONS
+   RENDER: WELCOME
    ============================================================ */
-
-// --- Arrow SVG helper ---
-function arrowSVG(guide, size) {
-    const s = size / 280;
-    const fx = guide.from.x*s, fy = guide.from.y*s;
-    const tx = guide.to.x*s, ty = guide.to.y*s;
-    const dx = tx - fx, dy = ty - fy;
-    const len = Math.sqrt(dx*dx+dy*dy);
-    const ux = dx/len, uy = dy/len;
-    const ahX = fx + dx*0.75, ahY = fy + dy*0.75;
-    const sz = 7;
-    return `<svg class="fold-arrow" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
-        <line x1="${fx}" y1="${fy}" x2="${fx+dx*0.78}" y2="${fy+dy*0.78}"/>
-        <polygon points="${ahX},${ahY} ${ahX-ux*sz-uy*sz*0.5},${ahY-uy*sz+ux*sz*0.5} ${ahX-ux*sz+uy*sz*0.5},${ahY-uy*sz-ux*sz*0.5}"/>
-    </svg>`;
-}
-
-// --- WELCOME ---
 function renderWelcome() {
     $app.innerHTML = `
-    <div class="sail-screen fade-in">
+    <div class="sail-screen fade-up">
         <div class="flex-1 flex flex-col items-center justify-center p-4">
             <img src="${LOGO_URL}" alt="Beatty" class="h-16 w-16 mb-5 drop-shadow-lg">
-            <h1 class="text-3xl font-black tracking-tight mb-2" style="color:var(--bty-yellow);">Set Sail</h1>
+            <h1 class="text-3xl font-black tracking-tight mb-2" style="color:var(--accent-gold);">Set Sail</h1>
             <p class="text-gray-400 text-sm mb-6 text-center max-w-xs">Every Beattyian sets sail on a unique voyage.<br>Build yours — fold by fold.</p>
             <div class="origami-stage mb-4">
-                ${buildOrigamiSVG(BOAT_DEFAULTS, 0, 240)}
+                ${buildOrigamiSVG(BOAT_DEFAULTS, 0, 280)}
             </div>
             <p class="text-gray-500 text-xs mb-6 italic text-center">You have a piece of paper.<br>What will it become?</p>
-            <button id="startBtn" class="w-full max-w-xs p-4 bg-yellow-400 text-blue-900 font-black text-lg rounded-2xl shadow-xl uppercase tracking-wider active:scale-95 transition-transform">
-                Begin Folding
-            </button>
+            <button id="startBtn" class="nav-btn primary w-full max-w-xs text-lg uppercase tracking-wider">Begin Folding</button>
             <p class="text-[10px] text-gray-600 mt-6 tracking-widest uppercase">Beatty Secondary School &middot; Open House 2026</p>
         </div>
     </div>`;
 }
 
-// --- FOLD STEP ---
+/* ============================================================
+   RENDER: FOLD STEP
+   ============================================================ */
 function renderFoldStep(foldIndex) {
     const keys = ['S','A','I','L'];
     const data = SAIL_DATA[keys[foldIndex]];
@@ -239,15 +246,26 @@ function renderFoldStep(foldIndex) {
     const c = colors();
     const stage = foldIndex;
     const isBoatReveal = foldIndex === 3;
-    const svgSize = 240;
+
+    // Arrow SVG in 280 viewBox (will scale with CSS)
+    const fx = guide.from.x, fy = guide.from.y;
+    const tx = guide.to.x, ty = guide.to.y;
+    const adx = tx-fx, ady = ty-fy;
+    const aLen = Math.sqrt(adx*adx+ady*ady);
+    const ux = adx/aLen, uy = ady/aLen;
+    const ahX = fx+adx*0.75, ahY = fy+ady*0.75;
+    const sz = 7;
 
     $app.innerHTML = `
-    <div class="sail-screen slide-up">
+    <div class="sail-screen fade-up">
         <div class="paper-zone">
-            ${progressHTML(foldIndex)}
-            <div class="origami-stage" id="origamiStage" style="width:${svgSize}px; height:${svgSize}px;">
-                ${buildOrigamiSVG(c, stage, svgSize)}
-                ${arrowSVG(guide, svgSize)}
+            ${progressBarHTML(questionsDone())}
+            <div class="origami-stage" id="origamiStage">
+                ${buildOrigamiSVG(c, stage, 280)}
+                <svg class="fold-arrow" viewBox="0 0 280 280" style="width:100%;height:100%;">
+                    <line x1="${fx}" y1="${fy}" x2="${fx+adx*0.78}" y2="${fy+ady*0.78}"/>
+                    <polygon points="${ahX},${ahY} ${ahX-ux*sz-uy*sz*0.5},${ahY-uy*sz+ux*sz*0.5} ${ahX-ux*sz+uy*sz*0.5},${ahY-uy*sz-ux*sz*0.5}"/>
+                </svg>
                 <div class="fold-overlay"></div>
                 <div class="fold-dot"></div>
                 <div class="fold-target"></div>
@@ -261,12 +279,13 @@ function renderFoldStep(foldIndex) {
                 <span class="text-yellow-200 font-bold text-sm">Fold ${foldIndex+1} of 4</span>
             </div>
             <p class="text-gray-400 text-xs mb-1">${data.foldInstruction}</p>
-            <p class="text-gray-600 text-[10px] tracking-wide">Drag from the <span class="text-yellow-400 font-bold">glowing dot</span> toward the target</p>
+            <p class="text-gray-600 text-[10px]">Drag from the <span class="text-yellow-400 font-bold">glowing dot</span> toward the target</p>
         </div>
     </div>`;
 
     const stageEl = document.getElementById('origamiStage');
-    setupFoldInteraction(stageEl, foldIndex, svgSize, () => {
+    setupFoldInteraction(stageEl, foldIndex, () => {
+        // Hide guides
         stageEl.querySelector('.fold-dot').style.opacity = '0';
         stageEl.querySelector('.fold-target').style.opacity = '0';
         stageEl.querySelector('.fold-arrow').style.opacity = '0';
@@ -275,137 +294,248 @@ function renderFoldStep(foldIndex) {
 
         stageEl.classList.add(isBoatReveal ? 'boat-reveal' : 'fold-animating');
 
+        // Flash
         const flash = document.createElement('div');
         flash.className = 'fold-flash';
         stageEl.appendChild(flash);
         setTimeout(() => flash.remove(), 700);
 
+        // Update SVG to next stage
         setTimeout(() => {
-            stageEl.querySelector('.origami-svg').outerHTML = buildOrigamiSVG(c, isBoatReveal ? 4 : stage + 1, svgSize);
+            stageEl.querySelector('.origami-svg').outerHTML = buildOrigamiSVG(c, isBoatReveal ? 4 : stage + 1, 280);
             spawnParticles(stageEl, isBoatReveal ? 16 : 8);
+
+            // Add crease mark on the paper
+            if (!isBoatReveal) {
+                const creaseMark = document.createElement('div');
+                creaseMark.className = 'crease-mark';
+                creaseMark.style.cssText = 'position:absolute;inset:0;z-index:8;pointer-events:none;';
+                // Map fold guide to crease line position on the new stage
+                creaseMark.innerHTML = `<svg viewBox="0 0 280 280" style="width:100%;height:100%;">
+                    <line x1="${guide.from.x}" y1="${Math.min(guide.from.y, guide.to.y)}" x2="${guide.to.x}" y2="${Math.max(guide.from.y, guide.to.y)}" stroke="rgba(180,160,130,0.4)" stroke-width="1.5"/>
+                </svg>`;
+                stageEl.appendChild(creaseMark);
+            }
         }, isBoatReveal ? 800 : 450);
 
-        // Map fold index to next step
-        const nextMap = [2, 4, 7, 10]; // after fold 0→step2, fold1→step4, fold2→step7, fold3→step10
+        // Advance to choice step
+        const nextMap = [2, 4, 7, 10];
         setTimeout(() => { step = nextMap[foldIndex]; route(); }, isBoatReveal ? 2000 : 1200);
     });
 }
 
-// --- CHOICE STEP (generic) ---
-function renderChoice(config) {
-    const { foldsDone, paperStage, svgSize, title, letter, tagline, info, question, options, dataKey } = config;
+/* ============================================================
+   RENDER: TWO-PICK QUESTION (actionarcnlc pattern)
+   ============================================================ */
+function renderQuestion(config) {
+    const { scenario, question, options, dataKey, backStep, qNum, paperStage, info, sailLetter, sailTitle } = config;
     const c = colors();
-    const sz = svgSize || 160;
 
     $app.innerHTML = `
-    <div class="sail-screen slide-up">
+    <div class="sail-screen fade-up">
         <div class="paper-zone">
-            ${progressHTML(foldsDone)}
+            ${progressBarHTML(qNum - 1)}
             <div class="origami-stage small">
-                ${buildOrigamiSVG(c, paperStage, sz)}
+                ${buildOrigamiSVG(c, paperStage, 280)}
             </div>
         </div>
         <div class="content-zone">
-            <div class="info-panel rounded-2xl p-4 mb-3 text-left">
-                <div class="flex items-center gap-2 mb-1.5">
-                    <span class="text-yellow-400 font-black text-base">${letter}</span>
-                    <span class="text-yellow-200 font-bold text-sm">${title}</span>
-                </div>
-                ${tagline ? `<p class="text-white text-sm font-semibold mb-1">${tagline}</p>` : ''}
-                ${info ? `<p class="text-gray-400 text-xs leading-relaxed">${info}</p>` : ''}
+            <div class="flex items-center gap-2 mb-3">
+                <span class="text-yellow-400 font-black text-base">${sailLetter}</span>
+                <span class="text-yellow-200 font-bold text-sm">${sailTitle}</span>
             </div>
-            <h3 class="text-sm font-bold mb-3 text-white text-center">${question}</h3>
-            <div class="space-y-2">
-                ${options.map((opt, i) => `
-                    <button data-key="${dataKey}" data-idx="${i}" class="choice-btn w-full text-left p-3 bg-gray-800/80 border-2 border-gray-700 rounded-xl text-sm font-semibold shadow-md flex items-center gap-3">
-                        <span class="w-3 h-3 rounded-full flex-shrink-0" style="background:${opt.color}"></span>
-                        <span>${opt.icon || ''} ${opt.text}</span>
-                    </button>
-                `).join('')}
+            ${scenario ? `<div class="scenario-box mb-3">
+                <p class="text-sm leading-relaxed italic text-gray-400" style="font-family:Georgia,serif;">${scenario}</p>
+            </div>` : ''}
+            <h2 class="text-base font-bold mb-1 text-white leading-snug">${question}</h2>
+            <p class="text-[10px] mb-4 text-gray-500">Select two. <span class="text-yellow-400 font-semibold">1st choice</span> carries more weight than your <span class="text-blue-400 font-semibold">2nd</span>. Tap again to deselect.</p>
+            <div class="space-y-2.5" id="opts">
+                ${options.map((opt, i) => `<button class="option-btn fade-up stagger-${i+1}" data-key="${dataKey}" data-idx="${i}"><span class="option-badge"></span>${opt.text}</button>`).join('')}
+            </div>
+            ${info ? `<div class="info-panel rounded-xl p-3 mt-3"><p class="text-gray-400 text-xs leading-relaxed">${info}</p></div>` : ''}
+            <div class="nav-bar" id="navBar">
+                <button class="nav-btn secondary" id="backBtn" ${backStep === null ? 'disabled' : ''}>Back</button>
+                <button class="nav-btn primary" id="nextBtn" disabled>Next</button>
             </div>
         </div>
     </div>`;
+
+    // Restore previous picks if any
+    const prevPick1Key = dataKey + '_pick1';
+    const prevPick2Key = dataKey + '_pick2';
+    let pick1 = D[prevPick1Key] !== undefined ? D[prevPick1Key] : null;
+    let pick2 = D[prevPick2Key] !== undefined ? D[prevPick2Key] : null;
+    updatePickStyles();
+
+    function updatePickStyles() {
+        document.querySelectorAll('.option-btn').forEach(b => {
+            const idx = parseInt(b.dataset.idx);
+            const badge = b.querySelector('.option-badge');
+            b.classList.remove('pick-1', 'pick-2');
+            badge.textContent = '';
+            if (idx === pick1) { b.classList.add('pick-1'); badge.textContent = '1'; }
+            else if (idx === pick2) { b.classList.add('pick-2'); badge.textContent = '2'; }
+        });
+        document.getElementById('nextBtn').disabled = (pick1 === null || pick2 === null);
+    }
+
+    // Option click handler
+    document.querySelectorAll('.option-btn').forEach(b => {
+        b.addEventListener('click', () => {
+            const idx = parseInt(b.dataset.idx);
+            haptic(20);
+            if (pick1 === idx) { pick1 = pick2 !== null ? pick2 : null; pick2 = null; }
+            else if (pick2 === idx) { pick2 = null; }
+            else if (pick1 === null) { pick1 = idx; }
+            else if (pick2 === null) { pick2 = idx; }
+            else return; // already 2 selected
+            updatePickStyles();
+        });
+    });
+
+    // Back button
+    document.getElementById('backBtn').addEventListener('click', () => {
+        if (backStep !== null) { step = backStep; route(); }
+    });
+
+    // Next button
+    document.getElementById('nextBtn').addEventListener('click', () => {
+        if (pick1 === null || pick2 === null) return;
+        haptic(40);
+
+        // Save picks
+        D[prevPick1Key] = pick1;
+        D[prevPick2Key] = pick2;
+
+        // Primary pick determines boat color
+        const primaryOpt = options[pick1];
+        applyPrimaryChoice(dataKey, primaryOpt);
+        save();
+
+        // Advance
+        advanceFromQuestion(dataKey);
+    });
 }
 
-// --- Step-specific choice renders ---
+function applyPrimaryChoice(dataKey, opt) {
+    switch (dataKey) {
+        case 'S':
+            D.stewardshipPick1 = opt.id;
+            D.hullColor = opt.color;
+            break;
+        case 'A':
+            D.appliedPick1 = opt.id;
+            D.keelColor = opt.color;
+            break;
+        case 'A_sub':
+            D.subjectPick1 = opt.id;
+            break;
+        case 'I':
+            D.internationalPick1 = opt.id;
+            D.sailColor = opt.color;
+            D.sailGradient = opt.gradient || null;
+            break;
+        case 'I_sub':
+            D.industryPick1 = opt.id;
+            break;
+        case 'L':
+            D.learningPick1 = opt.id;
+            D.flagColor = opt.color;
+            D.flagIcon = opt.icon || '';
+            break;
+    }
+}
 
+function advanceFromQuestion(dataKey) {
+    const map = { S: 3, A: 5, A_sub: 6, I: 8, I_sub: 9, L: 11 };
+    step = map[dataKey];
+    route();
+}
+
+// Step-specific question renders
 function renderChooseS() {
     const d = SAIL_DATA.S;
-    renderChoice({
-        foldsDone: 0, paperStage: 1, title: d.title, letter: d.letter,
-        tagline: d.tagline, info: d.info, question: d.question,
-        options: d.options, dataKey: 'S',
+    renderQuestion({
+        scenario: d.scenario, question: d.question, options: d.options,
+        dataKey: 'S', backStep: 1, qNum: 1, paperStage: 1,
+        info: d.info, sailLetter: d.letter, sailTitle: d.title,
     });
 }
 
 function renderChooseA() {
     const d = SAIL_DATA.A;
-    renderChoice({
-        foldsDone: 1, paperStage: 2, title: d.title, letter: d.letter,
-        tagline: d.tagline, info: d.info, question: d.question,
-        options: d.options, dataKey: 'A',
+    renderQuestion({
+        scenario: d.scenario, question: d.question, options: d.options,
+        dataKey: 'A', backStep: 2, qNum: 2, paperStage: 2,
+        info: d.info, sailLetter: d.letter, sailTitle: d.title,
     });
 }
 
 function renderChooseASub() {
     const d = SAIL_DATA.A;
-    renderChoice({
-        foldsDone: 1, paperStage: 2, title: d.title, letter: d.letter,
-        tagline: null, info: null, question: d.subQuestion,
-        options: d.subOptions, dataKey: 'A_sub',
+    renderQuestion({
+        scenario: d.subScenario, question: d.subQuestion, options: d.subOptions,
+        dataKey: 'A_sub', backStep: 4, qNum: 3, paperStage: 2,
+        info: null, sailLetter: d.letter, sailTitle: d.title,
     });
 }
 
 function renderChooseI() {
     const d = SAIL_DATA.I;
-    renderChoice({
-        foldsDone: 2, paperStage: 3, title: d.title, letter: d.letter,
-        tagline: d.tagline, info: d.info, question: d.question,
-        options: d.options, dataKey: 'I',
+    renderQuestion({
+        scenario: d.scenario, question: d.question, options: d.options,
+        dataKey: 'I', backStep: 6, qNum: 4, paperStage: 3,
+        info: d.info, sailLetter: d.letter, sailTitle: d.title,
     });
 }
 
 function renderChooseISub() {
     const d = SAIL_DATA.I;
-    renderChoice({
-        foldsDone: 2, paperStage: 3, title: d.title, letter: d.letter,
-        tagline: null, info: null, question: d.subQuestion,
-        options: d.subOptions, dataKey: 'I_sub',
+    renderQuestion({
+        scenario: d.subScenario, question: d.subQuestion, options: d.subOptions,
+        dataKey: 'I_sub', backStep: 7, qNum: 5, paperStage: 3,
+        info: null, sailLetter: d.letter, sailTitle: d.title,
     });
 }
 
 function renderChooseL() {
     const d = SAIL_DATA.L;
-    renderChoice({
-        foldsDone: 3, paperStage: 4, title: d.title, letter: d.letter,
-        tagline: d.tagline, info: d.info, question: d.question,
-        options: d.options, dataKey: 'L',
+    renderQuestion({
+        scenario: d.scenario, question: d.question, options: d.options,
+        dataKey: 'L', backStep: 9, qNum: 6, paperStage: 4,
+        info: d.info, sailLetter: d.letter, sailTitle: d.title,
     });
 }
 
-// --- ASPIRATION ---
+/* ============================================================
+   RENDER: ASPIRATION
+   ============================================================ */
 function renderAspiration() {
     const c = colors();
     $app.innerHTML = `
-    <div class="sail-screen slide-up">
+    <div class="sail-screen fade-up">
         <div class="paper-zone">
-            ${progressHTML(4)}
+            ${progressBarHTML(TOTAL_QUESTIONS)}
             <div class="origami-stage small">
-                ${buildOrigamiSVG(c, 5, 160, extras())}
+                ${buildOrigamiSVG(c, 5, 280, extras())}
             </div>
         </div>
         <div class="content-zone text-center">
             <h2 class="text-xl font-black text-yellow-400 mb-2">Name Your Vessel</h2>
             <p class="text-gray-400 text-sm mb-4">One word — your aspiration, inscribed on the hull forever.</p>
             <input type="text" id="aspirationInput" maxlength="15" class="w-full p-3 bg-gray-800 text-white border-2 border-blue-500 focus:border-yellow-400 rounded-xl mb-4 text-center text-xl font-black outline-none placeholder-gray-600" placeholder="e.g. COURAGE">
-            <button id="launchBtn" class="w-full p-4 bg-yellow-400 text-blue-900 font-black text-lg rounded-2xl shadow-xl uppercase tracking-wider active:scale-95 transition-transform">
-                Launch Your Boat
-            </button>
+            <div class="nav-bar">
+                <button class="nav-btn secondary" id="backBtn">Back</button>
+                <button class="nav-btn primary" id="launchBtn">Launch</button>
+            </div>
         </div>
     </div>`;
+    document.getElementById('backBtn').addEventListener('click', () => { step = 10; route(); });
 }
 
-// --- LAUNCH ---
+/* ============================================================
+   RENDER: LAUNCH
+   ============================================================ */
 function renderLaunch() {
     const c = colors();
     $app.innerHTML = `
@@ -422,169 +552,87 @@ function renderLaunch() {
     setTimeout(() => { step = 13; route(); }, 3500);
 }
 
-// --- MEMENTO CARD ---
+/* ============================================================
+   RENDER: MEMENTO CARD (robust, no overlaps)
+   ============================================================ */
 function renderMemento() {
     const c = colors();
-    const sailOpt  = SAIL_DATA.I.options.find(o => o.id === D.internationalChoice) || SAIL_DATA.I.options[0];
-    const leadOpt  = SAIL_DATA.S.options.find(o => o.id === D.stewardshipChoice) || SAIL_DATA.S.options[0];
-    const chalOpt  = SAIL_DATA.A.options.find(o => o.id === D.appliedChoice) || SAIL_DATA.A.options[0];
-    const valOpt   = SAIL_DATA.L.options.find(o => o.id === D.learningChoice) || SAIL_DATA.L.options[0];
-    const archetype = ARCHETYPES[D.internationalChoice] || ARCHETYPES.korea;
-    const subjectLabel = LABELS.subject[D.subjectChoice] || '';
-    const industryLabel = LABELS.industry[D.industryChoice] || '';
-
-    // Insights from each pillar
-    const sInsight = SAIL_DATA.S.insights[D.stewardshipChoice] || '';
-    const iInsight = SAIL_DATA.I.insights[D.internationalChoice] || '';
+    const sailOpt  = SAIL_DATA.I.options.find(o => o.id === D.internationalPick1) || SAIL_DATA.I.options[0];
+    const leadOpt  = SAIL_DATA.S.options.find(o => o.id === D.stewardshipPick1) || SAIL_DATA.S.options[0];
+    const chalOpt  = SAIL_DATA.A.options.find(o => o.id === D.appliedPick1) || SAIL_DATA.A.options[0];
+    const valOpt   = SAIL_DATA.L.options.find(o => o.id === D.learningPick1) || SAIL_DATA.L.options[0];
+    const archetype = ARCHETYPES[D.internationalPick1] || ARCHETYPES.korea;
+    const subjectLabel = LABELS.subject[D.subjectPick1] || '';
+    const industryLabel = LABELS.industry[D.industryPick1] || '';
 
     $app.innerHTML = `
-    <div class="sail-screen fade-in">
+    <div class="sail-screen fade-up">
         <div class="content-zone pt-4">
             <div class="memento-card" id="memento-card" style="border-color:${sailOpt.color};">
-                <!-- Header: boat + archetype -->
                 <div class="memento-header">
-                    <div class="memento-boat">
-                        ${buildOrigamiSVG(c, 5, 56, extras())}
-                    </div>
+                    <div class="memento-boat">${buildOrigamiSVG(c, 5, 56, extras())}</div>
                     <div class="memento-archetype">
                         <h1 class="text-lg font-black leading-tight" style="color:${sailOpt.color};">${archetype.name}</h1>
                         <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Your Beatty Compass Card</p>
                     </div>
                 </div>
-
-                <!-- Quote -->
                 <div class="memento-quote">
-                    <p class="text-sm italic text-gray-100 font-serif leading-relaxed">${archetype.quote}</p>
+                    <p class="text-sm italic text-gray-100 leading-relaxed" style="font-family:Georgia,serif;">${archetype.quote}</p>
                 </div>
-
-                <!-- Persona -->
                 <div class="px-4 pb-2">
                     <p class="text-xs text-gray-400 leading-relaxed">${archetype.persona}</p>
                 </div>
-
-                <!-- YOUR INSIGHTS -->
-                <div class="memento-section" style="border-color:var(--bty-yellow);">
+                <div class="memento-section" style="border-color:var(--accent-gold);">
                     <h4 class="font-bold text-yellow-400 uppercase tracking-wide text-[10px] mb-1">Your Insights</h4>
-                    <p class="text-xs text-gray-300 leading-relaxed mb-2">${sInsight}</p>
-                    <p class="text-[10px] text-gray-500">At Beatty, we offer ALL these areas — Sustainability, Journalism & Media, Engineering & AI, and more. Every passion has a pathway here!</p>
+                    <p class="text-xs text-gray-300 leading-relaxed">${SAIL_DATA.S.info}</p>
                 </div>
-
-                <!-- YOUR CHOSEN PATHWAYS -->
                 <div class="memento-section" style="border-color:${sailOpt.color};">
                     <h4 class="font-bold uppercase tracking-wide text-[10px] mb-1" style="color:${sailOpt.color};">Your Chosen Pathways</h4>
                     <p class="text-xs text-gray-300 leading-relaxed">
-                        You've set your sights on <strong class="text-white">${sailOpt.text}</strong>${industryLabel ? ` and an industry attachment at <strong class="text-white">${industryLabel}</strong>` : ''}.
-                        ${iInsight}
+                        You've set your sights on <strong class="text-white">${sailOpt.text.split('—')[0].trim()}</strong>${industryLabel ? ` and an industry attachment at <strong class="text-white">${industryLabel}</strong>` : ''}.
+                        ${SAIL_DATA.I.info}
                     </p>
                 </div>
-
-                <!-- YOUR SAIL CHOICES -->
                 <div class="px-4 pb-2 space-y-1.5">
-                    <div class="flex items-start gap-2 bg-slate-800/80 rounded-lg p-2 border-l-3" style="border-left: 3px solid ${leadOpt.color};">
+                    <div class="flex items-start gap-2 bg-slate-800/80 rounded-lg p-2" style="border-left:3px solid ${leadOpt.color};">
                         <span class="text-yellow-400 font-black text-[10px] mt-0.5">S</span>
-                        <div><p class="text-[10px] text-gray-500 font-bold uppercase">Stewardship</p><p class="text-xs text-gray-200">${leadOpt.text}</p></div>
+                        <div><p class="text-[10px] text-gray-500 font-bold uppercase">Stewardship</p><p class="text-xs text-gray-200">${leadOpt.text.split('—')[0].trim()}</p></div>
                     </div>
-                    <div class="flex items-start gap-2 bg-slate-800/80 rounded-lg p-2" style="border-left: 3px solid ${chalOpt.color};">
+                    <div class="flex items-start gap-2 bg-slate-800/80 rounded-lg p-2" style="border-left:3px solid ${chalOpt.color};">
                         <span class="text-yellow-400 font-black text-[10px] mt-0.5">A</span>
-                        <div><p class="text-[10px] text-gray-500 font-bold uppercase">Applied Learning</p><p class="text-xs text-gray-200">${chalOpt.text}${subjectLabel ? ` &middot; ${subjectLabel}` : ''}</p></div>
+                        <div><p class="text-[10px] text-gray-500 font-bold uppercase">Applied Learning</p><p class="text-xs text-gray-200">${chalOpt.text.split('—')[0].trim()}${subjectLabel ? ' · '+subjectLabel : ''}</p></div>
                     </div>
-                    <div class="flex items-start gap-2 bg-slate-800/80 rounded-lg p-2" style="border-left: 3px solid ${sailOpt.color};">
+                    <div class="flex items-start gap-2 bg-slate-800/80 rounded-lg p-2" style="border-left:3px solid ${sailOpt.color};">
                         <span class="text-yellow-400 font-black text-[10px] mt-0.5">I</span>
-                        <div><p class="text-[10px] text-gray-500 font-bold uppercase">International & Industry</p><p class="text-xs text-gray-200">${sailOpt.text}${industryLabel ? ` &middot; ${industryLabel}` : ''}</p></div>
+                        <div><p class="text-[10px] text-gray-500 font-bold uppercase">International & Industry</p><p class="text-xs text-gray-200">${sailOpt.text.split('—')[0].trim()}${industryLabel ? ' · '+industryLabel : ''}</p></div>
                     </div>
-                    <div class="flex items-start gap-2 bg-slate-800/80 rounded-lg p-2" style="border-left: 3px solid ${valOpt.color};">
+                    <div class="flex items-start gap-2 bg-slate-800/80 rounded-lg p-2" style="border-left:3px solid ${valOpt.color};">
                         <span class="text-yellow-400 font-black text-[10px] mt-0.5">L</span>
-                        <div><p class="text-[10px] text-gray-500 font-bold uppercase">Learning to Live, Learn & Love</p><p class="text-xs text-gray-200">${valOpt.icon || ''} ${valOpt.text}</p></div>
+                        <div><p class="text-[10px] text-gray-500 font-bold uppercase">Learning to Live, Learn & Love</p><p class="text-xs text-gray-200">${valOpt.icon||''} ${valOpt.text.split('—')[0].trim()}</p></div>
                     </div>
                 </div>
-
-                <!-- RECOMMENDED PATHWAYS -->
                 <div class="memento-section" style="border-color:#10b981;">
                     <h4 class="font-bold text-green-400 uppercase tracking-wide text-[10px] mb-1">Recommended Pathways</h4>
-                    <p class="text-xs text-gray-300 leading-relaxed">
-                        ${archetype.recommended.map(r => `<span class="text-green-300">${r}</span>`).join(' &bull; ')}
-                    </p>
-                    <p class="text-[10px] text-gray-500 mt-1">Get ready for your aspirations to take flight.</p>
+                    <p class="text-xs text-gray-300 leading-relaxed">${archetype.recommended.map(r => `<span class="text-green-300">${r}</span>`).join(' · ')}</p>
                 </div>
-
-                <!-- Footer: aspiration -->
                 <div class="memento-footer">
-                    <p class="text-[10px] text-gray-500 mb-1 uppercase tracking-widest">Join us at Beatty and have your aspiration to become a/an</p>
-                    <p class="text-3xl font-black uppercase tracking-wide" style="color:${sailOpt.color}; text-shadow: 0 2px 12px rgba(0,0,0,0.5);">${(D.aspiration || 'FUTURE LEADER').toUpperCase()}</p>
-                    <p class="text-[10px] text-gray-500 mt-1">take flight!</p>
+                    <p class="text-[10px] text-gray-500 mb-1 uppercase tracking-widest">My aspiration</p>
+                    <p class="text-3xl font-black uppercase tracking-wide" style="color:${sailOpt.color};text-shadow:0 2px 12px rgba(0,0,0,0.5);">${(D.aspiration||'FUTURE LEADER').toUpperCase()}</p>
                     <div class="flex items-center justify-center gap-2 mt-3">
                         <img src="${LOGO_URL}" alt="Beatty" class="h-4 w-4 opacity-60">
-                        <p class="text-[10px] text-gray-500">Beatty Secondary School &middot; Open House 2026</p>
+                        <p class="text-[10px] text-gray-500">Beatty Secondary School · Open House 2026</p>
                     </div>
                 </div>
             </div>
-            <button id="downloadCardBtn" class="mt-4 w-full p-4 bg-yellow-400 text-blue-900 font-black rounded-xl shadow-xl text-lg uppercase tracking-wide active:scale-95 transition-transform">Download Card</button>
+            <button id="downloadCardBtn" class="nav-btn primary w-full mt-4 text-lg uppercase tracking-wide">Download Card</button>
             <button id="resetBtn" class="mt-3 w-full text-sm text-gray-500 underline pb-4">Start Over</button>
         </div>
     </div>`;
 }
 
 /* ============================================================
-   CHOICE HANDLERS
+   LAUNCH HANDLER
    ============================================================ */
-function handleChoice(key, idx) {
-    haptic(40);
-    const btns = $app.querySelectorAll('.choice-btn');
-    btns.forEach(b => b.classList.remove('selected'));
-    btns[idx].classList.add('selected');
-
-    switch (key) {
-        case 'S': {
-            const opt = SAIL_DATA.S.options[idx];
-            D.stewardshipChoice = opt.id;
-            D.hullColor = opt.color;
-            save();
-            setTimeout(() => { step = 3; route(); }, 400);
-            break;
-        }
-        case 'A': {
-            const opt = SAIL_DATA.A.options[idx];
-            D.appliedChoice = opt.id;
-            D.keelColor = opt.color;
-            save();
-            setTimeout(() => { step = 5; route(); }, 400); // go to sub-question
-            break;
-        }
-        case 'A_sub': {
-            const opt = SAIL_DATA.A.subOptions[idx];
-            D.subjectChoice = opt.id;
-            save();
-            setTimeout(() => { step = 6; route(); }, 400); // go to fold 2
-            break;
-        }
-        case 'I': {
-            const opt = SAIL_DATA.I.options[idx];
-            D.internationalChoice = opt.id;
-            D.sailColor = opt.color;
-            D.sailGradient = opt.gradient || null;
-            save();
-            setTimeout(() => { step = 8; route(); }, 400); // go to sub-question
-            break;
-        }
-        case 'I_sub': {
-            const opt = SAIL_DATA.I.subOptions[idx];
-            D.industryChoice = opt.id;
-            save();
-            setTimeout(() => { step = 9; route(); }, 400); // go to fold 3
-            break;
-        }
-        case 'L': {
-            const opt = SAIL_DATA.L.options[idx];
-            D.learningChoice = opt.id;
-            D.flagColor = opt.color;
-            D.flagIcon = opt.icon || '';
-            save();
-            setTimeout(() => { step = 11; route(); }, 400); // aspiration
-            break;
-        }
-    }
-}
-
 async function handleLaunch() {
     const input = document.getElementById('aspirationInput');
     const word = input.value.trim();
@@ -600,14 +648,14 @@ async function handleLaunch() {
 function downloadCard() {
     const card = document.getElementById('memento-card');
     const btn = document.getElementById('downloadCardBtn');
-    btn.textContent = "Generating..."; btn.disabled = true;
+    btn.textContent = 'Generating...'; btn.disabled = true;
     html2canvas(card, { backgroundColor: '#0f172a', scale: 3, useCORS: true }).then(canvas => {
         const link = document.createElement('a');
         link.download = 'Beatty-SAIL-Card.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
-        btn.textContent = "Download Card"; btn.disabled = false;
-    }).catch(() => { btn.textContent = "Download Failed"; btn.disabled = false; });
+        btn.textContent = 'Download Card'; btn.disabled = false;
+    }).catch(() => { btn.textContent = 'Download Failed'; btn.disabled = false; });
 }
 
 /* ============================================================
@@ -638,25 +686,24 @@ function route() {
 $app.addEventListener('click', (e) => {
     const t = e.target.closest('button');
     if (!t) return;
-    if (t.id === 'startBtn')        { haptic(); step = 1; route(); return; }
-    if (t.id === 'launchBtn')       { handleLaunch(); return; }
-    if (t.id === 'downloadCardBtn') { downloadCard(); return; }
+    if (t.id === 'startBtn')        { haptic(); step = 1; route(); }
+    if (t.id === 'launchBtn')       { handleLaunch(); }
+    if (t.id === 'downloadCardBtn') { downloadCard(); }
     if (t.id === 'resetBtn') {
-        localStorage.removeItem(STORAGE_KEY);
-        D = {}; step = 0; route(); return;
+        localStorage.removeItem(SK);
+        D = {}; step = 0; route();
     }
-    if (t.dataset.key) handleChoice(t.dataset.key, parseInt(t.dataset.idx));
 });
 
 /* ============================================================
    RESUME STATE
    ============================================================ */
-if (D.aspiration)               step = 13;
-else if (D.learningChoice)      step = 11;
-else if (D.industryChoice)      step = 9;
-else if (D.internationalChoice) step = 8;
-else if (D.subjectChoice)       step = 6;
-else if (D.appliedChoice)       step = 5;
-else if (D.stewardshipChoice)   step = 3;
+if (D.aspiration)                         step = 13;
+else if (D.learningPick1 !== undefined)   step = 11;
+else if (D.industryPick1 !== undefined)   step = 9;
+else if (D.internationalPick1 !== undefined) step = 8;
+else if (D.subjectPick1 !== undefined)    step = 6;
+else if (D.appliedPick1 !== undefined)    step = 5;
+else if (D.stewardshipPick1 !== undefined) step = 3;
 
 route();
