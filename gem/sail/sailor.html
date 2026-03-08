@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Set Sail — Beatty Secondary</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        :root {
+            --bty-blue: #000C53;
+            --bty-yellow: #FFE200;
+            --bty-red: #EC3237;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(180deg, #000C53 0%, #001a80 40%, #003399 100%);
+            color: #f0f0f0;
+            min-height: 100dvh;
+            overflow-x: hidden;
+        }
+
+        /* === OCEAN WAVES BACKGROUND === */
+        .ocean-bg {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+        }
+        .wave {
+            position: absolute; bottom: -10px; left: -50%; width: 200%; height: 80px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 50% 50% 0 0;
+            animation: waveMove 6s ease-in-out infinite;
+        }
+        .wave:nth-child(2) { bottom: -20px; height: 60px; animation-duration: 8s; animation-delay: -2s; background: rgba(255,255,255,0.02); }
+        .wave:nth-child(3) { bottom: -5px; height: 40px; animation-duration: 5s; animation-delay: -4s; background: rgba(255,255,255,0.04); }
+        @keyframes waveMove { 0%,100% { transform: translateX(-5%); } 50% { transform: translateX(5%); } }
+
+        /* === PAPER / ORIGAMI === */
+        .paper-container {
+            perspective: 800px;
+            width: 280px; height: 280px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .paper {
+            width: 100%; height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Boat SVG styling */
+        .boat-svg { width: 280px; height: 280px; margin: 0 auto; display: block; }
+        .boat-hull { transition: fill 0.6s ease; }
+        .boat-sail { transition: fill 0.6s ease, opacity 0.6s ease; }
+        .boat-flag { transition: fill 0.6s ease, opacity 0.6s ease; }
+        .boat-keel { transition: fill 0.6s ease, opacity 0.6s ease; }
+        .boat-mast { transition: opacity 0.6s ease; }
+
+        /* Fold animation */
+        .fold-flash {
+            animation: foldFlash 0.6s ease-out;
+        }
+        @keyframes foldFlash {
+            0% { transform: scale(0.92) rotateY(8deg); opacity: 0.5; }
+            50% { transform: scale(1.04) rotateY(-2deg); }
+            100% { transform: scale(1) rotateY(0); opacity: 1; }
+        }
+
+        /* === UI ELEMENTS === */
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        .slide-up { animation: slideUp 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        .choice-btn {
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .choice-btn:active { transform: scale(0.97); }
+        .choice-btn.selected {
+            border-color: var(--bty-yellow) !important;
+            background: rgba(255, 226, 0, 0.15) !important;
+        }
+
+        /* Progress dots */
+        .progress-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            transition: all 0.3s;
+        }
+        .progress-dot.active { background: var(--bty-yellow); transform: scale(1.3); }
+        .progress-dot.done { background: rgba(255, 226, 0, 0.5); }
+
+        /* Sail launch animation */
+        .sail-away {
+            animation: sailAway 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        @keyframes sailAway {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            60% { transform: translateY(-40px) scale(0.9); opacity: 1; }
+            100% { transform: translateY(-200px) scale(0.4); opacity: 0; }
+        }
+
+        /* Memento card */
+        #memento-card {
+            background-color: #0f172a;
+            background-image:
+                radial-gradient(circle at 100% 0%, rgba(255, 226, 0, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 0% 100%, rgba(0, 12, 83, 0.4) 0%, transparent 50%);
+        }
+
+        /* Info reveal */
+        .info-panel {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        /* Crease line decorations */
+        .crease-line {
+            position: absolute;
+            background: rgba(255,255,255,0.06);
+            transition: opacity 0.6s;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="ocean-bg">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+
+    <div id="app" class="relative z-10 min-h-screen flex flex-col items-center justify-center p-4 pb-12">
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBjHO57QKoMW-u4oLGGdgDSqw5gttqX6Fg", authDomain: "btyx-61dc6.firebaseapp.com", projectId: "btyx-61dc6", storageBucket: "btyx-61dc6.appspot.com", messagingSenderId: "851137405745", appId: "1:851137405745:web:c95b86b6f0462a9bc20610" };
+        let db, auth;
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            await signInAnonymously(auth);
+        } catch (e) { console.error("Firebase init failed:", e); }
+
+        const appContainer = document.getElementById('app');
+        const STORAGE_KEY = 'btySail_v1';
+        let userData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+        let currentStep = 0; // 0=welcome, 1=S, 2=A, 3=I, 4=L, 5=aspiration, 6=launch, 7=memento
+
+        // === SAIL DATA ===
+        const sailData = {
+            S: {
+                letter: 'S',
+                title: 'Stewardship',
+                subtitle: 'The Foundation',
+                boatPart: 'Hull',
+                tagline: 'Every great voyage begins with a strong foundation.',
+                info: 'Our Leaders for Life Programme (LLP) develops purpose-driven leaders through the Kouzes & Posner Leadership Challenge — Model the Way, Inspire a Shared Vision, Challenge the Process, Enable Others to Act, and Encourage the Heart.',
+                question: 'What kind of leader are you?',
+                options: [
+                    { text: 'I lead by example — actions over words', color: '#3b82f6', id: 'model' },
+                    { text: 'I rally people around a shared vision', color: '#f59e0b', id: 'inspire' },
+                    { text: 'I challenge the status quo', color: '#ef4444', id: 'challenge' },
+                    { text: 'I lift others up to shine', color: '#10b981', id: 'enable' }
+                ]
+            },
+            A: {
+                letter: 'A',
+                title: 'Applied Learning',
+                subtitle: 'The Structure',
+                boatPart: 'Keel',
+                tagline: 'What gives your journey direction.',
+                info: 'Our Applied Learning Programme (ALP) — Think.Create.Innovate — focuses on STEM and Machine Learning for smart living. Through NEXUS@BTY, students connect knowledge across disciplines to tackle real-world problems.',
+                question: 'What real-world challenge would you tackle?',
+                options: [
+                    { text: 'Smart city solutions with AI & data', color: '#8b5cf6', pattern: 'circuit', id: 'ai' },
+                    { text: 'Sustainability & green engineering', color: '#22c55e', pattern: 'leaf', id: 'green' },
+                    { text: 'Robotics & automation for people', color: '#3b82f6', pattern: 'gear', id: 'robotics' },
+                    { text: 'Creative design & digital media', color: '#ec4899', pattern: 'wave', id: 'creative' }
+                ]
+            },
+            I: {
+                letter: 'I',
+                title: 'International & Industry',
+                subtitle: 'The Sail',
+                boatPart: 'Sail',
+                tagline: 'What catches the wind and propels you forward.',
+                info: 'From South Korea to New Zealand, Estonia to Japan — our NEXUS exchanges and industry attachments at Rockwell Automation, A*STAR, PIL, and more take learning beyond the classroom and beyond borders.',
+                question: 'Where would the wind take you?',
+                options: [
+                    { text: 'South Korea — A.I. & Innovation', color: '#3b82f6', gradient: ['#3b82f6','#60a5fa'], id: 'korea' },
+                    { text: 'Japan — Culture & Social Sciences', color: '#ec4899', gradient: ['#ec4899','#f9a8d4'], id: 'japan' },
+                    { text: 'New Zealand — Leadership & Sustainability', color: '#10b981', gradient: ['#10b981','#6ee7b7'], id: 'nz' },
+                    { text: 'Industry — Engineering & Maritime', color: '#f59e0b', gradient: ['#f59e0b','#fcd34d'], id: 'industry' }
+                ]
+            },
+            L: {
+                letter: 'L',
+                title: 'Learning to Live, Learn & Love',
+                subtitle: 'The Flag',
+                boatPart: 'Flag',
+                tagline: 'Your identity — the values you sail by.',
+                info: 'D.R.E.A.M. — Discipline, Resilience, Empathy, Adaptability, Mindfulness. These are the compass bearings that guide every Beattyian\'s voyage.',
+                question: 'Which value is your compass?',
+                options: [
+                    { text: 'Discipline — steady course', color: '#3b82f6', icon: '⚓', id: 'discipline' },
+                    { text: 'Resilience — weather any storm', color: '#ef4444', icon: '🔥', id: 'resilience' },
+                    { text: 'Empathy — sail with others', color: '#ec4899', icon: '💙', id: 'empathy' },
+                    { text: 'Adaptability — shift with the wind', color: '#10b981', icon: '🌊', id: 'adaptability' },
+                ]
+            }
+        };
+
+        // Default boat colors
+        const defaults = {
+            hull: '#1e3a5f',
+            keel: '#0f2a4a',
+            sail: '#ffffff',
+            flag: '#FFE200',
+            mast: '#2d1f0f'
+        };
+
+        function getBoatColors() {
+            return {
+                hull: userData.hullColor || defaults.hull,
+                keel: userData.keelColor || defaults.keel,
+                sail: userData.sailColor || defaults.sail,
+                sailGradient: userData.sailGradient || null,
+                flag: userData.flagColor || defaults.flag,
+            };
+        }
+
+        function buildBoatSVG(colors, step, size = 280) {
+            const hullOpacity = step >= 1 ? 1 : 0.15;
+            const keelOpacity = step >= 2 ? 1 : 0.08;
+            const mastOpacity = step >= 2 ? 1 : 0.08;
+            const sailOpacity = step >= 3 ? 1 : 0.08;
+            const flagOpacity = step >= 4 ? 1 : 0.08;
+
+            const sailGradientDef = colors.sailGradient
+                ? `<defs><linearGradient id="sailGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                     <stop offset="0%" style="stop-color:${colors.sailGradient[0]};stop-opacity:1"/>
+                     <stop offset="100%" style="stop-color:${colors.sailGradient[1]};stop-opacity:1"/>
+                   </linearGradient></defs>`
+                : '';
+            const sailFill = colors.sailGradient ? 'url(#sailGrad)' : colors.sail;
+
+            // Aspiration text on hull
+            const aspirationText = userData.aspiration
+                ? `<text x="140" y="215" text-anchor="middle" fill="rgba(255,255,255,0.9)" font-size="11" font-weight="900" font-family="Inter,sans-serif" letter-spacing="2">${userData.aspiration.toUpperCase()}</text>`
+                : '';
+
+            // Value icon on flag
+            const flagIcon = userData.flagIcon || '';
+            const flagIconText = flagIcon
+                ? `<text x="153" y="52" text-anchor="middle" font-size="14">${flagIcon}</text>`
+                : '';
+
+            return `
+            <svg viewBox="0 0 280 280" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg" class="boat-svg">
+                ${sailGradientDef}
+                <!-- Water line -->
+                <ellipse cx="140" cy="240" rx="120" ry="8" fill="rgba(59,130,246,0.15)" opacity="${hullOpacity}"/>
+
+                <!-- Hull -->
+                <path d="M60,200 L80,235 L200,235 L220,200 Z" fill="${colors.hull}" opacity="${hullOpacity}" class="boat-hull" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                <!-- Hull deck line -->
+                <line x1="70" y1="205" x2="210" y2="205" stroke="rgba(255,255,255,0.15)" stroke-width="1" opacity="${hullOpacity}"/>
+                ${aspirationText}
+
+                <!-- Keel/Structure -->
+                <rect x="135" y="195" width="10" height="45" rx="2" fill="${colors.keel}" opacity="${keelOpacity}" class="boat-keel"/>
+
+                <!-- Mast -->
+                <line x1="140" y1="55" x2="140" y2="200" stroke="#3d2b1a" stroke-width="4" stroke-linecap="round" opacity="${mastOpacity}" class="boat-mast"/>
+
+                <!-- Sail (main triangle) -->
+                <path d="M145,65 L145,185 L230,175 Z" fill="${sailFill}" opacity="${sailOpacity}" class="boat-sail" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+                <!-- Sail crease lines -->
+                <line x1="145" y1="100" x2="200" y2="145" stroke="rgba(0,0,0,0.06)" stroke-width="1" opacity="${sailOpacity}"/>
+                <line x1="145" y1="140" x2="190" y2="165" stroke="rgba(0,0,0,0.04)" stroke-width="1" opacity="${sailOpacity}"/>
+
+                <!-- Jib sail (smaller front sail) -->
+                <path d="M135,70 L135,180 L70,170 Z" fill="${sailFill}" opacity="${sailOpacity * 0.7}" class="boat-sail"/>
+
+                <!-- Flag -->
+                <path d="M140,55 L140,35 L165,42 L140,49 Z" fill="${colors.flag}" opacity="${flagOpacity}" class="boat-flag"/>
+                ${flagIconText}
+            </svg>`;
+        }
+
+        // === HAPTIC FEEDBACK ===
+        function haptic(duration = 30) {
+            if (navigator.vibrate) navigator.vibrate(duration);
+        }
+
+        // === PROGRESS BAR ===
+        function progressHTML(step) {
+            const labels = ['S', 'A', 'I', 'L'];
+            return `<div class="flex items-center justify-center gap-3 mb-6">
+                ${labels.map((l, i) => {
+                    const state = i < step ? 'done' : i === step ? 'active' : '';
+                    return `<div class="flex flex-col items-center gap-1">
+                        <div class="progress-dot ${state}"></div>
+                        <span class="text-[10px] font-bold tracking-wider ${state === 'active' ? 'text-yellow-400' : state === 'done' ? 'text-yellow-600' : 'text-gray-600'}">${l}</span>
+                    </div>`;
+                }).join('<div class="w-6 h-px bg-gray-700"></div>')}
+            </div>`;
+        }
+
+        // === SAVE ===
+        function save() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
+        }
+
+        async function saveToFirebase() {
+            if (!auth?.currentUser) return;
+            try {
+                await setDoc(doc(db, "sailBoats", auth.currentUser.uid), {
+                    ...userData,
+                    timestamp: serverTimestamp()
+                });
+            } catch (e) { console.error("Firebase save error:", e); }
+        }
+
+        // === RENDER: WELCOME ===
+        function renderWelcome() {
+            appContainer.innerHTML = `
+            <div class="w-full max-w-sm text-center fade-in flex flex-col items-center justify-center min-h-[80dvh]">
+                <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/fc98005f3682a779482dd1bf5e7cff5f9adb8451/gem/BTlogo.png" alt="Beatty Crest" class="h-20 w-20 mb-6 drop-shadow-lg">
+
+                <h1 class="text-3xl font-black tracking-tight mb-2" style="color: var(--bty-yellow);">Set Sail</h1>
+                <p class="text-gray-400 text-sm mb-8 max-w-xs">Every Beattyian sets sail on a unique voyage.<br>Build yours — fold by fold.</p>
+
+                <div class="mb-8 opacity-40">
+                    ${buildBoatSVG(defaults, 0, 200)}
+                </div>
+
+                <button id="startBtn" class="w-full max-w-xs p-4 bg-yellow-400 text-blue-900 font-black text-lg rounded-2xl shadow-xl uppercase tracking-wider active:scale-95 transition-transform">
+                    Begin Your Voyage
+                </button>
+
+                <p class="text-[10px] text-gray-600 mt-6 tracking-widest uppercase">Beatty Secondary School &middot; Open House</p>
+            </div>`;
+        }
+
+        // === RENDER: FOLD STEP (S, A, I, L) ===
+        function renderFoldStep(stepIndex) {
+            const keys = ['S', 'A', 'I', 'L'];
+            const key = keys[stepIndex];
+            const data = sailData[key];
+            const colors = getBoatColors();
+
+            appContainer.innerHTML = `
+            <div class="w-full max-w-sm text-center slide-up flex flex-col items-center pb-8">
+                ${progressHTML(stepIndex)}
+
+                <!-- Boat preview -->
+                <div class="paper-container mb-4">
+                    <div class="paper fold-flash">
+                        ${buildBoatSVG(colors, stepIndex + 1)}
+                    </div>
+                </div>
+
+                <!-- SAIL letter reveal -->
+                <div class="mb-4">
+                    <div class="inline-flex items-center gap-2 bg-yellow-400/10 border border-yellow-400/30 rounded-full px-4 py-1.5">
+                        <span class="text-yellow-400 font-black text-lg">${data.letter}</span>
+                        <span class="text-yellow-200 font-bold text-sm">${data.title}</span>
+                    </div>
+                </div>
+
+                <!-- Info panel -->
+                <div class="info-panel rounded-2xl p-5 mb-5 w-full text-left">
+                    <p class="text-yellow-400 text-xs font-bold uppercase tracking-widest mb-1">Fold ${stepIndex + 1}: ${data.boatPart}</p>
+                    <p class="text-white text-sm font-semibold mb-2">${data.tagline}</p>
+                    <p class="text-gray-400 text-xs leading-relaxed">${data.info}</p>
+                </div>
+
+                <!-- Question -->
+                <h3 class="text-lg font-bold mb-4 text-white">${data.question}</h3>
+
+                <div class="w-full space-y-3">
+                    ${data.options.map((opt, i) => `
+                        <button data-step="${key}" data-option="${i}" class="choice-btn w-full text-left p-4 bg-gray-800/80 border-2 border-gray-700 rounded-xl text-sm font-semibold shadow-md flex items-center gap-3">
+                            <span class="w-3 h-3 rounded-full flex-shrink-0" style="background:${opt.color}"></span>
+                            <span>${opt.icon || ''} ${opt.text}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            </div>`;
+        }
+
+        // === RENDER: ASPIRATION ===
+        function renderAspiration() {
+            const colors = getBoatColors();
+            appContainer.innerHTML = `
+            <div class="w-full max-w-sm text-center slide-up flex flex-col items-center pb-8">
+                ${progressHTML(4)}
+
+                <div class="paper-container mb-6">
+                    <div class="paper">
+                        ${buildBoatSVG(colors, 5)}
+                    </div>
+                </div>
+
+                <h2 class="text-2xl font-black text-yellow-400 mb-2">Name Your Vessel</h2>
+                <p class="text-gray-400 text-sm mb-6">One word. Your aspiration — inscribed on the hull forever.</p>
+
+                <input type="text" id="aspirationInput" maxlength="15" class="w-full max-w-xs p-4 bg-gray-800 text-white border-2 border-blue-500 focus:border-yellow-400 rounded-xl mb-4 text-center text-2xl font-black outline-none placeholder-gray-600" placeholder="e.g. COURAGE">
+
+                <button id="launchBtn" class="w-full max-w-xs p-4 bg-yellow-400 text-blue-900 font-black text-lg rounded-2xl shadow-xl uppercase tracking-wider active:scale-95 transition-transform">
+                    Launch Your Boat
+                </button>
+            </div>`;
+        }
+
+        // === RENDER: LAUNCH ANIMATION ===
+        function renderLaunch() {
+            const colors = getBoatColors();
+            appContainer.innerHTML = `
+            <div class="w-full max-w-sm text-center fade-in flex flex-col items-center justify-center min-h-[80dvh]">
+                <div class="sail-away mb-8">
+                    ${buildBoatSVG(colors, 5, 220)}
+                </div>
+                <p class="text-yellow-400 font-bold text-lg animate-pulse mt-8">Your boat has joined the fleet!</p>
+                <p class="text-gray-500 text-sm mt-2">Look at the main screen...</p>
+            </div>`;
+
+            setTimeout(() => renderMemento(), 3500);
+        }
+
+        // === RENDER: MEMENTO CARD ===
+        function renderMemento() {
+            const colors = getBoatColors();
+            const sailChoice = sailData.I.options.find(o => o.id === userData.internationalChoice) || sailData.I.options[0];
+            const leaderChoice = sailData.S.options.find(o => o.id === userData.stewardshipChoice) || sailData.S.options[0];
+            const challengeChoice = sailData.A.options.find(o => o.id === userData.appliedChoice) || sailData.A.options[0];
+            const valueChoice = sailData.L.options.find(o => o.id === userData.learningChoice) || sailData.L.options[0];
+
+            const archetypeMap = {
+                'korea': { name: 'The Innovator', quote: 'Technology opens doors — I build what\'s next.' },
+                'japan': { name: 'The Global Explorer', quote: 'Every culture holds wisdom worth discovering.' },
+                'nz': { name: 'The Eco-Strategist', quote: 'Leadership and sustainability — charting a greener course.' },
+                'industry': { name: 'The Industry Trailblazer', quote: 'Real-world experience shapes future-ready leaders.' }
+            };
+            const archetype = archetypeMap[userData.internationalChoice] || archetypeMap.korea;
+
+            appContainer.innerHTML = `
+            <div class="w-full max-w-md text-center fade-in pb-8">
+                <div id="memento-card" class="relative overflow-hidden rounded-3xl border-4 shadow-2xl text-left" style="border-color:${sailChoice.color}; background-color: #0f172a;">
+
+                    <!-- Header with boat -->
+                    <div class="p-5 pb-3 relative z-10">
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0 -ml-2 -mt-2">
+                                ${buildBoatSVG(colors, 5, 100)}
+                            </div>
+                            <div class="pt-2">
+                                <h1 class="text-xl font-black leading-none tracking-tight" style="color:${sailChoice.color};">${archetype.name}</h1>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Your SAIL Voyage Card</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quote -->
+                    <div class="bg-slate-900/50 mx-4 p-4 rounded-xl border border-white/5 relative z-10">
+                        <p class="text-sm italic text-gray-100 font-serif">"${archetype.quote}"</p>
+                    </div>
+
+                    <!-- Voyage Details -->
+                    <div class="p-5 pt-4 relative z-10 space-y-3">
+                        <!-- S -->
+                        <div class="bg-slate-800 border-l-4 rounded-r-lg p-3 shadow-lg" style="border-color:${leaderChoice.color}">
+                            <h4 class="font-bold text-yellow-400 uppercase tracking-wide text-[10px] mb-1">S &middot; Stewardship</h4>
+                            <p class="text-xs text-gray-200">${leaderChoice.text}</p>
+                        </div>
+                        <!-- A -->
+                        <div class="bg-slate-800 border-l-4 rounded-r-lg p-3 shadow-lg" style="border-color:${challengeChoice.color}">
+                            <h4 class="font-bold text-yellow-400 uppercase tracking-wide text-[10px] mb-1">A &middot; Applied Learning</h4>
+                            <p class="text-xs text-gray-200">${challengeChoice.text}</p>
+                        </div>
+                        <!-- I -->
+                        <div class="bg-blue-900/30 border-l-4 rounded-r-lg p-3 shadow-lg" style="border-color:${sailChoice.color}">
+                            <h4 class="font-bold text-yellow-400 uppercase tracking-wide text-[10px] mb-1">I &middot; International & Industry</h4>
+                            <p class="text-xs text-gray-200">${sailChoice.text}</p>
+                        </div>
+                        <!-- L -->
+                        <div class="bg-slate-800 border-l-4 rounded-r-lg p-3 shadow-lg" style="border-color:${valueChoice.color}">
+                            <h4 class="font-bold text-yellow-400 uppercase tracking-wide text-[10px] mb-1">L &middot; Learning to Live, Learn & Love</h4>
+                            <p class="text-xs text-gray-200">${valueChoice.icon || ''} ${valueChoice.text}</p>
+                        </div>
+                    </div>
+
+                    <!-- Footer / Aspiration -->
+                    <div class="bg-black/40 p-5 text-center relative z-10 border-t border-white/10">
+                        <p class="text-[10px] text-gray-400 mb-1 uppercase tracking-widest">My Aspiration</p>
+                        <p class="text-3xl font-black uppercase tracking-wide" style="color:${sailChoice.color}; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">${(userData.aspiration || 'FUTURE LEADER').toUpperCase()}</p>
+                        <div class="flex items-center justify-center gap-2 mt-3">
+                            <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/fc98005f3682a779482dd1bf5e7cff5f9adb8451/gem/BTlogo.png" alt="Beatty" class="h-5 w-5 opacity-60">
+                            <p class="text-[10px] text-gray-500">Beatty Secondary School &middot; Open House 2025</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="downloadCardBtn" class="mt-6 w-full p-4 bg-yellow-400 text-blue-900 font-black rounded-xl shadow-xl text-lg uppercase tracking-wide active:scale-95 transition-transform">Download Card</button>
+                <button id="resetBtn" class="mt-3 text-sm text-gray-500 underline">Start Over</button>
+            </div>`;
+        }
+
+        // === HANDLE FOLD CHOICE ===
+        function handleFoldChoice(stepKey, optionIndex) {
+            const data = sailData[stepKey];
+            const option = data.options[optionIndex];
+            haptic(40);
+
+            switch (stepKey) {
+                case 'S':
+                    userData.stewardshipChoice = option.id;
+                    userData.hullColor = option.color;
+                    break;
+                case 'A':
+                    userData.appliedChoice = option.id;
+                    userData.keelColor = option.color;
+                    break;
+                case 'I':
+                    userData.internationalChoice = option.id;
+                    userData.sailColor = option.color;
+                    userData.sailGradient = option.gradient || null;
+                    break;
+                case 'L':
+                    userData.learningChoice = option.id;
+                    userData.flagColor = option.color;
+                    userData.flagIcon = option.icon || '';
+                    break;
+            }
+
+            save();
+
+            // Visual feedback: highlight selected
+            const btns = appContainer.querySelectorAll('.choice-btn');
+            btns.forEach(b => b.classList.remove('selected'));
+            btns[optionIndex].classList.add('selected');
+
+            // Advance after brief pause
+            const stepMap = { S: 1, A: 2, I: 3, L: 4 };
+            setTimeout(() => {
+                currentStep = stepMap[stepKey] + 1;
+                route();
+            }, 500);
+        }
+
+        // === HANDLE ASPIRATION ===
+        async function handleLaunch() {
+            const input = document.getElementById('aspirationInput');
+            const word = input.value.trim();
+            if (!word) { input.classList.add('border-red-500'); return; }
+
+            userData.aspiration = word;
+            save();
+            await saveToFirebase();
+            haptic(80);
+            currentStep = 6;
+            route();
+        }
+
+        // === DOWNLOAD CARD ===
+        function downloadCard() {
+            const card = document.getElementById('memento-card');
+            const btn = document.getElementById('downloadCardBtn');
+            btn.textContent = "Generating...";
+            btn.disabled = true;
+            html2canvas(card, { backgroundColor: '#0f172a', scale: 3, useCORS: true }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Beatty-SAIL-Card.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                btn.textContent = "Download Card";
+                btn.disabled = false;
+            }).catch(err => {
+                console.error("Canvas error:", err);
+                btn.textContent = "Download Failed";
+                btn.disabled = false;
+            });
+        }
+
+        // === ROUTER ===
+        function route() {
+            switch (currentStep) {
+                case 0: renderWelcome(); break;
+                case 1: renderFoldStep(0); break; // S
+                case 2: renderFoldStep(1); break; // A
+                case 3: renderFoldStep(2); break; // I
+                case 4: renderFoldStep(3); break; // L
+                case 5: renderAspiration(); break;
+                case 6: renderLaunch(); break;
+                case 7: renderMemento(); break;
+            }
+        }
+
+        // === EVENT DELEGATION ===
+        appContainer.addEventListener('click', (e) => {
+            const target = e.target.closest('button');
+            if (!target) return;
+
+            if (target.id === 'startBtn') {
+                haptic();
+                currentStep = 1;
+                route();
+                return;
+            }
+            if (target.id === 'launchBtn') { handleLaunch(); return; }
+            if (target.id === 'downloadCardBtn') { downloadCard(); return; }
+            if (target.id === 'resetBtn') {
+                localStorage.removeItem(STORAGE_KEY);
+                userData = {};
+                currentStep = 0;
+                route();
+                return;
+            }
+
+            if (target.dataset.step) {
+                handleFoldChoice(target.dataset.step, parseInt(target.dataset.option));
+                return;
+            }
+        });
+
+        // === CHECK RESUME STATE ===
+        if (userData.aspiration) {
+            currentStep = 7;
+        } else if (userData.learningChoice) {
+            currentStep = 5;
+        } else if (userData.internationalChoice) {
+            currentStep = 4;
+        } else if (userData.appliedChoice) {
+            currentStep = 3;
+        } else if (userData.stewardshipChoice) {
+            currentStep = 2;
+        }
+
+        route();
+    </script>
+</body>
+</html>
