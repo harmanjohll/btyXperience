@@ -1,0 +1,143 @@
+/* === Beatty SAIL — Presenter (Fleet View) Styles === */
+
+:root {
+    --bty-blue: #000C53;
+    --bty-yellow: #FFE200;
+    --bty-red: #EC3237;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0; padding: 0;
+    background: linear-gradient(180deg, #000820 0%, #001050 30%, #002080 60%, #003399 85%, #1a5276 100%);
+    color: white;
+    overflow: hidden;
+    height: 100dvh;
+    width: 100dvw;
+}
+
+/* === OCEAN === */
+.ocean {
+    position: absolute; inset: 0;
+    overflow: hidden;
+}
+
+/* Animated waves */
+.wave-layer {
+    position: absolute;
+    bottom: 0; left: -50%;
+    width: 200%; height: 120px;
+    border-radius: 50% 50% 0 0;
+}
+.wave-1 { background: rgba(26, 82, 118, 0.4); animation: waveShift 7s ease-in-out infinite; bottom: 0; }
+.wave-2 { background: rgba(26, 82, 118, 0.25); animation: waveShift 9s ease-in-out infinite reverse; bottom: -10px; height: 100px; }
+.wave-3 { background: rgba(26, 82, 118, 0.15); animation: waveShift 6s ease-in-out infinite; bottom: -20px; height: 80px; animation-delay: -3s; }
+@keyframes waveShift { 0%,100% { transform: translateX(-3%); } 50% { transform: translateX(3%); } }
+
+/* Stars */
+.stars {
+    position: absolute; top: 0; left: 0; width: 100%; height: 40%;
+    background-image:
+        radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6), transparent),
+        radial-gradient(1px 1px at 30% 8%, rgba(255,255,255,0.4), transparent),
+        radial-gradient(1.5px 1.5px at 50% 20%, rgba(255,255,255,0.7), transparent),
+        radial-gradient(1px 1px at 70% 12%, rgba(255,255,255,0.3), transparent),
+        radial-gradient(1px 1px at 85% 25%, rgba(255,255,255,0.5), transparent),
+        radial-gradient(1px 1px at 15% 30%, rgba(255,255,255,0.3), transparent),
+        radial-gradient(1.5px 1.5px at 60% 5%, rgba(255,255,255,0.5), transparent),
+        radial-gradient(1px 1px at 40% 28%, rgba(255,255,255,0.4), transparent),
+        radial-gradient(1px 1px at 90% 18%, rgba(255,255,255,0.3), transparent),
+        radial-gradient(1px 1px at 25% 22%, rgba(255,255,255,0.5), transparent);
+}
+
+/* Horizon glow */
+.horizon {
+    position: absolute;
+    top: 38%; left: 0; width: 100%; height: 30%;
+    background: radial-gradient(ellipse at 50% 0%, rgba(255, 226, 0, 0.06) 0%, transparent 70%);
+}
+
+/* === FLEET AREA === */
+.fleet-area {
+    position: absolute;
+    top: 30%; left: 0; width: 100%; height: 65%;
+    overflow: visible;
+}
+
+/* Fleet boat */
+.fleet-boat {
+    position: absolute;
+    cursor: pointer;
+    transition: transform 0.3s;
+    animation: bobbing 4s ease-in-out infinite;
+}
+.fleet-boat:hover { transform: scale(1.3) !important; z-index: 100; }
+
+@keyframes bobbing {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+/* Boat entrance */
+.boat-enter {
+    animation: boatSailIn 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes boatSailIn {
+    0% { opacity: 0; transform: translateX(100vw) scale(0.5); }
+    100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+/* Spotlight modal */
+.spotlight-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0, 8, 32, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    animation: fadeIn 0.3s;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.spotlight-card {
+    background: #0f172a;
+    border-radius: 1.5rem;
+    border: 3px solid var(--bty-yellow);
+    padding: 2rem;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    animation: spotPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes spotPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* HUD */
+.hud {
+    position: fixed;
+    top: 1.5rem; left: 1.5rem;
+    z-index: 50;
+}
+.hud-counter {
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 226, 0, 0.3);
+    border-radius: 1rem;
+    padding: 0.75rem 1.5rem;
+}
+
+/* Title */
+.title-bar {
+    position: fixed;
+    top: 1.5rem;
+    left: 50%; transform: translateX(-50%);
+    z-index: 50;
+    text-align: center;
+}
+
+/* Compass rose */
+.compass-rose {
+    position: fixed;
+    bottom: 2rem; right: 2rem;
+    z-index: 50;
+    opacity: 0.15;
+}
