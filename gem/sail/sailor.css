@@ -96,12 +96,12 @@ body::before {
 /* === RESPONSIVE ORIGAMI PAPER === */
 .origami-stage {
     position: relative;
-    width: min(80vw, 340px);
-    height: min(80vw, 340px);
+    width: min(88vw, 400px);
+    height: min(88vw, 400px);
 }
 .origami-stage.medium {
-    width: min(50vw, 200px);
-    height: min(50vw, 200px);
+    width: min(55vw, 220px);
+    height: min(55vw, 220px);
 }
 
 .origami-svg {

@@ -435,16 +435,28 @@ function renderFoldStep(foldIndex) {
         setTimeout(() => flash.remove(), 700);
 
         // Update SVG to next stage
-        setTimeout(() => {
-            const nextStage = isBoatReveal ? 8 : paperStage + 1;
-            stageEl.querySelector('.origami-svg').outerHTML = buildOrigamiSVG(c, nextStage, 280, extras());
-            spawnParticles(stageEl, isBoatReveal ? 20 : 8);
-            if (isBoatReveal) spawnRipples(stageEl);
-        }, isBoatReveal ? 800 : 450);
+        if (isBoatReveal) {
+            // Triangle "opens" — stretch wider/flatter before revealing boat
+            const svgInner = stageEl.querySelector('.origami-svg');
+            svgInner.style.transition = 'transform 0.7s cubic-bezier(0.22,1,0.36,1)';
+            svgInner.style.transform = 'scaleX(1.4) scaleY(0.55)';
+            setTimeout(() => {
+                svgInner.outerHTML = buildOrigamiSVG(c, 8, 280, extras());
+                stageEl.classList.remove('boat-reveal');
+                stageEl.classList.add('boat-reveal');
+                spawnParticles(stageEl, 20);
+                spawnRipples(stageEl);
+            }, 750);
+        } else {
+            setTimeout(() => {
+                stageEl.querySelector('.origami-svg').outerHTML = buildOrigamiSVG(c, paperStage + 1, 280, extras());
+                spawnParticles(stageEl, 8);
+            }, 450);
+        }
 
         // Advance
         const nextStep = NEXT_STEP_AFTER_FOLD[foldIndex];
-        setTimeout(() => { step = nextStep; route(); }, isBoatReveal ? 2200 : 1000);
+        setTimeout(() => { step = nextStep; route(); }, isBoatReveal ? 2500 : 1000);
     });
 }
 
