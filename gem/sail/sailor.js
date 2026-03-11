@@ -354,7 +354,7 @@ function renderWelcome() {
             <div class="origami-stage mb-4">
                 ${buildOrigamiSVG(BOAT_DEFAULTS, 0, 280)}
             </div>
-            <p class="text-xs mb-6 text-center font-serif italic" style="color:var(--text-muted);">You have a piece of paper.<br>What will it become?</p>
+            <p class="text-xs mb-6 text-center font-serif italic" style="color:var(--text-muted);">Every voyage begins with a single fold.</p>
             <button id="startBtn" class="btn-start">Begin Folding</button>
             <p class="text-[10px] mt-6 tracking-widest uppercase" style="color:var(--text-muted);">Beatty Secondary School &middot; Open House 2026</p>
         </div>
@@ -424,9 +424,14 @@ function renderFoldStep(foldIndex) {
         stageEl.querySelector('.fold-progress-ring').style.opacity = '0';
         stageEl.querySelector('.fold-drag-line').innerHTML = '';
 
-        stageEl.classList.add(isBoatReveal ? 'boat-reveal' : 'fold-animating');
+        const isHatToDiamond = foldIndex === 5;
 
-        if (isBoatReveal) hapticPattern([50, 30, 100]);
+        if (isBoatReveal) {
+            stageEl.classList.add('boat-reveal');
+            hapticPattern([50, 30, 100]);
+        } else if (!isHatToDiamond) {
+            stageEl.classList.add('fold-animating');
+        }
 
         // Flash
         const flash = document.createElement('div');
@@ -434,12 +439,13 @@ function renderFoldStep(foldIndex) {
         stageEl.appendChild(flash);
         setTimeout(() => flash.remove(), 700);
 
-        // Update SVG to next stage
+        // Update SVG to next stage — with physics-appropriate transitions
+        const svgInner = stageEl.querySelector('.origami-svg');
+
         if (isBoatReveal) {
-            // Triangle "opens" — stretch wider/flatter before revealing boat
-            const svgInner = stageEl.querySelector('.origami-svg');
+            // Triangle "opens" — stretch wider/flatter then reveal boat
             svgInner.style.transition = 'transform 0.7s cubic-bezier(0.22,1,0.36,1)';
-            svgInner.style.transform = 'scaleX(1.4) scaleY(0.55)';
+            svgInner.style.transform = 'scaleX(1.5) scaleY(0.45)';
             setTimeout(() => {
                 svgInner.outerHTML = buildOrigamiSVG(c, 8, 280, extras());
                 stageEl.classList.remove('boat-reveal');
@@ -447,16 +453,26 @@ function renderFoldStep(foldIndex) {
                 spawnParticles(stageEl, 20);
                 spawnRipples(stageEl);
             }, 750);
+        } else if (isHatToDiamond) {
+            // Hat compresses horizontally (sides pushed together) then becomes diamond
+            svgInner.style.transition = 'transform 0.6s cubic-bezier(0.22,1,0.36,1)';
+            svgInner.style.transform = 'scaleX(0.35) scaleY(1.3)';
+            haptic(40);
+            setTimeout(() => {
+                svgInner.outerHTML = buildOrigamiSVG(c, 6, 280, extras());
+                spawnParticles(stageEl, 10);
+            }, 650);
         } else {
             setTimeout(() => {
-                stageEl.querySelector('.origami-svg').outerHTML = buildOrigamiSVG(c, paperStage + 1, 280, extras());
+                svgInner.outerHTML = buildOrigamiSVG(c, paperStage + 1, 280, extras());
                 spawnParticles(stageEl, 8);
             }, 450);
         }
 
-        // Advance
+        // Advance — structural transforms need more time
+        const advanceDelay = isBoatReveal ? 2500 : isHatToDiamond ? 1400 : 1000;
         const nextStep = NEXT_STEP_AFTER_FOLD[foldIndex];
-        setTimeout(() => { step = nextStep; route(); }, isBoatReveal ? 2500 : 1000);
+        setTimeout(() => { step = nextStep; route(); }, advanceDelay);
     });
 }
 
@@ -668,7 +684,7 @@ function renderProcessing() {
             <div class="processing-dots">
                 <span></span><span></span><span></span>
             </div>
-            <p class="text-xs mt-4 font-serif italic" style="color:var(--text-muted);">The wind reads your sails...</p>
+            <p class="text-xs mt-4 font-serif italic" style="color:var(--text-muted);">Your compass is aligning...</p>
         </div>
     </div>`;
     setTimeout(() => {
@@ -718,7 +734,7 @@ function renderMemento() {
         <div class="content-zone pt-4">
             <div class="memento-card" id="memento-card" style="border-color:${sailOpt.color};">
                 <div class="memento-header">
-                    <div class="memento-boat">${buildOrigamiSVG(c, 9, 56, extras())}</div>
+                    <div class="memento-boat">${buildOrigamiSVG(c, 9, 72, extras())}</div>
                     <div style="flex:1;min-width:0;">
                         <h1 class="text-lg font-black leading-tight" style="color:${sailOpt.color};">${archetype.name}</h1>
                         <p class="text-[10px] font-bold uppercase tracking-widest mt-0.5" style="color:var(--text-muted);">Your Beatty Compass Card</p>
