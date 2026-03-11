@@ -232,6 +232,18 @@ export const FOLD_GUIDES = [
     { from: { x: 140, y: 55 },  to: { x: 140, y: 210 }, label: 'Pull apart!' },
 ];
 
+/* ── CREASE LINES — where each fold leaves a crease mark ── */
+export const CREASE_LINES = [
+    { x1: 30,  y1: 140, x2: 250, y2: 140 },  // Fold 0: horizontal midline
+    { x1: 140, y1: 85,  x2: 30,  y2: 175 },  // Fold 1: left diagonal
+    { x1: 140, y1: 85,  x2: 250, y2: 175 },  // Fold 2: right diagonal
+    { x1: 30,  y1: 175, x2: 250, y2: 175 },  // Fold 3: front brim
+    { x1: 30,  y1: 175, x2: 250, y2: 175 },  // Fold 4: back brim
+    { x1: 140, y1: 85,  x2: 140, y2: 175 },  // Fold 5: vertical (hat→diamond)
+    { x1: 50,  y1: 140, x2: 230, y2: 140 },  // Fold 6: horizontal midline of diamond
+    { x1: 50,  y1: 140, x2: 230, y2: 140 },  // Fold 7: pull apart
+];
+
 export const FOLD_FLAPS = [
     // Fold 0: top half of square folds down
     { clipFrom: 'polygon(11% 11%, 89% 11%, 89% 50%, 11% 50%)',
