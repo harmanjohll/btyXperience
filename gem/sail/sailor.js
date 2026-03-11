@@ -8,6 +8,7 @@ import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/1
 import {
     buildOrigamiSVG, haptic, hapticPattern,
     SAIL_DATA, BOAT_DEFAULTS, ARCHETYPES, FOLD_GUIDES, FOLD_FLAPS, FOLD_LABELS, CREASE_LINES, LABELS,
+    STAMP_MARKS, MARK_SLOTS,
     FIREBASE_CONFIG, LOGO_URL,
 } from './boat.js';
 
@@ -61,6 +62,97 @@ function playFoldSound() {
         src.connect(bp).connect(gain).connect(ctx.destination);
         src.start(ctx.currentTime);
     } catch(e) { /* audio not supported */ }
+}
+function playRevealSound() {
+    try {
+        const ctx = getAudioCtx();
+        const t = ctx.currentTime;
+        // Chime: sine sweep 440→880
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, t);
+        osc.frequency.exponentialRampToValueAtTime(880, t + 0.5);
+        const oscGain = ctx.createGain();
+        oscGain.gain.setValueAtTime(0, t);
+        oscGain.gain.linearRampToValueAtTime(0.15, t + 0.05);
+        oscGain.gain.linearRampToValueAtTime(0.12, t + 0.35);
+        oscGain.gain.exponentialRampToValueAtTime(0.001, t + 0.9);
+        osc.connect(oscGain).connect(ctx.destination);
+        osc.start(t); osc.stop(t + 0.9);
+        // Splash: filtered noise burst
+        const dur = 0.5;
+        const buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 3);
+        }
+        const src = ctx.createBufferSource(); src.buffer = buf;
+        const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 800;
+        const sGain = ctx.createGain();
+        sGain.gain.setValueAtTime(0.18, t);
+        sGain.gain.exponentialRampToValueAtTime(0.01, t + dur);
+        src.connect(lp).connect(sGain).connect(ctx.destination);
+        src.start(t);
+    } catch(e) {}
+}
+function playStampSound() {
+    try {
+        const ctx = getAudioCtx();
+        const dur = 0.12;
+        const buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 4);
+        }
+        const src = ctx.createBufferSource(); src.buffer = buf;
+        const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 200; bp.Q.value = 2;
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.35, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + dur);
+        src.connect(bp).connect(gain).connect(ctx.destination);
+        src.start(ctx.currentTime);
+    } catch(e) {}
+}
+function playTransitionSound() {
+    try {
+        const ctx = getAudioCtx();
+        const dur = 0.08;
+        const buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2) * 0.3;
+        }
+        const src = ctx.createBufferSource(); src.buffer = buf;
+        const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 3000;
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+        src.connect(hp).connect(gain).connect(ctx.destination);
+        src.start(ctx.currentTime);
+    } catch(e) {}
+}
+let ambientOsc, ambientGain;
+function startAmbient() {
+    try {
+        const ctx = getAudioCtx();
+        if (ambientOsc) return;
+        ambientOsc = ctx.createOscillator();
+        ambientOsc.type = 'sine'; ambientOsc.frequency.value = 60;
+        const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 80;
+        ambientGain = ctx.createGain(); ambientGain.gain.value = 0;
+        ambientGain.gain.linearRampToValueAtTime(0.02, ctx.currentTime + 2);
+        ambientOsc.connect(lp).connect(ambientGain).connect(ctx.destination);
+        ambientOsc.start();
+    } catch(e) {}
+}
+function stopAmbient() {
+    try {
+        if (ambientGain) {
+            const ctx = getAudioCtx();
+            ambientGain.gain.linearRampToValueAtTime(0, ctx.currentTime + 1);
+            setTimeout(() => { if (ambientOsc) { ambientOsc.stop(); ambientOsc = null; ambientGain = null; } }, 1200);
+        }
+    } catch(e) {}
 }
 
 // === FIREBASE ===
@@ -181,6 +273,7 @@ function transition(renderFn) {
     if (current) {
         current.classList.add('page-exit');
         haptic(20);
+        playTransitionSound();
         setTimeout(() => {
             renderFn();
             const next = $app.firstElementChild;
@@ -422,7 +515,50 @@ const STAGE_FOR_FOLD = [0, 1, 2, 3, 4, 5, 6, 7];
 // Which step to go to AFTER each fold completes
 const NEXT_STEP_AFTER_FOLD = { 0: 2, 1: 3, 2: 5, 3: 6, 4: 9, 5: 10, 6: 13, 7: 14 };
 
+/* ── CHAPTER CARDS — SAIL letter intros before chapter-starting folds ── */
+const CHAPTER_FOR_FOLD = {
+    0: { letter: 'S', title: 'Stewardship', subtitle: 'The Foundation' },
+    2: { letter: 'A', title: 'Applied Learning', subtitle: 'The Structure' },
+    4: { letter: 'I', title: 'International & Industry', subtitle: 'The Sail' },
+    6: { letter: 'L', title: 'Learning to Live, Learn & Love', subtitle: 'The Flag' },
+};
+
+/* ── CRESCENDO INTENSITY per chapter ── */
+const CHAPTER_INTENSITY = {
+    S: { particles: 8, hapticBase: 15, gain: 0.2 },
+    A: { particles: 10, hapticBase: 20, gain: 0.25 },
+    I: { particles: 14, hapticBase: 30, gain: 0.3 },
+    L: { particles: 20, hapticBase: 40, gain: 0.35 },
+};
+let currentChapter = 'S';
+function getIntensity() { return CHAPTER_INTENSITY[currentChapter] || CHAPTER_INTENSITY.S; }
+
 function renderFoldStep(foldIndex) {
+    const chapter = CHAPTER_FOR_FOLD[foldIndex];
+    if (chapter) {
+        currentChapter = chapter.letter;
+        showChapterCard(chapter, () => renderFoldStepInner(foldIndex));
+        return;
+    }
+    renderFoldStepInner(foldIndex);
+}
+
+function showChapterCard(chapter, onDone) {
+    $app.innerHTML = `
+    <div class="chapter-card">
+        <span class="chapter-letter" style="color:var(--accent-gold);">${chapter.letter}</span>
+        <h2 class="chapter-title">${chapter.title}</h2>
+        <p class="chapter-subtitle">${chapter.subtitle}</p>
+    </div>`;
+    haptic(30);
+    setTimeout(() => {
+        const card = $app.querySelector('.chapter-card');
+        if (card) card.classList.add('chapter-card-exit');
+        setTimeout(onDone, 400);
+    }, 1800);
+}
+
+function renderFoldStepInner(foldIndex) {
     const guide = FOLD_GUIDES[foldIndex];
     const c = colors();
     const paperStage = STAGE_FOR_FOLD[foldIndex];
@@ -529,10 +665,11 @@ function renderFoldStep(foldIndex) {
 
         function finishFold() {
             const isHatToDiamond = foldIndex === 5;
+            const intensity = getIntensity();
 
             if (isBoatReveal) {
                 stageEl.classList.add('boat-reveal');
-                hapticPattern([50, 30, 100]);
+                hapticPattern([50, 30, 100, 30, 80]);
             } else if (!isHatToDiamond) {
                 stageEl.classList.add('fold-animating');
             }
@@ -547,31 +684,43 @@ function renderFoldStep(foldIndex) {
             const svgInner = stageEl.querySelector('.origami-svg');
 
             if (isBoatReveal) {
-                svgInner.style.transition = 'transform 0.7s cubic-bezier(0.22,1,0.36,1)';
+                // === DRAMATIC BOAT REVEAL ===
+                svgInner.style.transition = 'transform 1.2s cubic-bezier(0.22,1,0.36,1)';
                 svgInner.style.transform = 'scaleX(1.5) scaleY(0.45)';
                 setTimeout(() => {
-                    svgInner.outerHTML = buildOrigamiSVG(c, 8, 280, extras());
+                    // First show boat in washi base colours (no user colours yet)
+                    const baseC = { ...c, hull: BOAT_DEFAULTS.hull, sail: BOAT_DEFAULTS.sail, sailGradient: null, flag: BOAT_DEFAULTS.flag };
+                    svgInner.outerHTML = `<div class="boat-rising">${buildOrigamiSVG(baseC, 8, 280, extras())}</div>`;
+                    playRevealSound();
+                    // Screen shake
+                    $app.classList.add('screen-shake');
+                    setTimeout(() => $app.classList.remove('screen-shake'), 400);
                     stageEl.classList.remove('boat-reveal');
                     stageEl.classList.add('boat-reveal');
-                    spawnParticles(stageEl, 20);
+                    spawnParticles(stageEl, intensity.particles + 10);
                     spawnRipples(stageEl);
-                }, 750);
+                    // Fade in user's chosen colours after 500ms
+                    setTimeout(() => {
+                        const rising = stageEl.querySelector('.boat-rising');
+                        if (rising) rising.innerHTML = buildOrigamiSVG(c, 8, 280, extras());
+                    }, 500);
+                }, 1200);
             } else if (isHatToDiamond) {
                 svgInner.style.transition = 'transform 0.6s cubic-bezier(0.22,1,0.36,1)';
                 svgInner.style.transform = 'scaleX(0.35) scaleY(1.3)';
-                haptic(40);
+                haptic(intensity.hapticBase);
                 setTimeout(() => {
                     svgInner.outerHTML = buildOrigamiSVG(c, 6, 280, extras());
-                    spawnParticles(stageEl, 10);
+                    spawnParticles(stageEl, intensity.particles);
                 }, 650);
             } else {
                 setTimeout(() => {
                     svgInner.outerHTML = buildOrigamiSVG(c, paperStage + 1, 280, extras());
-                    spawnParticles(stageEl, 8);
+                    spawnParticles(stageEl, intensity.particles);
                 }, 450);
             }
 
-            const advanceDelay = isBoatReveal ? 2500 : isHatToDiamond ? 1400 : 1000;
+            const advanceDelay = isBoatReveal ? 3500 : isHatToDiamond ? 1400 : 1000;
             const nextStep = NEXT_STEP_AFTER_FOLD[foldIndex];
             setTimeout(() => { step = nextStep; route(); }, advanceDelay);
         }
@@ -656,11 +805,54 @@ function renderQuestion(config) {
         D[prevPick2Key] = pick2;
         const primaryOpt = options[pick1];
         applyPrimaryChoice(dataKey, primaryOpt);
-        // Add stamp mark
         addMark(dataKey, primaryOpt.id);
         save();
-        advanceFromQuestion(dataKey);
+        // Animate stamp press before advancing
+        animateStampPress(dataKey, primaryOpt, paperStage, () => advanceFromQuestion(dataKey));
     });
+}
+
+function animateStampPress(questionKey, opt, paperStage, onComplete) {
+    const stageEl = document.querySelector('.origami-stage.medium');
+    if (!stageEl) { onComplete(); return; }
+
+    const stamp = STAMP_MARKS[opt.id];
+    if (!stamp) { onComplete(); return; }
+
+    const slot = MARK_SLOTS[questionKey];
+    if (!slot) { onComplete(); return; }
+
+    // Determine position based on paper stage
+    let pos;
+    if (paperStage >= 8) pos = slot.boat;
+    else if (paperStage >= 6) pos = slot.diamond;
+    else pos = slot.paper;
+    if (!pos) { onComplete(); return; }
+
+    // Scale from viewBox coords to element size
+    const rect = stageEl.getBoundingClientRect();
+    const scale = rect.width / 280;
+    const px = pos.x * scale;
+    const py = pos.y * scale;
+    const sz = stamp.small ? 36 : 50;
+    const col = stamp.color || opt.color || '#8b3a3a';
+
+    const el = document.createElement('div');
+    el.className = 'stamp-fly-in';
+    el.style.cssText = `position:absolute;left:${px}px;top:${py}px;width:${sz}px;height:${sz}px;z-index:30;pointer-events:none;`;
+    el.innerHTML = `<svg viewBox="0 0 ${stamp.small ? 20 : 30} ${stamp.small ? 20 : 30}" width="${sz}" height="${sz}" style="color:${col};overflow:visible;">${stamp.svg}</svg>`;
+    stageEl.appendChild(el);
+
+    // Play stamp sound at "hit" moment (300ms in)
+    setTimeout(() => {
+        playStampSound();
+        haptic(50);
+    }, 300);
+
+    setTimeout(() => {
+        el.remove();
+        onComplete();
+    }, 1000);
 }
 
 function addMark(questionKey, id) {
@@ -751,13 +943,13 @@ function renderAspiration() {
     <div class="sail-screen">
         <div class="paper-zone">
             ${progressBarHTML(TOTAL_QUESTIONS)}
-            <div class="origami-stage medium">
+            <div class="origami-stage medium" id="aspirationBoat">
                 ${buildOrigamiSVG(c, 9, 280, extras())}
             </div>
         </div>
         <div class="content-zone text-center">
             <h2 class="font-serif text-xl mb-2" style="color:var(--accent-gold);">Name Your Vessel</h2>
-            <p class="text-sm mb-4" style="color:var(--text-secondary);">One word — your aspiration, inscribed on the hull forever.</p>
+            <p class="text-sm mb-4" style="color:var(--text-secondary);">One word to name your vessel. Make it yours.</p>
             <input type="text" id="aspirationInput" maxlength="15"
                 class="w-full p-3 text-center text-xl font-black outline-none rounded-xl mb-4"
                 style="background:var(--bg-card);color:var(--text-primary);border:2px solid var(--accent-gold);caret-color:var(--accent-gold);"
@@ -769,6 +961,12 @@ function renderAspiration() {
         </div>
     </div>`;
     document.getElementById('backBtn').addEventListener('click', () => { step = 14; route(); });
+    // Live aspiration on hull
+    const aspirationBoat = document.getElementById('aspirationBoat');
+    document.getElementById('aspirationInput').addEventListener('input', (e) => {
+        D.aspiration = e.target.value.trim();
+        aspirationBoat.innerHTML = buildOrigamiSVG(c, 9, 280, extras());
+    });
 }
 
 /* ============================================================
@@ -822,6 +1020,7 @@ function renderArchetypeReveal() {
    RENDER: MEMENTO CARD
    ============================================================ */
 function renderMemento() {
+    stopAmbient();
     const c = colors();
     const sailOpt  = SAIL_DATA.I.options.find(o => o.id === D.internationalPick1) || SAIL_DATA.I.options[0];
     const leadOpt  = SAIL_DATA.S.options.find(o => o.id === D.stewardshipPick1) || SAIL_DATA.S.options[0];
@@ -951,7 +1150,7 @@ function route() {
 $app.addEventListener('click', (e) => {
     const t = e.target.closest('button');
     if (!t) return;
-    if (t.id === 'startBtn')        { haptic(15); step = 1; route(); }
+    if (t.id === 'startBtn')        { haptic(15); startAmbient(); step = 1; route(); }
     if (t.id === 'launchBtn')       { handleLaunch(); }
     if (t.id === 'downloadCardBtn') { downloadCard(); }
     if (t.id === 'resetBtn') {

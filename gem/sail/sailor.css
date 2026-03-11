@@ -520,6 +520,84 @@ body::before {
     opacity: 0.6;
 }
 
+/* === CHAPTER CARD === */
+.chapter-card {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-height: 100dvh; padding: 32px;
+    text-align: center; z-index: 10; position: relative;
+    animation: chapterCardIn 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+.chapter-letter {
+    font-family: 'DM Serif Display', serif;
+    font-size: 80px; line-height: 1; font-weight: 400;
+    opacity: 0;
+    animation: chapterLetterIn 0.6s 0.1s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+.chapter-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem; color: var(--text-primary);
+    margin-top: 8px; opacity: 0;
+    animation: fadeUp 0.5s 0.4s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+.chapter-subtitle {
+    font-size: 0.8rem; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.15em;
+    margin-top: 6px; opacity: 0;
+    animation: fadeUp 0.5s 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+@keyframes chapterCardIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+@keyframes chapterLetterIn {
+    0% { opacity: 0; transform: scale(0.5); letter-spacing: 0.3em; }
+    60% { opacity: 1; transform: scale(1.05); }
+    100% { opacity: 1; transform: scale(1); letter-spacing: 0; }
+}
+.chapter-card-exit {
+    animation: chapterCardOut 0.4s ease-in forwards;
+}
+@keyframes chapterCardOut {
+    0% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.05); }
+}
+
+/* === SCREEN SHAKE === */
+.screen-shake {
+    animation: screenShake 0.4s ease-out;
+}
+@keyframes screenShake {
+    0%   { transform: translate(0, 0); }
+    15%  { transform: translate(-3px, 2px); }
+    30%  { transform: translate(2px, -3px); }
+    45%  { transform: translate(-2px, 1px); }
+    60%  { transform: translate(3px, -1px); }
+    75%  { transform: translate(-1px, 2px); }
+    100% { transform: translate(0, 0); }
+}
+
+/* === BOAT RISING ANIMATION === */
+.boat-rising {
+    animation: boatRise 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+@keyframes boatRise {
+    0% { transform: translateY(20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+/* === STAMP FLY-IN ANIMATION === */
+.stamp-fly-in {
+    transform: translate(-50%, -50%);
+    animation: stampFlyIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes stampFlyIn {
+    0%  { transform: translate(-50%, -50%) scale(2.2) translateY(-40px); opacity: 0; }
+    45% { transform: translate(-50%, -50%) scale(0.85) translateY(0); opacity: 0.95; }
+    65% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.88; }
+    100%{ transform: translate(-50%, -50%) scale(1); opacity: 0.88; }
+}
+
 @media (max-width: 640px) {
     .option-btn { padding: 14px 16px 14px 44px; font-size: 0.88rem; }
     .archetype-name { font-size: 2rem; }
