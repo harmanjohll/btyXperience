@@ -177,7 +177,7 @@ Object.entries(STAMP_MARKS).forEach(([id, s]) => {
 
 /* ── MARK POSITIONS — centred geometry ──
    Stages 0-5: paper/hat shape centred.  Stages 6-7: diamond.  8+: boat. */
-const MARK_SLOTS = {
+export const MARK_SLOTS = {
     S:     { paper: { x: 180, y: 128 }, diamond: { x: 168, y: 108 }, boat: { x: 115, y: 225 } },
     A:     { paper: { x: 108, y: 142 }, diamond: { x: 112, y: 115 }, boat: { x: 150, y: 225 } },
     A_sub: { paper: { x: 145, y: 152 }, diamond: { x: 140, y: 100 }, boat: { x: 170, y: 215 } },
