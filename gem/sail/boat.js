@@ -37,12 +37,13 @@ export const SAIL_DATA = {
         scenario: 'You are leading a team for the first time. Everyone looks to you. The group is diverse — some eager, some unsure, and some with strong opinions.',
         question: 'What is your first instinct as a leader?',
         options: [
-            { text: 'Show them how it\'s done — lead by example, actions over words.', color: '#3b82f6', id: 'model', weight: { model: 3, inspire: 0, challenge: 1, enable: 0 } },
-            { text: 'Paint a picture of what we could achieve together — inspire a shared vision.', color: '#f59e0b', id: 'inspire', weight: { model: 0, inspire: 3, challenge: 0, enable: 1 } },
-            { text: 'Challenge the old way — push boundaries and try something nobody has attempted.', color: '#ef4444', id: 'challenge', weight: { model: 1, inspire: 0, challenge: 3, enable: 0 } },
-            { text: 'Focus on each person — understand their strengths and help them shine.', color: '#10b981', id: 'enable', weight: { model: 0, inspire: 1, challenge: 0, enable: 3 } },
+            { text: 'Show them how it\'s done — lead by example, actions over words.', color: '#3b82f6', id: 'model', weight: { model: 3, inspire: 0, challenge: 1, enable: 0, encourage: 0 } },
+            { text: 'Paint a picture of what we could achieve together — inspire a shared vision.', color: '#f59e0b', id: 'inspire', weight: { model: 0, inspire: 3, challenge: 0, enable: 1, encourage: 0 } },
+            { text: 'Challenge the old way — push boundaries and try something nobody has attempted.', color: '#ef4444', id: 'challenge', weight: { model: 1, inspire: 0, challenge: 3, enable: 0, encourage: 0 } },
+            { text: 'Focus on each person — understand their strengths and help them shine.', color: '#10b981', id: 'enable', weight: { model: 0, inspire: 1, challenge: 0, enable: 3, encourage: 1 } },
+            { text: 'Celebrate every win — recognise effort and lift the team\'s spirit.', color: '#ec4899', id: 'encourage', weight: { model: 0, inspire: 1, challenge: 0, enable: 1, encourage: 3 } },
         ],
-        info: 'Our Leaders for Life Programme (LLP) develops purpose-driven leaders through the Kouzes & Posner Leadership Challenge — Model the Way, Inspire a Shared Vision, Challenge the Process, Enable Others to Act, and Encourage the Heart.',
+        info: 'Our Leaders for Life Programme (LLP) develops purpose-driven leaders through all five Kouzes & Posner practices — Model the Way, Inspire a Shared Vision, Challenge the Process, Enable Others to Act, and Encourage the Heart.',
     },
     A: {
         letter: 'A', title: 'Applied Learning', subtitle: 'The Structure',
@@ -92,10 +93,11 @@ export const SAIL_DATA = {
         scenario: 'It is the last day of school. As you look back on your years at Beatty, one value stands out — the compass bearing that guided you through every storm.',
         question: 'Which value is your compass?',
         options: [
-            { text: 'Discipline — the steady course. I stayed focused when everything was noise.', color: '#3b82f6', icon: '⚓', id: 'discipline', weight: { discipline: 3, resilience: 1, empathy: 0, adaptability: 0 } },
-            { text: 'Resilience — I weathered every storm and came back stronger each time.', color: '#ef4444', icon: '💪', id: 'resilience', weight: { discipline: 1, resilience: 3, empathy: 0, adaptability: 0 } },
-            { text: 'Empathy — I never sailed alone. I carried others with me.', color: '#ec4899', icon: '💙', id: 'empathy', weight: { discipline: 0, resilience: 0, empathy: 3, adaptability: 1 } },
-            { text: 'Adaptability — when the wind changed, I changed with it. And thrived.', color: '#10b981', icon: '🌊', id: 'adaptability', weight: { discipline: 0, resilience: 0, empathy: 1, adaptability: 3 } },
+            { text: 'Discipline — the steady course. I stayed focused when everything was noise.', color: '#3b82f6', icon: '⚓', id: 'discipline', weight: { discipline: 3, resilience: 1, empathy: 0, adaptability: 0, mindfulness: 0 } },
+            { text: 'Resilience — I weathered every storm and came back stronger each time.', color: '#ef4444', icon: '💪', id: 'resilience', weight: { discipline: 1, resilience: 3, empathy: 0, adaptability: 0, mindfulness: 0 } },
+            { text: 'Empathy — I never sailed alone. I carried others with me.', color: '#ec4899', icon: '💙', id: 'empathy', weight: { discipline: 0, resilience: 0, empathy: 3, adaptability: 1, mindfulness: 1 } },
+            { text: 'Adaptability — when the wind changed, I changed with it. And thrived.', color: '#10b981', icon: '🌊', id: 'adaptability', weight: { discipline: 0, resilience: 0, empathy: 1, adaptability: 3, mindfulness: 0 } },
+            { text: 'Mindfulness — I learned to be still, to listen, and to act with intention.', color: '#8b5cf6', icon: '🧘', id: 'mindfulness', weight: { discipline: 0, resilience: 0, empathy: 1, adaptability: 0, mindfulness: 3 } },
         ],
         info: 'D.R.E.A.M. — Discipline, Resilience, Empathy, Adaptability, Mindfulness. These compass bearings guide every Beattyian\'s voyage.',
     },
@@ -117,10 +119,10 @@ export const ARCHETYPES = {
 };
 
 export const LABELS = {
-    stewardship:   { model: 'Leads by example', inspire: 'Inspires vision', challenge: 'Challenges status quo', enable: 'Lifts others up' },
+    stewardship:   { model: 'Leads by example', inspire: 'Inspires vision', challenge: 'Challenges status quo', enable: 'Lifts others up', encourage: 'Encourages the heart' },
     applied:       { ai: 'Smart city AI', green: 'Green engineering', robotics: 'Robotics', creative: 'Creative design' },
     international: { korea: 'South Korea', japan: 'Japan', nz: 'New Zealand', estonia: 'Estonia' },
-    learning:      { discipline: '⚓ Discipline', resilience: '💪 Resilience', empathy: '💙 Empathy', adaptability: '🌊 Adaptability' },
+    learning:      { discipline: '⚓ Discipline', resilience: '💪 Resilience', empathy: '💙 Empathy', adaptability: '🌊 Adaptability', mindfulness: '🧘 Mindfulness' },
     subject:       { math: 'Maths & Computing', science: 'Sciences', humanities: 'Humanities & Media', design: 'Design & Tech' },
     industry:      { rockwell: 'Rockwell Automation', astar: 'A*STAR', pil: 'PIL Maritime', media: 'Media Studios' },
 };
@@ -139,6 +141,7 @@ export const STAMP_MARKS = {
     inspire:     { small: false, svg: `<g><circle cx="15" cy="15" r="14" fill="currentColor" opacity="0.08"/><circle cx="15" cy="15" r="14" fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.85"/><polygon points="15,4 17.5,11.5 25,11.5 19,16.5 21,24 15,19.5 9,24 11,16.5 5,11.5 12.5,11.5" fill="currentColor" opacity="0.55" stroke="currentColor" stroke-width="0.8"/></g>` },
     challenge:   { small: false, svg: `<g><circle cx="15" cy="15" r="14" fill="currentColor" opacity="0.08"/><circle cx="15" cy="15" r="14" fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.85"/><path d="M13,4 L18,12 L12,12 L17,20 L11,20 L16,28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/></g>` },
     enable:      { small: false, svg: `<g><circle cx="15" cy="15" r="14" fill="currentColor" opacity="0.08"/><circle cx="15" cy="15" r="14" fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.85"/><circle cx="11" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.7"/><circle cx="19" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.7"/><circle cx="15" cy="19" r="4.5" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.7"/></g>` },
+    encourage:   { small: false, svg: `<g><circle cx="15" cy="15" r="14" fill="currentColor" opacity="0.08"/><circle cx="15" cy="15" r="14" fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.85"/><path d="M15,20 Q10,15 10,12 Q10,9 13,9 Q15,9 15,11 Q15,9 17,9 Q20,9 20,12 Q20,15 15,20 Z" fill="currentColor" opacity="0.4"/><path d="M9,7 L11,5 M19,7 L21,5 M7,11 L5,10 M23,11 L25,10 M8,16 L6,17 M22,16 L24,17" fill="none" stroke="currentColor" stroke-width="1" opacity="0.45" stroke-linecap="round"/></g>` },
     // A — Applied Learning
     ai:          { small: false, svg: `<g><circle cx="15" cy="15" r="14" fill="currentColor" opacity="0.08"/><circle cx="15" cy="15" r="14" fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.85"/><path d="M6,10 L12,10 L12,15 L18,15 L18,8 L24,8 M8,20 L15,20 L15,25 L22,25" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.6" stroke-linecap="round"/><circle cx="12" cy="10" r="2" fill="currentColor" opacity="0.6"/><circle cx="18" cy="15" r="2" fill="currentColor" opacity="0.6"/></g>` },
     green:       { small: false, svg: `<g><circle cx="15" cy="15" r="14" fill="currentColor" opacity="0.08"/><circle cx="15" cy="15" r="14" fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.85"/><path d="M15,26 L15,14 Q15,6 22,6 Q15,10 15,14 M15,18 Q10,14 7,16 Q12,15 15,18" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.7" stroke-linecap="round"/></g>` },
@@ -164,6 +167,7 @@ export const STAMP_MARKS = {
     resilience:  { small: false, svg: `<g><circle cx="15" cy="15" r="14" fill="currentColor" opacity="0.08"/><circle cx="15" cy="15" r="14" fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.85"/><path d="M15,24 L15,8 M11,12 L15,6 L19,12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/><path d="M10,18 L15,14 L20,18" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/></g>` },
     empathy:     { small: false, svg: `<g><circle cx="15" cy="15" r="14" fill="currentColor" opacity="0.08"/><circle cx="15" cy="15" r="14" fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.85"/><path d="M15,22 Q8,16 8,12 Q8,8 12,8 Q15,8 15,11 Q15,8 18,8 Q22,8 22,12 Q22,16 15,22 Z" fill="currentColor" opacity="0.4"/></g>` },
     adaptability:{ small: false, svg: `<g><circle cx="15" cy="15" r="14" fill="currentColor" opacity="0.08"/><circle cx="15" cy="15" r="14" fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.85"/><path d="M4,15 Q8,9 12,15 Q16,21 20,15 Q24,9 28,15" fill="none" stroke="currentColor" stroke-width="2" opacity="0.6" stroke-linecap="round"/><path d="M4,19 Q8,13 12,19 Q16,25 20,19" fill="none" stroke="currentColor" stroke-width="1" opacity="0.35"/></g>` },
+    mindfulness: { small: false, svg: `<g><circle cx="15" cy="15" r="14" fill="currentColor" opacity="0.08"/><circle cx="15" cy="15" r="14" fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.85"/><circle cx="15" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.6"/><path d="M10,18 Q12,22 15,23 Q18,22 20,18" fill="none" stroke="currentColor" stroke-width="1.3" opacity="0.6" stroke-linecap="round"/><line x1="15" y1="7" x2="15" y2="4" stroke="currentColor" stroke-width="1" opacity="0.5" stroke-linecap="round"/><line x1="10" y1="9" x2="8" y2="7" stroke="currentColor" stroke-width="0.8" opacity="0.4" stroke-linecap="round"/><line x1="20" y1="9" x2="22" y2="7" stroke="currentColor" stroke-width="0.8" opacity="0.4" stroke-linecap="round"/></g>` },
 };
 
 // Assign colors from options to stamps

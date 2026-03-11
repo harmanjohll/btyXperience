@@ -604,7 +604,7 @@ function renderFoldStepInner(foldIndex) {
                 <div class="fold-step-mini">${buildOrigamiSVG(BOAT_DEFAULTS, Math.min(paperStage+1, 8), 24)}</div>
             </div>
             <p class="text-xs mb-1" style="color:var(--text-secondary);">${FOLD_LABELS[foldIndex]}</p>
-            <p class="text-[10px]" style="color:var(--text-muted);">Drag from the <span style="color:var(--accent-gold);font-weight:700;">glowing dot</span> toward the target · then <span style="color:var(--accent-gold);font-weight:700;">press to crease</span></p>
+            <p class="text-[10px]" style="color:var(--text-muted);">Drag from the <span style="color:var(--accent-gold);font-weight:700;">glowing dot</span> toward the target · then <span style="color:var(--accent-gold);font-weight:700;">slide along the crease</span></p>
         </div>
     </div>`;
 
@@ -620,48 +620,102 @@ function renderFoldStepInner(foldIndex) {
         stageEl.querySelector('.fold-progress-ring').style.opacity = '0';
         stageEl.querySelector('.fold-drag-line').innerHTML = '';
 
-        // === GUIDED PRESS-TO-CREASE step ===
+        // === ANIMATED HAND-ALONG-CREASE interaction ===
         const creaseLine = CREASE_LINES[foldIndex];
         const stageRect2 = stageEl.getBoundingClientRect();
         const s2 = stageRect2.width / 280;
         const cx1 = creaseLine.x1 * s2, cy1 = creaseLine.y1 * s2;
         const cx2 = creaseLine.x2 * s2, cy2 = creaseLine.y2 * s2;
-        const cmx = (cx1 + cx2) / 2, cmy = (cy1 + cy2) / 2;
+        const cLen = Math.sqrt((cx2-cx1)**2 + (cy2-cy1)**2);
 
         const creaseOverlay = document.createElement('div');
         creaseOverlay.className = 'crease-overlay';
         creaseOverlay.innerHTML = `
             <svg class="crease-guide-svg" viewBox="0 0 ${stageRect2.width} ${stageRect2.height}" width="${stageRect2.width}" height="${stageRect2.height}">
-                <line x1="${cx1}" y1="${cy1}" x2="${cx2}" y2="${cy2}"
-                    class="crease-guide-line"/>
-                <line x1="${cx1}" y1="${cy1}" x2="${cx2}" y2="${cy2}"
-                    class="crease-guide-line-glow"/>
+                <line x1="${cx1}" y1="${cy1}" x2="${cx2}" y2="${cy2}" class="crease-guide-line"/>
+                <line x1="${cx1}" y1="${cy1}" x2="${cx1}" y2="${cy1}" class="crease-sealed-line"/>
             </svg>
-            <div class="crease-prompt" style="left:${cmx}px;top:${cmy}px;">
-                <div class="crease-icon">✋</div>
-                <span class="crease-text">Press along crease</span>
-            </div>`;
+            <div class="crease-hand" style="left:${cx1}px;top:${cy1}px;">✋</div>
+            <div class="crease-label">Slide along the crease</div>`;
         stageEl.appendChild(creaseOverlay);
 
-        function handleCrease(ev) {
-            ev.preventDefault();
-            creaseOverlay.removeEventListener('click', handleCrease);
-            creaseOverlay.removeEventListener('touchstart', handleCrease);
+        const handEl = creaseOverlay.querySelector('.crease-hand');
+        const sealedLine = creaseOverlay.querySelector('.crease-sealed-line');
+        let creaseDown = false, creaseDone = false;
 
-            // Solidify the crease line + visual feedback
-            const guideLine = creaseOverlay.querySelector('.crease-guide-line');
-            if (guideLine) guideLine.classList.add('crease-sealed');
-            creaseOverlay.querySelector('.crease-prompt').classList.add('crease-pressing');
-            haptic(60);
-            playFoldSound();
-
-            setTimeout(() => {
-                creaseOverlay.remove();
-                finishFold();
-            }, 450);
+        function creasePos(e) {
+            const rect = creaseOverlay.getBoundingClientRect();
+            const ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+            const ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+            // Project onto crease line
+            const dx = cx2 - cx1, dy = cy2 - cy1;
+            let t = ((ex - cx1) * dx + (ey - cy1) * dy) / (dx * dx + dy * dy);
+            t = Math.max(0, Math.min(1, t));
+            return { t, x: cx1 + dx * t, y: cy1 + dy * t };
         }
-        creaseOverlay.addEventListener('click', handleCrease);
-        creaseOverlay.addEventListener('touchstart', handleCrease, { passive: false });
+
+        function creaseStart(e) {
+            if (creaseDone) return;
+            e.preventDefault();
+            const p = creasePos(e);
+            if (Math.sqrt((p.x - cx1)**2 + (p.y - cy1)**2) > 60 && p.t < 0.15) return; // must start near beginning
+            creaseDown = true;
+            handEl.style.transition = 'none';
+            haptic(15);
+        }
+
+        function creaseMove(e) {
+            if (!creaseDown || creaseDone) return;
+            e.preventDefault();
+            const p = creasePos(e);
+            // Move hand
+            handEl.style.left = p.x + 'px';
+            handEl.style.top = p.y + 'px';
+            // Grow sealed line behind hand
+            sealedLine.setAttribute('x2', p.x);
+            sealedLine.setAttribute('y2', p.y);
+            // Sound at milestones
+            if (p.t > 0.25 && p.t < 0.28) { playCreaseSound(); haptic(15); }
+            if (p.t > 0.5 && p.t < 0.53) { playCreaseSound(); haptic(20); }
+            if (p.t > 0.75 && p.t < 0.78) { playCreaseSound(); haptic(25); }
+
+            if (p.t > 0.9) {
+                creaseDone = true; creaseDown = false;
+                // Snap to end
+                handEl.style.transition = 'left 0.15s, top 0.15s';
+                handEl.style.left = cx2 + 'px';
+                handEl.style.top = cy2 + 'px';
+                sealedLine.setAttribute('x2', cx2);
+                sealedLine.setAttribute('y2', cy2);
+                // Final seal
+                handEl.classList.add('crease-hand-done');
+                haptic(60);
+                playFoldSound();
+                setTimeout(() => {
+                    creaseOverlay.remove();
+                    finishFold();
+                }, 500);
+            }
+        }
+
+        function creaseEnd() {
+            if (!creaseDown || creaseDone) return;
+            creaseDown = false;
+            // Spring hand back to start
+            handEl.style.transition = 'left 0.3s cubic-bezier(0.22,1,0.36,1), top 0.3s cubic-bezier(0.22,1,0.36,1)';
+            handEl.style.left = cx1 + 'px';
+            handEl.style.top = cy1 + 'px';
+            sealedLine.setAttribute('x2', cx1);
+            sealedLine.setAttribute('y2', cy1);
+        }
+
+        creaseOverlay.addEventListener('mousedown', creaseStart);
+        creaseOverlay.addEventListener('mousemove', creaseMove);
+        creaseOverlay.addEventListener('mouseup', creaseEnd);
+        creaseOverlay.addEventListener('mouseleave', creaseEnd);
+        creaseOverlay.addEventListener('touchstart', creaseStart, { passive: false });
+        creaseOverlay.addEventListener('touchmove', creaseMove, { passive: false });
+        creaseOverlay.addEventListener('touchend', creaseEnd);
 
         function finishFold() {
             const isHatToDiamond = foldIndex === 5;
