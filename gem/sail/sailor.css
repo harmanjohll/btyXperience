@@ -1,17 +1,19 @@
-/* === Beatty SAIL — actionarcnlc dark aesthetic + origami === */
+/* === Beatty SAIL — Washi Craft Aesthetic v7 === */
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --bg-deep: #0f1019;
-    --bg-card: #181825;
-    --bg-surface: #1e1e2e;
+    --bg-deep: #1a1714;
+    --bg-card: #242019;
+    --bg-surface: #2a2520;
     --accent-gold: #D4A843;
     --accent-gold-light: #F0D68A;
     --text-primary: #e8e6e3;
     --text-secondary: #9ca3af;
     --text-muted: #6b7280;
     --bty-yellow: #FFE200;
+    --ink-gold: rgba(212,168,67,0.6);
+    --stamp-red: #8b3a3a;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
@@ -25,13 +27,37 @@ html, body {
 
 body {
     background-image:
-        radial-gradient(ellipse at 20% 0%, rgba(212,168,67,0.03) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 100%, rgba(14,165,233,0.02) 0%, transparent 50%);
+        radial-gradient(ellipse at 20% 0%, rgba(212,168,67,0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, rgba(139,90,43,0.03) 0%, transparent 50%);
+}
+
+/* Subtle washi fibre texture overlay */
+body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    pointer-events: none;
 }
 
 .font-serif { font-family: 'DM Serif Display', serif; }
 
-/* === ANIMATIONS === */
+/* === PAGE TRANSITIONS === */
+.page-exit {
+    animation: pageExit 0.15s ease-in forwards;
+}
+@keyframes pageExit {
+    to { opacity: 0; transform: translateY(10px); }
+}
+.page-enter {
+    animation: pageEnter 0.35s cubic-bezier(0.22,1,0.36,1) forwards;
+    opacity: 0; transform: translateY(-10px);
+}
+@keyframes pageEnter {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* === FADE ANIMATIONS === */
 .fade-up {
     animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
     opacity: 0; transform: translateY(16px);
@@ -73,7 +99,6 @@ body {
     width: min(80vw, 340px);
     height: min(80vw, 340px);
 }
-
 .origami-stage.medium {
     width: min(50vw, 200px);
     height: min(50vw, 200px);
@@ -82,26 +107,31 @@ body {
 .origami-svg {
     width: 100% !important; height: 100% !important;
     display: block;
-    filter: drop-shadow(0 8px 24px rgba(0,0,0,0.5));
+    filter: drop-shadow(0 8px 24px rgba(0,0,0,0.4));
     transition: filter 0.3s, transform 0.15s;
 }
 
-/* === FOLD FLAP — real-time fold visualization === */
+/* === FOLD FLAP === */
 .fold-flap {
     position: absolute; inset: 0;
-    z-index: 5;
-    pointer-events: none;
+    z-index: 5; pointer-events: none;
     overflow: hidden;
     transition: clip-path 0.05s linear;
 }
 .fold-flap .origami-svg {
-    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.6)) brightness(0.85);
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4)) brightness(0.9);
     transition: transform 0.05s linear;
 }
 
-/* Paper tilt during drag */
 .origami-stage.tilting .origami-svg {
     transition: transform 0.08s linear;
+}
+
+/* === INK TRAIL === */
+.ink-trail-canvas {
+    position: absolute; inset: 0;
+    z-index: 19; pointer-events: none;
+    mix-blend-mode: screen;
 }
 
 /* === FOLD INTERACTION ELEMENTS === */
@@ -115,17 +145,17 @@ body {
 .fold-dot {
     position: absolute;
     width: 22px; height: 22px; border-radius: 50%;
-    background: var(--bty-yellow);
+    background: var(--accent-gold);
     border: 3px solid rgba(255,255,255,0.9);
-    box-shadow: 0 0 0 4px rgba(255,226,0,0.3), 0 0 16px rgba(255,226,0,0.6);
+    box-shadow: 0 0 0 4px rgba(212,168,67,0.3), 0 0 16px rgba(212,168,67,0.5);
     transform: translate(-50%,-50%);
     z-index: 20;
     animation: dotPulse 1.4s ease-in-out infinite;
     pointer-events: none;
 }
 @keyframes dotPulse {
-    0%,100% { box-shadow: 0 0 0 4px rgba(255,226,0,0.3), 0 0 16px rgba(255,226,0,0.6); transform: translate(-50%,-50%) scale(1); }
-    50% { box-shadow: 0 0 0 10px rgba(255,226,0,0.1), 0 0 30px rgba(255,226,0,0.4); transform: translate(-50%,-50%) scale(1.2); }
+    0%,100% { box-shadow: 0 0 0 4px rgba(212,168,67,0.3), 0 0 16px rgba(212,168,67,0.5); transform: translate(-50%,-50%) scale(1); }
+    50% { box-shadow: 0 0 0 10px rgba(212,168,67,0.1), 0 0 30px rgba(212,168,67,0.3); transform: translate(-50%,-50%) scale(1.2); }
 }
 
 .fold-target {
@@ -143,16 +173,16 @@ body {
     position: absolute; inset: 0;
     z-index: 12; pointer-events: none; overflow: visible;
 }
-.fold-arrow line { stroke: var(--accent-gold); stroke-width: 1.5; stroke-dasharray: 6 6; animation: arrowDash 1s linear infinite; opacity: 0.35; }
-.fold-arrow polygon { fill: var(--accent-gold); opacity: 0.3; }
+.fold-arrow line { stroke: var(--accent-gold); stroke-width: 1.5; stroke-dasharray: 6 6; animation: arrowDash 1s linear infinite; opacity: 0.3; }
+.fold-arrow polygon { fill: var(--accent-gold); opacity: 0.25; }
 @keyframes arrowDash { to { stroke-dashoffset: -12; } }
 
 .fold-drag-line {
     position: absolute; inset: 0; z-index: 18; pointer-events: none; overflow: visible;
 }
 .fold-drag-line line {
-    stroke: var(--bty-yellow); stroke-width: 2.5; stroke-linecap: round; opacity: 0.8;
-    filter: drop-shadow(0 0 8px rgba(255,226,0,0.5));
+    stroke: var(--accent-gold); stroke-width: 2; stroke-linecap: round; opacity: 0.7;
+    filter: drop-shadow(0 0 6px rgba(212,168,67,0.4));
 }
 
 .fold-progress-ring {
@@ -160,14 +190,14 @@ body {
     transform: translate(-50%,-50%); z-index: 21; pointer-events: none;
 }
 .fold-progress-ring circle {
-    fill: none; stroke: var(--bty-yellow); stroke-width: 3; stroke-linecap: round;
+    fill: none; stroke: var(--accent-gold); stroke-width: 3; stroke-linecap: round;
     transform: rotate(-90deg); transform-origin: center;
     transition: stroke-dashoffset 0.05s linear;
 }
 
 .fold-flash {
     position: absolute; inset: 0;
-    background: radial-gradient(circle, rgba(212,168,67,0.25), transparent 70%);
+    background: radial-gradient(circle, rgba(245,240,232,0.2), transparent 70%);
     z-index: 25; pointer-events: none;
     animation: foldFlash 0.6s ease-out forwards;
 }
@@ -177,7 +207,7 @@ body {
 .fold-animating .origami-svg { animation: paperFold 0.9s cubic-bezier(0.4,0,0.2,1); }
 @keyframes paperFold {
     0%  { transform: rotateX(0) scale(1); }
-    30% { transform: rotateX(-18deg) scale(0.96); filter: drop-shadow(0 14px 36px rgba(0,0,0,0.5)); }
+    30% { transform: rotateX(-18deg) scale(0.96); filter: drop-shadow(0 14px 36px rgba(0,0,0,0.4)); }
     60% { transform: rotateX(8deg) scale(0.98); }
     100% { transform: rotateX(0) scale(1); }
 }
@@ -189,6 +219,17 @@ body {
     55%  { transform: rotateX(12deg) rotateY(-4deg) scale(0.85); opacity: 0.7; }
     75%  { transform: rotateX(-3deg) scale(1.06); opacity: 1; }
     100% { transform: rotateX(0) rotateY(0) scale(1); opacity: 1; }
+}
+
+/* === STAMP PRESS ANIMATION === */
+.stamp-press {
+    animation: stampPress 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    opacity: 0;
+}
+@keyframes stampPress {
+    0% { opacity: 0; transform: scale(1.8) rotate(-5deg); }
+    50% { opacity: 0.85; transform: scale(0.95) rotate(1deg); }
+    100% { opacity: 0.75; transform: scale(1) rotate(0deg); }
 }
 
 /* === PROGRESS BAR === */
@@ -211,7 +252,7 @@ body {
     border: 1px solid rgba(212,168,67,0.08);
 }
 
-/* === OPTION BUTTONS (actionarcnlc) === */
+/* === OPTION BUTTONS === */
 .option-btn {
     background: var(--bg-surface);
     border: 1.5px solid rgba(255,255,255,0.06);
@@ -288,9 +329,67 @@ body {
     color: var(--accent-gold); font-weight: 900; font-size: 13px;
 }
 
+/* === PROCESSING SCREEN === */
+.processing-dots {
+    display: flex; gap: 6px; justify-content: center; align-items: center;
+}
+.processing-dots span {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent-gold);
+    animation: dotBounce 1.4s ease-in-out infinite;
+}
+.processing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.processing-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dotBounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.3; }
+    40% { transform: translateY(-12px); opacity: 1; }
+}
+
+/* === ARCHETYPE REVEAL === */
+.archetype-reveal {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-height: 100dvh; padding: 32px;
+    text-align: center;
+}
+.archetype-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.5rem; line-height: 1.1;
+    animation: revealName 1.2s cubic-bezier(0.22,1,0.36,1) forwards;
+    opacity: 0;
+}
+@keyframes revealName {
+    0% { opacity: 0; transform: scale(0.85); letter-spacing: 0.3em; }
+    60% { opacity: 1; transform: scale(1.02); }
+    100% { opacity: 1; transform: scale(1); letter-spacing: 0.02em; }
+}
+.archetype-quote-reveal {
+    animation: fadeUp 0.8s 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
+    opacity: 0;
+}
+.archetype-continue {
+    animation: fadeUp 0.6s 2s cubic-bezier(0.22,1,0.36,1) forwards;
+    opacity: 0;
+}
+
+/* === WATER RIPPLE === */
+.water-ripple {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid rgba(212,168,67,0.25);
+    pointer-events: none;
+    animation: rippleExpand 1.5s ease-out forwards;
+}
+@keyframes rippleExpand {
+    0% { width: 0; height: 0; opacity: 0.6; transform: translate(-50%,-50%); }
+    100% { width: 300px; height: 300px; opacity: 0; transform: translate(-50%,-50%); }
+}
+
 /* === MEMENTO CARD === */
 .memento-card {
-    background: linear-gradient(170deg, #13131f 0%, #181825 40%, #1a1a2e 100%);
+    background: linear-gradient(170deg, #1f1d18 0%, var(--bg-card) 40%, #1e1c17 100%);
     border-radius: 20px; overflow: hidden;
     border: 2px solid rgba(255,255,255,0.06);
     box-shadow: 0 20px 60px rgba(0,0,0,0.5);
@@ -325,4 +424,5 @@ body {
 
 @media (max-width: 640px) {
     .option-btn { padding: 14px 16px 14px 44px; font-size: 0.88rem; }
+    .archetype-name { font-size: 2rem; }
 }
