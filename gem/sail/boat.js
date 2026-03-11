@@ -9,7 +9,8 @@ export const BOAT_DEFAULTS = { hull: '#4a3728', keel: '#3a2a1e', sail: '#f5f0e8'
 /* ── WASHI PAPER PALETTE ── */
 const P = {
     front:     '#f5f0e8',
-    back:      '#e8e0d0',
+    back:      '#f5f0e8',       /* single colour — no two-tone confusion */
+    layer:     'rgba(90,65,35,0.06)',  /* subtle shading for layered areas */
     shadow:    '#c9bfae',
     crease:    'rgba(90,65,35,0.35)',
     foldLine:  'rgba(90,65,35,0.12)',
@@ -307,15 +308,15 @@ export function buildOrigamiSVG(colors, stage, size = 280, extras = {}) {
 
     /* ── Stage 2: Left corner folded (centred rectangle with triangle flap)
          Corner at (30,85) folded toward centre. Crease: (140,85)→(30,175).
-         Folded triangle covers left side. Right half remains. 15 px brim below. ── */
+         Folded triangle covers left side. Right half remains. ── */
     if (stage === 2) {
         return `<svg viewBox="${vb}" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg" class="origami-svg">
             ${washiDefs()}
-            <!-- Back layer (exposed where corner lifted) -->
-            <rect x="30" y="85" width="220" height="110" rx="2" fill="${P.back}" stroke="${P.shadow}" stroke-width="0.5"/>
-            <!-- Right half still face-up -->
-            <rect x="140" y="85" width="110" height="110" fill="${P.front}" ${wf}/>
-            <!-- Folded left triangle flap (corner brought to centre-bottom area) -->
+            <!-- Base rectangle (single colour) -->
+            <rect x="30" y="85" width="220" height="110" rx="2" fill="${P.front}" ${wf} stroke="${P.shadow}" stroke-width="0.5"/>
+            <!-- Subtle shading where corner was lifted to hint at layers -->
+            <path d="M30,85 L140,85 L30,175 Z" fill="${P.layer}"/>
+            <!-- Folded left triangle flap -->
             <path d="M30,85 L140,85 L30,175 Z" fill="${P.front}" ${wf} stroke="${P.highlight}" stroke-width="0.6"/>
             <!-- Crease line -->
             <line x1="140" y1="85" x2="30" y2="175" stroke="${P.crease}" stroke-width="1.8"/>
@@ -330,12 +331,13 @@ export function buildOrigamiSVG(colors, stage, size = 280, extras = {}) {
 
     /* ── Stage 3: Both corners folded — house / arrow shape
          Triangle crown: (140,85)→(30,175)→(250,175).
-         Bottom strip (brim): y 175→195 in P.back. ── */
+         Bottom strip (brim): y 175→195. ── */
     if (stage === 3) {
         return `<svg viewBox="${vb}" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg" class="origami-svg">
             ${washiDefs()}
-            <!-- Bottom brim strip (back layer visible) -->
-            <rect x="30" y="175" width="220" height="20" rx="1" fill="${P.back}" stroke="${P.shadow}" stroke-width="0.5"/>
+            <!-- Bottom brim strip (same colour, layer shading for depth) -->
+            <rect x="30" y="175" width="220" height="20" rx="1" fill="${P.front}" ${wf} stroke="${P.shadow}" stroke-width="0.5"/>
+            <rect x="30" y="175" width="220" height="20" rx="1" fill="${P.layer}"/>
             <!-- Triangle crown (both corners folded) -->
             <path d="M140,85 L30,175 L250,175 Z" fill="${P.front}" ${wf} stroke="${P.highlight}" stroke-width="0.8"/>
             <!-- Crease lines from apex to corners -->
@@ -357,8 +359,9 @@ export function buildOrigamiSVG(colors, stage, size = 280, extras = {}) {
     if (stage === 4) {
         return `<svg viewBox="${vb}" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg" class="origami-svg">
             ${washiDefs()}
-            <!-- Back brim still down (not yet folded) -->
-            <rect x="30" y="175" width="220" height="20" rx="1" fill="${P.back}" opacity="0.5"/>
+            <!-- Back brim still down (not yet folded) — layer shading -->
+            <rect x="30" y="175" width="220" height="20" rx="1" fill="${P.front}" ${wf} opacity="0.85"/>
+            <rect x="30" y="175" width="220" height="20" rx="1" fill="${P.layer}"/>
             <!-- Triangle crown -->
             <path d="M140,85 L30,175 L250,175 Z" fill="${P.front}" ${wf} stroke="${P.highlight}" stroke-width="0.8"/>
             <!-- Front brim folded UP (sits on top of triangle base) -->
@@ -381,8 +384,9 @@ export function buildOrigamiSVG(colors, stage, size = 280, extras = {}) {
             <path d="M142,87 L32,177 L252,177 Z" fill="${P.shadow}" opacity="0.2" transform="translate(2,2)"/>
             <!-- Triangle crown -->
             <path d="M140,85 L30,175 L250,175 Z" fill="${P.front}" ${wf} stroke="${P.highlight}" stroke-width="0.8"/>
-            <!-- Back brim band -->
-            <rect x="30" y="159" width="220" height="16" rx="1" fill="${P.back}" opacity="0.6"/>
+            <!-- Back brim band (layer shading) -->
+            <rect x="30" y="159" width="220" height="16" rx="1" fill="${P.front}" ${wf} opacity="0.85"/>
+            <rect x="30" y="159" width="220" height="16" rx="1" fill="${P.layer}"/>
             <!-- Front brim band (on top) -->
             <rect x="30" y="157" width="220" height="18" rx="1" fill="${P.front}" ${wf} stroke="${P.highlight}" stroke-width="0.6"/>
             <!-- Crease at brim join -->
@@ -390,9 +394,9 @@ export function buildOrigamiSVG(colors, stage, size = 280, extras = {}) {
             <!-- Crown creases -->
             <line x1="140" y1="85" x2="30" y2="175" stroke="${P.crease}" stroke-width="1" opacity="0.35"/>
             <line x1="140" y1="85" x2="250" y2="175" stroke="${P.crease}" stroke-width="1" opacity="0.35"/>
-            <!-- Corner tucks -->
-            <path d="M30,175 L42,168 L30,168 Z" fill="${P.back}" opacity="0.35"/>
-            <path d="M250,175 L238,168 L250,168 Z" fill="${P.back}" opacity="0.35"/>
+            <!-- Corner tucks (layer shading) -->
+            <path d="M30,175 L42,168 L30,168 Z" fill="${P.layer}" opacity="0.6"/>
+            <path d="M250,175 L238,168 L250,168 Z" fill="${P.layer}" opacity="0.6"/>
             ${marks}
         </svg>`;
     }
@@ -419,8 +423,9 @@ export function buildOrigamiSVG(colors, stage, size = 280, extras = {}) {
         return `<svg viewBox="${vb}" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg" class="origami-svg">
             ${washiDefs()}
             <path d="M140,52 L232,142 L48,142 Z" fill="${P.shadow}" opacity="0.2" transform="translate(2,3)"/>
-            <!-- Back layer (the original top half) -->
-            <path d="M140,50 L50,140 L230,140 Z" fill="${P.back}" opacity="0.5"/>
+            <!-- Back layer (the original top half — same colour, layer hint) -->
+            <path d="M140,50 L50,140 L230,140 Z" fill="${P.front}" ${wf} opacity="0.85"/>
+            <path d="M140,50 L50,140 L230,140 Z" fill="${P.layer}"/>
             <!-- Front folded flap (bottom half folded up, covering top) -->
             <path d="M140,50 L50,140 L230,140 Z" fill="${P.front}" ${wf} stroke="${P.highlight}" stroke-width="0.8"/>
             <!-- Fold crease at y=140 -->

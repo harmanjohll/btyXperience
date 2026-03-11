@@ -11,6 +11,58 @@ import {
     FIREBASE_CONFIG, LOGO_URL,
 } from './boat.js';
 
+// === PAPER CREASE SOUND (Web Audio API) ===
+let audioCtx;
+function getAudioCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+}
+function playCreaseSound() {
+    try {
+        const ctx = getAudioCtx();
+        // Noise burst filtered to sound like paper crinkling
+        const dur = 0.18;
+        const buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2);
+        }
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        const hp = ctx.createBiquadFilter();
+        hp.type = 'highpass'; hp.frequency.value = 2000;
+        const bp = ctx.createBiquadFilter();
+        bp.type = 'bandpass'; bp.frequency.value = 4500; bp.Q.value = 0.8;
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.25, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + dur);
+        src.connect(hp).connect(bp).connect(gain).connect(ctx.destination);
+        src.start(ctx.currentTime);
+    } catch(e) { /* audio not supported */ }
+}
+function playFoldSound() {
+    try {
+        const ctx = getAudioCtx();
+        // Longer crease-fold sound — two layered noise bursts
+        const dur = 0.35;
+        const buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) {
+            const t = i / data.length;
+            data[i] = (Math.random() * 2 - 1) * (t < 0.3 ? t / 0.3 : Math.pow(1 - (t - 0.3) / 0.7, 1.5)) * 0.7;
+        }
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        const bp = ctx.createBiquadFilter();
+        bp.type = 'bandpass'; bp.frequency.value = 3500; bp.Q.value = 0.5;
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + dur);
+        src.connect(bp).connect(gain).connect(ctx.destination);
+        src.start(ctx.currentTime);
+    } catch(e) { /* audio not supported */ }
+}
+
 // === FIREBASE ===
 let db, auth;
 try {
@@ -280,10 +332,10 @@ function setupFoldInteraction(stageEl, foldIndex, onComplete) {
         ring.style.left = pos.x + 'px';
         ring.style.top = pos.y + 'px';
 
-        // Haptic milestones
-        if (progress > 0.3 && progress < 0.33) haptic(15);
-        if (progress > 0.6 && progress < 0.63) haptic(20);
-        if (progress > 0.85 && progress < 0.88) haptic(30);
+        // Haptic + sound milestones
+        if (progress > 0.3 && progress < 0.33) { haptic(15); playCreaseSound(); }
+        if (progress > 0.6 && progress < 0.63) { haptic(20); playCreaseSound(); }
+        if (progress > 0.85 && progress < 0.88) { haptic(30); playCreaseSound(); }
 
         if (distToTarget < 30) {
             completed = true; isDown = false;
@@ -350,11 +402,11 @@ function renderWelcome() {
         <div class="flex-1 flex flex-col items-center justify-center p-4">
             <img src="${LOGO_URL}" alt="Beatty" class="h-16 w-16 mb-5 drop-shadow-lg">
             <h1 class="font-serif text-3xl tracking-tight mb-2" style="color:var(--accent-gold);">Set Sail</h1>
-            <p class="text-sm mb-6 text-center max-w-xs" style="color:var(--text-secondary);">Every Beattyian sets sail on a unique voyage.<br>Build yours — fold by fold.</p>
+            <p class="text-sm mb-6 text-center max-w-xs" style="color:var(--text-secondary);">A piece of paper. Your hands. Your choices.<br>Fold it into something that is entirely you.</p>
             <div class="origami-stage mb-4">
                 ${buildOrigamiSVG(BOAT_DEFAULTS, 0, 280)}
             </div>
-            <p class="text-xs mb-6 text-center font-serif italic" style="color:var(--text-muted);">Every voyage begins with a single fold.</p>
+            <p class="text-xs mb-6 text-center font-serif italic" style="color:var(--text-muted);">What will you build with what you have?</p>
             <button id="startBtn" class="btn-start">Begin Folding</button>
             <p class="text-[10px] mt-6 tracking-widest uppercase" style="color:var(--text-muted);">Beatty Secondary School &middot; Open House 2026</p>
         </div>
@@ -410,13 +462,21 @@ function renderFoldStep(foldIndex) {
                 <div class="fold-badge">${foldIndex+1}</div>
                 <span class="font-bold text-sm" style="color:var(--accent-gold-light);">Fold ${foldIndex+1} of 8</span>
             </div>
+            <div class="fold-step-indicator justify-center">
+                <div class="fold-step-mini">${buildOrigamiSVG(BOAT_DEFAULTS, paperStage, 24)}</div>
+                <span class="fold-step-arrow-icon">→</span>
+                <div class="fold-step-mini">${buildOrigamiSVG(BOAT_DEFAULTS, Math.min(paperStage+1, 8), 24)}</div>
+            </div>
             <p class="text-xs mb-1" style="color:var(--text-secondary);">${FOLD_LABELS[foldIndex]}</p>
-            <p class="text-[10px]" style="color:var(--text-muted);">Drag from the <span style="color:var(--accent-gold);font-weight:700;">glowing dot</span> toward the target</p>
+            <p class="text-[10px]" style="color:var(--text-muted);">Drag from the <span style="color:var(--accent-gold);font-weight:700;">glowing dot</span> toward the target · then <span style="color:var(--accent-gold);font-weight:700;">press to crease</span></p>
         </div>
     </div>`;
 
     const stageEl = document.getElementById('origamiStage');
     setupFoldInteraction(stageEl, foldIndex, () => {
+        // Play light crease sound on drag completion
+        playCreaseSound();
+
         // Hide guides
         stageEl.querySelector('.fold-dot').style.opacity = '0';
         stageEl.querySelector('.fold-target').style.opacity = '0';
@@ -424,55 +484,82 @@ function renderFoldStep(foldIndex) {
         stageEl.querySelector('.fold-progress-ring').style.opacity = '0';
         stageEl.querySelector('.fold-drag-line').innerHTML = '';
 
-        const isHatToDiamond = foldIndex === 5;
+        // === PRESS-TO-CREASE step ===
+        const creaseOverlay = document.createElement('div');
+        creaseOverlay.className = 'crease-overlay';
+        creaseOverlay.innerHTML = `
+            <div class="crease-prompt">
+                <div class="crease-icon">👆</div>
+                <span class="crease-text">Press to crease</span>
+            </div>`;
+        stageEl.appendChild(creaseOverlay);
 
-        if (isBoatReveal) {
-            stageEl.classList.add('boat-reveal');
-            hapticPattern([50, 30, 100]);
-        } else if (!isHatToDiamond) {
-            stageEl.classList.add('fold-animating');
-        }
+        function handleCrease(ev) {
+            ev.preventDefault();
+            creaseOverlay.removeEventListener('click', handleCrease);
+            creaseOverlay.removeEventListener('touchstart', handleCrease);
 
-        // Flash
-        const flash = document.createElement('div');
-        flash.className = 'fold-flash';
-        stageEl.appendChild(flash);
-        setTimeout(() => flash.remove(), 700);
+            // Visual + haptic + sound feedback
+            creaseOverlay.querySelector('.crease-prompt').classList.add('crease-pressing');
+            haptic(60);
+            playFoldSound();
 
-        // Update SVG to next stage — with physics-appropriate transitions
-        const svgInner = stageEl.querySelector('.origami-svg');
-
-        if (isBoatReveal) {
-            // Triangle "opens" — stretch wider/flatter then reveal boat
-            svgInner.style.transition = 'transform 0.7s cubic-bezier(0.22,1,0.36,1)';
-            svgInner.style.transform = 'scaleX(1.5) scaleY(0.45)';
             setTimeout(() => {
-                svgInner.outerHTML = buildOrigamiSVG(c, 8, 280, extras());
-                stageEl.classList.remove('boat-reveal');
+                creaseOverlay.remove();
+                finishFold();
+            }, 350);
+        }
+        creaseOverlay.addEventListener('click', handleCrease);
+        creaseOverlay.addEventListener('touchstart', handleCrease, { passive: false });
+
+        function finishFold() {
+            const isHatToDiamond = foldIndex === 5;
+
+            if (isBoatReveal) {
                 stageEl.classList.add('boat-reveal');
-                spawnParticles(stageEl, 20);
-                spawnRipples(stageEl);
-            }, 750);
-        } else if (isHatToDiamond) {
-            // Hat compresses horizontally (sides pushed together) then becomes diamond
-            svgInner.style.transition = 'transform 0.6s cubic-bezier(0.22,1,0.36,1)';
-            svgInner.style.transform = 'scaleX(0.35) scaleY(1.3)';
-            haptic(40);
-            setTimeout(() => {
-                svgInner.outerHTML = buildOrigamiSVG(c, 6, 280, extras());
-                spawnParticles(stageEl, 10);
-            }, 650);
-        } else {
-            setTimeout(() => {
-                svgInner.outerHTML = buildOrigamiSVG(c, paperStage + 1, 280, extras());
-                spawnParticles(stageEl, 8);
-            }, 450);
-        }
+                hapticPattern([50, 30, 100]);
+            } else if (!isHatToDiamond) {
+                stageEl.classList.add('fold-animating');
+            }
 
-        // Advance — structural transforms need more time
-        const advanceDelay = isBoatReveal ? 2500 : isHatToDiamond ? 1400 : 1000;
-        const nextStep = NEXT_STEP_AFTER_FOLD[foldIndex];
-        setTimeout(() => { step = nextStep; route(); }, advanceDelay);
+            // Flash
+            const flash = document.createElement('div');
+            flash.className = 'fold-flash';
+            stageEl.appendChild(flash);
+            setTimeout(() => flash.remove(), 700);
+
+            // Update SVG to next stage
+            const svgInner = stageEl.querySelector('.origami-svg');
+
+            if (isBoatReveal) {
+                svgInner.style.transition = 'transform 0.7s cubic-bezier(0.22,1,0.36,1)';
+                svgInner.style.transform = 'scaleX(1.5) scaleY(0.45)';
+                setTimeout(() => {
+                    svgInner.outerHTML = buildOrigamiSVG(c, 8, 280, extras());
+                    stageEl.classList.remove('boat-reveal');
+                    stageEl.classList.add('boat-reveal');
+                    spawnParticles(stageEl, 20);
+                    spawnRipples(stageEl);
+                }, 750);
+            } else if (isHatToDiamond) {
+                svgInner.style.transition = 'transform 0.6s cubic-bezier(0.22,1,0.36,1)';
+                svgInner.style.transform = 'scaleX(0.35) scaleY(1.3)';
+                haptic(40);
+                setTimeout(() => {
+                    svgInner.outerHTML = buildOrigamiSVG(c, 6, 280, extras());
+                    spawnParticles(stageEl, 10);
+                }, 650);
+            } else {
+                setTimeout(() => {
+                    svgInner.outerHTML = buildOrigamiSVG(c, paperStage + 1, 280, extras());
+                    spawnParticles(stageEl, 8);
+                }, 450);
+            }
+
+            const advanceDelay = isBoatReveal ? 2500 : isHatToDiamond ? 1400 : 1000;
+            const nextStep = NEXT_STEP_AFTER_FOLD[foldIndex];
+            setTimeout(() => { step = nextStep; route(); }, advanceDelay);
+        }
     });
 }
 
@@ -684,7 +771,7 @@ function renderProcessing() {
             <div class="processing-dots">
                 <span></span><span></span><span></span>
             </div>
-            <p class="text-xs mt-4 font-serif italic" style="color:var(--text-muted);">Your compass is aligning...</p>
+            <p class="text-xs mt-4 font-serif italic" style="color:var(--text-muted);">Reading the stars you chose...</p>
         </div>
     </div>`;
     setTimeout(() => {
@@ -734,7 +821,7 @@ function renderMemento() {
         <div class="content-zone pt-4">
             <div class="memento-card" id="memento-card" style="border-color:${sailOpt.color};">
                 <div class="memento-header">
-                    <div class="memento-boat">${buildOrigamiSVG(c, 9, 72, extras())}</div>
+                    <div class="memento-boat">${buildOrigamiSVG(c, 9, 88, extras())}</div>
                     <div style="flex:1;min-width:0;">
                         <h1 class="text-lg font-black leading-tight" style="color:${sailOpt.color};">${archetype.name}</h1>
                         <p class="text-[10px] font-bold uppercase tracking-widest mt-0.5" style="color:var(--text-muted);">Your Beatty Compass Card</p>
