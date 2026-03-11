@@ -7,7 +7,7 @@ import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
     buildOrigamiSVG, haptic, hapticPattern,
-    SAIL_DATA, BOAT_DEFAULTS, ARCHETYPES, FOLD_GUIDES, FOLD_FLAPS, FOLD_LABELS, LABELS,
+    SAIL_DATA, BOAT_DEFAULTS, ARCHETYPES, FOLD_GUIDES, FOLD_FLAPS, FOLD_LABELS, CREASE_LINES, LABELS,
     FIREBASE_CONFIG, LOGO_URL,
 } from './boat.js';
 
@@ -402,11 +402,11 @@ function renderWelcome() {
         <div class="flex-1 flex flex-col items-center justify-center p-4">
             <img src="${LOGO_URL}" alt="Beatty" class="h-16 w-16 mb-5 drop-shadow-lg">
             <h1 class="font-serif text-3xl tracking-tight mb-2" style="color:var(--accent-gold);">Set Sail</h1>
-            <p class="text-sm mb-6 text-center max-w-xs" style="color:var(--text-secondary);">A piece of paper. Your hands. Your choices.<br>Fold it into something that is entirely you.</p>
+            <p class="text-sm mb-6 text-center max-w-xs" style="color:var(--text-secondary);">A single sheet holds a thousand shapes.<br>Fold yours — and discover which one is you.</p>
             <div class="origami-stage mb-4">
                 ${buildOrigamiSVG(BOAT_DEFAULTS, 0, 280)}
             </div>
-            <p class="text-xs mb-6 text-center font-serif italic" style="color:var(--text-muted);">What will you build with what you have?</p>
+            <p class="text-xs mb-6 text-center font-serif italic" style="color:var(--text-muted);">"Between your hands and a sheet of paper, every path is possible."</p>
             <button id="startBtn" class="btn-start">Begin Folding</button>
             <p class="text-[10px] mt-6 tracking-widest uppercase" style="color:var(--text-muted);">Beatty Secondary School &middot; Open House 2026</p>
         </div>
@@ -484,13 +484,26 @@ function renderFoldStep(foldIndex) {
         stageEl.querySelector('.fold-progress-ring').style.opacity = '0';
         stageEl.querySelector('.fold-drag-line').innerHTML = '';
 
-        // === PRESS-TO-CREASE step ===
+        // === GUIDED PRESS-TO-CREASE step ===
+        const creaseLine = CREASE_LINES[foldIndex];
+        const stageRect2 = stageEl.getBoundingClientRect();
+        const s2 = stageRect2.width / 280;
+        const cx1 = creaseLine.x1 * s2, cy1 = creaseLine.y1 * s2;
+        const cx2 = creaseLine.x2 * s2, cy2 = creaseLine.y2 * s2;
+        const cmx = (cx1 + cx2) / 2, cmy = (cy1 + cy2) / 2;
+
         const creaseOverlay = document.createElement('div');
         creaseOverlay.className = 'crease-overlay';
         creaseOverlay.innerHTML = `
-            <div class="crease-prompt">
-                <div class="crease-icon">👆</div>
-                <span class="crease-text">Press to crease</span>
+            <svg class="crease-guide-svg" viewBox="0 0 ${stageRect2.width} ${stageRect2.height}" width="${stageRect2.width}" height="${stageRect2.height}">
+                <line x1="${cx1}" y1="${cy1}" x2="${cx2}" y2="${cy2}"
+                    class="crease-guide-line"/>
+                <line x1="${cx1}" y1="${cy1}" x2="${cx2}" y2="${cy2}"
+                    class="crease-guide-line-glow"/>
+            </svg>
+            <div class="crease-prompt" style="left:${cmx}px;top:${cmy}px;">
+                <div class="crease-icon">✋</div>
+                <span class="crease-text">Press along crease</span>
             </div>`;
         stageEl.appendChild(creaseOverlay);
 
@@ -499,7 +512,9 @@ function renderFoldStep(foldIndex) {
             creaseOverlay.removeEventListener('click', handleCrease);
             creaseOverlay.removeEventListener('touchstart', handleCrease);
 
-            // Visual + haptic + sound feedback
+            // Solidify the crease line + visual feedback
+            const guideLine = creaseOverlay.querySelector('.crease-guide-line');
+            if (guideLine) guideLine.classList.add('crease-sealed');
             creaseOverlay.querySelector('.crease-prompt').classList.add('crease-pressing');
             haptic(60);
             playFoldSound();
@@ -507,7 +522,7 @@ function renderFoldStep(foldIndex) {
             setTimeout(() => {
                 creaseOverlay.remove();
                 finishFold();
-            }, 350);
+            }, 450);
         }
         creaseOverlay.addEventListener('click', handleCrease);
         creaseOverlay.addEventListener('touchstart', handleCrease, { passive: false });

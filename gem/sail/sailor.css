@@ -422,36 +422,75 @@ body::before {
     100% { transform: translate(var(--px),var(--py)) scale(0); opacity: 0; }
 }
 
-/* === PRESS-TO-CREASE OVERLAY === */
+/* === GUIDED PRESS-TO-CREASE OVERLAY === */
 .crease-overlay {
     position: absolute; inset: 0; z-index: 30;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: rgba(0,0,0,0.15);
-    backdrop-filter: blur(1px);
+    background: rgba(0,0,0,0.12);
     animation: fadeIn 0.3s ease forwards;
 }
+.crease-guide-svg {
+    position: absolute; inset: 0; z-index: 1; pointer-events: none;
+}
+.crease-guide-line {
+    stroke: var(--accent-gold);
+    stroke-width: 3;
+    stroke-dasharray: 8 6;
+    stroke-linecap: round;
+    fill: none;
+    opacity: 0.85;
+    animation: creaseDash 0.8s linear infinite;
+}
+.crease-guide-line-glow {
+    stroke: var(--accent-gold);
+    stroke-width: 10;
+    stroke-linecap: round;
+    fill: none;
+    opacity: 0.12;
+    filter: blur(4px);
+    animation: creaseDash 0.8s linear infinite;
+    stroke-dasharray: 8 6;
+}
+@keyframes creaseDash {
+    0% { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: -28; }
+}
+.crease-guide-line.crease-sealed {
+    stroke-dasharray: none;
+    stroke-width: 4;
+    opacity: 1;
+    animation: creaseSeal 0.4s ease forwards;
+}
+@keyframes creaseSeal {
+    0% { stroke-width: 3; opacity: 0.85; filter: none; }
+    50% { stroke-width: 6; opacity: 1; filter: drop-shadow(0 0 8px rgba(212,168,67,0.6)); }
+    100% { stroke-width: 2.5; opacity: 0.5; filter: none; }
+}
 .crease-prompt {
-    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    position: absolute; z-index: 2;
+    transform: translate(-50%, -50%);
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
     animation: creasePromptIn 0.5s cubic-bezier(0.22,1,0.36,1) forwards;
 }
 .crease-icon {
-    width: 56px; height: 56px; border-radius: 50%;
+    width: 48px; height: 48px; border-radius: 50%;
     background: rgba(212,168,67,0.15); border: 2px solid var(--accent-gold);
     display: flex; align-items: center; justify-content: center;
-    font-size: 24px;
+    font-size: 22px;
     animation: creasePulse 1.2s ease-in-out infinite;
 }
 .crease-text {
-    font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
     color: var(--accent-gold-light); text-transform: uppercase;
+    white-space: nowrap;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
 }
 @keyframes creasePromptIn {
-    0% { opacity: 0; transform: scale(0.8); }
-    100% { opacity: 1; transform: scale(1); }
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 @keyframes creasePulse {
     0%,100% { transform: scale(1); box-shadow: 0 0 0 4px rgba(212,168,67,0.15); }
-    50% { transform: scale(1.08); box-shadow: 0 0 0 12px rgba(212,168,67,0.05); }
+    50% { transform: scale(1.08); box-shadow: 0 0 0 10px rgba(212,168,67,0.05); }
 }
 .crease-pressing .crease-icon {
     animation: creasePress 0.4s cubic-bezier(0.22,1,0.36,1) forwards;
@@ -459,8 +498,8 @@ body::before {
 }
 @keyframes creasePress {
     0% { transform: scale(1); }
-    40% { transform: scale(0.85); }
-    100% { transform: scale(1.1); opacity: 0; }
+    40% { transform: scale(0.82); }
+    100% { transform: scale(1.15); opacity: 0; }
 }
 
 /* === FOLD STEP INDICATOR === */
