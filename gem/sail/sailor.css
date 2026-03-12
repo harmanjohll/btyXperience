@@ -145,7 +145,7 @@ body::before {
 
 .fold-dot {
     position: absolute;
-    width: 22px; height: 22px; border-radius: 50%;
+    width: 40px; height: 40px; border-radius: 50%;
     background: var(--accent-gold);
     border: 3px solid rgba(255,255,255,0.9);
     box-shadow: 0 0 0 4px rgba(212,168,67,0.3), 0 0 16px rgba(212,168,67,0.5);
@@ -156,12 +156,12 @@ body::before {
 }
 @keyframes dotPulse {
     0%,100% { box-shadow: 0 0 0 4px rgba(212,168,67,0.3), 0 0 16px rgba(212,168,67,0.5); transform: translate(-50%,-50%) scale(1); }
-    50% { box-shadow: 0 0 0 10px rgba(212,168,67,0.1), 0 0 30px rgba(212,168,67,0.3); transform: translate(-50%,-50%) scale(1.2); }
+    50% { box-shadow: 0 0 0 10px rgba(212,168,67,0.1), 0 0 30px rgba(212,168,67,0.3); transform: translate(-50%,-50%) scale(1.15); }
 }
 
 .fold-target {
     position: absolute;
-    width: 22px; height: 22px; border-radius: 50%;
+    width: 40px; height: 40px; border-radius: 50%;
     border: 2.5px dashed var(--accent-gold);
     transform: translate(-50%,-50%);
     z-index: 15; pointer-events: none;
@@ -348,6 +348,10 @@ body::before {
     40% { transform: translateY(-12px); opacity: 1; }
 }
 
+/* === PROCESSING BOAT DRIFT === */
+.processing-sail { transition: transform 1.5s cubic-bezier(0.22,1,0.36,1); }
+.processing-drift { transform: translateX(8px) rotate(-2deg); }
+
 /* === ARCHETYPE REVEAL === */
 .archetype-reveal {
     display: flex; flex-direction: column;
@@ -373,6 +377,15 @@ body::before {
 .archetype-continue {
     animation: fadeUp 0.6s 2s cubic-bezier(0.22,1,0.36,1) forwards;
     opacity: 0;
+}
+.archetype-boat-reveal {
+    animation: archBoatIn 1s cubic-bezier(0.22,1,0.36,1) forwards;
+    opacity: 0;
+}
+@keyframes archBoatIn {
+    0% { opacity: 0; transform: translateY(40px) scale(0.8); }
+    60% { opacity: 1; transform: translateY(-5px) scale(1.02); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* === WATER RIPPLE === */
@@ -587,4 +600,16 @@ body::before {
 @media (max-width: 640px) {
     .option-btn { padding: 12px 14px 12px 40px; font-size: 0.85rem; }
     .archetype-name { font-size: 2rem; }
+}
+
+/* === REDUCED MOTION === */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    .screen-shake { animation: none !important; }
+    .fold-dot { animation: none !important; }
+    .fold-overlay { cursor: pointer; }
 }
