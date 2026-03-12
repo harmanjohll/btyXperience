@@ -215,6 +215,44 @@ function colors() {
 }
 function extras() { return { aspiration: D.aspiration, flagIcon: D.flagIcon, marks: D.marks || [] }; }
 
+/* === COMPOSITE ARCHETYPE SCORING ===
+   Tallies ALL picks across all 6 questions, matches against archetype signal profiles. */
+function computeArchetype() {
+    // Collect all chosen option IDs (primary = weight 2, secondary = weight 1)
+    const tally = {};
+    function add(id, w) { if (id) tally[id] = (tally[id] || 0) + w; }
+
+    // S
+    if (D.stewardshipPick1 !== undefined) add(SAIL_DATA.S.options[D.S_pick1]?.id, 2);
+    if (D.S_pick2 !== undefined) add(SAIL_DATA.S.options[D.S_pick2]?.id, 1);
+    // A
+    if (D.appliedPick1 !== undefined) add(SAIL_DATA.A.options[D.A_pick1]?.id, 2);
+    if (D.A_pick2 !== undefined) add(SAIL_DATA.A.options[D.A_pick2]?.id, 1);
+    // A_sub
+    if (D.subjectPick1 !== undefined) add(SAIL_DATA.A.subOptions?.[D.A_sub_pick1]?.id, 2);
+    if (D.A_sub_pick2 !== undefined) add(SAIL_DATA.A.subOptions?.[D.A_sub_pick2]?.id, 1);
+    // I
+    if (D.internationalPick1 !== undefined) add(SAIL_DATA.I.options[D.I_pick1]?.id, 2);
+    if (D.I_pick2 !== undefined) add(SAIL_DATA.I.options[D.I_pick2]?.id, 1);
+    // I_sub
+    if (D.industryPick1 !== undefined) add(SAIL_DATA.I.subOptions?.[D.I_sub_pick1]?.id, 2);
+    if (D.I_sub_pick2 !== undefined) add(SAIL_DATA.I.subOptions?.[D.I_sub_pick2]?.id, 1);
+    // L
+    if (D.learningPick1 !== undefined) add(SAIL_DATA.L.options[D.L_pick1]?.id, 2);
+    if (D.L_pick2 !== undefined) add(SAIL_DATA.L.options[D.L_pick2]?.id, 1);
+
+    // Score each archetype by matching tally against its signal profile
+    let best = null, bestScore = -1;
+    for (const [key, arch] of Object.entries(ARCHETYPES)) {
+        let score = 0;
+        for (const [signal, weight] of Object.entries(arch.signals || {})) {
+            score += (tally[signal] || 0) * weight;
+        }
+        if (score > bestScore) { bestScore = score; best = { ...arch, key }; }
+    }
+    return best || ARCHETYPES.innovator;
+}
+
 function questionsDone() {
     let n = 0;
     if (D.stewardshipPick1 !== undefined) n++;
@@ -496,14 +534,28 @@ function renderWelcome() {
             <img src="${LOGO_URL}" alt="Beatty" class="h-16 w-16 mb-5 drop-shadow-lg">
             <h1 class="font-serif text-3xl tracking-tight mb-2" style="color:var(--accent-gold);">Set Sail</h1>
             <p class="text-sm mb-6 text-center max-w-xs" style="color:var(--text-secondary);">A single sheet holds a thousand shapes.<br>Fold yours — and discover which one is you.</p>
-            <div class="origami-stage mb-4">
+            <div class="origami-stage mb-4" id="welcomeBoat">
                 ${buildOrigamiSVG(BOAT_DEFAULTS, 0, 280)}
             </div>
             <p class="text-xs mb-6 text-center font-serif italic" style="color:var(--text-muted);">"Between your hands and a sheet of paper, every path is possible."</p>
-            <button id="startBtn" class="btn-start">Begin Folding</button>
-            <p class="text-[10px] mt-6 tracking-widest uppercase" style="color:var(--text-muted);">Beatty Secondary School &middot; Open House 2026</p>
+            <button id="startBtn" class="btn-start">Fold Your Boat</button>
+            <p class="text-[10px] mt-2" style="color:var(--text-muted);">2 minutes · 8 folds · your personal compass card</p>
+            <p class="text-[10px] mt-4 tracking-widest uppercase" style="color:var(--text-muted);">Beatty Secondary School &middot; Open House 2026</p>
         </div>
     </div>`;
+
+    // Looping boat-fold preview: cycle through stages 0→8 then back
+    const welcomeBoat = document.getElementById('welcomeBoat');
+    const stages = [0,1,2,3,4,5,6,7,8];
+    let si = 0;
+    const previewInterval = setInterval(() => {
+        si = (si + 1) % stages.length;
+        if (welcomeBoat && welcomeBoat.isConnected) {
+            welcomeBoat.innerHTML = buildOrigamiSVG(BOAT_DEFAULTS, stages[si], 280);
+        } else {
+            clearInterval(previewInterval);
+        }
+    }, 800);
 }
 
 /* ============================================================
@@ -1003,7 +1055,7 @@ function renderAspiration() {
         </div>
         <div class="content-zone text-center">
             <h2 class="font-serif text-xl mb-2" style="color:var(--accent-gold);">Name Your Vessel</h2>
-            <p class="text-sm mb-4" style="color:var(--text-secondary);">One word to name your vessel. Make it yours.</p>
+            <p class="text-sm mb-4" style="color:var(--text-secondary);">A word or phrase to christen your vessel. Make it yours.</p>
             <input type="text" id="aspirationInput" maxlength="15"
                 class="w-full p-3 text-center text-xl font-black outline-none rounded-xl mb-4"
                 style="background:var(--bg-card);color:var(--text-primary);border:2px solid var(--accent-gold);caret-color:var(--accent-gold);"
@@ -1031,37 +1083,50 @@ function renderProcessing() {
     $app.innerHTML = `
     <div class="sail-screen">
         <div class="flex-1 flex flex-col items-center justify-center p-4">
-            <div class="origami-stage medium mb-6" id="processingBoat">
+            <div class="origami-stage medium mb-6 processing-sail" id="processingBoat">
                 ${buildOrigamiSVG(c, 9, 280, extras())}
             </div>
-            <h2 class="font-serif text-xl mb-4" style="color:var(--accent-gold);">Charting your course</h2>
+            <h2 class="font-serif text-xl mb-4" style="color:var(--accent-gold);">Tracing your voyage</h2>
             <div class="processing-dots">
                 <span></span><span></span><span></span>
             </div>
-            <p class="text-xs mt-4 font-serif italic" style="color:var(--text-muted);">Reading the stars you chose...</p>
+            <p class="text-xs mt-4 font-serif italic" style="color:var(--text-muted);">The lines you drew are becoming a map...</p>
         </div>
     </div>`;
+    // Boat gently sails across
     setTimeout(() => {
         const boat = document.getElementById('processingBoat');
-        if (boat) spawnRipples(boat);
-    }, 800);
-    setTimeout(() => { step = 17; route(); }, 3000);
+        if (boat) { spawnRipples(boat); boat.classList.add('processing-drift'); }
+    }, 200);
+    setTimeout(() => { step = 17; route(); }, 1800);
 }
 
 /* ============================================================
    RENDER: ARCHETYPE REVEAL
    ============================================================ */
 function renderArchetypeReveal() {
-    const archetype = ARCHETYPES[D.internationalPick1] || ARCHETYPES.korea;
-    const sailOpt = SAIL_DATA.I.options.find(o => o.id === D.internationalPick1) || SAIL_DATA.I.options[0];
+    const archetype = computeArchetype();
+    const ac = archetype.color || '#D4A843';
+    const c = colors();
 
     $app.innerHTML = `
     <div class="archetype-reveal">
-        <p class="text-xs uppercase tracking-[0.3em] mb-6 fade-in" style="color:var(--text-muted);">You are</p>
-        <h1 class="archetype-name" style="color:${sailOpt.color};">${archetype.name}</h1>
+        <div class="archetype-boat-reveal origami-stage medium mb-6" id="revealBoatStage">
+            ${buildOrigamiSVG(c, 9, 280, extras())}
+        </div>
+        <p class="text-xs uppercase tracking-[0.3em] mb-4 fade-in" style="color:var(--text-muted);">You are</p>
+        <h1 class="archetype-name" style="color:${ac};">${archetype.name}</h1>
         <p class="archetype-quote-reveal font-serif italic text-sm mt-6 max-w-xs text-center px-6" style="color:var(--text-secondary);">${archetype.quote}</p>
         <button id="revealContinue" class="archetype-continue btn-start mt-10">See Your Card</button>
     </div>`;
+
+    // Dramatic entrance: boat sails in, reveal sound, particles
+    const boatStage = document.getElementById('revealBoatStage');
+    if (boatStage) {
+        boatStage.classList.add('boat-rising');
+        setTimeout(() => spawnParticles(boatStage, 12), 400);
+    }
+    playRevealSound();
 
     document.getElementById('revealContinue').addEventListener('click', () => {
         haptic(40);
@@ -1080,18 +1145,24 @@ function renderMemento() {
     const leadOpt  = SAIL_DATA.S.options.find(o => o.id === D.stewardshipPick1) || SAIL_DATA.S.options[0];
     const chalOpt  = SAIL_DATA.A.options.find(o => o.id === D.appliedPick1) || SAIL_DATA.A.options[0];
     const valOpt   = SAIL_DATA.L.options.find(o => o.id === D.learningPick1) || SAIL_DATA.L.options[0];
-    const archetype = ARCHETYPES[D.internationalPick1] || ARCHETYPES.korea;
+    const archetype = computeArchetype();
     const subjectLabel = LABELS.subject[D.subjectPick1] || '';
     const industryLabel = LABELS.industry[D.industryPick1] || '';
+
+    // 2nd picks for "also drawn to" line
+    const lead2 = D.S_pick2 !== undefined ? SAIL_DATA.S.options[D.S_pick2] : null;
+    const chal2 = D.A_pick2 !== undefined ? SAIL_DATA.A.options[D.A_pick2] : null;
+    const sail2 = D.I_pick2 !== undefined ? SAIL_DATA.I.options[D.I_pick2] : null;
+    const val2  = D.L_pick2 !== undefined ? SAIL_DATA.L.options[D.L_pick2] : null;
 
     $app.innerHTML = `
     <div class="sail-screen fade-up">
         <div class="content-zone pt-4">
-            <div class="memento-card" id="memento-card" style="border-color:${sailOpt.color};">
+            <div class="memento-card" id="memento-card" style="border-color:${archetype.color || sailOpt.color};">
                 <div class="memento-header">
                     <div class="memento-boat">${buildOrigamiSVG(c, 9, 88, extras())}</div>
                     <div style="flex:1;min-width:0;">
-                        <h1 class="text-lg font-black leading-tight" style="color:${sailOpt.color};">${archetype.name}</h1>
+                        <h1 class="text-lg font-black leading-tight" style="color:${archetype.color || sailOpt.color};">${archetype.name}</h1>
                         <p class="text-[10px] font-bold uppercase tracking-widest mt-0.5" style="color:var(--text-muted);">Your Beatty Compass Card</p>
                     </div>
                 </div>
@@ -1105,19 +1176,19 @@ function renderMemento() {
                 <div style="padding:12px 20px;" class="space-y-1.5">
                     <div class="flex items-start gap-2 rounded-lg p-2" style="background:rgba(255,255,255,0.02);border-left:3px solid ${leadOpt.color};">
                         <span class="font-black text-[10px] mt-0.5" style="color:var(--accent-gold);">S</span>
-                        <div><p class="text-[10px] font-bold uppercase" style="color:var(--text-muted);">Stewardship</p><p class="text-xs" style="color:var(--text-primary);">${leadOpt.text.split('—')[0].trim()}</p></div>
+                        <div><p class="text-[10px] font-bold uppercase" style="color:var(--text-muted);">Stewardship</p><p class="text-xs" style="color:var(--text-primary);">${leadOpt.text.split('—')[0].trim()}</p>${lead2 ? `<p class="text-[10px] mt-0.5" style="color:var(--text-muted);">also drawn to ${lead2.text.split('—')[0].trim().toLowerCase()}</p>` : ''}</div>
                     </div>
                     <div class="flex items-start gap-2 rounded-lg p-2" style="background:rgba(255,255,255,0.02);border-left:3px solid ${chalOpt.color};">
                         <span class="font-black text-[10px] mt-0.5" style="color:var(--accent-gold);">A</span>
-                        <div><p class="text-[10px] font-bold uppercase" style="color:var(--text-muted);">Applied Learning</p><p class="text-xs" style="color:var(--text-primary);">${chalOpt.text.split('—')[0].trim()}${subjectLabel ? ' · '+subjectLabel : ''}</p></div>
+                        <div><p class="text-[10px] font-bold uppercase" style="color:var(--text-muted);">Applied Learning</p><p class="text-xs" style="color:var(--text-primary);">${chalOpt.text.split('—')[0].trim()}${subjectLabel ? ' · '+subjectLabel : ''}</p>${chal2 ? `<p class="text-[10px] mt-0.5" style="color:var(--text-muted);">also drawn to ${chal2.text.split('—')[0].trim().toLowerCase()}</p>` : ''}</div>
                     </div>
                     <div class="flex items-start gap-2 rounded-lg p-2" style="background:rgba(255,255,255,0.02);border-left:3px solid ${sailOpt.color};">
                         <span class="font-black text-[10px] mt-0.5" style="color:var(--accent-gold);">I</span>
-                        <div><p class="text-[10px] font-bold uppercase" style="color:var(--text-muted);">International & Industry</p><p class="text-xs" style="color:var(--text-primary);">${sailOpt.text.split('—')[0].trim()}${industryLabel ? ' · '+industryLabel : ''}</p></div>
+                        <div><p class="text-[10px] font-bold uppercase" style="color:var(--text-muted);">International & Industry</p><p class="text-xs" style="color:var(--text-primary);">${sailOpt.text.split('—')[0].trim()}${industryLabel ? ' · '+industryLabel : ''}</p>${sail2 ? `<p class="text-[10px] mt-0.5" style="color:var(--text-muted);">also drawn to ${sail2.text.split('—')[0].trim().toLowerCase()}</p>` : ''}</div>
                     </div>
                     <div class="flex items-start gap-2 rounded-lg p-2" style="background:rgba(255,255,255,0.02);border-left:3px solid ${valOpt.color};">
                         <span class="font-black text-[10px] mt-0.5" style="color:var(--accent-gold);">L</span>
-                        <div><p class="text-[10px] font-bold uppercase" style="color:var(--text-muted);">Learning to Live, Learn & Love</p><p class="text-xs" style="color:var(--text-primary);">${valOpt.icon||''} ${valOpt.text.split('—')[0].trim()}</p></div>
+                        <div><p class="text-[10px] font-bold uppercase" style="color:var(--text-muted);">Learning to Live, Learn & Love</p><p class="text-xs" style="color:var(--text-primary);">${valOpt.icon||''} ${valOpt.text.split('—')[0].trim()}</p>${val2 ? `<p class="text-[10px] mt-0.5" style="color:var(--text-muted);">also drawn to ${val2.icon||''} ${val2.text.split('—')[0].trim().toLowerCase()}</p>` : ''}</div>
                     </div>
                 </div>
                 <div class="memento-section" style="border-color:#10b981;">
@@ -1126,7 +1197,7 @@ function renderMemento() {
                 </div>
                 <div class="memento-footer">
                     <p class="text-[10px] mb-1 uppercase tracking-widest" style="color:var(--text-muted);">My aspiration</p>
-                    <p class="text-3xl font-black uppercase tracking-wide" style="color:${sailOpt.color};text-shadow:0 2px 12px rgba(0,0,0,0.5);">${(D.aspiration||'FUTURE LEADER').toUpperCase()}</p>
+                    <p class="text-3xl font-black uppercase tracking-wide" style="color:${archetype.color || sailOpt.color};text-shadow:0 2px 12px rgba(0,0,0,0.5);">${(D.aspiration||'FUTURE LEADER').toUpperCase()}</p>
                     <div class="flex items-center justify-center gap-2 mt-3">
                         <img src="${LOGO_URL}" alt="Beatty" class="h-4 w-4 opacity-60">
                         <p class="text-[10px]" style="color:var(--text-muted);">Beatty Secondary School · Open House 2026</p>
@@ -1134,6 +1205,7 @@ function renderMemento() {
                 </div>
             </div>
             <button id="downloadCardBtn" class="nav-btn primary w-full mt-4 text-lg uppercase tracking-wide">Download Card</button>
+            ${navigator.share ? '<button id="shareCardBtn" class="nav-btn secondary w-full mt-2 text-sm uppercase tracking-wide">Share</button>' : ''}
             <button id="resetBtn" class="mt-3 w-full text-sm underline pb-4" style="color:var(--text-muted);">Start Over</button>
         </div>
     </div>`;
@@ -1166,6 +1238,19 @@ function downloadCard() {
         link.click();
         btn.textContent = 'Download Card'; btn.disabled = false;
     }).catch(() => { btn.textContent = 'Download Failed'; btn.disabled = false; });
+}
+
+async function shareCard() {
+    const card = document.getElementById('memento-card');
+    const btn = document.getElementById('shareCardBtn');
+    btn.textContent = 'Preparing...'; btn.disabled = true;
+    try {
+        const canvas = await html2canvas(card, { backgroundColor: '#1a1714', scale: 3, useCORS: true });
+        const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+        const file = new File([blob], 'Beatty-SAIL-Card.png', { type: 'image/png' });
+        await navigator.share({ title: 'My Beatty SAIL Card', text: `I'm ${(computeArchetype()).name}! Fold your own boat at Beatty Open House 2026.`, files: [file] });
+    } catch(e) { /* share cancelled or unsupported */ }
+    btn.textContent = 'Share'; btn.disabled = false;
 }
 
 /* ============================================================
@@ -1207,6 +1292,7 @@ $app.addEventListener('click', (e) => {
     if (t.id === 'startBtn')        { haptic(15); startAmbient(); step = 1; route(); }
     if (t.id === 'launchBtn')       { handleLaunch(); }
     if (t.id === 'downloadCardBtn') { downloadCard(); }
+    if (t.id === 'shareCardBtn')   { shareCard(); }
     if (t.id === 'resetBtn') {
         localStorage.removeItem(SK);
         D = { marks: [] }; step = 0; route();
