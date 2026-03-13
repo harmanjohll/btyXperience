@@ -41,6 +41,40 @@ function playCreaseSound() {
         src.start(ctx.currentTime);
     } catch(e) { /* audio not supported */ }
 }
+function playCreasePitched(pitch) {
+    try {
+        const ctx = getAudioCtx();
+        const dur = 0.18;
+        const buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2);
+        }
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        src.playbackRate.value = pitch;
+        const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 2000;
+        const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 4500; bp.Q.value = 0.8;
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.25, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + dur);
+        src.connect(hp).connect(bp).connect(gain).connect(ctx.destination);
+        src.start(ctx.currentTime);
+    } catch(e) {}
+}
+function spawnDust(x, y, count = 3) {
+    const container = document.querySelector('.crease-overlay') || document.querySelector('.origami-stage');
+    if (!container) return;
+    for (let i = 0; i < count; i++) {
+        const d = document.createElement('div');
+        d.className = 'crease-dust';
+        d.style.left = x + 'px'; d.style.top = y + 'px';
+        d.style.setProperty('--dx', (Math.random() - 0.5) * 20 + 'px');
+        d.style.setProperty('--dy', (-5 - Math.random() * 15) + 'px');
+        container.appendChild(d);
+        setTimeout(() => d.remove(), 800);
+    }
+}
 function playFoldSound() {
     try {
         const ctx = getAudioCtx();
@@ -167,31 +201,6 @@ try {
 // === STATE ===
 const $app = document.getElementById('app');
 const SK = 'btySail_v7';
-
-// === LIVING OCEAN ===
-const $ocean = document.createElement('div');
-$ocean.className = 'ocean-canvas';
-$ocean.innerHTML = '<div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>';
-// Spawn floating motes
-for (let i = 0; i < 10; i++) {
-    const m = document.createElement('div');
-    m.className = 'ocean-mote';
-    const sz = 3 + Math.random() * 4;
-    m.style.cssText = `width:${sz}px;height:${sz}px;bottom:${5 + Math.random() * 35}%;left:${Math.random() * 100}%;` +
-        `--mote-dur:${8 + Math.random() * 10}s;--mote-delay:${Math.random() * -15}s;` +
-        `--mote-dx:${20 + Math.random() * 40}px;--mote-dy:${-10 - Math.random() * 20}px;` +
-        `--mote-opa:${0.15 + Math.random() * 0.25};`;
-    $ocean.appendChild(m);
-}
-document.body.insertBefore($ocean, document.body.firstChild);
-
-function setWaveIntensity(amp) {
-    $ocean.style.setProperty('--wave-amp', amp + 'px');
-}
-function waveSurge() {
-    $ocean.classList.add('wave-surge');
-    setTimeout(() => $ocean.classList.remove('wave-surge'), 800);
-}
 let D = JSON.parse(localStorage.getItem(SK)) || {};
 D.marks = D.marks || [];
 let step = 0;
@@ -312,6 +321,36 @@ function spawnParticles(container, count = 12) {
         container.appendChild(p);
         setTimeout(() => p.remove(), 1500);
     }
+}
+
+/* === LIVING OCEAN — waves react to journey progress === */
+const WAVE_AMP = { S: 4, A: 6, I: 9, L: 13 };
+function injectOcean() {
+    if (document.querySelector('.ocean-canvas')) return;
+    const oc = document.createElement('div');
+    oc.className = 'ocean-canvas';
+    oc.innerHTML = '<div class="wave wave-1"></div><div class="wave wave-2"></div><div class="wave wave-3"></div>';
+    // Floating motes
+    for (let i = 0; i < 10; i++) {
+        const m = document.createElement('div');
+        m.className = 'ocean-mote';
+        m.style.left = Math.random() * 100 + '%';
+        m.style.bottom = Math.random() * 80 + 'px';
+        m.style.animationDelay = (Math.random() * 6) + 's';
+        m.style.animationDuration = (4 + Math.random() * 4) + 's';
+        oc.appendChild(m);
+    }
+    document.body.prepend(oc);
+}
+function setWaveIntensity(amp) {
+    const oc = document.querySelector('.ocean-canvas');
+    if (oc) oc.style.setProperty('--wave-amp', amp);
+}
+function waveSurge() {
+    const oc = document.querySelector('.ocean-canvas');
+    if (!oc) return;
+    oc.classList.add('wave-surge');
+    setTimeout(() => oc.classList.remove('wave-surge'), 3000);
 }
 
 function spawnRipples(container) {
@@ -610,14 +649,10 @@ const CHAPTER_INTENSITY = {
 let currentChapter = 'S';
 function getIntensity() { return CHAPTER_INTENSITY[currentChapter] || CHAPTER_INTENSITY.S; }
 
-// Wave amplitude per chapter (ocean grows with journey)
-const WAVE_AMP = { S: 4, A: 6, I: 9, L: 13 };
-
 function renderFoldStep(foldIndex) {
     const chapter = CHAPTER_FOR_FOLD[foldIndex];
     if (chapter) {
         currentChapter = chapter.letter;
-        setWaveIntensity(WAVE_AMP[chapter.letter] || 4);
         showChapterCard(chapter, () => renderFoldStepInner(foldIndex));
         return;
     }
@@ -625,6 +660,7 @@ function renderFoldStep(foldIndex) {
 }
 
 function showChapterCard(chapter, onDone) {
+    setWaveIntensity(WAVE_AMP[chapter.letter] || 4);
     $app.innerHTML = `
     <div class="chapter-card">
         <span class="chapter-letter" style="color:var(--accent-gold);">${chapter.letter}</span>
@@ -745,74 +781,37 @@ function renderFoldStepInner(foldIndex) {
             haptic(15);
         }
 
-        let lastDustT = 0, lastHapticT = 0;
-        const intensity = getIntensity();
-        const dustMultiplier = intensity.particles / 8; // 1x for S, up to 2.5x for L
-
-        function playCreasePitched(pitch) {
-            try {
-                const ctx = getAudioCtx();
-                const dur = 0.18;
-                const buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
-                const data = buf.getChannelData(0);
-                for (let i = 0; i < data.length; i++) {
-                    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2);
-                }
-                const src = ctx.createBufferSource();
-                src.buffer = buf;
-                src.playbackRate.value = pitch;
-                const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 2000;
-                const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 4500; bp.Q.value = 0.8;
-                const g = ctx.createGain();
-                g.gain.setValueAtTime(0.25, ctx.currentTime);
-                g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + dur);
-                src.connect(hp).connect(bp).connect(g).connect(ctx.destination);
-                src.start();
-            } catch(e) {}
-        }
-
-        function spawnDust(x, y) {
-            const d = document.createElement('div');
-            d.className = 'crease-dust';
-            d.style.left = x + 'px';
-            d.style.top = y + 'px';
-            d.style.setProperty('--dust-dx', (Math.random() * 10 - 5) + 'px');
-            creaseOverlay.appendChild(d);
-            setTimeout(() => d.remove(), 700);
-        }
-
         function creaseMove(e) {
             if (!creaseDown || creaseDone) return;
             e.preventDefault();
             const p = creasePos(e);
+            const dustMultiplier = getIntensity().gain / 0.2; // 1→1.75 across chapters
+
             // Move hand
             handEl.style.left = p.x + 'px';
             handEl.style.top = p.y + 'px';
-            // Grow sealed line behind hand — DEEPENING stroke
-            const sw = 1.5 + p.t * 3.5 * dustMultiplier; // 1.5px → 5px
+
+            // Living Crease: deepening stroke-width and darkening colour
+            const sw = 1.5 + p.t * 3.5 * dustMultiplier;
+            sealedLine.setAttribute('stroke-width', sw);
+            const r = Math.round(180 - p.t * 60);
+            const g = Math.round(140 - p.t * 40);
+            sealedLine.setAttribute('stroke', `rgba(${r},${g},50,${(0.6 + p.t * 0.35).toFixed(2)})`);
+
+            // Grow sealed line behind hand
             sealedLine.setAttribute('x2', p.x);
             sealedLine.setAttribute('y2', p.y);
-            sealedLine.setAttribute('stroke-width', sw);
-            sealedLine.setAttribute('stroke', `rgba(${180 - p.t * 60},${140 - p.t * 40},${50},${0.6 + p.t * 0.35})`);
 
-            // Micro-dust particles along crease
-            if (p.t - lastDustT > (0.03 / dustMultiplier)) {
-                lastDustT = p.t;
-                spawnDust(p.x, p.y);
+            // Living Crease: dust particles at finger position
+            if (Math.random() < 0.35 * dustMultiplier) {
+                spawnDust(p.x, p.y, Math.ceil(2 * dustMultiplier));
             }
 
-            // Progressive haptics — escalating frequency
-            const hapticStep = p.t < 0.25 ? 0.1 : p.t < 0.5 ? 0.08 : p.t < 0.75 ? 0.06 : 0.04;
-            const hapticStrength = 10 + p.t * 30 * dustMultiplier;
-            if (p.t - lastHapticT > hapticStep) {
-                lastHapticT = p.t;
-                haptic(Math.round(hapticStrength));
-            }
-
-            // Pitched crease sounds at milestones
-            if (p.t > 0.25 && p.t < 0.28) { playCreasePitched(1.0); }
-            if (p.t > 0.5 && p.t < 0.53) { playCreasePitched(1.1); }
-            if (p.t > 0.75 && p.t < 0.78) { playCreasePitched(1.25); }
+            // Pitch-shifted crease sounds + progressive haptics
+            const pitch = 1.0 + p.t * 0.25; // 1.0x → 1.25x
+            if (p.t > 0.25 && p.t < 0.28) { playCreasePitched(pitch); haptic(Math.round(15 * dustMultiplier)); }
+            if (p.t > 0.5 && p.t < 0.53) { playCreasePitched(pitch); haptic(Math.round(20 * dustMultiplier)); }
+            if (p.t > 0.75 && p.t < 0.78) { playCreasePitched(pitch); haptic(Math.round(25 * dustMultiplier)); }
 
             if (p.t > 0.9) {
                 creaseDone = true; creaseDown = false;
@@ -822,14 +821,12 @@ function renderFoldStepInner(foldIndex) {
                 handEl.style.top = cy2 + 'px';
                 sealedLine.setAttribute('x2', cx2);
                 sealedLine.setAttribute('y2', cy2);
-                // Final seal — satisfying snap
+                // Dust burst at completion
+                spawnDust(cx2, cy2, Math.ceil(6 * dustMultiplier));
+                // Final seal
                 handEl.classList.add('crease-hand-done');
-                hapticPattern([30, 15, 60]);
+                haptic(60);
                 playFoldSound();
-                // Burst of dust at completion
-                for (let i = 0; i < Math.round(6 * dustMultiplier); i++) {
-                    setTimeout(() => spawnDust(cx2 + (Math.random()-0.5)*20, cy2 + (Math.random()-0.5)*20), i * 30);
-                }
                 setTimeout(() => {
                     creaseOverlay.remove();
                     finishFold();
@@ -1167,84 +1164,75 @@ function renderAspiration() {
    RENDER: PROCESSING — "Charting your course..."
    ============================================================ */
 /* ============================================================
-   GRAND REVEAL — 3-Act cinematic archetype unveiling
-   Act 1: Boat sails across ocean (2.5s)
-   Act 2: Light bloom + letter-by-letter name reveal (2s)
-   Act 3: Quote settles, button appears (1.5s)
+   GRAND REVEAL — 3-ACT CINEMATIC
+   Merges processing + archetype reveal into one dramatic sequence.
+   Act 1 (0–2.5s): Boat sails in from left with wake particles
+   Act 2 (2.5–4.5s): Light bloom, letter-by-letter name, particle burst + screen shake
+   Act 3 (4.5–5.5s): Quote settles, waves calm, button appears
    ============================================================ */
 function renderProcessing() {
-    // Act 1: The Voyage
-    const c = colors();
     const archetype = computeArchetype();
     const ac = archetype.color || '#D4A843';
+    const c = colors();
 
-    setWaveIntensity(16); // ocean intensifies
+    // Build letter-by-letter name HTML
+    const nameChars = archetype.name.split('').map((ch, i) => {
+        if (ch === ' ') return '<span style="width:8px;display:inline-block;"> </span>';
+        return `<span class="reveal-char" style="animation-delay:${2.5 + i * 0.07}s; color:${ac};">${ch}</span>`;
+    }).join('');
 
     $app.innerHTML = `
     <div class="archetype-reveal">
-        <div class="reveal-voyage-stage origami-stage medium" id="voyageBoat">
+        <div class="reveal-glow"></div>
+        <div class="reveal-voyage-stage origami-stage medium mb-6" id="revealBoatStage">
             ${buildOrigamiSVG(c, 9, 280, extras())}
         </div>
-        <div class="reveal-glow" id="revealGlow" style="--glow-color:${ac};"></div>
-        <p class="reveal-preamble text-xs uppercase tracking-[0.3em]" style="color:var(--text-muted);">You are</p>
-        <h1 class="archetype-name-staged" id="archName" style="color:${ac};"></h1>
-        <p class="archetype-quote-staged font-serif italic text-sm mt-6 max-w-xs text-center px-6" style="color:var(--text-secondary);" id="archQuote">${archetype.quote}</p>
-        <button id="revealContinue" class="archetype-continue btn-start mt-10" style="opacity:0;pointer-events:none;">See Your Card</button>
+        <p class="reveal-preamble text-xs uppercase tracking-[0.3em] mb-4" style="color:var(--text-muted);">You are</p>
+        <h1 class="archetype-name-staged">${nameChars}</h1>
+        <p class="archetype-quote-staged font-serif italic text-sm mt-6 max-w-xs text-center px-6" style="color:var(--text-secondary);" id="revealQuote">${archetype.quote}</p>
+        <button id="revealContinue" class="btn-start mt-10" style="opacity:0; transition: opacity 0.5s;">See Your Card</button>
     </div>`;
 
-    const voyageBoat = document.getElementById('voyageBoat');
-    const glow = document.getElementById('revealGlow');
-    const nameEl = document.getElementById('archName');
-    const quoteEl = document.getElementById('archQuote');
-    const btn = document.getElementById('revealContinue');
+    // ACT 1: Boat sails in — wake particles trail behind
+    const boatStage = document.getElementById('revealBoatStage');
+    if (boatStage) {
+        for (let i = 0; i < 8; i++) {
+            setTimeout(() => {
+                const w = document.createElement('div');
+                w.className = 'reveal-wake';
+                w.style.setProperty('--wx', (-20 - Math.random() * 40) + 'px');
+                w.style.setProperty('--wy', (Math.random() - 0.5) * 20 + 'px');
+                w.style.left = '30%'; w.style.top = '70%';
+                boatStage.appendChild(w);
+                setTimeout(() => w.remove(), 1500);
+            }, 300 + i * 200);
+        }
+    }
 
-    // Spawn wake particles during voyage
-    let wakeInterval = setInterval(() => {
-        if (!voyageBoat || !voyageBoat.isConnected) { clearInterval(wakeInterval); return; }
-        const wake = document.createElement('div');
-        wake.className = 'reveal-wake';
-        wake.style.left = voyageBoat.offsetLeft + 'px';
-        wake.style.top = (voyageBoat.offsetTop + voyageBoat.offsetHeight * 0.7) + 'px';
-        voyageBoat.parentElement.appendChild(wake);
-        setTimeout(() => wake.remove(), 1200);
-    }, 300);
-
-    // Act 2: The Emergence (at 2.5s)
+    // ACT 2: At 2.5s — reveal sound, screen shake, particle burst, wave surge
     setTimeout(() => {
-        clearInterval(wakeInterval);
-        voyageBoat.classList.add('reveal-boat-arrived');
-        glow.classList.add('reveal-glow-active');
         playRevealSound();
-        hapticPattern([30, 20, 60, 20, 100]);
-
-        // Letter-by-letter name reveal
-        const chars = archetype.name.split('');
-        nameEl.innerHTML = chars.map((ch, i) =>
-            ch === ' ' ? ' ' : `<span class="reveal-char" style="animation-delay:${i * 60}ms">${ch}</span>`
-        ).join('');
-
-        // Particles at peak
-        setTimeout(() => {
-            spawnParticles(voyageBoat, 24);
-            $app.classList.add('screen-shake');
-            setTimeout(() => $app.classList.remove('screen-shake'), 300);
-        }, chars.length * 60 + 200);
+        waveSurge();
+        $app.classList.add('screen-shake');
+        setTimeout(() => $app.classList.remove('screen-shake'), 400);
+        if (boatStage) {
+            boatStage.classList.remove('reveal-voyage-stage');
+            boatStage.classList.add('reveal-boat-arrived');
+            spawnParticles(boatStage, 16);
+        }
     }, 2500);
 
-    // Act 3: The Settling (at 4.5s)
+    // ACT 3: At 4.5s — quote fades in, button appears
     setTimeout(() => {
-        quoteEl.classList.add('reveal-quote-visible');
-        setWaveIntensity(6); // waves calm
+        const q = document.getElementById('revealQuote');
+        if (q) q.classList.add('reveal-quote-visible');
     }, 4500);
-
-    // Button appears (at 5.5s)
     setTimeout(() => {
-        btn.style.opacity = '1';
-        btn.style.pointerEvents = 'auto';
-        btn.classList.add('fade-up');
-    }, 5500);
+        const btn = document.getElementById('revealContinue');
+        if (btn) btn.style.opacity = '1';
+    }, 5200);
 
-    btn.addEventListener('click', () => {
+    document.getElementById('revealContinue').addEventListener('click', () => {
         haptic(40);
         step = 18;
         route();
@@ -1252,7 +1240,7 @@ function renderProcessing() {
 }
 
 function renderArchetypeReveal() {
-    // Redirect — grand reveal handles both steps now
+    // Redirect — Grand Reveal handles both processing + reveal in one sequence
     renderProcessing();
 }
 
@@ -1410,7 +1398,7 @@ function route() {
 $app.addEventListener('click', (e) => {
     const t = e.target.closest('button');
     if (!t) return;
-    if (t.id === 'startBtn')        { haptic(15); startAmbient(); step = 1; route(); }
+    if (t.id === 'startBtn')        { haptic(15); startAmbient(); injectOcean(); step = 1; route(); }
     if (t.id === 'launchBtn')       { handleLaunch(); }
     if (t.id === 'downloadCardBtn') { downloadCard(); }
     if (t.id === 'shareCardBtn')   { shareCard(); }
@@ -1431,4 +1419,6 @@ else if (D.subjectPick1 !== undefined)       step = 8;
 else if (D.appliedPick1 !== undefined)       step = 7;
 else if (D.stewardshipPick1 !== undefined)   step = 4;
 
+// Resume ocean if returning mid-journey
+if (step > 0) injectOcean();
 route();

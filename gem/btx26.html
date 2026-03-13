@@ -112,10 +112,31 @@
 </head>
 <body>
 
-    <!-- Presenter Reset Panel -->
-    <div id="presenterPanel" class="hidden fixed top-4 right-4 bg-red-900/90 backdrop-blur p-4 rounded-lg shadow-xl z-[100] border border-red-500">
-        <h3 class="font-bold text-white mb-2 text-sm uppercase tracking-wider">Presenter Mode</h3>
-        <button id="resetSessionBtn" class="bg-yellow-400 text-blue-900 font-bold py-2 px-4 rounded hover:bg-white text-sm transition-colors w-full shadow-md">Reset Session</button>
+    <!-- Presenter Control Panel -->
+    <div id="presenterPanel" class="hidden fixed top-4 right-4 z-[100] flex flex-col gap-2" style="width:280px;">
+        <div class="bg-gray-900/95 backdrop-blur-md p-4 rounded-xl border border-yellow-400/30 shadow-2xl">
+            <h3 class="font-bold text-yellow-400 mb-3 text-xs uppercase tracking-widest">Presenter Controls</h3>
+            <div class="space-y-2">
+                <div id="presenterStepLabel" class="text-white text-sm font-medium bg-white/5 rounded-lg px-3 py-2"></div>
+                <div class="flex gap-2">
+                    <button id="paceToggleBtn" class="flex-1 text-xs font-bold py-2 px-3 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition-colors">Pace: Audience</button>
+                    <button id="showQRBtn" class="flex-1 text-xs font-bold py-2 px-3 rounded-lg bg-gray-700 text-white hover:bg-gray-600 transition-colors">Show QR</button>
+                </div>
+                <button id="showFleetBtn" class="w-full text-xs font-bold py-2 px-3 rounded-lg bg-purple-700 text-white hover:bg-purple-600 transition-colors">Open Fleet View</button>
+                <button id="resetSessionBtn" class="w-full text-xs font-bold py-2 px-3 rounded-lg bg-red-800 text-red-200 hover:bg-red-700 transition-colors border border-red-500/30">Reset Session</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Overlay -->
+    <div id="qrOverlay" class="hidden fixed inset-0 z-[150] bg-black/90 backdrop-blur-sm flex items-center justify-center cursor-pointer">
+        <div class="text-center">
+            <div class="bg-white p-6 rounded-3xl shadow-2xl inline-block mb-6">
+                <img src="https://raw.githubusercontent.com/harmanjohll/btyXperience/6896dfb0489f15d284c674573fea7605c984fa45/gem/joinbtyqr.png" alt="QR Code" class="w-80 h-80">
+            </div>
+            <p class="text-white text-4xl font-bold">Scan to Join</p>
+            <p class="text-gray-400 text-xl mt-2">Tap anywhere to dismiss</p>
+        </div>
     </div>
 
     <!-- Toast Notification Element -->
@@ -213,7 +234,8 @@
 
         const firebaseConfig = { apiKey: "AIzaSyBjHO57QKoMW-u4oLGGdgDSqw5gttqX6Fg", authDomain: "btyx-61dc6.firebaseapp.com", projectId: "btyx-61dc6", storageBucket: "btyx-61dc6.appspot.com", messagingSenderId: "851137405745", appId: "1:851137405745:web:c95b86b6f0462a9bc20610" };
         let app, db, auth;
-        let heartbeatInterval = null; 
+        let heartbeatInterval = null;
+        const isPresenter = new URLSearchParams(window.location.search).get('presenter') === 'true';
 
         try { 
             app = initializeApp(firebaseConfig); 
@@ -362,12 +384,25 @@
                 }
             });
             
-            onSnapshot(collection(db, "aspirations"), snap => { 
-                liveData.aspirations = snap.docs.map(d => d.data().word); 
+            onSnapshot(collection(db, "aspirations"), snap => {
+                liveData.aspirations = snap.docs.map(d => d.data().word);
                  if (journeySteps[currentStep]?.type === 'finale') {
                     updateJourneyStep();
                 }
             });
+
+            // Pace sync: non-presenter instances follow presenter's step
+            if (!isPresenter) {
+                onSnapshot(doc(db, "config", "pace"), (snap) => {
+                    const data = snap.data();
+                    if (data && data.mode === 'presenter' && typeof data.step === 'number') {
+                        if (data.step !== currentStep && data.step >= 0 && data.step < journeySteps.length) {
+                            currentStep = data.step;
+                            updateJourneyStep();
+                        }
+                    }
+                });
+            }
         }
         
         function handleSnapshot(snapshot, dataType, property, groupBy = 'default') {
@@ -471,8 +506,8 @@
         }
         
         function renderCompassChart(data) {
-            const archetypes = ["The Innovator", "The Global Explorer", "The Industry Trailblazer", "The Community Steward", "The Creative Artist", "The STEM Futurist", "The Voice Amplifier", "The Eco-Strategist"];
-            const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ef4444', '#ec4899', '#8b5cf6', '#06b6d4', '#22c55e'];
+            const archetypes = ["The Innovator", "The Global Explorer", "The Eco-Strategist", "The Digital Pioneer", "The Commander", "The Guardian", "The Creator", "The Navigator"];
+            const colors = ['#8b5cf6', '#ec4899', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#a855f7', '#ef4444'];
             const total = (data && data.total) || 0;
             if (total === 0) return `<div class="h-full flex items-center justify-center"><p class="text-center text-gray-400 text-4xl animate-pulse">Waiting for results...</p></div>`;
             return `<div class="h-full flex flex-col justify-center w-full max-w-[80vw] mx-auto py-8"><div class="space-y-6 w-full">${archetypes.map((type, i) => {
@@ -778,9 +813,59 @@
         
         const presenterPanel = document.getElementById('presenterPanel');
         const startResetBtn = document.getElementById('startResetBtn');
-        if (new URLSearchParams(window.location.search).get('presenter') === 'true') { 
-            presenterPanel.classList.remove('hidden'); 
+        let paceMode = 'audience'; // 'audience' = self-paced, 'presenter' = presenter-led
+
+        if (isPresenter) {
+            presenterPanel.classList.remove('hidden');
             startResetBtn.classList.remove('hidden');
+
+            // Step label updater
+            const stepLabel = document.getElementById('presenterStepLabel');
+            function updateStepLabel() {
+                const s = journeySteps[currentStep];
+                stepLabel.textContent = `Step ${currentStep + 1}/${journeySteps.length}: ${s?.title || s?.id || '—'}`;
+            }
+            const origUpdate = updateJourneyStep;
+            const patchedUpdate = function() { origUpdate(); updateStepLabel(); };
+            // Monkey-patch next/prev to update label
+            nextBtn.addEventListener('click', () => setTimeout(updateStepLabel, 50));
+            prevBtn.addEventListener('click', () => setTimeout(updateStepLabel, 50));
+            setTimeout(updateStepLabel, 100);
+
+            // Pace toggle
+            const paceBtn = document.getElementById('paceToggleBtn');
+            paceBtn.addEventListener('click', async () => {
+                paceMode = paceMode === 'audience' ? 'presenter' : 'audience';
+                paceBtn.textContent = paceMode === 'audience' ? 'Pace: Audience' : 'Pace: Presenter';
+                paceBtn.className = paceBtn.className.replace(/bg-\S+/g, '') + (paceMode === 'presenter' ? ' bg-yellow-600' : ' bg-blue-600');
+                try {
+                    await setDoc(doc(db, "config", "pace"), { mode: paceMode, step: currentStep });
+                } catch(e) { console.error('Pace write error:', e); }
+                showToast(paceMode === 'presenter' ? 'Presenter controls the pace' : 'Audience self-paces');
+            });
+
+            // Write step to Firestore when navigating in presenter mode
+            const writeStep = async () => {
+                if (paceMode === 'presenter') {
+                    try { await setDoc(doc(db, "config", "pace"), { mode: 'presenter', step: currentStep }); } catch(e) {}
+                }
+            };
+            nextBtn.addEventListener('click', () => setTimeout(writeStep, 100));
+            prevBtn.addEventListener('click', () => setTimeout(writeStep, 100));
+
+            // Fleet view button
+            document.getElementById('showFleetBtn').addEventListener('click', () => {
+                window.open('sail/presenter.html', '_blank');
+            });
+
+            // QR overlay
+            const qrOverlay = document.getElementById('qrOverlay');
+            document.getElementById('showQRBtn').addEventListener('click', () => {
+                qrOverlay.classList.remove('hidden');
+            });
+            qrOverlay.addEventListener('click', () => {
+                qrOverlay.classList.add('hidden');
+            });
         }
         
         // TOAST FUNCTIONALITY
