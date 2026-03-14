@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Beatty Experience: Where Your Aspirations Take Flight</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="stylesheet" href="presenter/presenter.css">
+</head>
+<body>
+
+    <!-- ═══ HEADER ═══ -->
+    <header class="presenter-header">
+        <img src="assets/BTlogo.png" alt="Logo" class="h-10 w-10 mr-3 drop-shadow-md">
+        <h1 class="text-xl font-black tracking-tight" style="color: var(--bty-yellow);">The Beatty Experience</h1>
+        <div id="paceBadge" class="pace-badge audience ml-4">Audience Pace</div>
+        <div class="ml-auto flex items-center gap-4">
+            <p id="participantCount" class="text-xl font-black text-white bg-black/40 px-5 py-2 rounded-xl border-2 border-white/10 min-w-[180px] text-center">0 Participants</p>
+        </div>
+    </header>
+
+    <!-- ═══ PRESENTER CONTROLS (hidden unless ?presenter=true) ═══ -->
+    <div id="presenterPanel" class="controls-panel hidden">
+        <p id="stepLabel" class="text-xs text-gray-400 mb-3 font-mono">—</p>
+        <button id="paceToggleBtn" class="ctrl-btn bg-blue-600 text-white">Audience Self-Paces</button>
+        <button id="showQRBtn" class="ctrl-btn bg-gray-700 text-white">Show QR Code</button>
+        <button id="resetBtn" class="ctrl-btn bg-red-900 text-red-300">Reset Session</button>
+    </div>
+
+    <!-- ═══ MAIN CONTENT ═══ -->
+    <main id="journey-content" class="flex-1 overflow-hidden relative">
+        <div class="h-full flex items-center justify-center">
+            <p class="text-gray-400 text-3xl animate-pulse">Loading...</p>
+        </div>
+    </main>
+
+    <!-- ═══ FOOTER ═══ -->
+    <footer class="presenter-footer">
+        <button id="prevBtn" class="btn-secondary text-sm" style="display:none;">Prev</button>
+        <div class="progress-track">
+            <div id="progressFill" class="progress-fill" style="width:0%"></div>
+        </div>
+        <span id="footerStatus" class="text-sm text-gray-400 font-mono mx-3">—</span>
+        <button id="nextBtn" class="btn-primary text-sm">Next</button>
+    </footer>
+
+    <!-- ═══ NEXUS MODAL ═══ -->
+    <div id="nexusModal" class="modal-overlay hidden" style="z-index:50;">
+        <div class="modal-content">
+            <div id="modalContent"></div>
+            <button id="closeModalBtn" class="absolute top-4 right-4 text-3xl text-gray-400 hover:text-white">&times;</button>
+        </div>
+    </div>
+
+    <!-- ═══ QR OVERLAY ═══ -->
+    <div id="qrOverlay" class="qr-overlay hidden">
+        <img src="assets/joinbtyqr.png" alt="QR Code" class="w-72 h-72 rounded-2xl shadow-2xl mb-8">
+        <p class="text-3xl font-black" style="color: var(--bty-yellow);">Scan to Join</p>
+        <p class="text-gray-400 mt-2">Tap anywhere to close</p>
+    </div>
+
+    <!-- ═══ RESET MODAL ═══ -->
+    <div id="resetModal" class="modal-overlay hidden" style="z-index:60;">
+        <div class="modal-content text-center" style="max-width:400px;">
+            <h2 class="text-3xl font-black text-red-400 mb-4">Reset Session?</h2>
+            <p class="text-gray-300 mb-6">This will clear all data. Type RESET to confirm.</p>
+            <input id="resetInput" type="text" class="w-full p-3 bg-gray-800 text-white border border-red-500 rounded-xl mb-4 text-center font-bold outline-none" placeholder="Type RESET">
+            <div class="flex gap-3">
+                <button id="cancelReset" class="btn-secondary flex-1">Cancel</button>
+                <button id="confirmReset" class="btn-primary flex-1 bg-red-600 text-white">Confirm Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ TOAST ═══ -->
+    <div id="toast"></div>
+
+    <script type="module" src="presenter/presenter.js"></script>
+</body>
+</html>
