@@ -1,6 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════
    btyXperience — Presenter Styles
    Full-screen presentation on main display.
+   Faithful to btx26.html: DREAM cards, globe/map pins, modals.
    ═══════════════════════════════════════════════════════════════ */
 
 :root { --bty-blue: #000C53; --bty-yellow: #FFE200; --bty-red: #EC3237; }
@@ -81,55 +82,228 @@ body {
     transition: width 0.8s ease; min-width: 3rem;
 }
 
-/* ── POLL ANSWER REVEAL ── */
+/* ══════════════════════════════════════════════════════
+   POLL ANSWER REVEAL — uses --bty-red with pulse-red
+   (from btx26.html)
+   ══════════════════════════════════════════════════════ */
 .correct-answer-box {
-    border: 4px solid var(--bty-yellow) !important;
-    padding: 1rem; border-radius: 1rem;
-    background: rgba(255, 226, 0, 0.08);
-    box-shadow: 0 0 30px rgba(255, 226, 0, 0.15);
+    border: 4px solid var(--bty-red);
+    border-radius: 1rem;
+    padding: 1rem;
+    background-color: rgba(236, 50, 55, 0.15);
+    animation: pulse-red 2s infinite;
+}
+@keyframes pulse-red {
+    0% { box-shadow: 0 0 0 0 rgba(236, 50, 55, 0.4); }
+    70% { box-shadow: 0 0 0 15px rgba(236, 50, 55, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(236, 50, 55, 0); }
 }
 
-/* ── GLOBE / MAP ── */
-.globe-controls { position: absolute; bottom: 16px; left: 16px; z-index: 5; display: flex; gap: 8px; }
+/* ══════════════════════════════════════════════════════
+   DREAM FLIP CARDS (from btx26.html)
+   ══════════════════════════════════════════════════════ */
+.dream-card-container {
+    perspective: 1000px;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+}
+.dream-card {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+}
+.dream-card.is-flipped {
+    transform: rotateY(180deg);
+}
+.dream-card-front,
+.dream-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    border-radius: 1.5rem;
+    display: flex;
+    align-items: center;
+    border: 4px solid #4A5568;
+    box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+}
+.dream-card-front {
+    justify-content: center;
+    background-color: #1a202c;
+}
+.dream-card-back {
+    background-color: #2d3748;
+    transform: rotateY(180deg);
+    padding: 2rem;
+    text-align: center;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 3rem;
+}
+.dream-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 0.4s;
+}
+.dream-card-container:hover .dream-bg {
+    opacity: 0.3;
+}
+
+/* ══════════════════════════════════════════════════════
+   GLOBE / MAP PINS (from btx26.html)
+   ══════════════════════════════════════════════════════ */
+.globe-controls {
+    position: absolute; bottom: 16px; left: 16px; z-index: 5; display: flex; gap: 8px;
+}
 .globe-btn {
     background: rgba(0, 12, 83, 0.9); color: white; border: 1px solid rgba(255,255,255,0.2);
     padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.9rem;
 }
-.pin { position: absolute; display: flex; flex-direction: column; align-items: center; cursor: pointer; z-index: 3; transition: transform 0.2s; }
-.pin:hover { transform: scale(1.15); z-index: 10; }
-.pin-dot { width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 12px currentColor; }
-.pin-stem { width: 2px; height: 20px; background-color: currentColor; opacity: 0.6; }
-.pin-label {
-    position: absolute; bottom: 40px; white-space: nowrap; font-size: 0.8rem;
-    font-weight: 700; color: white; background: rgba(0,0,0,0.7);
-    padding: 4px 10px; border-radius: 6px;
+.globe-btn:hover { background: rgba(0, 12, 83, 1); }
+
+/* Base pin */
+.pin {
+    position: absolute;
+    transform: translate(-50%, -100%);
+    cursor: pointer;
+    transition: transform 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 50;
+    pointer-events: auto;
 }
-.globe-pin { position: absolute; top: 0; left: 0; pointer-events: auto; }
-.globe-pin .pin-dot, .globe-pin .pin-stem { color: inherit; }
-.sg-map-pin .pin-dot { border: 2px solid rgba(255,255,255,0.5); }
+.pin:hover {
+    transform: translate(-50%, -100%) scale(1.3);
+    z-index: 100 !important;
+}
 
-/* ── DREAM FLIP CARDS ── */
-.dream-card { cursor: pointer; }
-.dream-card .is-flipped > div:first-child { transform: rotateY(180deg); }
-.perspective-1000 { perspective: 1000px; }
-.transform-style-preserve-3d { transform-style: preserve-3d; }
-.backface-hidden { backface-visibility: hidden; }
-.rotate-y-180 { transform: rotateY(180deg); }
+/* Globe-specific pins — yellow stems/dots, dark blue labels with yellow border */
+.globe-pin {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: auto;
+}
+.globe-pin .pin-label {
+    background: rgba(0, 12, 83, 0.9);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 18px;
+    white-space: nowrap;
+    border: 2px solid var(--bty-yellow);
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+}
+.globe-pin .pin-stem {
+    width: 3px;
+    height: 40px;
+    background-color: var(--bty-yellow);
+}
+.globe-pin .pin-dot {
+    width: 16px;
+    height: 16px;
+    background-color: var(--bty-yellow);
+    border-radius: 50%;
+    margin-top: -8px;
+    box-shadow: 0 0 10px var(--bty-yellow);
+}
 
-/* ── WORD CLOUD ── */
-.word { transition: all 1.5s cubic-bezier(0.22, 1, 0.36, 1); }
+/* SG Map pins — coloured dots with white border, blue labels with white bg */
+.sg-map-pin .pin-dot {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+    font-size: 18px;
+    border: 4px solid white;
+    border-radius: 50%;
+}
+.sg-map-pin .pin-stem {
+    width: 6px;
+    height: 30px;
+    margin-top: -2px;
+}
+.sg-map-pin .pin-label {
+    font-size: 24px;
+    color: var(--bty-blue);
+    margin-bottom: 8px;
+    font-weight: 900;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 3px solid var(--bty-blue);
+    box-shadow: 0 6px 10px rgba(0,0,0,0.4);
+    white-space: nowrap;
+}
 
-/* ── MODAL ── */
+#globe-pins-container {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 20;
+    overflow: hidden;
+}
+
+/* ══════════════════════════════════════════════════════
+   MODALS (from btx26.html — nexus-modal-overlay)
+   ══════════════════════════════════════════════════════ */
+.nexus-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0,0,0,0.9);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    transition: opacity 0.3s;
+}
+.nexus-modal-overlay .modal-content {
+    background-color: #1a202c;
+    padding: 3rem;
+    border-radius: 1.5rem;
+    border: 2px solid #4A5568;
+    text-align: left;
+    max-width: 800px;
+    width: 90%;
+    transform: scale(0.95);
+    transition: transform 0.3s;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+}
+.nexus-modal-overlay:not(.hidden) .modal-content {
+    transform: scale(1);
+}
+
+/* Legacy modal overlay (reset modal) */
 .modal-overlay {
     position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.8);
     display: flex; align-items: center; justify-content: center;
     backdrop-filter: blur(4px);
 }
-.modal-content {
+.modal-overlay .modal-content {
     background: rgba(0, 12, 83, 0.95); border: 2px solid rgba(255, 226, 0, 0.3);
     border-radius: 1.5rem; padding: 2.5rem; max-width: 50vw; max-height: 80vh;
     overflow-y: auto; position: relative;
 }
+
+/* ── WORD CLOUD ── */
+.word { transition: all 1.5s cubic-bezier(0.22, 1, 0.36, 1); }
 
 /* ── TOAST ── */
 #toast {
