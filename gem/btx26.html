@@ -108,9 +108,82 @@
         #notificationToast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
         @keyframes fadein { from {bottom: 60px; opacity: 0;} to {bottom: 100px; opacity: 1;} }
         @keyframes fadeout { from {bottom: 100px; opacity: 1;} to {bottom: 60px; opacity: 0;} }
+
+        /* === ENHANCED TRANSITIONS === */
+        .step-enter { animation: stepSlideIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+        @keyframes stepSlideIn {
+            from { opacity: 0; transform: translateX(40px) scale(0.98); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+        .step-exit { animation: stepSlideOut 0.3s ease-in forwards; }
+        @keyframes stepSlideOut {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(-40px); }
+        }
+
+        /* === PARTICLE BACKGROUND === */
+        #particleCanvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+        /* === LIVE REACTIONS === */
+        #reactionOverlay { position: fixed; bottom: 120px; right: 40px; width: 80px; z-index: 90; pointer-events: none; overflow: visible; }
+        .floating-reaction { position: absolute; bottom: 0; animation: floatUp 3s ease-out forwards; font-size: 2.5rem; opacity: 0; }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+            50% { opacity: 0.8; transform: translateY(-120px) scale(1.3) rotate(-15deg); }
+            100% { opacity: 0; transform: translateY(-280px) scale(0.6) rotate(15deg); }
+        }
+
+        /* === CONFETTI === */
+        #confettiOverlay { position: fixed; inset: 0; pointer-events: none; z-index: 95; overflow: hidden; }
+        .confetti-piece { position: absolute; top: -20px; width: 12px; height: 12px; animation: confettiFall 3s ease-in forwards; }
+        @keyframes confettiFall {
+            0% { transform: translateY(0) rotateZ(0deg) rotateX(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotateZ(720deg) rotateX(360deg); opacity: 0; }
+        }
+
+        /* === POLL COUNTDOWN === */
+        .countdown-ring { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+        .countdown-ring svg { transform: rotate(-90deg); }
+        .countdown-ring circle { transition: stroke-dashoffset 1s linear; }
+        .countdown-number { position: absolute; font-weight: 900; font-size: 2rem; color: var(--bty-yellow); }
+
+        /* === ENGAGEMENT PULSE === */
+        .engagement-pulse { display: flex; align-items: center; gap: 6px; }
+        .pulse-bar { width: 4px; border-radius: 2px; background: var(--bty-yellow); transition: height 0.3s ease; }
+        .pulse-bar.active { animation: pulseHeight 0.8s ease-in-out infinite alternate; }
+        @keyframes pulseHeight { from { height: 8px; } to { height: 24px; } }
+
+        /* === ANIMATED COUNTER === */
+        .count-animate { transition: transform 0.3s ease; }
+        .count-bump { animation: countBump 0.4s ease-out; }
+        @keyframes countBump { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+
+        /* === BUTTON RIPPLE === */
+        .btn-primary, .btn-secondary { position: relative; overflow: hidden; }
+        .btn-ripple { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.3); transform: scale(0); animation: rippleEffect 0.6s ease-out; pointer-events: none; }
+        @keyframes rippleEffect { to { transform: scale(4); opacity: 0; } }
+
+        /* === FUN FACT STEP === */
+        .fun-fact-card { background: linear-gradient(135deg, rgba(255,226,0,0.1) 0%, rgba(0,12,83,0.8) 100%); border: 2px solid rgba(255,226,0,0.3); border-radius: 2rem; padding: 4rem; backdrop-filter: blur(12px); max-width: 80vw; }
+        .fun-fact-number { font-size: 12rem; font-weight: 900; line-height: 1; background: linear-gradient(135deg, var(--bty-yellow), #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .fun-fact-label { animation: fadeInUp 0.8s ease-out 0.3s both; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* === AUDIENCE PULSE CHECK === */
+        .pulse-option { cursor: pointer; transition: all 0.3s ease; border: 3px solid transparent; border-radius: 1.5rem; padding: 2rem; text-align: center; }
+        .pulse-option:hover { transform: translateY(-4px); border-color: var(--bty-yellow); box-shadow: 0 12px 24px rgba(0,0,0,0.4); }
     </style>
 </head>
 <body>
+
+    <!-- Particle Background Canvas -->
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- Live Reaction Overlay -->
+    <div id="reactionOverlay"></div>
+
+    <!-- Confetti Overlay -->
+    <div id="confettiOverlay"></div>
 
     <!-- Presenter Control Panel -->
     <div id="presenterPanel" class="hidden fixed top-4 right-4 z-[100] flex flex-col gap-2" style="width:280px;">
@@ -170,8 +243,15 @@
             <h1 class="text-4xl font-black bty-text-yellow tracking-tighter leading-none drop-shadow-md">BEATTY SECONDARY</h1>
             <p class="text-lg text-white font-bold tracking-[0.2em] opacity-80 uppercase mt-1">The Beatty Experience</p>
         </div>
-        <div class="ml-auto mr-4">
-            <p id="participant-count-header" class="text-3xl font-black text-white bg-black/40 px-6 py-3 rounded-xl border-2 border-white/10 shadow-inner min-w-[200px] text-center">👥 Waiting...</p>
+        <div class="ml-auto mr-4 flex items-center gap-4">
+            <div id="engagementPulse" class="engagement-pulse bg-black/40 px-4 py-3 rounded-xl border-2 border-white/10" title="Audience engagement">
+                <div class="pulse-bar" style="height:8px;"></div>
+                <div class="pulse-bar" style="height:8px; animation-delay:0.1s;"></div>
+                <div class="pulse-bar" style="height:8px; animation-delay:0.2s;"></div>
+                <div class="pulse-bar" style="height:8px; animation-delay:0.3s;"></div>
+                <div class="pulse-bar" style="height:8px; animation-delay:0.4s;"></div>
+            </div>
+            <p id="participant-count-header" class="text-3xl font-black text-white bg-black/40 px-6 py-3 rounded-xl border-2 border-white/10 shadow-inner min-w-[200px] text-center count-animate">👥 Waiting...</p>
         </div>
     </header>
 
@@ -301,7 +381,10 @@
               </div>`
             },
             { id: 'deck_b', type: 'slide', title: "", description: "", url: "https://docs.google.com/presentation/d/e/2PACX-1vSrojJmwv5d-ElzN38A8S1Q_YAYl1_VulE6jPSFy6n8dEjPUnzNltCRstS8VC3fUgSg7Xd0fYN4-NWZ/pubembed?start=false&loop=false&delayms=60000" },
-            { id: 'poll_cca', type: 'poll', title: "Live Poll: Pursuing Passions", description: "", pollData: { 
+            { id: 'funfact_cca', type: 'funfact', title: "Did You Know?", description: "", funfactData: {
+                number: "47", label: "CCAs to choose from at Beatty Secondary", subtitle: "From Robotics to Rock Climbing — there's a CCA for every passion."
+            }},
+            { id: 'poll_cca', type: 'poll', title: "Live Poll: Pursuing Passions", description: "", pollData: {
                 id: 'cca', 
                 question: "What % of students get their 1st or 2nd choice CCA?", 
                 options: ["50%", "70%", "90%", "100%"], 
@@ -323,6 +406,9 @@
                 correctAnswer: 3,
                 insight: "Trick question! At Beatty, we offer ALL these areas. Every passion has a pathway here!"
             }},
+            { id: 'funfact_nexus', type: 'funfact', title: "Did You Know?", description: "", funfactData: {
+                number: "6", label: "Countries our students travel to every year", subtitle: "From Estonia to New Zealand — Beattyians explore the world."
+            }},
             { id: 'nexus_global', type: 'globe', title: "International Exchanges", description: "Explore our global partnerships.", 
                 nexusData: { type: 'global', options: [ {id: 'GeoBali', text: 'Bali (Geog)'}, {id: 'NZ', text: 'New Zealand'}, {id: 'Korea', text: 'South Korea (AI)'}, {id: 'MiharaJapan', text: 'Japan (Soc. Sci)'}, {id: 'MutsuzawaJapan', text: 'Japan (STEM)'}, {id: 'Estonia', text: 'Estonia (Cyber)'} ] }
             },
@@ -341,6 +427,7 @@
             },
             { id: 'deck_d', type: 'slide', title: "", description: "", url: "https://docs.google.com/presentation/d/e/2PACX-1vRIJppB8CD0rLo6qLaE4eiXeJHcYviqju1Gf3QChKnv7XsJY2cfYQ0eU8M7pSf5Bos2DcyuIxl6ZCPX/pubembed?start=false&loop=false&delayms=60000" },
             { id: 'deck_e', type: 'slide', title: "", description: "", url: "https://docs.google.com/presentation/d/e/2PACX-1vRxw0Yj77fW9I87q0-XgXfqwGPwdi6RPDXBHb7CMGmEJTdBhELve0N5rAg5WbtS2vivKyV5WZO9gB_m/pubembed?start=false&loop=false&delayms=60000" },
+            { id: 'pulse_check', type: 'pulse_check', title: "Audience Pulse Check", description: "How are you feeling about Beatty so far?" },
             { id: 'finale', type: 'finale', title: "Our Aspirations Crest", description: "Building a symbol of our collective future." },
             { id: 'deck_f', type: 'slide', title: "", description: "", url: "https://docs.google.com/presentation/d/e/2PACX-1vQx7tJCZ8s5AD5S9F7S2kNmAgfEX7KnIP6fLMQfcFCfQr4-9JeUVxFcyYRhzNtZYbBaCvLM1Wz8p1sX/pubembed?start=false&loop=false&delayms=60000" },
             { id: 'card', type: 'memento', title: "Your Journey Begins", description: "Please check your phone for your personalized Beatty Compass Card." }
@@ -497,12 +584,80 @@
                 case 'globe': return renderNexusGlobe(liveData.nexus);
                 case 'industry_map': return renderIndustryNexusMap(step.localData, liveData.nexus);
                 case 'finale': return renderAspirationsCrest(liveData.aspirations);
+                case 'funfact': return renderFunFact(step.funfactData);
+                case 'pulse_check': return renderPulseCheck();
                 case 'memento': return `<div class="text-center h-full flex flex-col justify-center items-center"><p class="text-9xl mb-8">📱</p><p class="text-6xl font-bold bty-text-yellow animate-pulse">Check your phone!</p></div>`;
                 case 'static': return step.content;
                 case 'video': return `<div class="w-full h-full flex items-center justify-center bg-black"><div class="iframe-wrapper w-full h-full"><iframe src="${step.url}" title="Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>`;
                 case 'slide': return `<div class="w-full h-full bg-black"><iframe src="${step.url}" frameborder="0" width="100%" height="100%" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe></div>`;
                 default: return '';
             }
+        }
+
+        // === FUN FACT RENDERER ===
+        function renderFunFact(data) {
+            return `<div class="h-full flex items-center justify-center">
+                <div class="fun-fact-card text-center">
+                    <div class="fun-fact-number mb-4">${data.number}</div>
+                    <h3 class="text-5xl font-black text-white mb-6 fun-fact-label">${data.label}</h3>
+                    <p class="text-2xl text-gray-300 fun-fact-label" style="animation-delay:0.5s">${data.subtitle}</p>
+                </div>
+            </div>`;
+        }
+
+        // === PULSE CHECK RENDERER ===
+        function renderPulseCheck() {
+            const options = [
+                { emoji: '🔥', label: 'On Fire!', color: '#ef4444' },
+                { emoji: '🚀', label: 'Excited!', color: '#8b5cf6' },
+                { emoji: '😊', label: 'Enjoying it', color: '#10b981' },
+                { emoji: '🤔', label: 'Tell me more', color: '#f59e0b' }
+            ];
+            setTimeout(() => {
+                document.querySelectorAll('.pulse-option').forEach(opt => {
+                    opt.addEventListener('click', async function() {
+                        const choice = this.dataset.choice;
+                        document.querySelectorAll('.pulse-option').forEach(o => o.style.opacity = '0.4');
+                        this.style.opacity = '1';
+                        this.style.borderColor = 'var(--bty-yellow)';
+                        this.style.transform = 'scale(1.05)';
+                        try {
+                            await setDoc(doc(db, "pulseCheck", auth.currentUser.uid), { choice, timestamp: Date.now() });
+                        } catch(e) { console.error('Pulse write error:', e); }
+                        showToast('Thanks for sharing!');
+                        spawnReaction(this.querySelector('.pulse-emoji').textContent);
+                    });
+                });
+                // Listen for live results
+                onSnapshot(collection(db, "pulseCheck"), snap => {
+                    const counts = {};
+                    snap.forEach(d => { const c = d.data().choice; counts[c] = (counts[c] || 0) + 1; });
+                    const total = Object.values(counts).reduce((a,b) => a+b, 0);
+                    options.forEach(opt => {
+                        const bar = document.getElementById(`pulse-bar-${opt.label.replace(/[^a-zA-Z]/g,'')}`);
+                        if (bar) {
+                            const pct = total > 0 ? ((counts[opt.label] || 0) / total) * 100 : 0;
+                            bar.style.width = `${pct}%`;
+                            bar.textContent = total > 0 ? `${pct.toFixed(0)}%` : '';
+                        }
+                    });
+                    const totalEl = document.getElementById('pulse-total');
+                    if (totalEl) totalEl.textContent = `${total} responses`;
+                });
+            }, 100);
+            return `<div class="h-full flex flex-col justify-center items-center max-w-[90vw] mx-auto">
+                <div class="grid grid-cols-4 gap-8 w-full mb-12">
+                    ${options.map(o => `
+                        <div class="pulse-option bg-white/5 backdrop-blur" data-choice="${o.label}">
+                            <span class="pulse-emoji text-8xl block mb-4">${o.emoji}</span>
+                            <span class="text-3xl font-bold text-white">${o.label}</span>
+                            <div class="w-full bg-gray-700/50 rounded-full h-8 mt-6 overflow-hidden">
+                                <div id="pulse-bar-${o.label.replace(/[^a-zA-Z]/g,'')}" class="h-full rounded-full text-center text-sm font-bold leading-8 text-blue-900 transition-all duration-700" style="width:0%; background-color:${o.color};"></div>
+                            </div>
+                        </div>`).join('')}
+                </div>
+                <p id="pulse-total" class="text-2xl text-gray-400 font-mono">0 responses</p>
+            </div>`;
         }
         
         function renderCompassChart(data) {
@@ -756,7 +911,7 @@
             let descHTML = step.description ? `<p class="text-3xl text-gray-200 max-w-7xl mx-auto mb-10 leading-relaxed">${step.description}</p>` : '';
 
             // Full screen override for immersive types
-            if(step.type === 'slide' || step.type === 'video' || step.type === 'globe' || step.type === 'industry_map') {
+            if(step.type === 'slide' || step.type === 'video' || step.type === 'globe' || step.type === 'industry_map' || step.type === 'funfact') {
                 wrapperClass = "w-full h-full p-0 m-0 fade-in";
                 titleHTML = ''; descHTML = ''; 
             }
@@ -886,7 +1041,7 @@
 
         document.getElementById('confirmResetBtn').addEventListener('click', async () => {
             if (document.getElementById('confirmResetInput').value !== 'RESET') { showToast('Input does not match. Reset cancelled.'); return; }
-            const collections = ['compassQuiz', 'polls', 'nexusVotes', 'aspirations', 'session'];
+            const collections = ['compassQuiz', 'polls', 'nexusVotes', 'aspirations', 'session', 'pulseCheck', 'reactions'];
             try {
                 for (const c of collections) { 
                     const snapshot = await getDocs(collection(db, c)); 
@@ -904,6 +1059,190 @@
                 showToast("Error resetting session. Check console."); 
             }
         });
+        // === PARTICLE BACKGROUND ===
+        (function initParticles() {
+            const canvas = document.getElementById('particleCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            const PARTICLE_COUNT = 40;
+
+            function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+            resize();
+            window.addEventListener('resize', resize);
+
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.3,
+                    vy: (Math.random() - 0.5) * 0.3,
+                    r: Math.random() * 2 + 1,
+                    alpha: Math.random() * 0.3 + 0.05
+                });
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.x += p.vx; p.y += p.vy;
+                    if (p.x < 0) p.x = canvas.width;
+                    if (p.x > canvas.width) p.x = 0;
+                    if (p.y < 0) p.y = canvas.height;
+                    if (p.y > canvas.height) p.y = 0;
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 226, 0, ${p.alpha})`;
+                    ctx.fill();
+                });
+                // Draw faint connections
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        if (dist < 150) {
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = `rgba(255, 226, 0, ${0.05 * (1 - dist/150)})`;
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(draw);
+            }
+            draw();
+        })();
+
+        // === LIVE REACTION SYSTEM ===
+        let reactionTimestamps = [];
+        function spawnReaction(emoji) {
+            const overlay = document.getElementById('reactionOverlay');
+            if (!overlay) return;
+            const el = document.createElement('span');
+            el.className = 'floating-reaction';
+            el.textContent = emoji;
+            el.style.left = `${Math.random() * 60}px`;
+            overlay.appendChild(el);
+            setTimeout(() => el.remove(), 3200);
+            // Track for engagement pulse
+            reactionTimestamps.push(Date.now());
+        }
+
+        // Listen for reactions from Firebase
+        onSnapshot(collection(db, "reactions"), snap => {
+            snap.docChanges().forEach(change => {
+                if (change.type === 'added') {
+                    const data = change.doc.data();
+                    if (data.emoji && Date.now() - (data.timestamp || 0) < 10000) {
+                        spawnReaction(data.emoji);
+                    }
+                }
+            });
+        });
+
+        // === ENGAGEMENT PULSE METER ===
+        setInterval(() => {
+            const now = Date.now();
+            reactionTimestamps = reactionTimestamps.filter(t => now - t < 10000);
+            const level = Math.min(reactionTimestamps.length, 5);
+            const bars = document.querySelectorAll('#engagementPulse .pulse-bar');
+            bars.forEach((bar, i) => {
+                if (i < level) {
+                    bar.classList.add('active');
+                    bar.style.height = `${12 + (level - i) * 4}px`;
+                } else {
+                    bar.classList.remove('active');
+                    bar.style.height = '8px';
+                }
+            });
+        }, 1000);
+
+        // === CONFETTI BURST ===
+        function launchConfetti() {
+            const overlay = document.getElementById('confettiOverlay');
+            if (!overlay) return;
+            const colors = ['#FFE200', '#EC3237', '#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899'];
+            for (let i = 0; i < 60; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'confetti-piece';
+                piece.style.left = `${Math.random() * 100}%`;
+                piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.animationDuration = `${2 + Math.random() * 2}s`;
+                piece.style.animationDelay = `${Math.random() * 0.5}s`;
+                piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                piece.style.width = `${8 + Math.random() * 8}px`;
+                piece.style.height = `${8 + Math.random() * 8}px`;
+                overlay.appendChild(piece);
+                setTimeout(() => piece.remove(), 4500);
+            }
+        }
+
+        // === ANIMATED COUNTER ===
+        let lastParticipantCount = 0;
+        function animateParticipantCount(newCount) {
+            if (newCount !== lastParticipantCount) {
+                lastParticipantCount = newCount;
+                participantCountHeader.classList.add('count-bump');
+                setTimeout(() => participantCountHeader.classList.remove('count-bump'), 400);
+            }
+        }
+
+        // === STEP TRANSITIONS (enhance updateJourneyStep) ===
+        const _originalUpdateJourneyStep = updateJourneyStep;
+        updateJourneyStep = function() {
+            const content = document.getElementById('journey-content');
+            if (content && content.children.length > 0) {
+                content.classList.add('step-exit');
+                setTimeout(() => {
+                    content.classList.remove('step-exit');
+                    _originalUpdateJourneyStep();
+                    content.classList.add('step-enter');
+                    setTimeout(() => content.classList.remove('step-enter'), 600);
+                }, 250);
+            } else {
+                _originalUpdateJourneyStep();
+                if (content) {
+                    content.classList.add('step-enter');
+                    setTimeout(() => content.classList.remove('step-enter'), 600);
+                }
+            }
+        };
+
+        // === BUTTON RIPPLE EFFECT ===
+        document.querySelectorAll('.btn-primary, .btn-secondary').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const ripple = document.createElement('span');
+                ripple.className = 'btn-ripple';
+                const rect = this.getBoundingClientRect();
+                ripple.style.left = `${e.clientX - rect.left}px`;
+                ripple.style.top = `${e.clientY - rect.top}px`;
+                ripple.style.width = ripple.style.height = `${Math.max(rect.width, rect.height)}px`;
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+
+        // === CONFETTI ON POLL REVEAL ===
+        const _origNextClick = nextBtn.onclick;
+        nextBtn.addEventListener('click', () => {
+            const step = journeySteps[currentStep];
+            if (step && step.type === 'poll' && step.revealed) {
+                // Confetti fires when moving past a revealed poll
+                launchConfetti();
+            }
+        });
+
+        // === ENHANCE PARTICIPANT COUNT WITH ANIMATION ===
+        const _origOnSnapshot = participantCountHeader.textContent;
+        const participantObserver = new MutationObserver(() => {
+            const match = participantCountHeader.textContent.match(/(\d+)/);
+            if (match) animateParticipantCount(parseInt(match[1]));
+        });
+        participantObserver.observe(participantCountHeader, { childList: true, characterData: true, subtree: true });
+
     </script>
 </body>
 </html>
