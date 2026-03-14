@@ -1,0 +1,164 @@
+/* ═══════════════════════════════════════════════════════════════
+   btyXperience — Presenter Styles
+   Full-screen presentation on main display.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root { --bty-blue: #000C53; --bty-yellow: #FFE200; --bty-red: #EC3237; }
+html, body {
+    height: 100%; width: 100%; margin: 0; padding: 0; overflow: hidden;
+}
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bty-blue);
+    color: #f0f0f0;
+    background-image:
+        radial-gradient(circle at top left, rgba(255,255,255,0.05) 0%, transparent 30%),
+        radial-gradient(circle at bottom right, rgba(0, 12, 83, 0.3) 0%, transparent 40%);
+    display: flex; flex-direction: column;
+}
+
+.bty-text-yellow { color: var(--bty-yellow); }
+.bty-bg-yellow { background-color: var(--bty-yellow); }
+
+/* ── BUTTONS ── */
+.btn-primary {
+    background-color: var(--bty-yellow); color: var(--bty-blue);
+    font-weight: 900; padding: 0.75rem 1.5rem; border-radius: 0.75rem; border: none;
+    cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;
+    transition: all 0.2s; font-size: 1rem;
+}
+.btn-primary:hover { background-color: #fff; }
+.btn-secondary {
+    background-color: rgba(255,255,255,0.1); color: white;
+    font-weight: 700; padding: 0.75rem 1.5rem; border-radius: 0.75rem; border: 1px solid rgba(255,255,255,0.2);
+    cursor: pointer; transition: all 0.2s;
+}
+.btn-secondary:hover { background-color: rgba(255,255,255,0.2); }
+
+/* ── HEADER ── */
+.presenter-header {
+    display: flex; align-items: center; padding: 0.5rem 1rem;
+    background: rgba(0, 12, 83, 0.95); border-bottom: 2px solid rgba(255, 226, 0, 0.15);
+    z-index: 20; position: relative;
+}
+
+/* ── CONTENT ── */
+#journey-content {
+    flex: 1; overflow: hidden; position: relative;
+}
+
+/* ── FOOTER ── */
+.presenter-footer {
+    display: flex; align-items: center; padding: 0.5rem 1rem;
+    background: rgba(0, 12, 83, 0.95); border-top: 2px solid rgba(255, 226, 0, 0.15);
+    z-index: 20;
+}
+
+/* ── PROGRESS BAR ── */
+.progress-track {
+    flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin: 0 1rem; overflow: hidden;
+}
+.progress-fill {
+    height: 100%; background: var(--bty-yellow); border-radius: 3px;
+    transition: width 0.5s ease; box-shadow: 0 0 8px rgba(255, 226, 0, 0.4);
+}
+
+/* ── PRESENTER CONTROLS PANEL ── */
+.controls-panel {
+    position: fixed; top: 60px; right: 16px; z-index: 30;
+    background: rgba(0, 12, 83, 0.95); border: 1px solid rgba(255, 226, 0, 0.3);
+    border-radius: 1rem; padding: 1rem; width: 280px;
+    backdrop-filter: blur(12px); box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+.controls-panel .ctrl-btn {
+    width: 100%; padding: 0.6rem; border-radius: 0.5rem; font-size: 0.8rem;
+    font-weight: 700; border: none; cursor: pointer; transition: all 0.2s;
+    margin-bottom: 0.4rem; text-align: left;
+}
+
+/* ── CHART BARS ── */
+.chart-bar {
+    transition: width 0.8s ease; min-width: 3rem;
+}
+
+/* ── POLL ANSWER REVEAL ── */
+.correct-answer-box {
+    border: 4px solid var(--bty-yellow) !important;
+    padding: 1rem; border-radius: 1rem;
+    background: rgba(255, 226, 0, 0.08);
+    box-shadow: 0 0 30px rgba(255, 226, 0, 0.15);
+}
+
+/* ── GLOBE / MAP ── */
+.globe-controls { position: absolute; bottom: 16px; left: 16px; z-index: 5; display: flex; gap: 8px; }
+.globe-btn {
+    background: rgba(0, 12, 83, 0.9); color: white; border: 1px solid rgba(255,255,255,0.2);
+    padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.9rem;
+}
+.pin { position: absolute; display: flex; flex-direction: column; align-items: center; cursor: pointer; z-index: 3; transition: transform 0.2s; }
+.pin:hover { transform: scale(1.15); z-index: 10; }
+.pin-dot { width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 12px currentColor; }
+.pin-stem { width: 2px; height: 20px; background-color: currentColor; opacity: 0.6; }
+.pin-label {
+    position: absolute; bottom: 40px; white-space: nowrap; font-size: 0.8rem;
+    font-weight: 700; color: white; background: rgba(0,0,0,0.7);
+    padding: 4px 10px; border-radius: 6px;
+}
+.globe-pin { position: absolute; top: 0; left: 0; pointer-events: auto; }
+.globe-pin .pin-dot, .globe-pin .pin-stem { color: inherit; }
+.sg-map-pin .pin-dot { border: 2px solid rgba(255,255,255,0.5); }
+
+/* ── DREAM FLIP CARDS ── */
+.dream-card { cursor: pointer; }
+.dream-card .is-flipped > div:first-child { transform: rotateY(180deg); }
+.perspective-1000 { perspective: 1000px; }
+.transform-style-preserve-3d { transform-style: preserve-3d; }
+.backface-hidden { backface-visibility: hidden; }
+.rotate-y-180 { transform: rotateY(180deg); }
+
+/* ── WORD CLOUD ── */
+.word { transition: all 1.5s cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* ── MODAL ── */
+.modal-overlay {
+    position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.8);
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+}
+.modal-content {
+    background: rgba(0, 12, 83, 0.95); border: 2px solid rgba(255, 226, 0, 0.3);
+    border-radius: 1.5rem; padding: 2.5rem; max-width: 50vw; max-height: 80vh;
+    overflow-y: auto; position: relative;
+}
+
+/* ── TOAST ── */
+#toast {
+    visibility: hidden; min-width: 250px; background-color: #333; color: #fff;
+    text-align: center; border-radius: 8px; padding: 16px;
+    position: fixed; z-index: 200; left: 50%; bottom: 80px;
+    transform: translateX(-50%); font-size: 1rem;
+    border: 1px solid var(--bty-yellow);
+}
+#toast.show { visibility: visible; animation: toastIn 0.5s, toastOut 0.5s 2.5s; }
+@keyframes toastIn { from { bottom: 40px; opacity: 0; } to { bottom: 80px; opacity: 1; } }
+@keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+
+/* ── FADE TRANSITION ── */
+.fade-in { animation: fadeIn 0.4s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── QR OVERLAY ── */
+.qr-overlay {
+    position: fixed; inset: 0; z-index: 60; background: rgba(0, 12, 83, 0.97);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer;
+}
+
+/* ── PACE INDICATOR ── */
+.pace-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 12px; border-radius: 99px; font-size: 0.75rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.05em;
+}
+.pace-badge.audience { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
+.pace-badge.presenter { background: rgba(255, 226, 0, 0.2); color: var(--bty-yellow); }
