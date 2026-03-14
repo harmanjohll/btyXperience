@@ -4,7 +4,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { JOURNEY_STEPS, ARCHETYPES, ARCHETYPE_NAMES, ARCHETYPE_COLORS, SCHOOL, COLORS,
-         EXCHANGE_DATA, INDUSTRY_DATA, GLOBE_DESTINATIONS, LOGO_URL } from '../shared/data.js';
+         EXCHANGE_DATA, INDUSTRY_DATA, GLOBE_DESTINATIONS, LOGO_URL, DREAM_VALUES } from '../shared/data.js';
 import { initFirebase, writeSessionState, writePaceConfig, resetSession,
          listenCollection, listenDoc, getDb,
          doc, setDoc, onSnapshot, collection } from '../shared/firebase.js';
@@ -229,10 +229,12 @@ function updateJourneyStep() {
         journeyContent.innerHTML = `<div class="${wrapperClass}">${titleHTML}${descHTML}<div class="flex-grow w-full h-full">${contentHTML}</div></div>`;
     }
 
-    // DREAM flip cards
+    // DREAM flip cards (btx26 structure: container > card toggles is-flipped)
     if (step.id === 'values') {
-        journeyContent.querySelectorAll('.dream-card').forEach(card => {
-            card.addEventListener('click', () => card.classList.toggle('is-flipped'));
+        journeyContent.querySelectorAll('.dream-card-container').forEach(container => {
+            container.addEventListener('click', () => {
+                container.querySelector('.dream-card').classList.toggle('is-flipped');
+            });
         });
     }
 
@@ -264,11 +266,32 @@ function renderContent(step) {
         case 'industry_map': return renderIndustryMap(step.localData, liveData.nexus);
         case 'finale':  return renderWordCloud(liveData.aspirations);
         case 'memento': return '<div class="text-center h-full flex flex-col justify-center items-center"><p class="text-9xl mb-8">📱</p><p class="text-6xl font-bold bty-text-yellow animate-pulse">Check your phone!</p></div>';
-        case 'static':  return step.content;
+        case 'static':  return step.content === 'dream_values' ? renderDreamValues() : step.content;
         case 'video':   return `<div class="w-full h-full flex items-center justify-center bg-black"><iframe class="w-full h-full" src="${step.url}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`;
         case 'slide':   return `<div class="w-full h-full bg-black"><iframe src="${step.url}" frameborder="0" width="100%" height="100%" allowfullscreen></iframe></div>`;
         default: return '';
     }
+}
+
+function renderDreamValues() {
+    return `<div class="grid grid-cols-5 gap-0 w-full max-w-[95vw] mx-auto h-[70vh]">
+        ${DREAM_VALUES.map(v => `
+        <div class="dream-card-container">
+            <div class="dream-card">
+                <div class="dream-card-front">
+                    <div class="dream-bg" style="background-image: url('${v.img}')"></div>
+                    <div class="relative z-10 text-center p-2">
+                        <h3 class="text-8xl font-black bty-text-yellow drop-shadow-lg">${v.name.charAt(0)}</h3>
+                        <p class="mt-2 text-3xl font-bold text-white drop-shadow-md">${v.name}</p>
+                    </div>
+                </div>
+                <div class="dream-card-back">
+                    <h4 class="text-4xl font-bold bty-text-yellow mb-8">${v.name}</h4>
+                    <ul class="text-2xl space-y-6 text-left list-disc pl-8">${v.points.map(p => `<li>${p}</li>`).join('')}</ul>
+                </div>
+            </div>
+        </div>`).join('')}
+    </div>`;
 }
 
 function renderCompassChart(data) {
@@ -443,7 +466,7 @@ function initGlobe(data = {}) {
         const pinEl = document.createElement('div');
         pinEl.className = 'pin globe-pin';
         if (dest.noClick) pinEl.style.pointerEvents = 'none';
-        pinEl.innerHTML = `<div class="pin-label">${dest.name}</div><div class="pin-stem" style="color:${dest.color}"></div><div class="pin-dot" style="color:${dest.color}"></div>`;
+        pinEl.innerHTML = `<div class="pin-label">${dest.name}</div><div class="pin-stem"></div><div class="pin-dot"></div>`;
         if (!dest.noClick) pinEl.onclick = () => showModal(id);
         pinsContainer.appendChild(pinEl);
         globePinsData.push({ ...dest, id, element: pinEl, vector: latLonToVec3(dest.lat, dest.lon, 1.5) });
@@ -507,7 +530,7 @@ function renderIndustryMap(localData, liveNexus = {}) {
         const offsetStyle = ind.offset ? ` style="${ind.offset}"` : '';
         return `<div class="pin sg-map-pin" style="left:${ind.position.x}%;top:${ind.position.y}%;" onclick="window._showModal('${ind.id}')">
             <div class="pin-label"${offsetStyle}>${ind.name}</div>
-            <div class="pin-dot" style="background-color:${ind.color};"></div>
+            <div class="pin-dot" style="background-color:${ind.color}; border: 4px solid white;"></div>
             <div class="pin-stem" style="background-color:${ind.color};"></div>
         </div>`;
     }).join('');
@@ -539,12 +562,12 @@ function showModal(id) {
         <div class="mb-8">${badges}</div>
         <p class="text-white text-2xl leading-relaxed">${data.description || ''}</p>
         ${highlights}`;
-    modal.classList.remove('hidden');
+    modal.classList.remove('hidden', 'opacity-0');
 }
 window._showModal = showModal;
 
 document.getElementById('closeModalBtn').addEventListener('click', () => {
-    document.getElementById('nexusModal').classList.add('hidden');
+    document.getElementById('nexusModal').classList.add('hidden', 'opacity-0');
 });
 
 // ── END SCREEN ──

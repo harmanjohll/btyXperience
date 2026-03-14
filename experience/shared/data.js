@@ -24,6 +24,15 @@ export const COLORS = {
 
 export const LOGO_URL = 'assets/BTlogo.png';
 
+// ── DREAM VALUES (for presenter flip cards) ──
+export const DREAM_VALUES = [
+    { name: 'Discipline', img: 'assets/values/Discipline.png', points: ['Setting goals and working steadily towards them.', 'Being responsible in words and actions.', 'Staying focused even under pressure.'] },
+    { name: 'Resilience', img: 'assets/values/Resilience.png', points: ['Bouncing back from setbacks.', 'Viewing challenges as growth opportunities.', 'Persevering when things get tough.'] },
+    { name: 'Empathy', img: 'assets/values/Empathy.png', points: ['Understanding others\' perspectives.', 'Showing kindness and compassion.', 'Supporting classmates through difficulties.'] },
+    { name: 'Adaptability', img: 'assets/values/Adaptability.png', points: ['Embracing change with confidence.', 'Learning new skills quickly.', 'Adjusting strategies when needed.'] },
+    { name: 'Mindfulness', img: 'assets/values/Mindfulness.png', points: ['Being present in the moment.', 'Making thoughtful, intentional choices.', 'Reflecting on experiences to grow.'] },
+];
+
 // ── ARCHETYPES (canonical set from joinbtx.html) ──
 export const ARCHETYPES = {
     'The Innovator': {
@@ -240,19 +249,33 @@ export const FOLD_STAGE_MAP = [
 ];
 
 // ── ARCHETYPE SCORING ──
-// Compute archetype from all answers
-export function computeArchetype(answers) {
+// Two-pick format: each question stores { pick1: idx, pick2: idx }
+// pick1 carries weight multiplier 2, pick2 carries weight multiplier 1
+export function computeArchetype(picks) {
     const scores = {};
     for (const name of ARCHETYPE_NAMES) scores[name] = 0;
 
-    answers.forEach((answer, qIdx) => {
+    picks.forEach((pick, qIdx) => {
         const qDef = QUESTION_SEQUENCE[qIdx];
         const sailSection = SAIL_DATA[qDef.sailKey];
         const options = qDef.type === 'sub' ? sailSection.subOptions : sailSection.options;
-        const chosen = options.find(o => o.id === answer);
-        if (chosen && chosen.weight) {
-            for (const [archetype, pts] of Object.entries(chosen.weight)) {
-                scores[archetype] = (scores[archetype] || 0) + pts;
+
+        // Primary pick (weight x2)
+        if (pick.pick1 !== null && pick.pick1 !== undefined) {
+            const opt1 = options[pick.pick1];
+            if (opt1 && opt1.weight) {
+                for (const [archetype, pts] of Object.entries(opt1.weight)) {
+                    scores[archetype] = (scores[archetype] || 0) + pts * 2;
+                }
+            }
+        }
+        // Secondary pick (weight x1)
+        if (pick.pick2 !== null && pick.pick2 !== undefined) {
+            const opt2 = options[pick.pick2];
+            if (opt2 && opt2.weight) {
+                for (const [archetype, pts] of Object.entries(opt2.weight)) {
+                    scores[archetype] = (scores[archetype] || 0) + pts;
+                }
             }
         }
     });
@@ -264,6 +287,8 @@ export function computeArchetype(answers) {
     }
     return { archetype: best, scores };
 }
+
+export const TOTAL_QUESTIONS = QUESTION_SEQUENCE.length;
 
 // ── EXCHANGE & INDUSTRY DATA (from btx26.html modalData) ──
 export const EXCHANGE_DATA = {
@@ -331,13 +356,7 @@ export const JOURNEY_STEPS = [
         title: '',
         description: '',
         audienceView: 'watch',
-        content: `<div class="grid grid-cols-5 gap-0 w-full max-w-[95vw] mx-auto h-[70vh]">
-            <div class="dream-card cursor-pointer group perspective-1000 h-full"><div class="relative w-full h-full transition-transform duration-700 transform-style-preserve-3d group-[.is-flipped]:rotate-y-180"><div class="absolute inset-0 backface-hidden rounded-2xl overflow-hidden shadow-2xl border-2 border-white/10"><img src="assets/values/Discipline.png" class="w-full h-full object-cover"><div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-4"><h3 class="text-2xl font-black text-white">Discipline</h3></div></div><div class="absolute inset-0 backface-hidden rotate-y-180 rounded-2xl bg-blue-900 border-2 border-yellow-400 flex items-center justify-center p-6"><p class="text-xl text-center text-white">The steady course — focused and resolute.</p></div></div></div>
-            <div class="dream-card cursor-pointer group perspective-1000 h-full"><div class="relative w-full h-full transition-transform duration-700 transform-style-preserve-3d group-[.is-flipped]:rotate-y-180"><div class="absolute inset-0 backface-hidden rounded-2xl overflow-hidden shadow-2xl border-2 border-white/10"><img src="assets/values/Resilience.png" class="w-full h-full object-cover"><div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-4"><h3 class="text-2xl font-black text-white">Resilience</h3></div></div><div class="absolute inset-0 backface-hidden rotate-y-180 rounded-2xl bg-blue-900 border-2 border-yellow-400 flex items-center justify-center p-6"><p class="text-xl text-center text-white">The strength to weather every storm.</p></div></div></div>
-            <div class="dream-card cursor-pointer group perspective-1000 h-full"><div class="relative w-full h-full transition-transform duration-700 transform-style-preserve-3d group-[.is-flipped]:rotate-y-180"><div class="absolute inset-0 backface-hidden rounded-2xl overflow-hidden shadow-2xl border-2 border-white/10"><img src="assets/values/Empathy.png" class="w-full h-full object-cover"><div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-4"><h3 class="text-2xl font-black text-white">Empathy</h3></div></div><div class="absolute inset-0 backface-hidden rotate-y-180 rounded-2xl bg-blue-900 border-2 border-yellow-400 flex items-center justify-center p-6"><p class="text-xl text-center text-white">Never sailing alone — carrying others with you.</p></div></div></div>
-            <div class="dream-card cursor-pointer group perspective-1000 h-full"><div class="relative w-full h-full transition-transform duration-700 transform-style-preserve-3d group-[.is-flipped]:rotate-y-180"><div class="absolute inset-0 backface-hidden rounded-2xl overflow-hidden shadow-2xl border-2 border-white/10"><img src="assets/values/Adaptability.png" class="w-full h-full object-cover"><div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-4"><h3 class="text-2xl font-black text-white">Adaptability</h3></div></div><div class="absolute inset-0 backface-hidden rotate-y-180 rounded-2xl bg-blue-900 border-2 border-yellow-400 flex items-center justify-center p-6"><p class="text-xl text-center text-white">When the wind changes, you change with it.</p></div></div></div>
-            <div class="dream-card cursor-pointer group perspective-1000 h-full"><div class="relative w-full h-full transition-transform duration-700 transform-style-preserve-3d group-[.is-flipped]:rotate-y-180"><div class="absolute inset-0 backface-hidden rounded-2xl overflow-hidden shadow-2xl border-2 border-white/10"><img src="assets/values/Mindfulness.png" class="w-full h-full object-cover"><div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-4"><h3 class="text-2xl font-black text-white">Mindfulness</h3></div></div><div class="absolute inset-0 backface-hidden rotate-y-180 rounded-2xl bg-blue-900 border-2 border-yellow-400 flex items-center justify-center p-6"><p class="text-xl text-center text-white">Stillness, listening, and intentional action.</p></div></div></div>
-        </div>`,
+        content: 'dream_values',
     },
     {
         id: 'deck_b',
