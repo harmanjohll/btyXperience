@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Join the Hive · Beatty Secondary</title>
+<meta name="theme-color" content="#000C53">
+<!-- html2canvas for card download, with graceful fallback -->
+<script>window.__H2C_OK=false;</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        onload="window.__H2C_OK=true;" onerror="window.__H2C_OK=false;" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<style>
+/* ============================================================
+   JOIN THE HIVE — Beatty Secondary Open House (Audience / Phone)
+   Shares design language with btx27.html. Self-contained, no CDN fonts.
+   ============================================================ */
+:root{
+  --navy:#000C53; --navy-900:#00061f; --navy-850:#040a33; --navy-800:#071246; --navy-700:#0c1c6e; --navy-600:#12299c;
+  --gold:#FFE200; --gold-soft:#FFEC66; --gold-deep:#E4C400; --red:#EC3237;
+  --ink:#EAECF7; --ink-dim:#A7ADD6;
+  --serif:"Georgia","Iowan Old Style","Times New Roman",serif;
+  --sans:"Calibri","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0; padding:0; min-height:100%}
+body{font-family:var(--sans); color:var(--ink); background:
+  radial-gradient(700px 500px at 100% -10%, rgba(255,226,0,.10), transparent 55%),
+  radial-gradient(700px 600px at 0% 120%, rgba(18,41,156,.5), transparent 60%),
+  linear-gradient(160deg, var(--navy-900), var(--navy) 60%, var(--navy-850)); background-attachment:fixed;
+  -webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--serif); margin:0}
+.hidden{display:none !important}
+#hexbg{position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.4;
+  background-image:
+   linear-gradient(30deg, rgba(255,226,0,.03) 12%, transparent 12.5%, transparent 87%, rgba(255,226,0,.03) 87.5%),
+   linear-gradient(150deg, rgba(255,226,0,.03) 12%, transparent 12.5%, transparent 87%, rgba(255,226,0,.03) 87.5%),
+   linear-gradient(30deg, rgba(255,226,0,.03) 12%, transparent 12.5%, transparent 87%, rgba(255,226,0,.03) 87.5%),
+   linear-gradient(150deg, rgba(255,226,0,.03) 12%, transparent 12.5%, transparent 87%, rgba(255,226,0,.03) 87.5%);
+  background-size:40px 70px; background-position:0 0,0 0,20px 35px,20px 35px}
+#pollen{position:fixed; inset:0; z-index:0; pointer-events:none}
+
+/* Top bar */
+.topbar{position:sticky; top:0; z-index:20; display:flex; align-items:center; gap:10px; padding:12px 16px;
+  background:linear-gradient(180deg, rgba(0,6,31,.85), rgba(0,6,31,.4)); backdrop-filter:blur(10px); border-bottom:1px solid rgba(255,226,0,.14)}
+.topbar img{height:30px; width:auto}
+.topbar .t{display:flex; flex-direction:column; line-height:1}
+.topbar .s{font-family:var(--serif); color:var(--gold); font-weight:700; font-size:1rem; letter-spacing:.4px}
+.topbar .th{font-size:.56rem; letter-spacing:.24em; text-transform:uppercase; color:var(--ink-dim); margin-top:3px}
+.conn{margin-left:auto; display:flex; align-items:center; gap:6px; font-size:.62rem; color:var(--ink-dim)}
+.conn .dot{width:8px; height:8px; border-radius:50%; background:var(--gold); box-shadow:0 0 8px var(--gold)}
+.conn.off .dot{background:var(--red); box-shadow:0 0 8px var(--red)}
+
+#app{position:relative; z-index:10; min-height:calc(100vh - 55px); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:22px 18px 40px}
+.card{width:100%; max-width:460px}
+.fade{animation:fade .45s var(--ease) both}
+@keyframes fade{from{opacity:0; transform:translateY(12px)}to{opacity:1; transform:translateY(0)}}
+.pop{animation:pop .55s var(--ease) both}
+@keyframes pop{0%{opacity:0; transform:scale(.8)}60%{transform:scale(1.05)}100%{opacity:1; transform:scale(1)}}
+
+.eyebrow{font-size:.68rem; letter-spacing:.28em; text-transform:uppercase; color:var(--gold); font-weight:700; text-align:center; margin-bottom:12px}
+.h-title{font-family:var(--serif); color:#fff; text-align:center; line-height:1.12; font-size:1.7rem}
+.sub{color:var(--ink-dim); text-align:center; line-height:1.5; margin-top:12px; font-size:1rem}
+
+/* Buttons */
+.btn{display:block; width:100%; border:none; cursor:pointer; border-radius:14px; font-family:var(--sans); font-weight:800;
+  padding:16px; font-size:1.05rem; transition:transform .15s var(--ease), background .15s; margin-top:12px}
+.btn-primary{background:var(--gold); color:var(--navy); text-transform:uppercase; letter-spacing:.04em; box-shadow:0 10px 24px rgba(255,226,0,.24)}
+.btn-primary:active{transform:scale(.97)}
+.opt{display:flex; align-items:center; gap:14px; width:100%; text-align:left; border:1px solid rgba(255,226,0,.16);
+  background:linear-gradient(160deg, var(--navy-700), var(--navy-850)); color:#fff; border-radius:16px; padding:16px; font-size:1.02rem;
+  font-weight:600; cursor:pointer; transition:transform .12s var(--ease), border-color .12s, background .12s; margin-bottom:11px; font-family:var(--sans)}
+.opt:active{transform:scale(.98)}
+.opt.sel{border-color:var(--gold); background:linear-gradient(160deg, var(--navy-600), var(--navy-700)); box-shadow:0 0 0 2px rgba(255,226,0,.4)}
+.opt:disabled{opacity:.45}
+.opt .ic{font-size:1.5rem; flex:0 0 auto; width:34px; text-align:center}
+
+/* Quiz progress honeycomb */
+.hexprog{display:flex; gap:8px; justify-content:center; margin-bottom:18px}
+.hexprog span{width:18px; height:20px; clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); background:rgba(255,255,255,.14); transition:background .3s}
+.hexprog span.on{background:var(--gold)}
+.hexprog span.cur{background:var(--gold-soft); animation:blink 1.2s ease-in-out infinite}
+@keyframes blink{50%{opacity:.5}}
+
+/* Reveal */
+.reveal-badge{width:150px; height:165px; margin:0 auto 6px; clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
+  background:linear-gradient(160deg, var(--gold), var(--gold-deep)); display:flex; align-items:center; justify-content:center; font-size:4.6rem;
+  box-shadow:0 0 46px rgba(255,226,0,.5); animation:badgeIn .7s var(--ease) both}
+@keyframes badgeIn{0%{opacity:0; transform:scale(.4) rotate(-20deg)}100%{opacity:1; transform:scale(1) rotate(0)}}
+.reveal-name{font-family:var(--serif); color:var(--gold); text-align:center; font-size:2.1rem; margin-top:8px; line-height:1.05}
+.reveal-tag{text-align:center; color:#fff; font-weight:700; letter-spacing:.16em; text-transform:uppercase; font-size:.72rem; margin-top:6px}
+.reveal-quote{font-family:var(--serif); font-style:italic; color:var(--ink); text-align:center; font-size:1.05rem; line-height:1.5;
+  margin-top:18px; padding:16px; background:rgba(255,255,255,.05); border-left:3px solid var(--gold); border-radius:0 12px 12px 0}
+
+/* Waiting / mirror */
+.mirror{background:rgba(255,255,255,.05); border:1px solid rgba(255,226,0,.14); border-radius:20px; padding:26px 22px; text-align:center}
+.mirror .big{font-size:3.4rem; margin-bottom:8px}
+.mirror h2{color:var(--gold); font-size:1.4rem; margin-bottom:8px}
+.buzz{display:inline-flex; align-items:center; gap:7px; margin-top:16px; font-size:.72rem; color:var(--ink-dim); background:rgba(0,6,31,.4); padding:6px 12px; border-radius:999px}
+.buzz .b{width:6px; height:6px; border-radius:50%; background:var(--gold); animation:buzzpulse 1.4s ease-in-out infinite}
+@keyframes buzzpulse{0%,100%{opacity:.3; transform:scale(.8)}50%{opacity:1; transform:scale(1.3)}}
+
+/* Poll result bars */
+.pbar{margin-bottom:12px}
+.pbar .lab{display:flex; justify-content:space-between; color:#fff; font-size:.92rem; margin-bottom:5px; font-weight:600}
+.pbar .track{height:26px; background:rgba(255,255,255,.08); border-radius:9px; overflow:hidden}
+.pbar .fill{height:100%; width:0; border-radius:9px; background:linear-gradient(90deg,var(--navy-600),#2a49d6); transition:width .8s var(--ease)}
+.pbar.me .fill{background:linear-gradient(90deg,var(--gold-deep),var(--gold))}
+.pbar.correct .track{box-shadow:0 0 0 2px var(--gold)}
+.insight{background:rgba(255,226,0,.08); border:1px solid rgba(255,226,0,.22); border-radius:14px; padding:16px; color:var(--ink); font-size:.98rem; line-height:1.5; margin-top:16px}
+
+/* Reaction dock */
+.dock{position:fixed; left:50%; bottom:18px; transform:translateX(-50%); z-index:40; display:flex; gap:8px;
+  background:rgba(0,6,31,.82); border:1px solid rgba(255,226,0,.22); border-radius:999px; padding:8px 12px; backdrop-filter:blur(10px);
+  box-shadow:0 12px 30px rgba(0,0,0,.5)}
+.dock button{border:none; background:rgba(255,255,255,.04); border-radius:50%; width:46px; height:46px; font-size:1.5rem; cursor:pointer; transition:transform .12s}
+.dock button:active{transform:scale(1.35)}
+.dock .lbl{position:absolute; top:-22px; left:50%; transform:translateX(-50%); font-size:.6rem; color:var(--ink-dim); letter-spacing:.15em; text-transform:uppercase; white-space:nowrap}
+#floatR{position:fixed; inset:0; pointer-events:none; z-index:39; overflow:hidden}
+.fr{position:absolute; bottom:70px; font-size:2rem; animation:frUp 2.4s var(--ease) forwards; opacity:0}
+@keyframes frUp{0%{opacity:0; transform:translateY(0) scale(.6)}15%{opacity:1}100%{opacity:0; transform:translateY(-60vh) scale(1.2)}}
+
+/* Input */
+.field{width:100%; padding:18px; border-radius:14px; border:2px solid var(--navy-600); background:rgba(255,255,255,.06); color:#fff;
+  text-align:center; font-size:1.4rem; font-family:var(--serif); font-weight:700; outline:none; transition:border-color .2s}
+.field:focus{border-color:var(--gold)}
+.field::placeholder{color:rgba(167,173,214,.6); font-weight:400}
+
+/* Pulse mood */
+.moodgrid{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.mood{background:linear-gradient(160deg, var(--navy-700), var(--navy-850)); border:1px solid rgba(255,226,0,.16); border-radius:18px;
+  padding:20px 10px; text-align:center; cursor:pointer; transition:transform .12s, border-color .12s}
+.mood:active{transform:scale(.96)} .mood.sel{border-color:var(--gold); box-shadow:0 0 0 2px rgba(255,226,0,.4)}
+.mood .e{font-size:2.6rem} .mood .l{color:#fff; font-family:var(--serif); margin-top:8px; font-size:1rem}
+
+/* Memento card */
+#mcard{position:relative; overflow:hidden; border-radius:24px; border:2px solid var(--gold); background:#040a33;
+  background-image:radial-gradient(circle at 100% 0%, rgba(255,226,0,.10), transparent 45%), radial-gradient(circle at 0% 100%, rgba(18,41,156,.5), transparent 55%); text-align:left}
+#mcard .mc-hexrow{position:absolute; top:-14px; right:-14px; font-size:5rem; opacity:.08}
+.mc-head{padding:22px 22px 12px; display:flex; align-items:center; gap:14px}
+.mc-badge{width:56px; height:62px; flex:0 0 auto; clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
+  background:linear-gradient(160deg,var(--gold),var(--gold-deep)); display:flex; align-items:center; justify-content:center; font-size:1.8rem}
+.mc-head .nm{font-family:var(--serif); color:var(--gold); font-size:1.5rem; line-height:1}
+.mc-head .who{color:var(--ink-dim); font-size:.66rem; text-transform:uppercase; letter-spacing:.16em; margin-top:5px}
+.mc-quote{margin:0 22px; padding:14px 16px; background:rgba(0,6,31,.5); border-radius:14px; border:1px solid rgba(255,255,255,.06)}
+.mc-quote p{font-family:var(--serif); font-style:italic; color:#fff; font-size:.92rem; margin:0; line-height:1.45}
+.mc-body{padding:16px 22px}
+.mc-body>.desc{color:var(--ink-dim); font-size:.82rem; line-height:1.5; margin-bottom:14px}
+.mc-block{border-radius:12px; padding:13px 15px; margin-bottom:11px}
+.mc-block h5{color:var(--gold); font-size:.62rem; text-transform:uppercase; letter-spacing:.14em; margin:0 0 7px; font-family:var(--sans); font-weight:800}
+.mc-block p,.mc-block li{color:var(--ink); font-size:.78rem; line-height:1.5; margin:0}
+.mc-block ul{margin:0; padding-left:16px} .mc-block li{margin-bottom:5px}
+.mc-ins{background:rgba(255,226,0,.06); border-left:3px solid var(--gold)}
+.mc-path{background:rgba(18,41,156,.28); border:1px solid rgba(18,41,156,.5)}
+.mc-rec{background:rgba(255,255,255,.04); border-left:3px solid var(--ink-dim)}
+.mc-foot{background:rgba(0,6,31,.6); border-top:1px solid rgba(255,226,0,.14); padding:18px 22px; text-align:center}
+.mc-foot .pre{color:var(--ink-dim); font-size:.72rem}
+.mc-foot .asp{font-family:var(--serif); color:var(--gold); font-size:1.7rem; text-transform:uppercase; letter-spacing:.02em; margin:4px 0; line-height:1.05}
+.mc-foot .motto{color:var(--ink-dim); font-style:italic; font-family:var(--serif); font-size:.72rem; margin-top:6px}
+
+.linkrow{display:flex; gap:10px; margin-top:14px}
+.linkrow .btn{margin-top:0}
+.smallnote{text-align:center; color:var(--ink-dim); font-size:.72rem; margin-top:12px}
+.textlink{background:none; border:none; color:var(--ink-dim); text-decoration:underline; font-size:.8rem; cursor:pointer; margin:18px auto 0; display:block}
+
+/* BTY CSS footer ribbon */
+.bty-footer{position:relative; z-index:10; margin-top:auto; width:100%; background:var(--navy-900); border-top:1px solid rgba(255,226,0,.18)}
+.bty-footer .r1{display:flex; align-items:center; gap:10px; padding:9px 16px}
+.bty-footer img{height:22px; width:auto}
+.bty-footer .name{flex:1; text-align:center; font-family:var(--serif); color:#fff; font-weight:700; font-size:.72rem; letter-spacing:.08em}
+.bty-footer .motto{color:var(--gold); font-style:italic; font-family:var(--serif); font-size:.7rem}
+.bty-footer .r2{background:var(--navy-850); border-top:1px solid rgba(255,226,0,.1); text-align:center; padding:5px; color:var(--ink-dim); font-size:.56rem; letter-spacing:.04em}
+
+@media (prefers-reduced-motion:reduce){ *{animation-duration:.001s !important; transition-duration:.06s !important} #pollen{display:none} }
+</style>
+</head>
+<body>
+<div id="hexbg"></div>
+<canvas id="pollen"></canvas>
+<div id="floatR"></div>
+
+<div class="topbar">
+  <img src="BTlogo.png" alt="Beatty crest" onerror="this.style.display='none'">
+  <div class="t"><span class="s">BEATTY</span><span class="th">Harmonising Hearts</span></div>
+  <div class="conn" id="conn"><span class="dot"></span><span id="connText">Live</span></div>
+</div>
+
+<div id="app"></div>
+
+<footer class="bty-footer">
+  <div class="r1">
+    <img src="BTlogo.png" alt="" onerror="this.style.display='none'">
+    <span class="name">BEATTY SECONDARY SCHOOL</span>
+    <span class="motto">Non Vi Sed Arte</span>
+  </div>
+  <div class="r2">Nurturing Adaptive Thinkers, Agile Learners and Active Contributors</div>
+</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, doc, setDoc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+/* =====================================================================
+   CANONICAL SHARED DATA — MUST STAY IDENTICAL IN btx27.html & joinbtx27.html
+   The archetype keys/icons/tags match the presenter compass exactly so the
+   live room-personality chart always renders correctly.
+   ===================================================================== */
+const ARCHETYPES = {
+  'The Innovator':            { icon:'⚙️', tag:'Builder Bee',    color:'#FFE200', quote:"Machine Learning opened my eyes to what's possible — now I use data to build solutions for real problems.", blurb:"You turn ideas into working things. Data, code and problem-solving are how you make the world a little better.", recs:["A.I. @ South Korea","Engineering @ Rockwell Automation"] },
+  'The Global Explorer':      { icon:'🧭', tag:'Scout Bee',      color:'#FFE200', quote:"Studying abroad taught me leadership crosses borders. Every culture has wisdom to share.", blurb:"You have deep cultural curiosity and a hunger to understand the world through exchange and travel.", recs:["Leadership @ New Zealand","Social Sciences @ Mihara, Japan"] },
+  'The Industry Trailblazer': { icon:'🏗️', tag:'Forager Bee',    color:'#FFE200', quote:"My industry attachment showed me engineering isn't just theory — it changes lives every day.", blurb:"You are drawn to practical application and real-world impact through hands-on industry experience.", recs:["Mechatronics @ ITE West & Makita","Maritime Sustainability @ PIL"] },
+  'The Community Steward':    { icon:'🤝', tag:'Guardian Bee',   color:'#FFE200', quote:"D.R.E.A.M. isn't just our values — it's how we lift each other up. That's true leadership.", blurb:"You are moved by community, mentorship and empowering others to become their best.", recs:["Leading school initiatives","Mentoring junior students"] },
+  'The Creative Artist':      { icon:'🎭', tag:'Dancer Bee',     color:'#FFE200', quote:"Through school concerts I learned my voice matters. Art changes hearts.", blurb:"You find energy in performance, expression and bringing creative visions to life.", recs:["Geography/Literature @ Bali","School concert performances"] },
+  'The STEM Futurist':        { icon:'🔬', tag:'Architect Bee',  color:'#FFE200', quote:"Science isn't memorising facts — it's the thrill of discovery, proving the impossible possible.", blurb:"You thrive on research, analysis and systematic investigation to shape the future.", recs:["Research @ A*STAR","Cybersecurity @ Estonia"] },
+  'The Voice Amplifier':      { icon:'📣', tag:'Herald Bee',     color:'#FFE200', quote:"Journalism taught me every story deserves telling. Your voice can change the world.", blurb:"You are passionate about storytelling, journalism and advocating for ideas that matter.", recs:["Media & Journalism @ Berita Harian","Media & Journalism @ Tamil Murasu"] },
+  'The Eco-Strategist':       { icon:'🌱', tag:'Keeper Bee',     color:'#FFE200', quote:"We don't inherit the Earth from our ancestors; we borrow it from our children.", blurb:"You care about sustainable solutions, environmental systems and a greener future.", recs:["Sustainability @ New Zealand","Developing green campaigns"] },
+};
+const ARCH_ORDER = ['The Innovator','The Global Explorer','The Industry Trailblazer','The Community Steward','The Creative Artist','The STEM Futurist','The Voice Amplifier','The Eco-Strategist'];
+
+// Quiz — 5 questions, option order matches ARCH_ORDER exactly.
+const quiz = [
+  { q:"When facing a challenge, I first…", o:["look for a tech solution.","seek different perspectives.","consider real-world applications.","think about who needs help.","imagine a creative response.","analyse the patterns.","ask what story matters.","weigh the environmental impact."] },
+  { q:"I feel most energised when…", o:["building something new.","learning about other cultures.","seeing my work in action.","helping others grow.","performing or creating.","solving complex puzzles.","sharing important ideas.","working on a green initiative."] },
+  { q:"My ideal Beatty experience includes…", o:["Machine Learning projects.","international exchanges.","industry attachments.","leading initiatives.","concert performances.","science research.","journalism opportunities.","a sustainability project."] },
+  { q:"I learn best by…", o:["tinkering and building prototypes.","immersing myself in new places.","working on real projects.","leading a group.","expressing my ideas.","deep research.","interviewing people.","analysing systems."] },
+  { q:"A successful future means I am…", o:["creating technology.","bridging cultures.","leading my industry.","making a difference.","inspiring people.","advancing knowledge.","giving a voice to others.","building a sustainable world."] },
+];
+
+const firebaseConfig={ apiKey:"AIzaSyBjHO57QKoMW-u4oLGGdgDSqw5gttqX6Fg", authDomain:"btyx-61dc6.firebaseapp.com", projectId:"btyx-61dc6", storageBucket:"btyx-61dc6.appspot.com", messagingSenderId:"851137405745", appId:"1:851137405745:web:c95b86b6f0462a9bc20610" };
+
+let app,db,auth,dbReady=false;
+const app_el=document.getElementById('app');
+const LS='btyxUserData_v5_hive';
+let user=JSON.parse(localStorage.getItem(LS)||'{}');
+let qIndex=0; const qPicks=[];
+let lastState=null;
+
+// Init Firebase WITHOUT blocking the UI. Auth runs in the background so the
+// quiz is usable instantly; live sync connects when auth resolves.
+try{
+  app=initializeApp(firebaseConfig); db=getFirestore(app); auth=getAuth(app);
+  signInAnonymously(auth)
+    .then(()=>{ dbReady=true; listen(); })
+    .catch(e=>{ console.warn("Auth failed:",e); setConn(false); });
+}catch(e){ console.error("Firebase failed:",e); setConn(false); }
+
+function save(){ localStorage.setItem(LS, JSON.stringify(user)); }
+function setConn(ok){ const c=document.getElementById('conn'); if(!c) return; c.classList.toggle('off',!ok); document.getElementById('connText').textContent= ok?'Live':'Offline'; }
+function txt(s){ return (s==null||s==='undefined')?'':s; }
+
+function listen(){
+  onSnapshot(doc(db,"session","state"), snap=>{
+    setConn(true);
+    if(snap.exists()){ lastState=snap.data(); route(lastState); }
+    else { // no session yet
+      if(user.aspiration) renderMemento();
+      else if(!user.archetype) renderQuiz();
+      else renderWaiting(`You're in as <b class="gold">${txt(user.archetype)}</b>.<br>The presentation will begin soon.`);
+    }
+  }, err=>{ console.warn(err); setConn(false); });
+}
+
+/* ---------- Router: follow presenter's currentView ---------- */
+function route(state){
+  if(!user.archetype){ renderQuiz(); return; } // everyone does the quiz first
+  const v=state.currentView, title=txt(state.title), desc=txt(state.description);
+  switch(v){
+    case 'poll':
+      if(!state.pollData){ renderWaiting("Get ready to vote…"); break; }
+      if(user.polls && user.polls[state.pollData.id]!==undefined) renderPollResult(state.pollData);
+      else renderPoll(state.pollData);
+      break;
+    case 'globe': case 'industry_map':
+      if(!state.nexusData){ renderMirror('🗺️','Explore the map','Look up at the main screen.'); break; }
+      if(user[state.nexusData.type]) renderWaiting("Your bee is on the map! <br>Watch the big screen.");
+      else renderNexus(state.nexusData);
+      break;
+    case 'finale': renderAspiration(); break;
+    case 'pulse_check': renderPulse(); break;
+    case 'memento': case 'end': renderMemento(); break;
+    case 'chart': renderMirror('✨','The Hive is forming','Find yourself on the big screen — every bee counts.'); break;
+    case 'video': renderMirror('📺','Now playing','Look up at the main screen.'); break;
+    case 'values': renderMirror('💛','The D.R.E.A.M. values','Reflect on the values shown on screen.'); break;
+    case 'slide': renderMirror('🖥️','Presentation','Look up at the main screen.'); break;
+    default: renderMirror('👀', txt(title)||'Watch the screen', desc||'The presentation continues.');
+  }
+}
+
+/* =====================================================================
+   SCREENS
+   ===================================================================== */
+function renderWelcomeOrQuiz(){ if(user.archetype) renderWaiting(`You're in as <b class="gold">${txt(user.archetype)}</b>.`); else renderQuiz(); }
+
+function renderQuiz(){
+  if(qIndex>=quiz.length){ finishQuiz(); return; }
+  const item=quiz[qIndex];
+  app_el.innerHTML=`<div class="card fade">
+    <div class="hexprog">${quiz.map((_,i)=>`<span class="${i<qIndex?'on':i===qIndex?'cur':''}"></span>`).join('')}</div>
+    <p class="eyebrow">Find your place in the Hive · ${qIndex+1} / ${quiz.length}</p>
+    <h2 class="h-title">${item.q}</h2>
+    <div style="margin-top:20px">${item.o.map((t,i)=>{
+      const key=ARCH_ORDER[i];
+      return `<button class="opt" data-i="${i}"><span class="ic">${ARCHETYPES[key].icon}</span><span>${t}</span></button>`;
+    }).join('')}</div>
+  </div>`;
+}
+function answer(i){ qPicks.push(ARCH_ORDER[i]); qIndex++; renderQuiz(); }
+
+async function finishQuiz(){
+  const counts={}; qPicks.forEach(a=>counts[a]=(counts[a]||0)+1);
+  let best=ARCH_ORDER[0], max=0; for(const k in counts){ if(counts[k]>max){ max=counts[k]; best=k; } }
+  user.archetype=best; save();
+  if(dbReady){ try{ await setDoc(doc(db,"compassQuiz",auth.currentUser.uid),{ archetype:best, timestamp:serverTimestamp() }); }catch(e){ console.warn(e); } }
+  renderReveal(best);
+}
+
+function renderReveal(key){
+  const a=ARCHETYPES[key];
+  app_el.innerHTML=`<div class="card">
+    <p class="eyebrow pop">Your compass points to</p>
+    <div class="reveal-badge">${a.icon}</div>
+    <div class="reveal-name pop">${key}</div>
+    <div class="reveal-tag">${a.tag} · you've joined the Hive</div>
+    <div class="reveal-quote fade">"${a.quote}"</div>
+    <p class="sub fade">${a.blurb}</p>
+    <button class="btn btn-primary" id="revealNext">Continue ➜</button>
+    <button class="textlink" id="retake">Not quite you? Retake</button>
+  </div>`;
+  burstConfetti();
+  document.getElementById('revealNext').onclick=()=>{ if(lastState) route(lastState); else renderWaiting("You're in! Watch the main screen to begin."); };
+  document.getElementById('retake').onclick=resetAll;
+}
+
+function renderMirror(big,title,desc){
+  app_el.innerHTML=`<div class="card fade"><div class="mirror">
+      <div class="big">${big}</div><h2>${title}</h2><p class="sub" style="margin-top:6px">${desc}</p>
+      <div class="buzz"><span class="b"></span> The Hive is buzzing — tap a reaction below</div>
+    </div>${asBee()}</div>${dockHTML()}`;
+  wireDock();
+}
+
+function renderWaiting(msg){
+  app_el.innerHTML=`<div class="card fade"><div class="mirror">
+      <div class="big" style="animation:buzzpulse 1.6s infinite">🐝</div>
+      <p class="sub" style="font-size:1.05rem; color:#fff; margin-top:4px">${msg}</p>
+    </div>${asBee()}</div>${dockHTML()}`;
+  wireDock();
+}
+function asBee(){ return user.archetype?`<p class="smallnote">You are <b class="gold">${txt(user.archetype)}</b> · ${ARCHETYPES[user.archetype]?.tag||''} ${ARCHETYPES[user.archetype]?.icon||''}</p>`:''; }
+
+/* Poll */
+function renderPoll(p){
+  app_el.innerHTML=`<div class="card fade">
+    <p class="eyebrow">Live Poll</p><h2 class="h-title">${p.question}</h2>
+    <div style="margin-top:20px" id="pollOpts">${p.options.map((o,i)=>`<button class="opt" data-p="${i}"><span>${o}</span></button>`).join('')}</div>
+    <p class="smallnote">Your vote appears live on the big screen.</p>
+  </div>`;
+}
+async function votePoll(p,i){
+  const idx=parseInt(i), correct=idx===p.correctAnswer;
+  let insight=p.insight||"Thanks for voting!"; if(!correct && p.correctAnswer!=null) insight=`Good guess! ${p.insight||''}`;
+  if(!user.polls) user.polls={};
+  user.polls[p.id]={ choice:idx, choiceText:p.options[idx], correct, insight }; save();
+  if(dbReady){ try{ await setDoc(doc(db,"polls",`${p.id}_${auth.currentUser.uid}`),{ pollId:p.id, vote:idx, timestamp:serverTimestamp() }); }catch(e){ console.warn(e); } }
+  renderPollResult(p);
+}
+function renderPollResult(p){
+  const mine=user.polls?.[p.id];
+  app_el.innerHTML=`<div class="card fade">
+    <p class="eyebrow">${mine?.correct?'✅ You got it!':'Vote recorded'}</p>
+    <h2 class="h-title" style="font-size:1.35rem">${p.question}</h2>
+    <div style="margin-top:18px" id="liveBars">${p.options.map((o,i)=>`
+      <div class="pbar ${mine&&mine.choice===i?'me':''} ${i===p.correctAnswer?'correct':''}" data-i="${i}">
+        <div class="lab"><span>${o} ${i===p.correctAnswer?'🏆':''} ${mine&&mine.choice===i?'· you':''}</span><span class="pc">0%</span></div>
+        <div class="track"><div class="fill" style="width:0%"></div></div>
+      </div>`).join('')}</div>
+    <div class="insight">${mine?.insight||''}</div>
+    ${asBee()}</div>${dockHTML()}`;
+  wireDock();
+  // live results for this poll from the polls collection
+  if(dbReady){
+    if(window.__pollUnsub) window.__pollUnsub();
+    window.__pollUnsub=onSnapshot(collection(db,"polls"), snap=>{
+      const bd={}; let total=0;
+      snap.forEach(d=>{ const x=d.data(); if(x.pollId===p.id){ total++; if(x.vote!=null) bd[x.vote]=(bd[x.vote]||0)+1; } });
+      p.options.forEach((o,i)=>{ const row=document.querySelector(`#liveBars .pbar[data-i="${i}"]`); if(!row) return;
+        const c=bd[i]||0, pct= total>0?(c/total*100):0; row.querySelector('.fill').style.width=pct+'%'; row.querySelector('.pc').textContent=Math.round(pct)+'%'; });
+    }, err=>console.warn(err));
+  }
+}
+
+/* Nexus */
+function renderNexus(nd){
+  app_el.innerHTML=`<div class="card fade">
+    <p class="eyebrow">Chart your course</p>
+    <h2 class="h-title">As <span class="gold">${txt(user.archetype)}</span>, which excites you?</h2>
+    <div style="margin-top:20px">${nd.options.map(o=>`<button class="opt" data-nx="${o.id}" data-nt="${nd.type}" data-ntxt="${o.text.replace(/"/g,'&quot;')}"><span>${o.text}</span></button>`).join('')}</div>
+  </div>`;
+}
+async function chooseNexus(id,type,text){
+  user[type]={ id, text }; save();
+  if(dbReady){ try{ await setDoc(doc(db,"nexusVotes",auth.currentUser.uid),{ nexusId:id, timestamp:serverTimestamp() }); }catch(e){ console.warn(e); } }
+  renderWaiting("Your bee just landed on the map! <br>Watch the big screen. 🗺️");
+}
+
+/* Aspiration → Hive */
+function renderAspiration(){
+  if(user.aspiration){ renderWaiting("Your aspiration is a cell in our Hive. 💛"); return; }
+  app_el.innerHTML=`<div class="card fade">
+    <p class="eyebrow">Add your cell to the Hive</p>
+    <h2 class="h-title">One word.</h2>
+    <p class="sub">What do you aspire to become?<br><span style="font-size:.85rem">(e.g. Doctor, Innovator, Changemaker)</span></p>
+    <input id="asp" class="field" maxlength="16" placeholder="Type here…" autocomplete="off" style="margin-top:20px">
+    <button class="btn btn-primary" id="aspBtn">Add to the Hive 🐝</button>
+  </div>`;
+  const f=document.getElementById('asp'); f.focus();
+  f.addEventListener('keydown',e=>{ if(e.key==='Enter') submitAsp(); });
+  document.getElementById('aspBtn').onclick=submitAsp;
+}
+async function submitAsp(){
+  const f=document.getElementById('asp'); const w=(f.value||'').trim(); if(!w) return;
+  f.disabled=true; document.getElementById('aspBtn').disabled=true; document.getElementById('aspBtn').textContent='Sending…';
+  user.aspiration=w; save();
+  if(dbReady){ try{ await setDoc(doc(db,"aspirations",auth.currentUser.uid),{ word:w, timestamp:serverTimestamp() }); }catch(e){ console.warn(e); } }
+  burstConfetti();
+  renderWaiting(`"<b class="gold">${w}</b>" is now part of our Hive.<br>Watch it glow on the big screen. ✨`);
+}
+
+/* Pulse mood */
+function renderPulse(){
+  if(user.pulse){ renderWaiting("Thanks for sharing how you feel! 💛"); return; }
+  const moods=[{k:'On fire!',e:'🔥'},{k:'Excited!',e:'🚀'},{k:'Enjoying it',e:'😊'},{k:'Tell me more',e:'🤔'}];
+  app_el.innerHTML=`<div class="card fade">
+    <p class="eyebrow">Pulse check</p><h2 class="h-title">How's it feeling so far?</h2>
+    <div class="moodgrid" style="margin-top:20px">${moods.map(m=>`<div class="mood" data-mood="${m.k}"><div class="e">${m.e}</div><div class="l">${m.k}</div></div>`).join('')}</div>
+  </div>`;
+}
+async function choosePulse(k){
+  user.pulse=k; save();
+  if(dbReady){ try{ await setDoc(doc(db,"pulseCheck",auth.currentUser.uid),{ choice:k, timestamp:Date.now() }); }catch(e){ console.warn(e); } }
+  renderWaiting("Thanks! Your mood is on the big screen. 💛");
+}
+
+/* Memento card */
+function renderMemento(){
+  const a=ARCHETYPES[user.archetype];
+  if(!a){ renderQuiz(); return; }
+  let insightsHTML='';
+  const pk=Object.keys(user.polls||{});
+  if(pk.length){
+    const raw=pk.map(k=>String(user.polls[k].insight||'').replace('Good guess! ','')).filter(Boolean);
+    const uniq=[...new Set(raw)].slice(0,3);
+    if(uniq.length) insightsHTML=`<div class="mc-block mc-ins"><h5>What you discovered</h5><ul>${uniq.map(t=>`<li>${t}</li>`).join('')}</ul></div>`;
+  }
+  const g=user.global?user.global.text:null, l=user.local?user.local.text:null;
+  const pathText = (g||l)
+    ? `You've set your sights on ${g?`a global exchange to <b>${g}</b>`:''}${g&&l?' and ':''}${l?`an industry attachment at <b>${l}</b>`:''}. With 7 international exchanges and 7 industry attachments, we can't wait to help you get there.`
+    : `With 7 international exchanges and 7 industry attachments at Beatty, a world of pathways is waiting for you.`;
+  const recText=`Keep these in mind: ${a.recs.join(' · ')}.`;
+  const name = user.name ? `${user.name}'s ` : 'Your ';
+  app_el.innerHTML=`<div class="card fade">
+    <div id="mcard">
+      <div class="mc-hexrow">🐝</div>
+      <div class="mc-head">
+        <div class="mc-badge">${a.icon}</div>
+        <div><div class="nm">${txt(user.archetype)}</div><div class="who">${name}Beatty Compass Card · ${a.tag}</div></div>
+      </div>
+      <div class="mc-quote"><p>"${a.quote}"</p></div>
+      <div class="mc-body">
+        <p class="desc">${a.blurb}</p>
+        ${insightsHTML}
+        <div class="mc-block mc-path"><h5>Your chosen pathways</h5><p>${pathText}</p></div>
+        <div class="mc-block mc-rec"><h5>Recommended for you</h5><p>${recText}</p></div>
+      </div>
+      <div class="mc-foot">
+        <div class="pre">Come to Beatty and let your aspiration to become a</div>
+        <div class="asp">${txt(user.aspiration)||'FUTURE LEADER'}</div>
+        <div class="pre">take flight.</div>
+        <div class="motto">Non Vi Sed Arte · Harmonising Hearts, Thriving Together</div>
+      </div>
+    </div>
+    <div class="linkrow">
+      <button class="btn btn-primary" id="dl">Save Card ⬇</button>
+      <button class="btn btn-primary" id="sh" style="background:rgba(255,255,255,.08); color:#fff">Share</button>
+    </div>
+    <p class="smallnote">Show this card at our booth for a little gift 🎁 · <a href="https://go.gov.sg/probeatty" style="color:var(--gold)">go.gov.sg/probeatty</a></p>
+    <button class="textlink" id="startover">Not you? Start over</button>
+  </div>`;
+  document.getElementById('dl').onclick=downloadCard;
+  document.getElementById('sh').onclick=shareCard;
+  document.getElementById('startover').onclick=resetAll;
+}
+
+function downloadCard(){
+  const card=document.getElementById('mcard'); const btn=document.getElementById('dl');
+  if(!window.__H2C_OK || typeof html2canvas==='undefined'){ btn.textContent='Screenshot to save 📸'; return; }
+  btn.textContent='Generating…'; btn.disabled=true;
+  html2canvas(card,{backgroundColor:'#040a33', scale:3, useCORS:true}).then(canvas=>{
+    const link=document.createElement('a'); link.download='Beatty-Compass-Card.png'; link.href=canvas.toDataURL('image/png'); link.click();
+    btn.textContent='Save Card ⬇'; btn.disabled=false;
+  }).catch(e=>{ console.error(e); btn.textContent='Screenshot to save 📸'; btn.disabled=false; });
+}
+async function shareCard(){
+  const a=ARCHETYPES[user.archetype];
+  const text=`I'm ${user.archetype} (${a.tag}) at the Beatty Secondary Open House! My aspiration: ${user.aspiration||'to take flight'}. 🐝 Non Vi Sed Arte`;
+  const url='https://go.gov.sg/probeatty';
+  try{ if(navigator.share){ await navigator.share({title:'My Beatty Compass', text, url}); return; } }catch(e){}
+  try{ await navigator.clipboard.writeText(text+' '+url); showToast('Copied to clipboard!'); }catch(e){ showToast('Screenshot your card to share 📸'); }
+}
+
+function resetAll(){ localStorage.removeItem(LS); user={}; qIndex=0; qPicks.length=0; if(window.__pollUnsub) window.__pollUnsub(); renderQuiz(); }
+
+/* =====================================================================
+   REACTION DOCK — writes to `reactions` (drives presenter FX + pulse)
+   ===================================================================== */
+function dockHTML(){ return `<div class="dock" id="dock"><span class="lbl">React ↓</span>
+  ${['🐝','❤️','🔥','👏','🤯'].map(e=>`<button data-react="${e}">${e}</button>`).join('')}</div>`; }
+let lastReact=0;
+function wireDock(){
+  const d=document.getElementById('dock'); if(!d) return;
+  d.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>sendReaction(b.dataset.react)));
+}
+async function sendReaction(emoji){
+  const now=Date.now(); if(now-lastReact<350) return; lastReact=now;
+  floatReaction(emoji);
+  if(dbReady){ try{ await setDoc(doc(collection(db,"reactions")),{ emoji, timestamp:Date.now(), uid:auth.currentUser.uid }); }catch(e){ console.warn(e); } }
+}
+function floatReaction(emoji){
+  const host=document.getElementById('floatR'); if(!host) return;
+  const el=document.createElement('div'); el.className='fr'; el.textContent=emoji; el.style.left=(30+Math.random()*40)+'%';
+  host.appendChild(el); setTimeout(()=>el.remove(),2400);
+}
+
+/* Global click delegation */
+app_el.addEventListener('click',e=>{
+  const b=e.target.closest('button, .mood'); if(!b) return;
+  if(b.classList.contains('opt') && b.dataset.i!=null){ document.querySelectorAll('.opt').forEach(o=>o.disabled=true); b.classList.add('sel'); answer(b.dataset.i); return; }
+  if(b.dataset.p!=null && lastState?.pollData){ document.querySelectorAll('.opt').forEach(o=>o.disabled=true); b.classList.add('sel'); votePoll(lastState.pollData, b.dataset.p); return; }
+  if(b.dataset.nx){ document.querySelectorAll('.opt').forEach(o=>o.disabled=true); b.classList.add('sel'); chooseNexus(b.dataset.nx,b.dataset.nt,b.dataset.ntxt); return; }
+  if(b.dataset.mood){ document.querySelectorAll('.mood').forEach(o=>o.classList.remove('sel')); b.classList.add('sel'); choosePulse(b.dataset.mood); return; }
+});
+
+/* Toast + confetti + pollen */
+function showToast(m){ let t=document.getElementById('toast'); if(!t){ t=document.createElement('div'); t.id='toast'; t.style.cssText='position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#071246;border:1px solid var(--gold);color:#fff;padding:12px 20px;border-radius:12px;z-index:60;font-size:.9rem'; document.body.appendChild(t); } t.textContent=m; t.style.opacity='1'; setTimeout(()=>t.style.opacity='0',2200); }
+function burstConfetti(){ if(matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const cols=['#FFE200','#EC3237','#12299c','#fff','#E4C400']; const host=document.getElementById('floatR');
+  for(let i=0;i<40;i++){ const p=document.createElement('div'); p.style.cssText=`position:absolute;top:-10px;left:${Math.random()*100}%;width:${7+Math.random()*7}px;height:${7+Math.random()*7}px;background:${cols[Math.random()*cols.length|0]};border-radius:${Math.random()>.5?'50%':'2px'};opacity:1`;
+    p.animate([{transform:'translateY(0) rotate(0)',opacity:1},{transform:`translateY(${window.innerHeight+40}px) rotate(${720*Math.random()}deg)`,opacity:0}],{duration:2200+Math.random()*1500,easing:'cubic-bezier(.4,0,1,1)'});
+    host.appendChild(p); setTimeout(()=>p.remove(),3800); } }
+(function pollen(){ const c=document.getElementById('pollen'); if(!c||matchMedia('(prefers-reduced-motion:reduce)').matches) return; const ctx=c.getContext('2d');
+  let ps=[]; function rs(){ c.width=innerWidth; c.height=innerHeight; } rs(); addEventListener('resize',rs);
+  for(let i=0;i<18;i++) ps.push({x:Math.random()*c.width,y:Math.random()*c.height,vx:(Math.random()-.5)*.2,vy:(Math.random()-.5)*.2,r:Math.random()*1.6+.6,a:Math.random()*.25+.05});
+  (function d(){ ctx.clearRect(0,0,c.width,c.height); ps.forEach(p=>{ p.x+=p.vx;p.y+=p.vy; if(p.x<0)p.x=c.width;if(p.x>c.width)p.x=0;if(p.y<0)p.y=c.height;if(p.y>c.height)p.y=0; ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fillStyle=`rgba(255,226,0,${p.a})`;ctx.fill(); }); requestAnimationFrame(d); })(); })();
+
+/* Boot: paint instantly so there's never a blank screen while the first
+   Firestore snapshot is in flight. listen()'s snapshot will refine this. */
+if(!user.archetype) renderQuiz();
+else renderWaiting(`You're in as <b class="gold">${txt(user.archetype)}</b>.<br>Connecting to the presentation…`);
+</script>
+</body>
+</html>
