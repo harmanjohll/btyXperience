@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Join the Hive · Beatty Secondary</title>
 <meta name="theme-color" content="#000C53">
 <!-- html2canvas for card download, with graceful fallback -->
@@ -124,6 +124,7 @@ h1,h2,h3,h4{font-family:var(--serif); margin:0}
 .field{width:100%; padding:18px; border-radius:14px; border:2px solid var(--navy-600); background:rgba(255,255,255,.06); color:#fff;
   text-align:center; font-size:1.4rem; font-family:var(--serif); font-weight:700; outline:none; transition:border-color .2s}
 .field:focus{border-color:var(--gold)}
+:focus-visible{outline:2px solid var(--gold); outline-offset:2px}
 .field::placeholder{color:rgba(167,173,214,.6); font-weight:400}
 
 /* Pulse mood */
@@ -197,9 +198,19 @@ h1,h2,h3,h4{font-family:var(--serif); margin:0}
 </footer>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, doc, setDoc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+// Firebase via DYNAMIC import so a CDN failure can't stop the phone app from
+// booting — the quiz/UI still runs; only live sync is unavailable.
+let initializeApp, getFirestore, collection, doc, setDoc, serverTimestamp, onSnapshot, getAuth, signInAnonymously;
+async function loadFirebase(){
+  const [appM, fsM, authM] = await Promise.all([
+    import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
+    import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"),
+    import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"),
+  ]);
+  initializeApp = appM.initializeApp;
+  ({ getFirestore, collection, doc, setDoc, serverTimestamp, onSnapshot } = fsM);
+  ({ getAuth, signInAnonymously } = authM);
+}
 
 /* =====================================================================
    CANONICAL SHARED DATA — MUST STAY IDENTICAL IN btx27.html & joinbtx27.html
@@ -236,18 +247,20 @@ let user=JSON.parse(localStorage.getItem(LS)||'{}');
 let qIndex=0; const qPicks=[];
 let lastState=null;
 
-// Init Firebase WITHOUT blocking the UI. Auth runs in the background so the
-// quiz is usable instantly; live sync connects when auth resolves.
-try{
-  app=initializeApp(firebaseConfig); db=getFirestore(app); auth=getAuth(app);
-  signInAnonymously(auth)
-    .then(()=>{ dbReady=true; listen(); })
-    .catch(e=>{ console.warn("Auth failed:",e); setConn(false); });
-}catch(e){ console.error("Firebase failed:",e); setConn(false); }
+// Load Firebase off the critical path. First paint (boot block at the bottom)
+// does NOT depend on this resolving, so the quiz works even if the CDN is down.
+loadFirebase()
+  .then(()=>{ app=initializeApp(firebaseConfig); db=getFirestore(app); auth=getAuth(app); return signInAnonymously(auth); })
+  .then(()=>{ dbReady=true; listen(); })
+  .catch(e=>{ console.warn("Live sync unavailable — offline mode:",e); setConn(false); });
 
 function save(){ localStorage.setItem(LS, JSON.stringify(user)); }
 function setConn(ok){ const c=document.getElementById('conn'); if(!c) return; c.classList.toggle('off',!ok); document.getElementById('connText').textContent= ok?'Live':'Offline'; }
 function txt(s){ return (s==null||s==='undefined')?'':s; }
+// Escape user-entered strings before they go into innerHTML (prevents self-XSS from tampered/pasted input).
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+// Sanitize the one-word aspiration that gets projected on the big screen.
+function cleanWord(w){ return String(w||'').replace(/[^\p{L}\p{N} '-]/gu,'').trim().slice(0,18); }
 
 function listen(){
   onSnapshot(doc(db,"session","state"), snap=>{
@@ -263,6 +276,8 @@ function listen(){
 
 /* ---------- Router: follow presenter's currentView ---------- */
 function route(state){
+  // Tear down the poll live-results listener whenever we leave a poll view.
+  if(state.currentView!=='poll' && window.__pollUnsub){ window.__pollUnsub(); window.__pollUnsub=null; }
   if(!user.archetype){ renderQuiz(); return; } // everyone does the quiz first
   const v=state.currentView, title=txt(state.title), desc=txt(state.description);
   switch(v){
@@ -400,7 +415,8 @@ function renderNexus(nd){
 }
 async function chooseNexus(id,type,text){
   user[type]={ id, text }; save();
-  if(dbReady){ try{ await setDoc(doc(db,"nexusVotes",auth.currentUser.uid),{ nexusId:id, timestamp:serverTimestamp() }); }catch(e){ console.warn(e); } }
+  // Namespace by type so a user's globe (global) choice isn't overwritten by their map (local) choice.
+  if(dbReady){ try{ await setDoc(doc(db,"nexusVotes",`${type}_${auth.currentUser.uid}`),{ nexusId:id, type, timestamp:serverTimestamp() }); }catch(e){ console.warn(e); } }
   renderWaiting("Your bee just landed on the map! <br>Watch the big screen. 🗺️");
 }
 
@@ -419,12 +435,12 @@ function renderAspiration(){
   document.getElementById('aspBtn').onclick=submitAsp;
 }
 async function submitAsp(){
-  const f=document.getElementById('asp'); const w=(f.value||'').trim(); if(!w) return;
+  const f=document.getElementById('asp'); const w=cleanWord(f.value); if(!w) return;
   f.disabled=true; document.getElementById('aspBtn').disabled=true; document.getElementById('aspBtn').textContent='Sending…';
   user.aspiration=w; save();
   if(dbReady){ try{ await setDoc(doc(db,"aspirations",auth.currentUser.uid),{ word:w, timestamp:serverTimestamp() }); }catch(e){ console.warn(e); } }
   burstConfetti();
-  renderWaiting(`"<b class="gold">${w}</b>" is now part of our Hive.<br>Watch it glow on the big screen. ✨`);
+  renderWaiting(`"<b class="gold">${esc(w)}</b>" is now part of our Hive.<br>Watch it glow on the big screen. ✨`);
 }
 
 /* Pulse mood */
@@ -433,7 +449,7 @@ function renderPulse(){
   const moods=[{k:'On fire!',e:'🔥'},{k:'Excited!',e:'🚀'},{k:'Enjoying it',e:'😊'},{k:'Tell me more',e:'🤔'}];
   app_el.innerHTML=`<div class="card fade">
     <p class="eyebrow">Pulse check</p><h2 class="h-title">How's it feeling so far?</h2>
-    <div class="moodgrid" style="margin-top:20px">${moods.map(m=>`<div class="mood" data-mood="${m.k}"><div class="e">${m.e}</div><div class="l">${m.k}</div></div>`).join('')}</div>
+    <div class="moodgrid" style="margin-top:20px">${moods.map(m=>`<div class="mood" data-mood="${m.k}" role="button" tabindex="0" aria-label="${m.k}"><div class="e">${m.e}</div><div class="l">${m.k}</div></div>`).join('')}</div>
   </div>`;
 }
 async function choosePulse(k){
@@ -455,10 +471,10 @@ function renderMemento(){
   }
   const g=user.global?user.global.text:null, l=user.local?user.local.text:null;
   const pathText = (g||l)
-    ? `You've set your sights on ${g?`a global exchange to <b>${g}</b>`:''}${g&&l?' and ':''}${l?`an industry attachment at <b>${l}</b>`:''}. With 7 international exchanges and 7 industry attachments, we can't wait to help you get there.`
-    : `With 7 international exchanges and 7 industry attachments at Beatty, a world of pathways is waiting for you.`;
+    ? `You've set your sights on ${g?`a global exchange to <b>${esc(g)}</b>`:''}${g&&l?' and ':''}${l?`an industry attachment at <b>${esc(l)}</b>`:''}. With international exchanges and industry attachments across the world, we can't wait to help you get there.`
+    : `With international exchanges and industry attachments across the world, Beatty has a pathway waiting for you.`;
   const recText=`Keep these in mind: ${a.recs.join(' · ')}.`;
-  const name = user.name ? `${user.name}'s ` : 'Your ';
+  const name = user.name ? `${esc(user.name)}'s ` : 'Your ';
   app_el.innerHTML=`<div class="card fade">
     <div id="mcard">
       <div class="mc-hexrow">🐝</div>
@@ -475,7 +491,7 @@ function renderMemento(){
       </div>
       <div class="mc-foot">
         <div class="pre">Come to Beatty and let your aspiration to become a</div>
-        <div class="asp">${txt(user.aspiration)||'FUTURE LEADER'}</div>
+        <div class="asp">${esc(user.aspiration)||'FUTURE LEADER'}</div>
         <div class="pre">take flight.</div>
         <div class="motto">Non Vi Sed Arte · Harmonising Hearts, Thriving Together</div>
       </div>
@@ -539,6 +555,10 @@ app_el.addEventListener('click',e=>{
   if(b.dataset.p!=null && lastState?.pollData){ document.querySelectorAll('.opt').forEach(o=>o.disabled=true); b.classList.add('sel'); votePoll(lastState.pollData, b.dataset.p); return; }
   if(b.dataset.nx){ document.querySelectorAll('.opt').forEach(o=>o.disabled=true); b.classList.add('sel'); chooseNexus(b.dataset.nx,b.dataset.nt,b.dataset.ntxt); return; }
   if(b.dataset.mood){ document.querySelectorAll('.mood').forEach(o=>o.classList.remove('sel')); b.classList.add('sel'); choosePulse(b.dataset.mood); return; }
+});
+// Keyboard: Enter/Space activates the div-based mood buttons (real <button>s already work natively).
+app_el.addEventListener('keydown',e=>{
+  if((e.key==='Enter'||e.key===' ') && e.target.classList && e.target.classList.contains('mood')){ e.preventDefault(); e.target.click(); }
 });
 
 /* Toast + confetti + pollen */

@@ -1,0 +1,89 @@
+rules_version = '2';
+
+// Firestore security rules for The Beatty Experience (btx27.html + joinbtx27.html).
+//
+// WHY THIS FILE EXISTS
+// The apps use anonymous auth against a public Firebase project. Without rules,
+// anyone could write arbitrary data (oversized/profane aspirations shown on the
+// big screen, spammed reactions, or hijacking the shared session view). These
+// rules validate the shape and size of every audience write and document how to
+// lock down the presenter-only control documents.
+//
+// TO DEPLOY:  firebase deploy --only firestore:rules
+// (or paste into Firebase console → Firestore → Rules)
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function str(v, n) { return v is string && v.size() > 0 && v.size() <= n; }
+
+    // --- Audience-written collections: validate shape + cap sizes ---
+
+    match /compassQuiz/{uid} {
+      allow read:  if signedIn();
+      allow write: if signedIn() && str(request.resource.data.archetype, 40);
+    }
+
+    match /polls/{id} {
+      allow read:  if signedIn();
+      allow write: if signedIn()
+                   && request.resource.data.vote is int
+                   && request.resource.data.vote >= 0
+                   && str(request.resource.data.pollId, 40);
+    }
+
+    match /nexusVotes/{id} {
+      allow read:  if signedIn();
+      allow write: if signedIn() && str(request.resource.data.nexusId, 40);
+    }
+
+    // Aspiration words are projected full-screen — keep them short. The client
+    // also strips non-letters and screens a profanity blocklist; the presenter
+    // can hide any cell live. Consider a Cloud Function for server-side filtering.
+    match /aspirations/{uid} {
+      allow read:  if signedIn();
+      allow write: if signedIn() && str(request.resource.data.word, 18);
+    }
+
+    match /pulseCheck/{uid} {
+      allow read:  if signedIn();
+      allow write: if signedIn() && str(request.resource.data.choice, 20);
+    }
+
+    // Reactions are append-only and tiny; no edits/deletes by clients.
+    match /reactions/{id} {
+      allow read:   if signedIn();
+      allow create: if signedIn() && str(request.resource.data.emoji, 8);
+      allow update, delete: if false;
+    }
+
+    // --- Presenter-owned control documents ---
+    // The presenter screen (btx27.html?presenter=true) writes session/state and
+    // config/pace; every phone follows them. Anonymous auth can't tell the
+    // presenter apart from an attendee, so these are the weak point.
+    //
+    // RECOMMENDED lockdown (choose one):
+    //  (a) Sign the presenter device in with a real (non-anonymous) account and
+    //      gate on its uid:      allow write: if request.auth.uid == 'PRESENTER_UID';
+    //  (b) Set a custom claim on the presenter account and gate on it:
+    //                            allow write: if request.auth.token.presenter == true;
+    //  (c) For a locked event, set `allow write: if false` and drive state only
+    //      from a trusted admin context.
+    // The permissive default below keeps the drop-in demo working; tighten before
+    // a large public event.
+    match /session/{doc} {
+      allow read:  if signedIn();
+      allow write: if signedIn(); // TODO: restrict to the presenter (see above)
+    }
+    match /config/{doc} {
+      allow read:  if signedIn();
+      allow write: if signedIn(); // TODO: restrict to the presenter (see above)
+    }
+
+    // Deny anything not matched above.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
