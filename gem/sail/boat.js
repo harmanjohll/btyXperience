@@ -77,7 +77,7 @@ export const SAIL_DATA = {
             { text: 'New Zealand — sustainability and servant leadership hand in hand.', color: '#10b981', gradient: ['#10b981','#6ee7b7'], id: 'nz', weight: { korea: 0, japan: 1, nz: 3, estonia: 0 } },
             { text: 'Estonia — the most digital nation. Cybersecurity and e-governance.', color: '#f59e0b', gradient: ['#f59e0b','#fcd34d'], id: 'estonia', weight: { korea: 1, japan: 0, nz: 0, estonia: 3 } },
         ],
-        info: 'From South Korea to New Zealand, Estonia to Japan — our NEXUS exchanges take learning beyond the classroom. With 7 international exchanges to choose from!',
+        info: 'From South Korea to New Zealand, Estonia to Japan — our NEXUS@BTY exchanges take learning beyond the classroom. Six international destinations to choose from!',
         subScenario: 'Back home, a door opens to the professional world. One semester, one industry, hands-on experience.',
         subQuestion: 'Which world do you step into?',
         subOptions: [
@@ -168,7 +168,7 @@ export const FIREBASE_CONFIG = {
     projectId: "btyx-61dc6", storageBucket: "btyx-61dc6.appspot.com",
     messagingSenderId: "851137405745", appId: "1:851137405745:web:c95b86b6f0462a9bc20610",
 };
-export const LOGO_URL = 'https://raw.githubusercontent.com/harmanjohll/btyXperience/fc98005f3682a779482dd1bf5e7cff5f9adb8451/gem/BTlogo.png';
+export const LOGO_URL = '../BTlogo.png';  // local (same-origin) — no remote hotlink to fail on venue wifi
 
 /* ── HANKO STAMP MARKS ── */
 export const STAMP_MARKS = {
@@ -496,7 +496,7 @@ export function buildOrigamiSVG(colors, stage, size = 280, extras = {}) {
     const sgDef = colors.sailGradient
         ? `<linearGradient id="${gid}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:${colors.sailGradient[0]}"/><stop offset="100%" style="stop-color:${colors.sailGradient[1]}"/></linearGradient>` : '';
     const sf = colors.sailGradient ? `url(#${gid})` : colors.sail;
-    const asp = extras.aspiration ? `<text x="140" y="244" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="8" font-weight="800" font-family="'Plus Jakarta Sans',sans-serif" letter-spacing="2">${extras.aspiration.toUpperCase()}</text>` : '';
+    const asp = extras.aspiration ? `<text x="140" y="244" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="8" font-weight="800" font-family="Calibri,'Segoe UI',system-ui,sans-serif" letter-spacing="2">${extras.aspiration.toUpperCase()}</text>` : '';
     const fi = extras.flagIcon ? `<text x="157" y="35" text-anchor="middle" font-size="11">${extras.flagIcon}</text>` : '';
     const flag = stage >= 9;
 

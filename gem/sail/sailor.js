@@ -2,9 +2,10 @@
    Washi craft origami · 8 folds · hanko stamps · ink trail.
 */
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+// Firebase is loaded via DYNAMIC import (see FIREBASE block below) so a CDN
+// outage on venue wifi can't stop the applet from running — only the shared
+// Fleet sync is lost. Boat rendering + the local experience still work.
+let initializeApp, getFirestore, doc, setDoc, serverTimestamp, getAuth, signInAnonymously;
 import {
     buildOrigamiSVG, haptic, hapticPattern,
     SAIL_DATA, BOAT_DEFAULTS, ARCHETYPES, FOLD_GUIDES, FOLD_FLAPS, FOLD_LABELS, CREASE_LINES, LABELS,
@@ -189,14 +190,24 @@ function stopAmbient() {
     } catch(e) {}
 }
 
-// === FIREBASE ===
+// === FIREBASE (off the critical path — the applet boots below regardless) ===
 let db, auth;
-try {
-    const app = initializeApp(FIREBASE_CONFIG);
-    db = getFirestore(app);
-    auth = getAuth(app);
-    await signInAnonymously(auth);
-} catch (e) { console.error("Firebase:", e); }
+(async () => {
+    try {
+        const [a, fs, au] = await Promise.all([
+            import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
+            import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"),
+            import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"),
+        ]);
+        initializeApp = a.initializeApp;
+        ({ getFirestore, doc, setDoc, serverTimestamp } = fs);
+        ({ getAuth, signInAnonymously } = au);
+        const app = initializeApp(FIREBASE_CONFIG);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        await signInAnonymously(auth);
+    } catch (e) { console.warn("SAIL live sync unavailable — running solo:", e); }
+})();
 
 // === STATE ===
 const $app = document.getElementById('app');
@@ -595,16 +606,18 @@ function renderWelcome() {
     $app.innerHTML = `
     <div class="sail-screen fade-up">
         <div class="flex-1 flex flex-col items-center justify-center p-4">
-            <img src="${LOGO_URL}" alt="Beatty" class="h-16 w-16 mb-5 drop-shadow-lg">
+            <img src="${LOGO_URL}" alt="Beatty Secondary crest" class="h-16 w-16 mb-5 drop-shadow-lg" style="width:64px;height:64px;object-fit:contain" onerror="this.style.display='none'">
+            <p class="text-[10px] mb-2 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">Beatty Open House · Fold Before You Join</p>
             <h1 class="font-serif text-3xl tracking-tight mb-2" style="color:var(--accent-gold);">Set Sail</h1>
-            <p class="text-sm mb-6 text-center max-w-xs" style="color:var(--text-secondary);">A single sheet holds a thousand shapes.<br>Fold yours — and discover which one is you.</p>
+            <p class="text-sm mb-6 text-center max-w-xs" style="color:var(--text-secondary);">A single sheet holds a thousand shapes.<br>Fold yours, find your bearing — then join the Hive.</p>
             <div class="origami-stage mb-4" id="welcomeBoat">
                 ${buildOrigamiSVG(BOAT_DEFAULTS, 0, 280)}
             </div>
             <p class="text-xs mb-6 text-center font-serif italic" style="color:var(--text-muted);">"Between your hands and a sheet of paper, every path is possible."</p>
             <button id="startBtn" class="btn-start">Fold Your Boat</button>
             <p class="text-[10px] mt-2" style="color:var(--text-muted);">2 minutes · 8 folds · your personal compass card</p>
-            <p class="text-[10px] mt-4 tracking-widest uppercase" style="color:var(--text-muted);">Beatty Secondary School &middot; Open House 2026</p>
+            <p class="text-[11px] mt-4 font-serif italic" style="color:var(--accent-gold);">From our Hive, every Beattyian sets sail.</p>
+            <p class="text-[10px] mt-1 tracking-widest uppercase" style="color:var(--text-muted);">Non Vi Sed Arte · Open House 2026</p>
         </div>
     </div>`;
 
@@ -1308,7 +1321,7 @@ function renderMemento() {
                     <p class="text-[10px] mb-1 uppercase tracking-widest" style="color:var(--text-muted);">My aspiration</p>
                     <p class="text-3xl font-black uppercase tracking-wide" style="color:${archetype.color || sailOpt.color};text-shadow:0 2px 12px rgba(0,0,0,0.5);">${(D.aspiration||'FUTURE LEADER').toUpperCase()}</p>
                     <div class="flex items-center justify-center gap-2 mt-3">
-                        <img src="${LOGO_URL}" alt="Beatty" class="h-4 w-4 opacity-60">
+                        <img src="${LOGO_URL}" alt="Beatty" class="h-4 w-4 opacity-60" style="width:16px;height:16px;object-fit:contain" onerror="this.style.display='none'">
                         <p class="text-[10px]" style="color:var(--text-muted);">Beatty Secondary School · Open House 2026</p>
                     </div>
                 </div>

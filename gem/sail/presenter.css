@@ -9,7 +9,7 @@
 * { box-sizing: border-box; }
 
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Calibri','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
     margin: 0; padding: 0;
     background: linear-gradient(180deg, #000820 0%, #001050 30%, #002080 60%, #003399 85%, #1a5276 100%);
     color: white;
