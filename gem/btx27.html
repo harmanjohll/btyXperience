@@ -188,9 +188,10 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .votes-chip{font-family:var(--serif); font-weight:700; color:var(--navy); background:var(--gold); border-radius:12px; padding:.5rem 1.2rem; font-size:clamp(1rem,1.7vw,1.5rem)}
 
 /* --- Fun fact --- */
+.fact-wrap{width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:clamp(16px,3vw,40px)}
 .fact-card{position:relative; text-align:center; padding:clamp(28px,5vw,72px);
   background:linear-gradient(150deg, rgba(255,226,0,.10), rgba(0,6,31,.7)); border:1px solid var(--card-line);
-  border-radius:32px; backdrop-filter:var(--glass); max-width:min(90vw,1100px)}
+  border-radius:32px; backdrop-filter:var(--glass); max-width:min(90vw,1100px); width:100%}
 .fact-num{font-family:var(--serif); font-weight:700; line-height:.9; font-size:clamp(6rem,20vw,17rem);
   background:linear-gradient(160deg,#fff,var(--gold)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
   filter:drop-shadow(0 10px 40px rgba(255,226,0,.3))}
@@ -728,7 +729,7 @@ function renderValues(){
 
 /* Fun fact */
 function renderFunFact(f){
-  return `<div class="fact-card fade-in"><div class="fact-num">${f.number}</div><div class="fact-label">${f.label}</div><p class="fact-sub">${f.subtitle}</p></div>`;
+  return `<div class="fact-wrap fade-in"><div class="fact-card"><div class="fact-num">${f.number}</div><div class="fact-label">${f.label}</div><p class="fact-sub">${f.subtitle}</p></div></div>`;
 }
 
 /* Pulse */
