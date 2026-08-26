@@ -165,20 +165,33 @@ function placeBoat(data) {
 
     const areaW = fleetArea.clientWidth;
     const areaH = fleetArea.clientHeight;
-    const x = 40 + Math.random() * (areaW - 120);
-    const y = 20 + Math.random() * (areaH - 100);
-    const size = 50 + Math.random() * 30;
+    // Depth: 0 = far (near the horizon, small & faint), 1 = near (foreground, big & bright)
+    const depth = Math.random();
+    const yTop = areaH * 0.28, yBot = areaH * 0.86;
+    const y = yTop + depth * (yBot - yTop);
+    const x = areaW * 0.06 + Math.random() * (areaW * 0.88);
+    const size = 34 + depth * 46;
     const bobDelay = Math.random() * 4;
 
     el.style.left = x + 'px';
     el.style.top  = y + 'px';
+    el.style.opacity = (0.72 + depth * 0.28).toFixed(2);
+    el.style.zIndex = String(10 + Math.round(depth * 100));
     el.style.animationDelay = (Math.random() * 0.5) + 's';
 
     el.innerHTML = buildMiniBoat(data, size);
     el.dataset.uid = data.uid;
 
-    // Colour ring matching archetype
-    el.style.filter = `drop-shadow(0 0 6px ${archetype.color || '#D4A843'})`;
+    // Colour glow matching archetype
+    el.style.filter = `drop-shadow(0 0 ${4 + depth * 8}px ${archetype.color || '#D4A843'})`;
+
+    // Golden wake ripple at the arrival point
+    const wake = document.createElement('div');
+    wake.className = 'boat-wake';
+    wake.style.left = (x + size / 2) + 'px';
+    wake.style.top  = (y + size * 0.7) + 'px';
+    fleetArea.appendChild(wake);
+    setTimeout(() => wake.remove(), 1700);
 
     el.addEventListener('animationend', () => {
         el.classList.remove('boat-enter');

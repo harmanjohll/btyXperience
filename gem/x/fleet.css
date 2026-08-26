@@ -11,7 +11,12 @@
 body {
     font-family: 'Calibri','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
     margin: 0; padding: 0;
-    background: linear-gradient(180deg, #000820 0%, #001050 30%, #002080 60%, #003399 85%, #1a5276 100%);
+    /* Dusk: deep navy night sky → warm gold horizon (the sun setting) → deep navy sea */
+    background:
+        linear-gradient(180deg,
+            #00040f 0%, #00061f 26%, #071133 42%,
+            #16224f 49%, #4a3d2b 51.2%, #8a6a1e 52.4%, #12224e 55%,
+            #0a1740 72%, #061027 100%);
     color: white;
     overflow: hidden;
     height: 100dvh;
@@ -19,44 +24,89 @@ body {
 }
 
 /* === OCEAN === */
-.ocean {
-    position: absolute; inset: 0;
-    overflow: hidden;
+.ocean { position: absolute; inset: 0; overflow: hidden; }
+
+/* The setting sun — a soft gold disc glowing on the horizon (~51%) */
+.sun {
+    position: absolute; top: 51%; left: 50%;
+    width: 42vh; height: 42vh; transform: translate(-50%, -50%);
+    background: radial-gradient(circle,
+        rgba(255,236,120,0.95) 0%, rgba(255,226,0,0.55) 14%,
+        rgba(255,210,40,0.22) 32%, rgba(255,200,40,0.06) 55%, transparent 72%);
+    filter: blur(2px);
+    animation: sunBreathe 8s ease-in-out infinite;
+}
+@keyframes sunBreathe { 0%,100% { opacity: 0.9; } 50% { opacity: 1; transform: translate(-50%,-50%) scale(1.04); } }
+
+/* Haze band along the horizon line */
+.horizon {
+    position: absolute; top: 49%; left: 0; width: 100%; height: 6%;
+    background: linear-gradient(180deg, transparent, rgba(255,226,0,0.10) 45%, rgba(255,226,0,0.16) 50%, rgba(255,226,0,0.06) 60%, transparent);
+    filter: blur(3px);
 }
 
-/* Animated waves */
-.wave-layer {
-    position: absolute;
-    bottom: 0; left: -50%;
-    width: 200%; height: 120px;
-    border-radius: 50% 50% 0 0;
+/* Sun reflection — a cone that narrows at the sun and widens toward the foreground,
+   broken into shimmering horizontal bands like light on moving water. */
+.sun-path {
+    position: absolute; top: 51%; left: 50%; transform: translateX(-50%);
+    width: 34vh; height: 46%;
+    background: linear-gradient(180deg, rgba(255,226,0,0.40) 0%, rgba(255,226,0,0.16) 34%, rgba(255,226,0,0.05) 64%, transparent 100%);
+    clip-path: polygon(43% 0, 57% 0, 100% 100%, 0 100%);
+    -webkit-mask-image: repeating-linear-gradient(180deg, #000 0 5px, transparent 5px 13px);
+            mask-image: repeating-linear-gradient(180deg, #000 0 5px, transparent 5px 13px);
+    filter: blur(1.5px);
+    animation: shimmer 4s linear infinite;
 }
-.wave-1 { background: rgba(26, 82, 118, 0.4); animation: waveShift 7s ease-in-out infinite; bottom: 0; }
-.wave-2 { background: rgba(26, 82, 118, 0.25); animation: waveShift 9s ease-in-out infinite reverse; bottom: -10px; height: 100px; }
-.wave-3 { background: rgba(26, 82, 118, 0.15); animation: waveShift 6s ease-in-out infinite; bottom: -20px; height: 80px; animation-delay: -3s; }
+@keyframes shimmer { 0% { -webkit-mask-position: 0 0; mask-position: 0 0; opacity: .7; } 50% { opacity: 1; } 100% { -webkit-mask-position: 0 13px; mask-position: 0 13px; opacity: .7; } }
+
+/* Broad water shimmer (horizontal light bands drifting) */
+.sea-shimmer {
+    position: absolute; top: 52%; left: 0; width: 100%; height: 48%;
+    background: repeating-linear-gradient(180deg, rgba(255,255,255,0.03) 0 2px, transparent 2px 9px);
+    animation: seaDrift 10s ease-in-out infinite; opacity: 0.6;
+}
+@keyframes seaDrift { 0%,100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+
+/* Animated wave silhouettes rolling near the foreground */
+.wave-layer {
+    position: absolute; bottom: 0; left: -50%;
+    width: 200%; height: 120px; border-radius: 50% 50% 0 0;
+}
+.wave-1 { background: rgba(8, 20, 54, 0.55); animation: waveShift 7s ease-in-out infinite; bottom: 0; }
+.wave-2 { background: rgba(12, 28, 74, 0.40); animation: waveShift 9s ease-in-out infinite reverse; bottom: -10px; height: 100px; }
+.wave-3 { background: rgba(18, 34, 92, 0.28); animation: waveShift 6s ease-in-out infinite; bottom: -20px; height: 80px; animation-delay: -3s; }
+.wave-foam { background: transparent; box-shadow: 0 -1px 14px rgba(255,226,0,0.10); border-top: 1px solid rgba(255,226,0,0.18);
+    height: 90px; bottom: 4px; animation: waveShift 8s ease-in-out infinite reverse; }
 @keyframes waveShift { 0%,100% { transform: translateX(-3%); } 50% { transform: translateX(3%); } }
 
-/* Stars */
+/* Stars, denser toward the top of the sky */
 .stars {
-    position: absolute; top: 0; left: 0; width: 100%; height: 40%;
+    position: absolute; top: 0; left: 0; width: 100%; height: 46%;
     background-image:
-        radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6), transparent),
-        radial-gradient(1px 1px at 30% 8%, rgba(255,255,255,0.4), transparent),
-        radial-gradient(1.5px 1.5px at 50% 20%, rgba(255,255,255,0.7), transparent),
-        radial-gradient(1px 1px at 70% 12%, rgba(255,255,255,0.3), transparent),
-        radial-gradient(1px 1px at 85% 25%, rgba(255,255,255,0.5), transparent),
-        radial-gradient(1px 1px at 15% 30%, rgba(255,255,255,0.3), transparent),
-        radial-gradient(1.5px 1.5px at 60% 5%, rgba(255,255,255,0.5), transparent),
+        radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.7), transparent),
+        radial-gradient(1px 1px at 30% 8%, rgba(255,255,255,0.45), transparent),
+        radial-gradient(1.5px 1.5px at 50% 20%, rgba(255,255,255,0.8), transparent),
+        radial-gradient(1px 1px at 70% 12%, rgba(255,255,255,0.35), transparent),
+        radial-gradient(1px 1px at 85% 25%, rgba(255,255,255,0.55), transparent),
+        radial-gradient(1px 1px at 15% 30%, rgba(255,255,255,0.35), transparent),
+        radial-gradient(1.5px 1.5px at 60% 5%, rgba(255,255,255,0.6), transparent),
         radial-gradient(1px 1px at 40% 28%, rgba(255,255,255,0.4), transparent),
-        radial-gradient(1px 1px at 90% 18%, rgba(255,255,255,0.3), transparent),
-        radial-gradient(1px 1px at 25% 22%, rgba(255,255,255,0.5), transparent);
+        radial-gradient(1px 1px at 90% 18%, rgba(255,255,255,0.35), transparent),
+        radial-gradient(1px 1px at 25% 22%, rgba(255,255,255,0.5), transparent),
+        radial-gradient(1px 1px at 78% 33%, rgba(255,255,255,0.3), transparent),
+        radial-gradient(1px 1px at 5% 40%, rgba(255,255,255,0.3), transparent);
+    animation: twinkle 6s ease-in-out infinite;
+}
+@keyframes twinkle { 0%,100% { opacity: 0.85; } 50% { opacity: 1; } }
+
+/* Foreground vignette for depth */
+.vignette {
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse at 50% 42%, transparent 45%, rgba(0,4,15,0.55) 100%);
 }
 
-/* Horizon glow */
-.horizon {
-    position: absolute;
-    top: 38%; left: 0; width: 100%; height: 30%;
-    background: radial-gradient(ellipse at 50% 0%, rgba(255, 226, 0, 0.06) 0%, transparent 70%);
+@media (prefers-reduced-motion: reduce) {
+    .sun, .sun-path, .sea-shimmer, .wave-layer, .stars { animation: none !important; }
 }
 
 /* === FLEET AREA === */
@@ -80,14 +130,25 @@ body {
     50% { transform: translateY(-6px); }
 }
 
-/* Boat entrance */
+/* Boat entrance — emerges over the horizon and settles into the sea */
 .boat-enter {
-    animation: boatSailIn 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: boatSailIn 2.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 @keyframes boatSailIn {
-    0% { opacity: 0; transform: translateX(100vw) scale(0.5); }
-    100% { opacity: 1; transform: translateX(0) scale(1); }
+    0%   { opacity: 0; transform: translateY(26px) scale(0.5); filter: blur(2px); }
+    55%  { opacity: 1; filter: blur(0); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
 }
+/* A brief golden ripple where a boat arrives */
+.boat-wake {
+    position: absolute; width: 70px; height: 18px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(255,226,0,0.28), transparent 70%);
+    transform: translate(-50%, -50%);
+    animation: wakeOut 1.6s ease-out forwards; pointer-events: none; z-index: 1;
+}
+@keyframes wakeOut { 0% { opacity: 0.8; transform: translate(-50%,-50%) scale(0.3); } 100% { opacity: 0; transform: translate(-50%,-50%) scale(2.4); } }
+@media (prefers-reduced-motion: reduce) { .boat-enter { animation-duration: 0.5s; } .fleet-boat { animation: none !important; } }
 
 /* Spotlight modal */
 .spotlight-overlay {
