@@ -66,6 +66,12 @@ service cloud.firestore {
       allow write: if signedIn() && request.auth.uid == uid;
     }
 
+    // Sandbox (gem/x/) — merged fold+sail prototype; same shape as sailBoats.
+    match /x_boats/{uid} {
+      allow read:  if signedIn();
+      allow write: if signedIn() && request.auth.uid == uid;
+    }
+
     // --- Presenter-owned control documents ---
     // The presenter screen (btx27.html?presenter=true) writes session/state and
     // config/pace; every phone follows them. Anonymous auth can't tell the
