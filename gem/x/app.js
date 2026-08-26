@@ -1350,6 +1350,29 @@ function burstConfetti() {
     }
 }
 
+// The "Set Sail" departure — your boat sails off the phone toward the horizon
+// to join the collective fleet on the big screen. Coherent with fleet arrival.
+function setSailTransition(onDone) {
+    const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches;
+    const c = colors();
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:9998;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 30%, rgba(255,226,0,0.16), transparent 55%), linear-gradient(180deg,#00061f 0%,#071133 45%,#0a1650 100%);overflow:hidden';
+    ov.innerHTML = `
+        <div style="position:absolute;top:30%;left:0;width:100%;height:2px;background:linear-gradient(90deg,transparent,rgba(255,226,0,0.65),transparent);box-shadow:0 0 26px rgba(255,226,0,0.5);"></div>
+        <div id="sailBoat" style="width:210px;height:210px;filter:drop-shadow(0 0 14px rgba(255,226,0,0.35));">${buildOrigamiSVG(c, 8, 210, extras())}</div>
+        <p style="font-family:'Georgia',serif;color:var(--accent-gold);font-size:1.5rem;margin-top:6px;">Setting sail…</p>
+        <p style="color:var(--text-secondary);font-size:0.82rem;margin-top:6px;letter-spacing:0.24em;text-transform:uppercase;">${(D.aspiration||'').toUpperCase()}</p>
+        <p style="color:var(--text-muted);font-size:0.7rem;margin-top:14px;">Look up — your boat is joining the fleet.</p>`;
+    document.body.appendChild(ov);
+    const boat = ov.querySelector('#sailBoat');
+    if (!reduce) boat.animate(
+        [{transform:'translateY(60px) scale(1)', opacity:1}, {transform:'translateY(-32vh) scale(0.22)', opacity:0.12}],
+        {duration:2000, easing:'cubic-bezier(.4,0,.2,1)', fill:'forwards'});
+    burstConfetti();
+    const hold = reduce ? 700 : 2000;
+    setTimeout(() => { ov.style.transition='opacity .4s'; ov.style.opacity='0'; setTimeout(() => { ov.remove(); onDone && onDone(); }, 420); }, hold);
+}
+
 async function handleLaunch() {
     const input = document.getElementById('aspirationInput');
     const word = input.value.trim();
@@ -1358,9 +1381,7 @@ async function handleLaunch() {
     save();
     await saveToFirebase();
     hapticPattern([50, 30, 100]);
-    burstConfetti();
-    step = 16;
-    route();
+    setSailTransition(() => { step = 16; route(); });
 }
 
 function downloadCard() {
@@ -1368,7 +1389,7 @@ function downloadCard() {
     const btn = document.getElementById('downloadCardBtn');
     btn.textContent = 'Generating...'; btn.disabled = true;
     haptic(40);
-    html2canvas(card, { backgroundColor: '#1a1714', scale: 3, useCORS: true }).then(canvas => {
+    html2canvas(card, { backgroundColor: '#040a33', scale: 3, useCORS: true }).then(canvas => {
         const link = document.createElement('a');
         link.download = 'Beatty-SAIL-Card.png';
         link.href = canvas.toDataURL('image/png');
@@ -1382,7 +1403,7 @@ async function shareCard() {
     const btn = document.getElementById('shareCardBtn');
     btn.textContent = 'Preparing...'; btn.disabled = true;
     try {
-        const canvas = await html2canvas(card, { backgroundColor: '#1a1714', scale: 3, useCORS: true });
+        const canvas = await html2canvas(card, { backgroundColor: '#040a33', scale: 3, useCORS: true });
         const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
         const file = new File([blob], 'Beatty-SAIL-Card.png', { type: 'image/png' });
         await navigator.share({ title: 'My Beatty SAIL Card', text: `I'm ${(computeArchetype()).name}! Fold your own boat at Beatty Open House 2026.`, files: [file] });
