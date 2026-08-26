@@ -211,14 +211,63 @@ function placeBoat(data) {
     // Milestone check
     checkMilestone(count);
 
-    // Auto-spotlight: briefly show the latest boat
-    if (autoSpotlightEnabled && spotlightEl.style.display === 'none') {
-        showSpotlight(data);
-        clearTimeout(autoSpotlightTimer);
-        autoSpotlightTimer = setTimeout(() => {
-            if (spotlightEl.style.display !== 'none') closeSpotlight();
-        }, 4000);
+    // Celebrate the arrival WITHOUT covering the fleet. A full-screen modal on
+    // every boat would blanket the sea at a busy open house; instead we draw a
+    // golden halo on the actual boat and slide a lower-third ribbon
+    // ("Now setting sail — <Archetype> · <ASPIRATION>") that echoes the phone's
+    // parting line, "your boat is joining the fleet." A manual click still opens
+    // the rich modal spotlight below.
+    if (autoSpotlightEnabled) {
+        featureBoatInPlace(el);
+        enqueueRibbon(data, archetype);
     }
+}
+
+// === IN-PLACE FEATURE: halo the newest boat on the sea ===
+function featureBoatInPlace(el) {
+    if (!el) return;
+    const z0 = el.style.zIndex;
+    el.classList.add('featured');
+    el.style.zIndex = '150';
+    setTimeout(() => { el.classList.remove('featured'); el.style.zIndex = z0; }, 3600);
+}
+
+// === ARRIVAL RIBBON (lower third, non-blocking, burst-tolerant) ===
+const ribbonQueue = [];
+let ribbonActive = false;
+function enqueueRibbon(data, archetype) {
+    ribbonQueue.push({ data, archetype });
+    // Under a burst, keep only the most recent few so the ribbon never lags
+    // far behind the sea; the count badge shows how many are still queued.
+    if (ribbonQueue.length > 4) ribbonQueue.splice(0, ribbonQueue.length - 4);
+    pumpRibbon();
+}
+function pumpRibbon() {
+    if (ribbonActive || ribbonQueue.length === 0) return;
+    ribbonActive = true;
+    const { data, archetype } = ribbonQueue.shift();
+    renderRibbon(data, archetype);
+}
+function renderRibbon(data, archetype) {
+    const ac = archetype.color || '#FFE200';
+    const waiting = ribbonQueue.length;
+    const el = document.createElement('div');
+    el.className = 'arrival-ribbon';
+    el.innerHTML = `
+        <div class="ribbon-boat">${buildMiniBoat(data, 46)}</div>
+        <div class="ribbon-text">
+            <span class="ribbon-kicker">Now setting sail</span>
+            <span class="ribbon-name" style="color:${ac};">${archetype.name}</span>
+            <span class="ribbon-asp">${(data.aspiration || 'VOYAGER').toUpperCase()}</span>
+        </div>
+        ${waiting > 0 ? `<div class="ribbon-more">+${waiting}</div>` : ''}`;
+    document.body.appendChild(el);
+    // Move faster when boats are backed up so the ribbon keeps pace with arrivals
+    const dwell = waiting > 0 ? 1500 : 3200;
+    setTimeout(() => {
+        el.classList.add('ribbon-out');
+        setTimeout(() => { el.remove(); ribbonActive = false; pumpRibbon(); }, 440);
+    }, dwell);
 }
 
 // === SPOTLIGHT (RICH) ===
@@ -284,7 +333,7 @@ signInAnonymously(auth).then(startFleetListener).catch((e) => { console.warn("Fl
 document.addEventListener('keydown', (e) => {
     if (e.key === 'a') {
         autoSpotlightEnabled = !autoSpotlightEnabled;
-        showToast(autoSpotlightEnabled ? 'Auto-spotlight ON' : 'Auto-spotlight OFF');
+        showToast(autoSpotlightEnabled ? 'Arrival ribbons ON' : 'Arrival ribbons OFF');
     }
 });
 

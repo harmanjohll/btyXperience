@@ -277,6 +277,54 @@ body {
     100% { opacity: 0; transform: translate(-50%, -60%) scale(1.1); }
 }
 
+/* === IN-PLACE FEATURE HALO (the newest boat glows on the sea) === */
+.fleet-boat.featured::before {
+    content: '';
+    position: absolute; inset: -34% -30% -8% -30%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at 50% 50%,
+        rgba(255,226,0,0.38), rgba(255,226,0,0.10) 46%, transparent 72%);
+    z-index: -1; pointer-events: none;
+    animation: featurePulse 1.15s ease-in-out infinite;
+}
+@keyframes featurePulse {
+    0%,100% { opacity: 0.5;  transform: scale(0.9); }
+    50%     { opacity: 1;    transform: scale(1.14); }
+}
+
+/* === ARRIVAL RIBBON (lower third, non-blocking) === */
+.arrival-ribbon {
+    position: fixed;
+    bottom: 8%; left: 50%; transform: translateX(-50%);
+    z-index: 180;
+    display: flex; align-items: center; gap: 14px;
+    background: rgba(9, 17, 45, 0.86);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,226,0,0.35);
+    border-radius: 999px;
+    padding: 10px 22px 10px 12px;
+    box-shadow: 0 12px 44px rgba(0,0,0,0.45), 0 0 26px rgba(255,226,0,0.12);
+    animation: ribbonIn 0.5s cubic-bezier(0.22,1,0.36,1);
+}
+.arrival-ribbon.ribbon-out { animation: ribbonOut 0.42s ease forwards; }
+@keyframes ribbonIn  { from { opacity: 0; transform: translate(-50%, 26px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@keyframes ribbonOut { to   { opacity: 0; transform: translate(-50%, 16px); } }
+.ribbon-boat { width: 46px; height: 46px; flex: none; filter: drop-shadow(0 0 6px rgba(255,226,0,0.30)); }
+.ribbon-text { display: flex; flex-direction: column; line-height: 1.16; }
+.ribbon-kicker { font-size: 10px; text-transform: uppercase; letter-spacing: 0.22em; color: rgba(255,255,255,0.55); }
+.ribbon-name   { font-size: 18px; font-weight: 900; }
+.ribbon-asp    { font-size: 11px; letter-spacing: 0.18em; color: rgba(255,255,255,0.60); }
+.ribbon-more {
+    margin-left: 4px; font-size: 15px; font-weight: 900; color: var(--bty-yellow);
+    background: rgba(255,226,0,0.12); border-radius: 999px; padding: 4px 11px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fleet-boat.featured::before { animation: none; }
+    .arrival-ribbon { animation: none; }
+    .arrival-ribbon.ribbon-out { animation: none; opacity: 0; }
+}
+
 /* === TOAST === */
 .presenter-toast {
     position: fixed;
