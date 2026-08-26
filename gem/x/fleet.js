@@ -178,6 +178,18 @@ function showMilestone(n) {
     setTimeout(() => el.remove(), 3000);
 }
 
+// === EVEN HORIZONTAL SPREAD ===
+const FLEET_ZONES = 7;
+const zoneCounts = new Array(FLEET_ZONES).fill(0);
+function leastPopulatedZone() {
+    const min = Math.min(...zoneCounts);
+    const candidates = [];
+    for (let i = 0; i < FLEET_ZONES; i++) if (zoneCounts[i] === min) candidates.push(i);
+    const z = candidates[Math.floor(Math.random() * candidates.length)];
+    zoneCounts[z]++;
+    return z;
+}
+
 // === PLACE A BOAT ON THE OCEAN ===
 function placeBoat(data) {
     if (boatElements.has(data.uid)) return;
@@ -202,7 +214,13 @@ function placeBoat(data) {
     const depth = Math.random();
     const yTop = areaH * 0.28, yBot = areaH * 0.86;
     const y = yTop + depth * (yBot - yTop);
-    const x = areaW * 0.06 + Math.random() * (areaW * 0.88);
+    // Spread evenly: place each boat in the least-populated horizontal zone,
+    // jittered. Pure random clusters lopsidedly when only a few boats are on
+    // screen (very visible at the start of the event); zoning keeps the sea
+    // balanced from the first boat.
+    const zone = leastPopulatedZone();
+    const zoneW = (areaW * 0.88) / FLEET_ZONES;
+    const x = areaW * 0.06 + zone * zoneW + Math.random() * zoneW * 0.86;
     const size = 34 + depth * 46;
     const bobDelay = Math.random() * 4;
 
