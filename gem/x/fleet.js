@@ -2,15 +2,37 @@
    Rich spotlight, archetype distribution, arrival chime, milestones.
 */
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { buildOrigamiSVG, FIREBASE_CONFIG, LABELS, ARCHETYPES, SAIL_DATA } from './boat.js';
 
-// === FIREBASE INIT ===
-const app = initializeApp(FIREBASE_CONFIG);
-const db = getFirestore(app);
-const auth = getAuth(app);
+// === FIREBASE (dynamic import) ===
+// A static firebase import would kill the whole module — and blank the big
+// screen — if the venue network blocks or throttles the gstatic CDN. Load it
+// off the critical path instead: the ocean scene renders immediately, boats
+// stream in once live sync connects, and demo mode ('D') works either way.
+let initializeApp, getFirestore, collection, onSnapshot, getAuth, signInAnonymously;
+let db, auth;
+(async () => {
+    try {
+        const [a, fs, au] = await Promise.all([
+            import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
+            import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"),
+            import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"),
+        ]);
+        initializeApp = a.initializeApp;
+        ({ getFirestore, collection, onSnapshot } = fs);
+        ({ getAuth, signInAnonymously } = au);
+        const app = initializeApp(FIREBASE_CONFIG);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        // Sign in first so reads pass the secured Firestore rules; start the
+        // listener whether or not sign-in succeeds so it also works pre-rules.
+        await signInAnonymously(auth).catch((e) => console.warn("Fleet auth failed:", e));
+        startFleetListener();
+    } catch (e) {
+        console.warn("Fleet live sync unavailable — demo mode still works (press D):", e);
+        showConnectionNotice();
+    }
+})();
 
 // === DOM ===
 const fleetArea       = document.getElementById('fleetArea');
@@ -103,11 +125,18 @@ function buildMiniBoat(data, size = 60) {
         flag: data.flagColor || '#FFE200',
         mast: '#3d2b1a',
     };
-    return buildOrigamiSVG(colors, 8, size, {
+    let svg = buildOrigamiSVG(colors, 8, size, {
         aspiration: data.aspiration,
         flagIcon: data.flagIcon,
         marks: data.marks || [],
     });
+    // Strip the washi feTurbulence filter for fleet boats. The paper grain is
+    // imperceptible at 34–80px, but 100+ turbulence filters (one per boat,
+    // each bobbing) would cripple the big screen's frame rate at a full house.
+    // The phone keeps the full texture on its single hero boat.
+    svg = svg.replace(/<filter id="washiTex"[\s\S]*?<\/filter>/g, '')
+             .replace(/filter="url\(#washiTex\)"/g, '');
+    return svg;
 }
 
 // === ARCHETYPE DISTRIBUTION BAR ===
@@ -313,10 +342,9 @@ function showSpotlight(data) {
     spotlightEl.style.display = 'flex';
 }
 
-// === LISTEN TO FIREBASE ===
-// Sign in first so the read passes secured Firestore rules (they require auth);
-// start the listener whether or not sign-in succeeds so it also works pre-rules.
+// === LISTEN TO FIREBASE (invoked from the dynamic-import block once ready) ===
 function startFleetListener() {
+    if (!db || !onSnapshot) return;
     onSnapshot(collection(db, "x_boats"), (snapshot) => {
         snapshot.docChanges().forEach(change => {
             if (change.type === 'added' || change.type === 'modified') {
@@ -327,7 +355,16 @@ function startFleetListener() {
         });
     }, (err) => console.warn("Fleet listener error:", err));
 }
-signInAnonymously(auth).then(startFleetListener).catch((e) => { console.warn("Fleet auth failed:", e); startFleetListener(); });
+
+// === CONNECTION NOTICE (only if live sync can't load) ===
+function showConnectionNotice() {
+    if (document.getElementById('connNotice')) return;
+    const el = document.createElement('div');
+    el.id = 'connNotice';
+    el.className = 'conn-notice';
+    el.innerHTML = 'Live sync offline · press <b>D</b> for demo';
+    document.body.appendChild(el);
+}
 
 // === TOGGLE AUTO-SPOTLIGHT: press 'a' ===
 document.addEventListener('keydown', (e) => {
