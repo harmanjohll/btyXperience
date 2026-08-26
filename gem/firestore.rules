@@ -58,11 +58,12 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // SAIL origami — each participant's folded boat (read by the Fleet View).
-    // The boat is a richer object; keep it signed-in and keyed to the user.
+    // SAIL origami — each participant's folded boat (read by the Fleet View,
+    // which now signs in anonymously). A user may only write their OWN boat,
+    // so no phone can overwrite another participant's document.
     match /sailBoats/{uid} {
       allow read:  if signedIn();
-      allow write: if signedIn();
+      allow write: if signedIn() && request.auth.uid == uid;
     }
 
     // --- Presenter-owned control documents ---
