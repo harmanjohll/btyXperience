@@ -325,6 +325,25 @@ body {
     .arrival-ribbon.ribbon-out { animation: none; opacity: 0; }
 }
 
+/* === WAITING HINT (connected, awaiting first boat) === */
+.fleet-hint {
+    position: fixed; left: 50%; top: 62%; transform: translate(-50%, -50%);
+    z-index: 40; display: flex; align-items: center; gap: 10px;
+    color: rgba(255,255,255,0.62); font-size: 15px; letter-spacing: 0.04em;
+    background: rgba(9, 17, 45, 0.45); backdrop-filter: blur(4px);
+    padding: 10px 22px; border-radius: 999px;
+    border: 1px solid rgba(255,226,0,0.18);
+    animation: hintBreathe 3.2s ease-in-out infinite;
+}
+.fleet-hint-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--bty-yellow); box-shadow: 0 0 10px rgba(255,226,0,0.7);
+    animation: hintPulse 1.6s ease-in-out infinite;
+}
+@keyframes hintBreathe { 0%,100% { opacity: 0.7; } 50% { opacity: 1; } }
+@keyframes hintPulse { 0%,100% { transform: scale(0.8); opacity: 0.6; } 50% { transform: scale(1.25); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .fleet-hint, .fleet-hint-dot { animation: none; } }
+
 /* === CONNECTION NOTICE (live sync offline) === */
 .conn-notice {
     position: fixed; top: 1.5rem; right: 1.5rem; z-index: 60;

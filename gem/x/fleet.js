@@ -182,6 +182,10 @@ function showMilestone(n) {
 function placeBoat(data) {
     if (boatElements.has(data.uid)) return;
 
+    // First boat clears the "waiting" hint
+    const hint = document.getElementById('fleetHint');
+    if (hint) hint.remove();
+
     const archetype = computeArchetypeForData(data);
     data._archetype = archetype;
 
@@ -354,6 +358,17 @@ function startFleetListener() {
             }
         });
     }, (err) => console.warn("Fleet listener error:", err));
+    showWaitingHint();
+}
+
+// === WAITING HINT (live, but no boats yet) ===
+function showWaitingHint() {
+    if (document.getElementById('fleetHint') || boatElements.size > 0) return;
+    const el = document.createElement('div');
+    el.id = 'fleetHint';
+    el.className = 'fleet-hint';
+    el.innerHTML = `<span class="fleet-hint-dot"></span>Waiting for the first boat to set sail…`;
+    document.body.appendChild(el);
 }
 
 // === CONNECTION NOTICE (only if live sync can't load) ===

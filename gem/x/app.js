@@ -1387,6 +1387,14 @@ async function handleLaunch() {
 function downloadCard() {
     const card = document.getElementById('memento-card');
     const btn = document.getElementById('downloadCardBtn');
+    // html2canvas loads from a CDN; if it's blocked/offline, calling it throws
+    // synchronously (before the .then), which would strand the button on
+    // "Generating...". Fail gracefully instead — the card is still on screen to
+    // photograph.
+    if (typeof html2canvas === 'undefined') {
+        btn.textContent = 'Screenshot to save'; setTimeout(() => { btn.textContent = 'Download Card'; }, 2200);
+        return;
+    }
     btn.textContent = 'Generating...'; btn.disabled = true;
     haptic(40);
     html2canvas(card, { backgroundColor: '#040a33', scale: 3, useCORS: true }).then(canvas => {
@@ -1401,6 +1409,10 @@ function downloadCard() {
 async function shareCard() {
     const card = document.getElementById('memento-card');
     const btn = document.getElementById('shareCardBtn');
+    if (typeof html2canvas === 'undefined' || !navigator.share) {
+        btn.textContent = 'Screenshot to share'; setTimeout(() => { btn.textContent = 'Share'; }, 2200);
+        return;
+    }
     btn.textContent = 'Preparing...'; btn.disabled = true;
     try {
         const canvas = await html2canvas(card, { backgroundColor: '#040a33', scale: 3, useCORS: true });
