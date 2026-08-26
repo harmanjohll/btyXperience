@@ -11,7 +11,7 @@ import {
     SAIL_DATA, BOAT_DEFAULTS, ARCHETYPES, FOLD_GUIDES, FOLD_FLAPS, FOLD_LABELS, CREASE_LINES, LABELS,
     STAMP_MARKS, MARK_SLOTS,
     FIREBASE_CONFIG, LOGO_URL,
-} from '../sail/boat.js';
+} from './boat.js';
 
 // === PAPER CREASE SOUND (Web Audio API) ===
 let audioCtx;
