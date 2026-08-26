@@ -4,11 +4,13 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { buildOrigamiSVG, FIREBASE_CONFIG, LABELS, ARCHETYPES, SAIL_DATA } from './boat.js';
 
 // === FIREBASE INIT ===
 const app = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 // === DOM ===
 const fleetArea       = document.getElementById('fleetArea');
@@ -250,15 +252,20 @@ function showSpotlight(data) {
 }
 
 // === LISTEN TO FIREBASE ===
-onSnapshot(collection(db, "sailBoats"), (snapshot) => {
-    snapshot.docChanges().forEach(change => {
-        if (change.type === 'added' || change.type === 'modified') {
-            const data = { uid: change.doc.id, ...change.doc.data() };
-            boats.set(data.uid, data);
-            if (data.aspiration) placeBoat(data);
-        }
-    });
-});
+// Sign in first so the read passes secured Firestore rules (they require auth);
+// start the listener whether or not sign-in succeeds so it also works pre-rules.
+function startFleetListener() {
+    onSnapshot(collection(db, "sailBoats"), (snapshot) => {
+        snapshot.docChanges().forEach(change => {
+            if (change.type === 'added' || change.type === 'modified') {
+                const data = { uid: change.doc.id, ...change.doc.data() };
+                boats.set(data.uid, data);
+                if (data.aspiration) placeBoat(data);
+            }
+        });
+    }, (err) => console.warn("Fleet listener error:", err));
+}
+signInAnonymously(auth).then(startFleetListener).catch((e) => { console.warn("Fleet auth failed:", e); startFleetListener(); });
 
 // === TOGGLE AUTO-SPOTLIGHT: press 'a' ===
 document.addEventListener('keydown', (e) => {
