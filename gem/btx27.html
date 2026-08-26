@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Beatty Experience · The Hive</title>
+<meta name="description" content="Beatty Secondary Open House — Harmonising Hearts, Thriving Together.">
+
+<!-- Three.js for the wireframe globe. Loaded with a graceful fallback (see initGlobe). -->
+<script>window.__THREE_OK=false;</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
+        onload="window.__THREE_OK=true;" onerror="window.__THREE_OK=false;"></script>
+
+<style>
+/* ============================================================
+   THE HIVE — Beatty Secondary Open House (Presenter / Big Screen)
+   Design system: navy-dominant, gold accent, red sparingly.
+   Fonts: Georgia (display) + Calibri (body) via system stacks — NO web-font CDN.
+   Self-contained: no Tailwind, no external CSS. Offline-resilient.
+   ============================================================ */
+
+:root{
+  /* Brand */
+  --navy:#000C53; --navy-900:#00061f; --navy-850:#040a33; --navy-800:#071246;
+  --navy-700:#0c1c6e; --navy-600:#12299c;
+  --gold:#FFE200; --gold-soft:#FFEC66; --gold-deep:#E4C400;
+  --red:#EC3237;
+  --grey-1:#F5F5F5; --grey-2:#9E9E9E; --grey-3:#424242;
+  --ink:#EAECF7; --ink-dim:#A7ADD6;
+
+  /* Type */
+  --serif:"Georgia","Iowan Old Style","Times New Roman",serif;
+  --sans:"Calibri","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+
+  /* Motion */
+  --ease:cubic-bezier(.22,1,.36,1); --ease-in:cubic-bezier(.4,0,1,1);
+  --t-fast:.2s; --t:.45s; --t-slow:.9s;
+
+  /* Surfaces */
+  --card:rgba(10,20,74,.72);
+  --card-line:rgba(255,226,0,.18);
+  --glass:blur(14px) saturate(1.05);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden}
+body{
+  font-family:var(--sans); color:var(--ink);
+  background:
+    radial-gradient(1200px 700px at 15% -10%, rgba(255,226,0,.10), transparent 55%),
+    radial-gradient(1400px 900px at 110% 120%, rgba(18,41,156,.55), transparent 60%),
+    linear-gradient(160deg, var(--navy-900), var(--navy) 55%, var(--navy-850));
+  display:flex; flex-direction:column;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:var(--serif); font-weight:700; margin:0}
+.hidden{display:none !important}
+.serif{font-family:var(--serif)}
+.gold{color:var(--gold)}
+button{font-family:var(--sans)}
+
+/* --- Honeycomb backdrop (pure CSS, cheap) --- */
+#hexField{position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.5;
+  background-image:
+    linear-gradient(30deg, rgba(255,226,0,.028) 12%, transparent 12.5%, transparent 87%, rgba(255,226,0,.028) 87.5%),
+    linear-gradient(150deg, rgba(255,226,0,.028) 12%, transparent 12.5%, transparent 87%, rgba(255,226,0,.028) 87.5%),
+    linear-gradient(30deg, rgba(255,226,0,.028) 12%, transparent 12.5%, transparent 87%, rgba(255,226,0,.028) 87.5%),
+    linear-gradient(150deg, rgba(255,226,0,.028) 12%, transparent 12.5%, transparent 87%, rgba(255,226,0,.028) 87.5%);
+  background-size:56px 98px; background-position:0 0, 0 0, 28px 49px, 28px 49px;
+}
+#pollenCanvas{position:fixed; inset:0; z-index:1; pointer-events:none}
+
+/* --- Overlays --- */
+#reactionOverlay{position:fixed; bottom:120px; right:36px; width:120px; height:60vh; z-index:60; pointer-events:none; overflow:visible}
+.floating-reaction{position:absolute; bottom:0; font-size:2.6rem; opacity:0; will-change:transform,opacity;
+  animation:floatUp 3.2s var(--ease) forwards; filter:drop-shadow(0 4px 10px rgba(0,0,0,.5))}
+@keyframes floatUp{
+  0%{opacity:0; transform:translateY(0) scale(.6)}
+  12%{opacity:1}
+  60%{opacity:.9; transform:translateY(-38vh) scale(1.25) rotate(-8deg)}
+  100%{opacity:0; transform:translateY(-58vh) scale(.7) rotate(10deg)}}
+
+#confettiOverlay{position:fixed; inset:0; pointer-events:none; z-index:70; overflow:hidden}
+.confetti-piece{position:absolute; top:-24px; width:12px; height:12px; animation:confettiFall 3.4s var(--ease-in) forwards}
+@keyframes confettiFall{0%{transform:translateY(0) rotateZ(0) rotateX(0); opacity:1}
+  100%{transform:translateY(108vh) rotateZ(760deg) rotateX(420deg); opacity:0}}
+
+#toast{visibility:hidden; position:fixed; left:50%; bottom:120px; transform:translateX(-50%);
+  background:var(--navy-800); color:#fff; border:1px solid var(--gold); border-radius:12px;
+  padding:14px 26px; font-size:1.1rem; z-index:200; box-shadow:0 12px 30px rgba(0,0,0,.5)}
+#toast.show{visibility:visible; animation:toastIn .4s var(--ease), toastOut .4s var(--ease) 2.8s}
+@keyframes toastIn{from{opacity:0; transform:translate(-50%,20px)}to{opacity:1; transform:translate(-50%,0)}}
+@keyframes toastOut{to{opacity:0; transform:translate(-50%,20px)}}
+
+/* --- Header --- */
+header{position:relative; z-index:40; flex:0 0 auto; height:clamp(84px,11vh,120px);
+  display:flex; align-items:center; gap:20px; padding:0 clamp(18px,3vw,40px);
+  background:linear-gradient(180deg, rgba(0,6,31,.72), rgba(0,6,31,.30));
+  border-bottom:1px solid rgba(255,226,0,.16); backdrop-filter:var(--glass)}
+header .crest{height:clamp(52px,7vh,80px); width:auto; filter:drop-shadow(0 4px 12px rgba(0,0,0,.5))}
+.brandwrap{display:flex; flex-direction:column; justify-content:center; line-height:1}
+.brandwrap .school{font-family:var(--serif); font-weight:700; color:var(--gold);
+  font-size:clamp(1.3rem,2.4vw,2rem); letter-spacing:.5px}
+.brandwrap .theme{font-size:clamp(.62rem,1vw,.82rem); letter-spacing:.32em; text-transform:uppercase;
+  color:var(--ink-dim); margin-top:6px; font-weight:600}
+.header-right{margin-left:auto; display:flex; align-items:center; gap:14px}
+.pill{background:rgba(0,6,31,.55); border:1px solid rgba(255,255,255,.12); border-radius:14px;
+  padding:10px 16px; display:flex; align-items:center; gap:10px; font-weight:700}
+#hivePulse{gap:5px}
+.pulse-bar{width:5px; height:9px; border-radius:3px; background:var(--gold); transition:height .3s var(--ease); opacity:.5}
+.pulse-bar.active{opacity:1}
+#participantPill{font-size:clamp(1rem,1.7vw,1.5rem); min-width:180px; justify-content:center}
+#participantPill .n{font-family:var(--serif); color:#fff}
+.count-bump{animation:bump .45s var(--ease)}
+@keyframes bump{0%{transform:scale(1)}45%{transform:scale(1.18)}100%{transform:scale(1)}}
+
+/* --- Main --- */
+main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex; flex-direction:column}
+.stage{position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center}
+.wrap{width:min(96vw,1700px); margin:0 auto; padding:0 clamp(14px,2vw,32px)}
+
+.fade-in{animation:fadeIn var(--t-slow) var(--ease) both}
+@keyframes fadeIn{from{opacity:0; transform:translateY(14px)}to{opacity:1; transform:translateY(0)}}
+.step-enter{animation:stepIn .6s var(--ease) both}
+@keyframes stepIn{from{opacity:0; transform:translateX(44px) scale(.985)}to{opacity:1; transform:translateX(0) scale(1)}}
+.step-exit{animation:stepOut .28s var(--ease-in) both}
+@keyframes stepOut{to{opacity:0; transform:translateX(-40px)}}
+
+.eyebrow{font-size:clamp(.7rem,1.1vw,.95rem); letter-spacing:.34em; text-transform:uppercase;
+  color:var(--gold); font-weight:700; margin-bottom:14px}
+.stage-title{font-size:clamp(2.2rem,5vw,4.6rem); color:#fff; line-height:1.02; letter-spacing:-.01em}
+.stage-sub{font-size:clamp(1.05rem,2vw,1.7rem); color:var(--ink-dim); margin-top:16px; max-width:60ch; line-height:1.5}
+
+/* --- Buttons --- */
+.btn{position:relative; overflow:hidden; cursor:pointer; border:none; border-radius:12px; font-weight:800;
+  letter-spacing:.04em; text-transform:uppercase; transition:transform var(--t-fast) var(--ease), box-shadow var(--t-fast), background var(--t-fast)}
+.btn-primary{background:var(--gold); color:var(--navy); padding:.85rem 2.1rem; font-size:1.05rem;
+  box-shadow:0 10px 26px rgba(255,226,0,.28)}
+.btn-primary:hover{transform:translateY(-2px); background:#fff; box-shadow:0 14px 32px rgba(255,226,0,.4)}
+.btn-ghost{background:rgba(255,255,255,.06); color:#fff; border:1px solid rgba(255,255,255,.18); padding:.8rem 1.7rem; font-size:.98rem}
+.btn-ghost:hover{background:rgba(255,255,255,.12)}
+.ripple{position:absolute; border-radius:50%; background:rgba(0,12,83,.28); transform:scale(0); animation:rip .6s var(--ease) forwards; pointer-events:none}
+@keyframes rip{to{transform:scale(4); opacity:0}}
+
+/* --- Start screen --- */
+#startCrest{height:clamp(150px,26vh,300px); width:auto; filter:drop-shadow(0 0 34px rgba(255,226,0,.28));
+  animation:crestGlow 5s ease-in-out infinite}
+@keyframes crestGlow{0%,100%{filter:drop-shadow(0 0 20px rgba(255,226,0,.22))}50%{filter:drop-shadow(0 0 48px rgba(255,226,0,.55))}}
+.join-card{display:flex; align-items:center; gap:clamp(24px,4vw,60px); background:rgba(0,6,31,.42);
+  border:1px solid var(--card-line); border-radius:26px; padding:clamp(20px,3vw,42px);
+  backdrop-filter:var(--glass); box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.qr-frame{background:#fff; padding:16px; border-radius:18px; box-shadow:inset 0 0 0 3px rgba(0,12,83,.1)}
+.qr-frame img{width:clamp(150px,17vw,240px); height:clamp(150px,17vw,240px); display:block}
+
+/* --- Honeycomb / archetype cells --- */
+.hex{position:relative; clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.compass-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:clamp(12px,1.6vw,26px); width:100%}
+.arch-cell{position:relative; background:linear-gradient(160deg, var(--navy-700), var(--navy-850));
+  border:1px solid rgba(255,226,0,.16); border-radius:20px; padding:clamp(12px,1.5vw,22px);
+  overflow:hidden; min-height:clamp(120px,17vh,190px); display:flex; flex-direction:column; justify-content:flex-end}
+.arch-cell .fill{position:absolute; left:0; right:0; bottom:0; background:linear-gradient(180deg, rgba(255,226,0,.14), rgba(255,226,0,.42));
+  transition:height 1s var(--ease); z-index:0}
+.arch-cell .ico{font-size:clamp(1.8rem,3vw,2.8rem); position:relative; z-index:1; line-height:1}
+.arch-cell .nm{font-family:var(--serif); font-weight:700; color:#fff; position:relative; z-index:1;
+  font-size:clamp(.95rem,1.5vw,1.5rem); margin-top:8px; line-height:1.05}
+.arch-cell .tag{font-size:clamp(.6rem,.9vw,.8rem); color:var(--gold); letter-spacing:.12em; text-transform:uppercase; position:relative; z-index:1; margin-top:2px}
+.arch-cell .pc{position:absolute; top:12px; right:16px; font-family:var(--serif); font-weight:700;
+  font-size:clamp(1.1rem,2vw,1.8rem); color:#fff; z-index:1; text-shadow:0 2px 6px rgba(0,0,0,.5)}
+.arch-cell.lead{border-color:var(--gold); box-shadow:0 0 0 2px rgba(255,226,0,.35), 0 16px 40px rgba(255,226,0,.18); animation:leadPulse 2.4s ease-in-out infinite}
+@keyframes leadPulse{0%,100%{box-shadow:0 0 0 2px rgba(255,226,0,.3),0 12px 30px rgba(255,226,0,.14)}50%{box-shadow:0 0 0 3px rgba(255,226,0,.6),0 18px 46px rgba(255,226,0,.3)}}
+
+/* --- Poll --- */
+.poll-q{font-family:var(--serif); font-size:clamp(1.6rem,3.4vw,3.4rem); color:#fff; line-height:1.08; max-width:22ch}
+.poll-opt{margin-bottom:clamp(10px,1.5vh,20px)}
+.poll-row{display:flex; justify-content:space-between; align-items:end; margin-bottom:8px}
+.poll-label{font-family:var(--serif); font-size:clamp(1.05rem,2vw,1.9rem); color:#fff}
+.poll-n{font-family:var(--serif); color:var(--ink-dim); font-size:clamp(1rem,1.6vw,1.5rem)}
+.poll-track{width:100%; height:clamp(38px,5.5vh,64px); background:rgba(255,255,255,.06); border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.08)}
+.poll-fill{height:100%; width:0; border-radius:14px; background:linear-gradient(90deg, var(--navy-600), #2a49d6);
+  display:flex; align-items:center; justify-content:flex-end; padding-right:18px; color:#fff; font-family:var(--serif);
+  font-weight:700; font-size:clamp(1rem,1.8vw,1.6rem); transition:width .9s var(--ease), background .4s}
+.poll-fill.correct{background:linear-gradient(90deg, var(--gold-deep), var(--gold)); color:var(--navy)}
+.poll-opt.win .poll-track{box-shadow:0 0 0 3px var(--gold); animation:winPulse 2s infinite}
+@keyframes winPulse{0%{box-shadow:0 0 0 0 rgba(255,226,0,.55)}70%{box-shadow:0 0 0 16px rgba(255,226,0,0)}100%{box-shadow:0 0 0 0 rgba(255,226,0,0)}}
+:focus-visible{outline:2px solid var(--gold); outline-offset:2px}
+#resetInput:focus{border-color:var(--gold) !important}
+.votes-chip{font-family:var(--serif); font-weight:700; color:var(--navy); background:var(--gold); border-radius:12px; padding:.5rem 1.2rem; font-size:clamp(1rem,1.7vw,1.5rem)}
+
+/* --- Fun fact --- */
+.fact-card{position:relative; text-align:center; padding:clamp(28px,5vw,72px);
+  background:linear-gradient(150deg, rgba(255,226,0,.10), rgba(0,6,31,.7)); border:1px solid var(--card-line);
+  border-radius:32px; backdrop-filter:var(--glass); max-width:min(90vw,1100px)}
+.fact-num{font-family:var(--serif); font-weight:700; line-height:.9; font-size:clamp(6rem,20vw,17rem);
+  background:linear-gradient(160deg,#fff,var(--gold)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 10px 40px rgba(255,226,0,.3))}
+.fact-label{font-family:var(--serif); color:#fff; font-size:clamp(1.4rem,3vw,2.8rem); margin-top:6px}
+.fact-sub{color:var(--ink-dim); font-size:clamp(1rem,1.7vw,1.5rem); margin-top:16px}
+
+/* --- DREAM value cards --- */
+/* grid-auto-rows (not height) gives each card row a definite height so the flip
+   faces — which are absolutely positioned — always have height, even when wrapped. */
+.dream-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:clamp(10px,1.4vw,22px); width:100%; grid-auto-rows:min(56vh,620px)}
+.dcard{perspective:1400px; cursor:pointer}
+.dcard-inner{position:relative; width:100%; height:100%; transition:transform .8s var(--ease); transform-style:preserve-3d}
+.dcard.flip .dcard-inner{transform:rotateY(180deg)}
+.dface{position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border-radius:22px; overflow:hidden; border:1px solid rgba(255,226,0,.2)}
+.dfront{background:var(--navy-850)}
+.dfront .bg{position:absolute; inset:0; background-size:cover; background-position:center; opacity:.55; transition:opacity var(--t) var(--ease)}
+.dcard:hover .dfront .bg{opacity:.8}
+.dfront .scrim{position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,6,31,.15) 30%, rgba(0,6,31,.9))}
+.dfront .txt{position:absolute; left:0; right:0; bottom:0; padding:clamp(12px,1.6vw,22px); z-index:2}
+.dfront .letter{font-family:var(--serif); font-weight:700; color:var(--gold); font-size:clamp(2.6rem,5vw,4.6rem); line-height:1}
+.dfront .word{font-family:var(--serif); color:#fff; font-size:clamp(1rem,1.7vw,1.7rem); letter-spacing:.02em}
+.dback{background:linear-gradient(160deg,var(--navy-700),var(--navy-850)); transform:rotateY(180deg); padding:clamp(16px,2vw,30px); display:flex; flex-direction:column; justify-content:center}
+.dback h4{color:var(--gold); font-size:clamp(1.2rem,2vw,2rem); margin-bottom:16px}
+.dback li{color:var(--ink); font-size:clamp(.82rem,1.15vw,1.2rem); margin-bottom:12px; line-height:1.35; list-style:none; padding-left:22px; position:relative}
+.dback li:before{content:"🐝"; position:absolute; left:0; font-size:.85em}
+
+/* --- Globe & map --- */
+.split{display:flex; width:100%; height:100%}
+.split .main-vis{flex:2; position:relative; overflow:hidden; border-right:1px solid rgba(255,226,0,.14)}
+.split .side{flex:1; background:rgba(0,6,31,.5); backdrop-filter:var(--glass); padding:clamp(16px,2vw,34px); overflow-y:auto}
+#globeHost{width:100%; height:100%; position:relative; cursor:grab}
+#globePins{position:absolute; inset:0; pointer-events:none; overflow:hidden}
+.gpin{position:absolute; transform:translate(-50%,-100%); display:flex; flex-direction:column; align-items:center; pointer-events:auto; cursor:pointer; transition:transform .2s}
+.gpin:hover{transform:translate(-50%,-100%) scale(1.15); z-index:50}
+.gpin .lbl{background:rgba(0,6,31,.92); border:1px solid var(--gold); color:#fff; font-weight:700; font-size:clamp(.7rem,1vw,1rem); padding:5px 11px; border-radius:9px; white-space:nowrap; box-shadow:0 6px 16px rgba(0,0,0,.5)}
+.gpin .stem{width:2px; height:26px; background:var(--gold)}
+.gpin .dot{width:14px; height:14px; border-radius:50%; background:var(--gold); box-shadow:0 0 14px var(--gold); margin-top:-6px}
+.globe-ctrl{position:absolute; bottom:26px; left:50%; transform:translateX(-50%); z-index:30}
+.vis-title{position:absolute; top:20px; left:24px; z-index:12; font-family:var(--serif); color:#fff; font-size:clamp(1.1rem,2.4vw,2.2rem); background:rgba(0,6,31,.55); padding:9px 20px; border-radius:12px; border:1px solid var(--card-line); backdrop-filter:var(--glass); max-width:70%}
+.vis-title.center{left:50%; transform:translateX(-50%); text-align:center}
+.vis-title .vs{display:block; font-family:var(--sans); font-weight:600; color:var(--ink-dim); font-size:clamp(.7rem,1.1vw,.95rem); margin-top:4px}
+
+.map-host{flex:2; position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; border-right:1px solid rgba(255,226,0,.14)}
+.map-inner{position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center}
+.map-img{position:absolute; inset:0; width:100%; height:100%; object-fit:contain;
+  filter:brightness(0) invert(1) sepia(1) saturate(6) hue-rotate(1deg) drop-shadow(0 0 12px rgba(255,226,0,.5)); opacity:.85}
+.mpin{position:absolute; transform:translate(-50%,-100%); display:flex; flex-direction:column; align-items:center; cursor:pointer; transition:transform .2s; z-index:5}
+.mpin:hover{transform:translate(-50%,-100%) scale(1.12); z-index:50}
+.mpin .lbl{font-family:var(--serif); font-weight:700; color:var(--navy); background:var(--gold); padding:5px 12px; border-radius:9px; font-size:clamp(.72rem,1.05vw,1.15rem); white-space:nowrap; box-shadow:0 6px 14px rgba(0,0,0,.45); border:2px solid #fff}
+.mpin .dot{width:20px; height:20px; border-radius:50%; border:3px solid #fff; box-shadow:0 4px 10px rgba(0,0,0,.5); margin-top:2px}
+.side-h{font-family:var(--serif); color:var(--gold); font-size:clamp(1.2rem,2vw,2rem); margin-bottom:18px}
+.side-row{margin-bottom:16px}
+.side-row .lab{display:flex; justify-content:space-between; color:#fff; font-weight:700; font-size:clamp(.85rem,1.2vw,1.2rem); margin-bottom:6px}
+.side-track{height:clamp(14px,2vh,22px); background:rgba(255,255,255,.07); border-radius:9px; overflow:hidden}
+.side-fill{height:100%; width:0; background:linear-gradient(90deg,var(--gold-deep),var(--gold)); border-radius:9px; transition:width .7s var(--ease)}
+
+/* --- Pulse check --- */
+.pulse-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:clamp(14px,2vw,30px); width:100%; max-width:1300px}
+.pulse-cell{background:var(--card); border:1px solid rgba(255,255,255,.1); border-radius:22px; padding:clamp(18px,2.4vw,36px); text-align:center}
+.pulse-cell .e{font-size:clamp(3rem,6vw,5rem)}
+.pulse-cell .l{font-family:var(--serif); color:#fff; font-size:clamp(1rem,1.7vw,1.6rem); margin:10px 0 16px}
+.pulse-cell .track{height:22px; background:rgba(255,255,255,.08); border-radius:11px; overflow:hidden}
+.pulse-cell .fill{height:100%; width:0; border-radius:11px; background:linear-gradient(90deg,var(--gold-deep),var(--gold)); transition:width .8s var(--ease); color:var(--navy); font-weight:800; font-size:.85rem; text-align:center; line-height:22px}
+
+/* --- Finale: Hive of Aspirations --- */
+#hiveHost{position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; overflow:hidden}
+.hive-cell{position:absolute; width:150px; height:132px; display:flex; align-items:center; justify-content:center; text-align:center;
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
+  background:linear-gradient(160deg, var(--navy-700), var(--navy-850)); border:0; color:#fff;
+  font-family:var(--serif); font-weight:700; padding:14px; opacity:0; transform:scale(.4);
+  transition:opacity 1s var(--ease), transform 1s var(--ease), background 1s var(--ease); overflow:hidden; word-break:break-word}
+.hive-cell.on{opacity:1; transform:scale(1); background:linear-gradient(160deg, rgba(255,226,0,.85), var(--gold-deep)); color:var(--navy);
+  box-shadow:0 0 30px rgba(255,226,0,.4)}
+.hive-empty{color:var(--ink-dim); font-size:clamp(1.4rem,3vw,2.4rem); font-family:var(--serif)}
+
+/* --- Modal --- */
+.overlay{position:fixed; inset:0; background:rgba(0,4,20,.9); backdrop-filter:blur(10px); z-index:150; display:flex; align-items:center; justify-content:center; padding:20px}
+.modal{background:linear-gradient(160deg,var(--navy-800),var(--navy-900)); border:1px solid var(--card-line); border-radius:26px;
+  padding:clamp(24px,4vw,52px); max-width:860px; width:100%; box-shadow:0 40px 90px rgba(0,0,0,.7); position:relative; max-height:88vh; overflow-y:auto}
+.modal .x{position:absolute; top:20px; right:24px; background:none; border:none; color:var(--ink-dim); font-size:2.6rem; cursor:pointer; line-height:1}
+.modal h2{color:var(--gold); font-size:clamp(1.6rem,3vw,2.6rem); margin-bottom:16px; padding-right:40px}
+.badge{display:inline-flex; align-items:center; gap:6px; background:rgba(255,226,0,.12); border:1px solid var(--card-line); color:var(--gold);
+  border-radius:999px; padding:7px 16px; font-weight:700; font-size:clamp(.8rem,1.1vw,1rem); margin:0 10px 12px 0}
+.modal p{font-size:clamp(1rem,1.5vw,1.4rem); line-height:1.55; color:var(--ink)}
+.modal li{font-size:clamp(.95rem,1.3vw,1.25rem); line-height:1.5; margin:10px 0 10px 4px; list-style:none; position:relative; padding-left:26px; color:var(--ink)}
+.modal li:before{content:"🐝"; position:absolute; left:0}
+
+/* --- Presenter panel --- */
+#presenterPanel{position:fixed; top:14px; right:14px; z-index:120; width:288px}
+.pp-box{background:rgba(0,6,31,.94); border:1px solid var(--card-line); border-radius:16px; padding:16px; box-shadow:0 20px 50px rgba(0,0,0,.6)}
+.pp-box h3{color:var(--gold); font-size:.7rem; letter-spacing:.22em; text-transform:uppercase; margin-bottom:12px; font-family:var(--sans); font-weight:800}
+.pp-step{background:rgba(255,255,255,.05); border-radius:10px; padding:9px 12px; font-size:.85rem; color:#fff; margin-bottom:10px; min-height:38px}
+.pp-btn{width:100%; border:none; border-radius:10px; padding:9px; font-weight:700; font-size:.78rem; cursor:pointer; color:#fff; margin-bottom:8px; transition:filter var(--t-fast)}
+.pp-btn:hover{filter:brightness(1.18)}
+.pp-row{display:flex; gap:8px}
+.pp-row .pp-btn{margin-bottom:0}
+.pp-blue{background:#12299c} .pp-grey{background:#33384f} .pp-gold{background:var(--gold-deep); color:var(--navy)} .pp-red{background:#7a1f22; border:1px solid rgba(236,50,55,.4)}
+
+/* --- QR overlay --- */
+#qrOverlay{position:fixed; inset:0; z-index:160; background:rgba(0,4,20,.94); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; cursor:pointer}
+#qrOverlay .qr-big{background:#fff; padding:26px; border-radius:28px; box-shadow:0 30px 80px rgba(0,0,0,.6)}
+#qrOverlay .qr-big img{width:min(52vh,520px); height:min(52vh,520px); display:block}
+
+/* --- Footer nav (BTY CSS footer ribbon integrated) --- */
+footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(180deg, rgba(0,6,31,.35), rgba(0,6,31,.82));
+  border-top:1px solid rgba(255,226,0,.16); backdrop-filter:var(--glass); padding:clamp(10px,1.4vh,18px) clamp(16px,2.5vw,36px)}
+.nav-row{display:flex; align-items:center; gap:clamp(14px,2vw,32px); width:min(98vw,1800px); margin:0 auto}
+.progress-wrap{flex:1; display:flex; flex-direction:column}
+.progress-meta{display:flex; justify-content:space-between; font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-dim); margin-bottom:6px}
+.progress-meta .motto{color:var(--gold); font-style:italic; text-transform:none; letter-spacing:.04em; font-family:var(--serif)}
+.progress-bar{height:12px; background:rgba(255,255,255,.08); border-radius:8px; overflow:hidden}
+.progress-fill{height:100%; width:0; background:linear-gradient(90deg,var(--gold-deep),var(--gold)); border-radius:8px; box-shadow:0 0 14px rgba(255,226,0,.6); transition:width .5s var(--ease)}
+
+/* Narrower / non-16:9 projectors: relax the DREAM grid before it clips */
+@media (max-width:1180px){ .dream-grid{grid-template-columns:repeat(3,1fr); grid-auto-rows:clamp(230px,40vh,360px)} }
+/* Short projectors (e.g. 4:3 1024x768): let a tall stage scroll rather than clip */
+@media (max-height:800px){ .stage{justify-content:flex-start; overflow-y:auto; padding:12px 0} }
+@media (max-width:820px){
+  .compass-grid,.pulse-grid{grid-template-columns:repeat(2,1fr)}
+  .dream-grid{grid-template-columns:repeat(3,1fr); grid-auto-rows:clamp(220px,38vh,340px)}
+  .split,.map-host{flex-direction:column}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001s !important; animation-iteration-count:1 !important; transition-duration:.08s !important}
+  #pollenCanvas{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="hexField"></div>
+<canvas id="pollenCanvas"></canvas>
+<div id="reactionOverlay"></div>
+<div id="confettiOverlay"></div>
+<div id="toast">Notification</div>
+
+<!-- Presenter panel -->
+<div id="presenterPanel" class="hidden">
+  <div class="pp-box">
+    <h3>Presenter Controls</h3>
+    <div id="ppStep" class="pp-step">—</div>
+    <div class="pp-row" style="margin-bottom:8px">
+      <button id="ppPace" class="pp-btn pp-blue">Pace: Audience</button>
+      <button id="ppSound" class="pp-btn pp-grey">🔊 Sound</button>
+    </div>
+    <div class="pp-row" style="margin-bottom:8px">
+      <button id="ppQR" class="pp-btn pp-grey">Show QR</button>
+      <button id="ppFleet" class="pp-btn pp-grey">Fleet View</button>
+    </div>
+    <button id="ppReset" class="pp-btn pp-red">Reset Session</button>
+  </div>
+</div>
+
+<!-- QR overlay -->
+<div id="qrOverlay" class="hidden">
+  <div style="text-align:center">
+    <div class="qr-big" style="display:inline-block"><img id="qrBigImg" src="joinbtyqr.png" alt="Scan to join" onerror="this.outerHTML='&lt;div style=&quot;width:min(52vh,520px);height:min(52vh,520px);display:flex;align-items:center;justify-content:center;color:#000;font-weight:700;text-align:center;padding:20px&quot;&gt;Join at<br>go.gov.sg/joinbtx&lt;/div&gt;'"></div>
+    <p style="color:#fff; font-family:var(--serif); font-size:clamp(1.6rem,3vw,2.6rem); margin-top:22px">Scan to join the Hive</p>
+    <p style="color:var(--ink-dim); margin-top:6px">Tap anywhere to dismiss</p>
+  </div>
+</div>
+
+<!-- Reset modal -->
+<div id="resetModal" class="overlay hidden">
+  <div class="modal" style="max-width:560px; text-align:center">
+    <h2 style="padding-right:0">⚠ Confirm Reset</h2>
+    <p>This wipes all audience data from this session. This cannot be undone.</p>
+    <input id="resetInput" placeholder="Type RESET to confirm" style="width:100%; margin:22px 0; padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.06); color:#fff; text-align:center; font-size:1.1rem; text-transform:uppercase; outline:none">
+    <div style="display:flex; gap:14px; justify-content:center">
+      <button id="resetCancel" class="btn btn-ghost">Cancel</button>
+      <button id="resetConfirm" class="btn" style="background:var(--red); color:#fff; padding:.8rem 1.9rem">Confirm Wipe</button>
+    </div>
+  </div>
+</div>
+
+<!-- Nexus modal -->
+<div id="nexusModal" class="overlay hidden">
+  <div class="modal">
+    <button class="x" id="nexusClose">&times;</button>
+    <div id="nexusModalBody"></div>
+  </div>
+</div>
+
+<!-- Header -->
+<header>
+  <img class="crest" src="BTlogo.png" alt="Beatty Secondary crest" onerror="this.style.display='none'">
+  <div class="brandwrap">
+    <span class="school">BEATTY SECONDARY</span>
+    <span class="theme">Harmonising Hearts · Thriving Together</span>
+  </div>
+  <div class="header-right">
+    <div class="pill" id="hivePulse" title="The Hive is buzzing">
+      <span class="pulse-bar"></span><span class="pulse-bar"></span><span class="pulse-bar"></span><span class="pulse-bar"></span><span class="pulse-bar"></span>
+    </div>
+    <div class="pill" id="participantPill" aria-live="polite"><span>🐝</span><span class="n" id="pCount">Warming up…</span></div>
+  </div>
+</header>
+
+<!-- Main -->
+<main>
+  <!-- Start -->
+  <section id="start" class="stage fade-in">
+    <div class="wrap" style="text-align:center">
+      <img id="startCrest" src="BTlogo.png" alt="Beatty Secondary crest" onerror="this.style.display='none'">
+      <p class="eyebrow" style="margin-top:20px">Beatty Secondary School · Open House</p>
+      <h1 class="stage-title" style="font-size:clamp(2.6rem,7vw,6.2rem)">Come Into the Hive</h1>
+      <p class="stage-sub" style="margin:14px auto 0">Harmonising Hearts, Thriving Together — where every aspiration takes flight.</p>
+      <div class="join-card" style="margin:clamp(26px,4vh,50px) auto 0; width:fit-content">
+        <div class="qr-frame"><img src="joinbtyqr.png" alt="QR code to join" onerror="this.parentElement.innerHTML='<div style=&quot;width:180px;height:180px;display:flex;align-items:center;justify-content:center;color:#000;font-weight:700&quot;>Scan QR at booth</div>'"></div>
+        <div style="text-align:left; display:flex; flex-direction:column; gap:14px">
+          <p style="font-family:var(--serif); font-size:clamp(1.6rem,3vw,2.6rem); color:#fff">Scan to join</p>
+          <p style="color:var(--ink-dim); font-size:clamp(1rem,1.6vw,1.4rem)">Take out your phone — your journey is personal.</p>
+          <button id="beginBtn" class="btn btn-primary" style="align-self:flex-start; margin-top:6px; font-size:1.2rem; padding:1rem 2.4rem">Begin the Journey ➜</button>
+          <button id="startReset" class="hidden" style="align-self:flex-start; background:rgba(236,50,55,.15); color:#ffb4b6; border:1px solid rgba(236,50,55,.3); padding:.5rem 1rem; border-radius:8px; font-size:.85rem; cursor:pointer">⚠ Reset Session</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Journey host -->
+  <section id="journey" class="stage hidden">
+    <div id="journeyContent" style="width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center"></div>
+  </section>
+</main>
+
+<!-- Footer nav -->
+<footer>
+  <div class="nav-row">
+    <button id="prevBtn" class="btn btn-ghost" style="display:none; min-width:150px">❮ Back</button>
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span id="progText">Step 0 / 0</span>
+        <span class="motto">Non Vi Sed Arte</span>
+      </div>
+      <div class="progress-bar"><div id="progFill" class="progress-fill"></div></div>
+    </div>
+    <button id="nextBtn" class="btn btn-primary" style="min-width:170px">Next ❯</button>
+  </div>
+</footer>
+
+<script type="module">
+// Firebase SDK is loaded via DYNAMIC import so that if the CDN is slow or
+// unreachable on venue wifi, the module STILL runs — the presentation boots
+// in offline/demo mode instead of the whole page going dead. (A static
+// `import` resolves before any code runs, so a CDN failure would kill everything.)
+let initializeApp, getFirestore, collection, getDocs, writeBatch, onSnapshot, doc, setDoc, getAuth, signInAnonymously;
+async function loadFirebase(){
+  const [appM, fsM, authM] = await Promise.all([
+    import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
+    import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"),
+    import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"),
+  ]);
+  initializeApp = appM.initializeApp;
+  ({ getFirestore, collection, getDocs, writeBatch, onSnapshot, doc, setDoc } = fsM);
+  ({ getAuth, signInAnonymously } = authM);
+}
+
+/* =====================================================================
+   CANONICAL SHARED DATA — MUST STAY IDENTICAL IN btx27.html & joinbtx27.html
+   The archetype KEYS below are the single source of truth. The presenter
+   compass chart and the audience quiz both use exactly these 8 keys, so
+   the live "room personality" always renders correctly. Do not desync.
+   ===================================================================== */
+const ARCHETYPES = [
+  { key:'The Innovator',           icon:'⚙️',  tag:'Builder Bee' },
+  { key:'The Global Explorer',     icon:'🧭',  tag:'Scout Bee' },
+  { key:'The Industry Trailblazer',icon:'🏗️',  tag:'Forager Bee' },
+  { key:'The Community Steward',    icon:'🤝',  tag:'Guardian Bee' },
+  { key:'The Creative Artist',     icon:'🎭',  tag:'Dancer Bee' },
+  { key:'The STEM Futurist',       icon:'🔬',  tag:'Architect Bee' },
+  { key:'The Voice Amplifier',     icon:'📣',  tag:'Herald Bee' },
+  { key:'The Eco-Strategist',      icon:'🌱',  tag:'Keeper Bee' },
+];
+const ARCH_KEYS = ARCHETYPES.map(a=>a.key);
+
+const firebaseConfig = { apiKey:"AIzaSyBjHO57QKoMW-u4oLGGdgDSqw5gttqX6Fg", authDomain:"btyx-61dc6.firebaseapp.com", projectId:"btyx-61dc6", storageBucket:"btyx-61dc6.appspot.com", messagingSenderId:"851137405745", appId:"1:851137405745:web:c95b86b6f0462a9bc20610" };
+
+let app, db, auth, dbReady=false;
+const isPresenter = new URLSearchParams(location.search).get('presenter')==='true';
+
+// Load Firebase, init, and sign in — all off the critical path. The UI is
+// interactive immediately (below); live sync attaches only if/when this resolves.
+loadFirebase()
+  .then(()=>{ app=initializeApp(firebaseConfig); db=getFirestore(app); auth=getAuth(app); return signInAnonymously(auth); })
+  .then(()=>{ dbReady=true; initListeners(); broadcastIfActive(); })
+  .catch(e=>{ console.warn("Live sync unavailable — presenting in demo mode:",e); showToast("Live sync offline — presenting in demo mode"); });
+// Re-broadcast current state once auth is ready, in case the presenter started early.
+function broadcastIfActive(){ if(started && isPresenter) renderStep(); }
+
+/* ---------- DOM ---------- */
+const journeyContent=document.getElementById('journeyContent');
+const progFill=document.getElementById('progFill');
+const progText=document.getElementById('progText');
+const pCount=document.getElementById('pCount');
+const nextBtn=document.getElementById('nextBtn');
+const prevBtn=document.getElementById('prevBtn');
+const nexusModal=document.getElementById('nexusModal');
+const nexusModalBody=document.getElementById('nexusModalBody');
+
+let currentStep=0;
+let started=false;   // journey only advances/broadcasts after "Begin" is pressed
+let hiddenCells=new Set();  // presenter-hidden aspiration cells (moderation)
+let live={ compass:{total:0,breakdown:{}}, polls:{}, nexus:{total:0,breakdown:{}}, aspirations:[], pulse:{} };
+let heartbeat=null, animId=null;
+
+/* ---------- CONTENT ---------- */
+const dreamValues=[
+  { name:'Discipline',   img:'Discipline.png',   points:["Shaping character through daily routines","Turning good habits into quiet strength","Building a community you can rely on"] },
+  { name:'Resilience',   img:'Resilience.png',   points:["Learning through every challenge","Knowing your strengths under pressure","Growing forward through change"] },
+  { name:'Empathy',      img:'Empathy.png',      points:["Connecting with genuine care","Understanding before being understood","Contributing with compassion"] },
+  { name:'Adaptability', img:'Adaptability.png', points:["Inquiring with an open mind","Responding with intention","Balancing calm with intensity"] },
+  { name:'Mindfulness',  img:'Mindfulness.png',  points:["Respecting self","Respecting others","Respecting the environment"] },
+];
+
+const journeySteps=[
+  { id:'compass', type:'chart', title:"The Hive Awakens", desc:"A living portrait of everyone in the room, right now." },
+  { id:'video_intro', type:'video', url:"https://www.youtube.com/embed/6xpckUCGIlE?autoplay=1&modestbranding=1&rel=0&controls=0" },
+  { id:'deck_a', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRpjJ-5NgPJO2LRLdKEcpBgqv-xMAriN5QxdbJSPLS5IE2y2pjNhE0icRG8lKqp0x0dM0KbbS9e1HWK/pubembed?start=false&loop=false&delayms=60000" },
+  { id:'poll_dream', type:'poll', title:"Live Poll · Our Core Values", pollData:{ id:'dream_poll',
+     question:"What does D.R.E.A.M. stand for at Beatty?",
+     options:["Discipline, Respect, Excellence, Achievement, Mindfulness","Discipline, Resilience, Empathy, Adaptability, Mindfulness","Diligence, Respect, Empathy, Adaptability, Mastery","Determination, Resilience, Excellence, Ambition, Mindfulness"],
+     correctAnswer:1, insight:"Correct! D.R.E.A.M. — Discipline, Resilience, Empathy, Adaptability, Mindfulness — guides every Beattyian." } },
+  { id:'values', type:'values', title:"The D.R.E.A.M. We Live By", desc:"Tap a value to see how it grows a Beattyian. Non Vi Sed Arte — not with force, but with skill." },
+  { id:'deck_b', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vSrojJmwv5d-ElzN38A8S1Q_YAYl1_VulE6jPSFy6n8dEjPUnzNltCRstS8VC3fUgSg7Xd0fYN4-NWZ/pubembed?start=false&loop=false&delayms=60000" },
+  { id:'funfact_cca', type:'funfact', funfactData:{ number:"47", label:"CCAs to belong to", subtitle:"Across Uniformed Groups, Performing Arts, Sports & Games and Clubs — a hive has a place for every kind of bee." } },
+  { id:'poll_cca', type:'poll', title:"Live Poll · Pursuing Passions", pollData:{ id:'cca',
+     question:"What share of students get their 1st or 2nd choice CCA?",
+     options:["50%","70%","90%","100%"], correctAnswer:2,
+     insight:"9 in 10 Beattyians land a CCA they truly love — passion has a home here." } },
+  { id:'deck_c', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vSPBCKf2jwhgnzADjp6D8QcYaz5aSykXkmBsCCSgYNS5QugQUIPYg1pHoD9i3WBkKxH7BjZaTqQvQZe/pubembed?start=false&loop=false&delayms=60000" },
+  { id:'poll_nexus_count', type:'poll', title:"Live Poll · Our Opportunities", pollData:{ id:'nexus_count_v2',
+     question:"How many international exchanges & industry attachments does Beatty offer?",
+     options:["None","3 & 3","6 & 6","10 & 15"], correctAnswer:2,
+     insight:"6 international exchanges + 6 industry attachments — 12 doors into the wider world." } },
+  { id:'poll_industry', type:'poll', title:"Live Poll · Our Pathways", pollData:{ id:'industry',
+     question:"Which is NOT an area students can dive into at Beatty?",
+     options:["Sustainability","Journalism & Media","Engineering & AI","None — we do all of these"], correctAnswer:3,
+     insight:"A trick! Beatty offers all of these. Every passion has a pathway." } },
+  { id:'funfact_nexus', type:'funfact', funfactData:{ number:"6", label:"Destinations our students learn in each year", subtitle:"From Estonia to New Zealand — Beattyians explore the world." } },
+  { id:'nexus_global', type:'globe', title:"Exploring New Skies, Building Ties", desc:"NEXUS@BTY international exchanges. Choose the one that calls to you — your bee lands on the globe.",
+     nexusData:{ type:'global', options:[ {id:'GeoBali',text:'Bali (Geography)'},{id:'NZ',text:'New Zealand'},{id:'Korea',text:'South Korea (A.I.)'},{id:'MiharaJapan',text:'Japan (Social Sciences)'},{id:'MutsuzawaJapan',text:'Japan (STEM)'},{id:'Estonia',text:'Estonia (Cyber)'} ] } },
+  { id:'nexus_local', type:'industry_map', title:"Dive into the Wonders of Work", desc:"NEXUS@BTY industry attachments across Singapore. Where would you thrive?",
+     localData:[
+       {id:"Rockwell", name:"Rockwell", pos:{x:18,y:47}},
+       {id:"PIL", name:"PIL", pos:{x:50,y:55}},
+       {id:"Journalism", name:"Berita Harian", pos:{x:50,y:42}, off:"bottom:34px"},
+       {id:"TamilMurasu", name:"Tamil Murasu", pos:{x:56,y:44}, off:"top:34px"},
+       {id:"Makita", name:"Makita × ITE", pos:{x:28,y:42}},
+       {id:"ASTAR", name:"A*STAR", pos:{x:43,y:57}} ],
+     nexusData:{ type:'local', options:[ {id:'Rockwell',text:'Rockwell Automation'},{id:'PIL',text:'PIL (Maritime)'},{id:'Journalism',text:'Berita Harian'},{id:'TamilMurasu',text:'Tamil Murasu'},{id:'Makita',text:'Makita (Mechatronics)'},{id:'ASTAR',text:'A*STAR Research'} ] } },
+  { id:'deck_d', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRIJppB8CD0rLo6qLaE4eiXeJHcYviqju1Gf3QChKnv7XsJY2cfYQ0eU8M7pSf5Bos2DcyuIxl6ZCPX/pubembed?start=false&loop=false&delayms=60000" },
+  { id:'deck_e', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRxw0Yj77fW9I87q0-XgXfqwGPwdi6RPDXBHb7CMGmEJTdBhELve0N5rAg5WbtS2vivKyV5WZO9gB_m/pubembed?start=false&loop=false&delayms=60000" },
+  { id:'pulse_check', type:'pulse_check', title:"How's the Hive Feeling?", desc:"Tap on your phone — let's read the room." },
+  { id:'finale', type:'finale', title:"Our Hive of Aspirations", desc:"Every cell is a dream from someone in this room tonight." },
+  { id:'deck_f', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vQx7tJCZ8s5AD5S9F7S2kNmAgfEX7KnIP6fLMQfcFCfQr4-9JeUVxFcyYRhzNtZYbBaCvLM1Wz8p1sX/pubembed?start=false&loop=false&delayms=60000" },
+  { id:'card', type:'memento', title:"Your Journey Begins", desc:"Check your phone for your personal Beatty Compass Card." },
+];
+
+const modalData={
+  GeoBali:{ title:"Geography & Literature @ Bali", students:30, duration:"1 Week", desc:"An immersive study of Bali's living landscape — its volcanic geography and the communities who adapt to it.", highlights:["Read a real volcanic landscape","See how communities adapt to their environment","Learn on-site, beyond the classroom"] },
+  NZ:{ title:"Leadership & Sustainability @ Aorere College, New Zealand", students:10, duration:"1 Week", desc:"Co-designed with Aorere College — leadership grown through service and sustainability.", highlights:["Sharpen critical & creative thinking","Develop real leadership qualities","See language's role in leading others"] },
+  Korea:{ title:"Artificial Intelligence @ South Korea", students:12, duration:"1 Week", desc:"Step into the future of technology in one of the world's most innovative societies.", highlights:["Hands-on with applied A.I.","Learn from a leading tech culture","Bring the future home to Beatty"] },
+  MiharaJapan:{ title:"Social Sciences @ Mihara, Japan", students:14, duration:"1 Week", desc:"A transformative exchange with Hiroshima University High School.", highlights:["Deepen global & cultural literacy","Grow social-emotional competencies","Live rich Japanese culture"] },
+  MutsuzawaJapan:{ title:"STEM @ Mutsuzawa, Japan", students:14, duration:"1 Week", desc:"Shaping future leaders in science and technology innovation.", highlights:["Deepen global & cultural literacy","Grow social-emotional competencies","Live rich Japanese culture"] },
+  Estonia:{ title:"Cybersecurity @ Estonia", students:16, duration:"1 Week", desc:"Learn from the world's leading digital society and dive deep into cybersecurity.", highlights:["Explore digital citizenship","Cultural exchange & Estonian film","Research a secure digital future"] },
+  Rockwell:{ title:"Engineering @ Rockwell Automation", students:12, duration:"7–8 months", desc:"A head start in industrial automation — cybersecurity, digital twinning and sustainability." },
+  PIL:{ title:"Maritime, Materials & Corporate Communications @ Pacific International Lines", students:12, duration:"7–8 months", desc:"Understand global trade — sustainable logistics, innovative materials and corporate engagement." },
+  ASTAR:{ title:"Research @ A*STAR", students:6, duration:"7–8 months", desc:"Live as a research scientist at Singapore's premier R&D agency." },
+  Journalism:{ title:"Media & Journalism @ Berita Harian", students:8, duration:"7–8 months", desc:"The fast-paced world of news and ethical reporting in Malay-language media." },
+  TamilMurasu:{ title:"Media & Journalism @ Tamil Murasu", students:8, duration:"7–8 months", desc:"The vibrant world of news and media in the Tamil-language community." },
+  Makita:{ title:"Mechatronics @ ITE West & Makita", students:16, duration:"7–8 months", desc:"A deep dive into modern mechatronics and manufacturing with industry leader Makita." },
+};
+
+/* ---------- Firebase listeners ---------- */
+function initListeners(){
+  onSnapshot(collection(db,"compassQuiz"), snap=>{
+    const r=aggregate(snap,'archetype'); live.compass=r;
+    updateParticipant(r.total);
+    if(journeySteps[currentStep]?.type==='chart') paintCompass();
+  }, err=>console.warn(err));
+
+  onSnapshot(collection(db,"polls"), snap=>{
+    const byPoll={};
+    snap.forEach(d=>{ const x=d.data(); const k=x.pollId||'default'; (byPoll[k]=byPoll[k]||{total:0,breakdown:{}}); byPoll[k].total++; if(x.vote!=null) byPoll[k].breakdown[x.vote]=(byPoll[k].breakdown[x.vote]||0)+1; });
+    live.polls=byPoll;
+    const s=journeySteps[currentStep]; if(s?.type==='poll') paintPoll(s.pollData.id);
+  }, err=>console.warn(err));
+
+  onSnapshot(collection(db,"nexusVotes"), snap=>{
+    live.nexus=aggregate(snap,'nexusId');
+    const s=journeySteps[currentStep]; if(s?.type==='globe'||s?.type==='industry_map') paintNexusStats();
+  }, err=>console.warn(err));
+
+  onSnapshot(collection(db,"aspirations"), snap=>{
+    live.aspirations=snap.docs.map(d=>d.data().word).filter(Boolean);
+    if(journeySteps[currentStep]?.type==='finale') paintHive();
+  }, err=>console.warn(err));
+
+  onSnapshot(collection(db,"pulseCheck"), snap=>{
+    const c={}; snap.forEach(d=>{ const ch=d.data().choice; if(ch) c[ch]=(c[ch]||0)+1; });
+    live.pulse=c; if(journeySteps[currentStep]?.type==='pulse_check') paintPulse();
+  }, err=>console.warn(err));
+
+  onSnapshot(collection(db,"reactions"), snap=>{
+    snap.docChanges().forEach(ch=>{ if(ch.type==='added'){ const d=ch.doc.data(); if(d.emoji && Date.now()-(d.timestamp||0)<9000) spawnReaction(d.emoji); } });
+  }, err=>console.warn(err));
+
+  if(!isPresenter){
+    onSnapshot(doc(db,"config","pace"), snap=>{
+      const d=snap.data();
+      if(d && d.mode==='presenter' && typeof d.step==='number' && d.step!==currentStep && d.step>=0 && d.step<journeySteps.length){
+        currentStep=d.step; renderStep();
+      }
+    }, err=>console.warn(err));
+  }
+}
+function aggregate(snap,prop){ const r={total:0,breakdown:{}}; snap.forEach(d=>{ const x=d.data(); r.total++; const v=x[prop]; if(v!=null) r.breakdown[v]=(r.breakdown[v]||0)+1; }); return r; }
+
+/* ---------- Participant counter ---------- */
+let lastCount=-1;
+function updateParticipant(n){
+  pCount.textContent = n>0 ? `${n} in the Hive` : "Warming up…";
+  if(n!==lastCount){ lastCount=n; const pill=document.getElementById('participantPill'); pill.classList.add('count-bump'); setTimeout(()=>pill.classList.remove('count-bump'),450);
+    if(n>0){ sfx('join'); } }
+}
+
+/* =====================================================================
+   RENDERERS
+   ===================================================================== */
+// Placeholder shown behind slide/video iframes so a slow/blocked embed reads as
+// "loading" rather than a blank black rectangle. The iframe covers it once loaded.
+function iframeLoading(){ return `<div style="position:absolute; inset:0; z-index:0; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--ink-dim); gap:14px">
+  <div style="font-size:3rem">🐝</div><div style="font-family:var(--serif); font-size:1.4rem; color:var(--gold)">Loading…</div>
+  <div style="font-size:.95rem">If this stays blank, check the connection.</div></div>`; }
+function renderContent(step){
+  switch(step.type){
+    case 'chart': return renderCompass();
+    case 'poll': return renderPoll(step.pollData);
+    case 'values': return renderValues();
+    case 'funfact': return renderFunFact(step.funfactData);
+    case 'globe': return renderGlobe();
+    case 'industry_map': return renderMap(step.localData);
+    case 'pulse_check': return renderPulse();
+    case 'finale': return renderFinale();
+    case 'memento': return `<div style="text-align:center"><div style="font-size:clamp(5rem,12vw,9rem)">📱</div><h2 class="stage-title" style="font-size:clamp(2rem,4vw,3.6rem); margin-top:10px">Check your phone</h2><p class="stage-sub" style="margin:14px auto 0">Your personal Beatty Compass Card is waiting.</p></div>`;
+    case 'video': return `<div style="width:100%; height:100%; background:#000; position:relative; display:flex; align-items:center; justify-content:center">${iframeLoading()}<iframe src="${step.url}" style="width:100%; height:100%; border:0; position:relative; z-index:1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`;
+    case 'slide': return `<div style="width:100%; height:100%; background:#000; position:relative">${iframeLoading()}<iframe src="${step.url}" style="width:100%; height:100%; border:0; position:relative; z-index:1" allowfullscreen></iframe></div>`;
+    default: return '';
+  }
+}
+
+/* Compass — the Hive of archetypes (FIXED: uses canonical ARCH_KEYS) */
+function renderCompass(){
+  return `<div class="wrap"><div class="compass-grid" id="compassGrid">${
+    ARCHETYPES.map((a,i)=>`
+      <div class="arch-cell" data-arch="${a.key}">
+        <div class="fill" style="height:0%"></div>
+        <div class="pc">0%</div>
+        <div class="ico">${a.icon}</div>
+        <div class="nm">${a.key.replace('The ','')}</div>
+        <div class="tag">${a.tag}</div>
+      </div>`).join('')
+  }</div>
+  <p id="compassWait" style="text-align:center; color:var(--ink-dim); margin-top:22px; font-size:clamp(1rem,1.6vw,1.4rem)">Waiting for the first bees to arrive… scan to join.</p></div>`;
+}
+function paintCompass(){
+  const grid=document.getElementById('compassGrid'); if(!grid) return;
+  const total=live.compass.total||0, bd=live.compass.breakdown||{};
+  const wait=document.getElementById('compassWait'); if(wait) wait.style.display= total>0?'none':'block';
+  let max=0,maxKey=null; ARCH_KEYS.forEach(k=>{ if((bd[k]||0)>max){max=bd[k];maxKey=k;} });
+  grid.querySelectorAll('.arch-cell').forEach(cell=>{
+    const k=cell.dataset.arch, c=bd[k]||0, pct= total>0?(c/total*100):0;
+    cell.querySelector('.fill').style.height=pct+'%';
+    cell.querySelector('.pc').textContent=Math.round(pct)+'%';
+    cell.classList.toggle('lead', k===maxKey && total>0);
+  });
+}
+
+/* Poll */
+function renderPoll(p){
+  const d=live.polls[p.id]||{total:0,breakdown:{}}, total=d.total||0, revealed=!!journeySteps[currentStep].revealed;
+  return `<div class="wrap" data-poll="${p.id}">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:24px; margin-bottom:clamp(20px,4vh,44px)">
+      <h2 class="poll-q">${p.question}</h2>
+      <div class="votes-chip">🐝 <span class="pv">${total}</span> votes</div>
+    </div>
+    <div>${p.options.map((o,i)=>{
+      const c=d.breakdown?.[i]||0, pct= total>0?(c/total*100):0, correct=i===p.correctAnswer;
+      return `<div class="poll-opt ${correct&&revealed?'win':''}" data-i="${i}">
+        <div class="poll-row"><span class="poll-label">${o} ${correct&&revealed?'🏆':''}</span><span class="poll-n"><span class="pn">${c}</span></span></div>
+        <div class="poll-track"><div class="poll-fill ${correct&&revealed?'correct':''}" style="width:${pct}%">${Math.round(pct)}%</div></div>
+      </div>`; }).join('')}
+    </div>
+    ${total===0?'<p style="text-align:center; color:var(--ink-dim); margin-top:26px; font-size:1.3rem">Waiting for votes… answer on your phone.</p>':''}
+  </div>`;
+}
+function paintPoll(id){
+  const s=journeySteps[currentStep]; if(!s.pollData||s.pollData.id!==id) return;
+  const host=journeyContent.querySelector(`[data-poll="${id}"]`); if(!host) return;
+  const d=live.polls[id]||{total:0,breakdown:{}}, total=d.total||0;
+  host.querySelector('.pv').textContent=total;
+  s.pollData.options.forEach((o,i)=>{
+    const c=d.breakdown?.[i]||0, pct= total>0?(c/total*100):0;
+    const row=host.querySelector(`.poll-opt[data-i="${i}"]`); if(!row) return;
+    row.querySelector('.pn').textContent=c;
+    const fill=row.querySelector('.poll-fill'); fill.style.width=pct+'%'; fill.textContent=Math.round(pct)+'%';
+  });
+}
+
+/* Values */
+function renderValues(){
+  return `<div class="wrap"><div class="dream-grid">${dreamValues.map(v=>`
+    <div class="dcard" role="button" tabindex="0" aria-label="${v.name} — flip for detail">
+      <div class="dcard-inner">
+        <div class="dface dfront">
+          <div class="bg" style="background-image:url('${v.img}')"></div>
+          <div class="scrim"></div>
+          <div class="txt"><div class="letter">${v.name[0]}</div><div class="word">${v.name}</div></div>
+        </div>
+        <div class="dface dback"><h4>${v.name}</h4><ul>${v.points.map(p=>`<li>${p}</li>`).join('')}</ul></div>
+      </div>
+    </div>`).join('')}</div></div>`;
+}
+
+/* Fun fact */
+function renderFunFact(f){
+  return `<div class="fact-card fade-in"><div class="fact-num">${f.number}</div><div class="fact-label">${f.label}</div><p class="fact-sub">${f.subtitle}</p></div>`;
+}
+
+/* Pulse */
+function renderPulse(){
+  const opts=pulseOptions();
+  return `<div class="wrap"><div class="pulse-grid">${opts.map(o=>`
+    <div class="pulse-cell"><div class="e">${o.emoji}</div><div class="l">${o.label}</div>
+      <div class="track"><div class="fill" id="pulse-${o.key}">0%</div></div></div>`).join('')}</div>
+    <p id="pulseTotal" style="text-align:center; color:var(--ink-dim); margin-top:26px; font-size:1.2rem">0 responses</p></div>`;
+}
+function pulseOptions(){ return [
+  {key:'fire',emoji:'🔥',label:'On fire!'},{key:'rocket',emoji:'🚀',label:'Excited!'},
+  {key:'smile',emoji:'😊',label:'Enjoying it'},{key:'think',emoji:'🤔',label:'Tell me more'} ]; }
+function paintPulse(){
+  const opts=pulseOptions(); const total=Object.values(live.pulse).reduce((a,b)=>a+b,0);
+  opts.forEach(o=>{ const el=document.getElementById('pulse-'+o.key); if(!el) return; const pct= total>0?((live.pulse[o.label]||0)/total*100):0; el.style.width=pct+'%'; el.textContent= total>0?Math.round(pct)+'%':''; });
+  const t=document.getElementById('pulseTotal'); if(t) t.textContent=`${total} response${total===1?'':'s'}`;
+}
+
+/* Finale — Hive of Aspirations */
+function renderFinale(){ setTimeout(paintHive,60); const s=journeySteps[currentStep];
+  return `<div id="hiveHost"><div class="vis-title center">${s.title}<span class="vs">${s.desc||''}</span></div><div class="hive-empty" id="hiveEmpty">Waiting for the first aspiration…</div></div>`; }
+function cleanWord(w){ // sanitize projected audience text: single token, letters/space/hyphen, capped
+  return String(w||'').replace(/[^\p{L}\p{N} '-]/gu,'').trim().slice(0,18);
+}
+// Lightweight profanity screen for words projected on the big screen. Not exhaustive —
+// the presenter can also click any cell to hide it, and Firestore rules are the real gate.
+const BLOCKLIST=['fuck','shit','bitch','cunt','dick','pussy','asshole','bastard','slut','whore','nigger','faggot','retard','wank','cock','porn','sex','nazi'];
+function isProfane(w){ const s=String(w||'').toLowerCase(); return BLOCKLIST.some(b=>s.includes(b)); }
+function paintHive(){
+  const host=document.getElementById('hiveHost'); if(!host) return;
+  // De-dupe, sanitize, drop presenter-hidden or profane cells. Cap to keep the honeycomb tidy.
+  const words=[...new Set(live.aspirations.map(cleanWord).filter(w=>w && !isProfane(w) && !hiddenCells.has(w.toLowerCase())))].slice(0,91);
+  const empty=document.getElementById('hiveEmpty');
+  if(words.length===0){ if(empty) empty.style.display='block'; return; }
+  if(empty) empty.remove();
+  // Build honeycomb positions in a spiral of hex rings
+  const W=host.clientWidth, H=host.clientHeight;
+  const cw=Math.max(96, Math.min(160, W/9)), ch=cw*0.88, cx=W/2-cw/2, cy=H/2-ch/2;
+  const coords=hexSpiral(words.length, cw, ch);
+  // Clear stale cells if the set shrank (e.g. after hiding one), so indices stay aligned
+  host.querySelectorAll('.hive-cell').forEach(c=>{ if(+c.dataset.i>=words.length) c.remove(); });
+  words.forEach((w,i)=>{
+    let cell=host.querySelector(`.hive-cell[data-i="${i}"]`);
+    if(!cell){ cell=document.createElement('div'); cell.className='hive-cell'; cell.dataset.i=i;
+      cell.style.width=cw+'px'; cell.style.height=ch+'px'; cell.style.fontSize=Math.max(11,Math.min(20,cw/8))+'px';
+      host.appendChild(cell);
+      const p=coords[i]; cell.style.left=(cx+p.x)+'px'; cell.style.top=(cy+p.y)+'px';
+      cell.textContent=w;
+      if(isPresenter){ cell.title='Click to hide (moderation)'; cell.style.cursor='pointer';
+        cell.onclick=()=>{ hiddenCells.add(w.toLowerCase()); cell.remove(); paintHive(); }; }
+      setTimeout(()=>{ cell.classList.add('on'); sfx('cell'); }, 40*i+30);
+    } else { cell.textContent=w; }
+  });
+}
+function hexSpiral(n, cw, ch){
+  const out=[{x:0,y:0}]; if(n<=1) return out;
+  const dx=cw*0.78, dyRow=ch*0.75, dyHalf=ch*0.375;
+  let ring=1;
+  while(out.length<n){
+    // 6 directions around a ring (approx axial hex)
+    const dirs=[[dx,dyHalf],[0,dyRow],[-dx,dyHalf],[-dx,-dyHalf],[0,-dyRow],[dx,-dyHalf]];
+    let x=dx*ring, y=-dyHalf*ring; // start
+    for(let side=0; side<6 && out.length<n; side++){
+      for(let step=0; step<ring && out.length<n; step++){
+        out.push({x,y}); x+=dirs[side][0]; y+=dirs[side][1];
+      }
+    }
+    ring++;
+    if(ring>12) break;
+  }
+  return out.slice(0,n);
+}
+
+/* Globe (procedural gold wireframe, Three.js with fallback) */
+let globe,scene,cam,renderer,spinning=true; const gpins=[];
+let globeDragging=false, globePM={x:0,y:0};
+function globeOnPointerUp(){ globeDragging=false; }
+function globeOnResize(){ const host=document.getElementById('globeHost'); if(!renderer||!cam||!host) return; cam.aspect=host.clientWidth/host.clientHeight; cam.updateProjectionMatrix(); renderer.setSize(host.clientWidth,host.clientHeight); }
+function renderGlobe(){
+  setTimeout(initGlobe,60);
+  const s=journeySteps[currentStep];
+  return `<div class="split">
+    <div class="main-vis"><div class="vis-title">${s.title}<span class="vs">${s.desc||''}</span></div>
+      <div id="globeHost"><div id="globePins"></div></div>
+      <div class="globe-ctrl"><button id="spinBtn" class="btn btn-ghost">⏸ Stop spin</button></div></div>
+    <div class="side"><div id="nexusStats"><p style="color:var(--ink-dim)">Waiting for choices…</p></div></div>
+  </div>`;
+}
+const destinations={
+  Korea:{lat:37.56,lon:126.97,name:'A.I. · Korea'}, NZ:{lat:-41.28,lon:174.77,name:'Sustainability · NZ'},
+  MiharaJapan:{lat:34.40,lon:133.08,name:'Soc. Sci · Japan'}, MutsuzawaJapan:{lat:35.43,lon:140.32,name:'STEM · Japan'},
+  GeoBali:{lat:-8.67,lon:115.22,name:'Geography · Bali'}, Estonia:{lat:59.43,lon:24.75,name:'Cyber · Estonia'},
+  Singapore:{lat:1.29,lon:103.85,name:'Beatty · Singapore', home:true, noClick:true}
+};
+function latLon(lat,lon,r){ const phi=(90-lat)*Math.PI/180, th=(lon+180)*Math.PI/180;
+  return new THREE.Vector3(-(r*Math.sin(phi)*Math.cos(th)), r*Math.cos(phi), r*Math.sin(phi)*Math.sin(th)); }
+function initGlobe(){
+  const host=document.getElementById('globeHost'); if(!host) return;
+  if(!window.__THREE_OK || typeof THREE==='undefined'){ globeFallback(host); return; }
+  if(animId) cancelAnimationFrame(animId);
+  const pins=document.getElementById('globePins'); pins.innerHTML='';
+  // Some locked-down AV PCs / remote desktops load Three.js but can't create a
+  // WebGL context — guard so we fall back gracefully instead of a blank stage.
+  try{
+    scene=new THREE.Scene();
+    cam=new THREE.PerspectiveCamera(45, host.clientWidth/host.clientHeight, 0.1, 1000); cam.position.z=3.4;
+    renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+  }catch(err){ console.warn("WebGL unavailable — globe fallback:",err); globeFallback(host); return; }
+  renderer.setSize(host.clientWidth,host.clientHeight); renderer.setPixelRatio(Math.min(2,window.devicePixelRatio));
+  host.insertBefore(renderer.domElement, pins);
+  spinning = !matchMedia('(prefers-reduced-motion:reduce)').matches;  // respect reduced motion
+  const R=1.5;
+  // Gold wireframe sphere
+  const wire=new THREE.Mesh(new THREE.SphereGeometry(R,36,28), new THREE.MeshBasicMaterial({color:0xFFE200, wireframe:true, transparent:true, opacity:0.28}));
+  // Inner navy solid for depth
+  const solid=new THREE.Mesh(new THREE.SphereGeometry(R*0.985,48,36), new THREE.MeshBasicMaterial({color:0x070f3a}));
+  globe=new THREE.Group(); globe.add(solid); globe.add(wire); scene.add(globe);
+  // Atmosphere glow
+  const glow=new THREE.Mesh(new THREE.SphereGeometry(R,48,36), new THREE.ShaderMaterial({
+    vertexShader:`varying vec3 vN; void main(){ vN=normalize(normalMatrix*normal); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+    fragmentShader:`varying vec3 vN; void main(){ float i=pow(0.62-dot(vN,vec3(0,0,1.0)),3.0); gl_FragColor=vec4(1.0,0.886,0.0,1.0)*i;}`,
+    side:THREE.BackSide, blending:THREE.AdditiveBlending, transparent:true }));
+  glow.scale.set(1.18,1.18,1.18); scene.add(glow);
+  // Home + destination markers and arcs
+  const home=latLon(destinations.Singapore.lat,destinations.Singapore.lon,R);
+  gpins.length=0;
+  Object.entries(destinations).forEach(([id,d])=>{
+    const el=document.createElement('div'); el.className='gpin';
+    el.innerHTML=`<div class="lbl" style="${d.home?'background:var(--gold);color:var(--navy);border-color:#fff':''}">${d.name}</div><div class="stem"></div><div class="dot" style="${d.home?'width:18px;height:18px':''}"></div>`;
+    if(!d.noClick && modalData[id]) el.onclick=()=>showNexusModal(id);
+    document.getElementById('globePins').appendChild(el);
+    gpins.push({el, v:latLon(d.lat,d.lon,R)});
+    if(!d.home){ // arc from home
+      const to=latLon(d.lat,d.lon,R); const mid=home.clone().add(to).multiplyScalar(0.5).setLength(R*1.5);
+      const pts=[]; for(let t=0;t<=1;t+=0.04){ const p=home.clone().multiplyScalar((1-t)*(1-t)).add(mid.clone().multiplyScalar(2*(1-t)*t)).add(to.clone().multiplyScalar(t*t)); pts.push(p); }
+      const g=new THREE.BufferGeometry().setFromPoints(pts);
+      globe.add(new THREE.Line(g, new THREE.LineBasicMaterial({color:0xFFE200, transparent:true, opacity:0.5})));
+    }
+  });
+  // interaction (globeDragging + pm live at module scope so the window listeners
+  // below can be attached once and removed/re-added without stacking on repeat visits)
+  renderer.domElement.addEventListener('pointerdown',e=>{globeDragging=true;spinning=false;globePM={x:e.clientX,y:e.clientY};});
+  renderer.domElement.addEventListener('pointermove',e=>{ if(!globeDragging)return; globe.rotation.y+=(e.clientX-globePM.x)*0.005; globe.rotation.x+=(e.clientY-globePM.y)*0.005; globePM={x:e.clientX,y:e.clientY}; });
+  renderer.domElement.addEventListener('wheel',e=>{e.preventDefault(); cam.position.z=Math.max(2.4,Math.min(6,cam.position.z+e.deltaY*0.005));},{passive:false});
+  window.removeEventListener('pointerup', globeOnPointerUp); window.addEventListener('pointerup', globeOnPointerUp);
+  window.removeEventListener('resize', globeOnResize); window.addEventListener('resize', globeOnResize);
+  const sb=document.getElementById('spinBtn'); if(sb){ sb.textContent= spinning?'⏸ Stop spin':'▶ Start spin'; sb.onclick=()=>{ spinning=!spinning; sb.textContent= spinning?'⏸ Stop spin':'▶ Start spin'; }; }
+  globe.rotation.y=-1.2;
+  (function loop(){ animId=requestAnimationFrame(loop); if(spinning) globe.rotation.y+=0.0011;
+    gpins.forEach(p=>{ const pos=p.v.clone().applyEuler(globe.rotation); const sp=pos.clone().project(cam);
+      if(pos.z>-0.25){ const x=sp.x*host.clientWidth/2+host.clientWidth/2, y=-sp.y*host.clientHeight/2+host.clientHeight/2;
+        p.el.style.transform=`translate(${x}px,${y}px) translate(-50%,-100%)`; p.el.style.opacity='1'; p.el.style.display='flex'; }
+      else { p.el.style.opacity='0'; p.el.style.display='none'; } });
+    renderer.render(scene,cam); })();
+  paintNexusStats();
+}
+function globeFallback(host){
+  // No WebGL/Three: elegant radial "Beatty to the world" hub
+  const opts=journeySteps[currentStep].nexusData.options;
+  host.innerHTML=`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative">
+    <div style="text-align:center;position:relative;z-index:2"><div style="font-size:clamp(4rem,10vw,7rem)">🐝🌍</div>
+    <p style="font-family:var(--serif);color:var(--gold);font-size:clamp(1.2rem,2.4vw,2rem);margin-top:10px">Beatty reaches the world</p></div></div>`;
+  paintNexusStats();
+}
+function paintNexusStats(){
+  const box=document.getElementById('nexusStats'); if(!box) return;
+  const step=journeySteps[currentStep]; const opts=step.nexusData?.options||[]; const bd=live.nexus.breakdown||{}; const total=live.nexus.total||0;
+  box.innerHTML=`<h3 class="side-h">Live choices · ${total}</h3>`+opts.map(o=>{ const c=bd[o.id]||0, pct= total>0?(c/total*100):0;
+    return `<div class="side-row"><div class="lab"><span>${o.text}</span><span>${c}</span></div><div class="side-track"><div class="side-fill" style="width:${pct}%"></div></div></div>`; }).join('');
+}
+
+/* Industry map */
+function renderMap(localData){
+  const pins=localData.map(m=>`<div class="mpin" style="left:${m.pos.x}%; top:${m.pos.y}%" onclick="showNexusModal('${m.id}')">
+      <div class="lbl" style="${m.off?m.off+';position:relative':''}">${m.name}</div><div class="dot" style="background:var(--gold)"></div></div>`).join('');
+  const s=journeySteps[currentStep];
+  return `<div class="split"><div class="map-host"><div class="vis-title">${s.title}<span class="vs">${s.desc||''}</span></div><div class="map-inner">
+      <img class="map-img" src="sgmap.png" alt="Singapore" onerror="this.style.display='none'">${pins}</div></div>
+    <div class="side"><div id="nexusStats"><p style="color:var(--ink-dim)">Waiting for choices…</p></div></div></div>`;
+}
+
+/* Nexus modal */
+window.showNexusModal=(id)=>{
+  const d=modalData[id]; if(!d) return;
+  const badges=(d.students?`<span class="badge">🐝 ${d.students} students</span>`:'')+(d.duration?`<span class="badge">⏳ ${d.duration}</span>`:'');
+  const hl=d.highlights?.length?`<ul style="margin-top:18px">${d.highlights.map(h=>`<li>${h}</li>`).join('')}</ul>`:'';
+  nexusModalBody.innerHTML=`<h2>${d.title}</h2><div style="margin-bottom:14px">${badges}</div><p>${d.desc||''}</p>${hl}`;
+  nexusModal.classList.remove('hidden'); sfx('open');
+};
+document.getElementById('nexusClose').onclick=()=>nexusModal.classList.add('hidden');
+nexusModal.onclick=(e)=>{ if(e.target===nexusModal) nexusModal.classList.add('hidden'); };
+
+/* =====================================================================
+   STEP ENGINE
+   ===================================================================== */
+function renderStep(){
+  if(heartbeat){ clearInterval(heartbeat); heartbeat=null; }
+  if(animId){ cancelAnimationFrame(animId); animId=null; }
+  if(currentStep>=journeySteps.length) return;
+  const step=journeySteps[currentStep];
+  progText.textContent=`Step ${currentStep+1} / ${journeySteps.length}`;
+
+  // Only the presenter screen owns/broadcasts session/state; follower screens render locally.
+  if(dbReady && isPresenter){ setDoc(doc(db,"session","state"),{
+    currentView:step.type, pollData:step.pollData||null, nexusData:step.nexusData||null,
+    title:step.title||'', description:step.desc||'', url:step.url||null,
+    staticContent: step.type==='values'?true:null, ts:Date.now()
+  }).catch(()=>{}); }
+
+  const immersive = ['slide','video','globe','industry_map','funfact','finale'].includes(step.type);
+  const titleHTML = (!immersive && step.title)?`<p class="eyebrow">${step.id.includes('poll')?'Live Poll':'Beatty'}</p><h2 class="stage-title">${step.title}</h2>`:'';
+  const descHTML  = (!immersive && step.desc)?`<p class="stage-sub" style="margin:0 auto 26px">${step.desc}</p>`:'';
+  const inner = renderContent(step);
+
+  if(immersive){ journeyContent.innerHTML=`<div style="width:100%;height:100%">${inner}</div>`; }
+  else { journeyContent.innerHTML=`<div class="wrap" style="text-align:center; width:100%"><div style="margin-bottom:8px">${titleHTML}${descHTML}</div><div style="width:100%">${inner}</div></div>`; }
+
+  if(step.type==='values'){ journeyContent.querySelectorAll('.dcard').forEach(c=>{
+    const flip=()=>{ c.classList.toggle('flip'); sfx('flip'); };
+    c.addEventListener('click',flip);
+    c.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); flip(); } });
+  }); }
+  if(step.type==='chart') paintCompass();
+  if(step.type==='poll'){ heartbeat=setInterval(()=>{ if(journeyContent.querySelector(`[data-poll="${step.pollData.id}"]`)) paintPoll(step.pollData.id); },600); }
+  if(step.type==='globe'||step.type==='industry_map') paintNexusStats();
+
+  progFill.style.width=`${((currentStep+1)/journeySteps.length)*100}%`;
+  prevBtn.style.display = currentStep>0?'inline-block':'none';
+  let label='Next ❯';
+  if(step.type==='poll' && !step.revealed) label='Reveal Answer';
+  else if(currentStep===journeySteps.length-1) label='Finish';
+  nextBtn.textContent=label;
+  if(isPresenter) updatePPStep();
+}
+
+// Animated step transition wrapper
+function goRender(){
+  const c=journeyContent;
+  if(c && c.children.length){ c.classList.add('step-exit');
+    setTimeout(()=>{ c.classList.remove('step-exit'); renderStep(); c.classList.add('step-enter'); setTimeout(()=>c.classList.remove('step-enter'),600); },260); }
+  else { renderStep(); c.classList.add('step-enter'); setTimeout(()=>c.classList.remove('step-enter'),600); }
+}
+
+document.getElementById('beginBtn').addEventListener('click',()=>{
+  started=true;
+  startAudio();
+  document.getElementById('start').classList.add('hidden');
+  document.getElementById('journey').classList.remove('hidden');
+  renderStep();
+});
+
+nextBtn.addEventListener('click',(e)=>{
+  if(!started) return;   // no phantom advancing/broadcasting from the Start screen
+  ripple(e, nextBtn);
+  const step=journeySteps[currentStep];
+  if(step.type==='poll' && !step.revealed){ step.revealed=true; goRender(); sfx('reveal'); launchConfetti(); return; }
+  if(currentStep<journeySteps.length-1){ currentStep++; goRender(); if(isPresenter) writePace(); }
+  else { finishJourney(); }
+});
+prevBtn.addEventListener('click',(e)=>{ if(!started) return; ripple(e,prevBtn); if(currentStep>0){ journeySteps[currentStep].revealed=false; currentStep--; goRender(); if(isPresenter) writePace(); } });
+
+function finishJourney(){
+  journeyContent.innerHTML=`<div class="wrap" style="text-align:center">
+    <div style="font-size:clamp(3rem,7vw,5rem)">🐝</div>
+    <h2 class="stage-title" style="font-size:clamp(2.2rem,5vw,4.2rem); margin-top:8px">Your Journey Begins Now</h2>
+    <p class="stage-sub" style="margin:18px auto 0">Thank you for stepping into the Hive. We can't wait to help your aspirations take flight.</p>
+    <p style="font-family:var(--serif); color:var(--gold); font-style:italic; font-size:clamp(1.2rem,2vw,1.8rem); margin-top:22px">Non Vi Sed Arte</p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:26px">
+      <a href="https://go.gov.sg/probeatty" target="_blank" rel="noopener" class="btn btn-primary" style="text-decoration:none">Explore Beatty ➜</a>
+      <a href="https://www.beattysec.moe.edu.sg/" target="_blank" rel="noopener" class="btn btn-ghost" style="text-decoration:none">Our Website</a>
+    </div>
+    <p style="color:var(--ink-dim); margin-top:20px; font-size:1rem">Follow us · go.gov.sg/beattyig · go.gov.sg/beattyfb · go.gov.sg/beattyin</p>
+  </div>`;
+  if(dbReady && isPresenter) setDoc(doc(db,"session","state"),{currentView:'end',ts:Date.now()}).catch(()=>{});
+  prevBtn.style.display='none'; nextBtn.style.display='none'; progFill.style.width='100%';
+  launchConfetti();
+}
+
+// Keyboard
+document.addEventListener('keydown',e=>{
+  if(['ArrowRight',' ','Enter'].includes(e.key) && document.activeElement.tagName!=='INPUT'){ e.preventDefault(); nextBtn.click(); }
+  else if(e.key==='ArrowLeft'){ prevBtn.click(); }
+});
+
+/* =====================================================================
+   PRESENTER CONTROLS
+   ===================================================================== */
+let paceMode='audience';
+function writePace(){ if(paceMode==='presenter' && dbReady) setDoc(doc(db,"config","pace"),{mode:'presenter',step:currentStep}).catch(()=>{}); }
+function updatePPStep(){ const s=journeySteps[currentStep]; const el=document.getElementById('ppStep'); if(el) el.textContent=`Step ${currentStep+1}/${journeySteps.length}: ${s.title||s.id}`; }
+if(isPresenter){
+  document.getElementById('presenterPanel').classList.remove('hidden');
+  document.getElementById('startReset').classList.remove('hidden');
+  updatePPStep();
+  document.getElementById('ppPace').onclick=async(ev)=>{ paceMode= paceMode==='audience'?'presenter':'audience';
+    const b=ev.target; b.textContent= paceMode==='audience'?'Pace: Audience':'Pace: Presenter'; b.className='pp-btn '+(paceMode==='presenter'?'pp-gold':'pp-blue');
+    if(dbReady) await setDoc(doc(db,"config","pace"),{mode:paceMode,step:currentStep}).catch(()=>{});
+    showToast(paceMode==='presenter'?'You now control the pace':'Audience self-paces'); };
+  document.getElementById('ppSound').onclick=(ev)=>{ soundOn=!soundOn; ev.target.textContent= soundOn?'🔊 Sound':'🔇 Muted'; ev.target.className='pp-btn '+(soundOn?'pp-grey':'pp-red'); if(soundOn){ startAudio(); sfx('reveal'); } };
+  document.getElementById('ppQR').onclick=()=>document.getElementById('qrOverlay').classList.remove('hidden');
+  document.getElementById('ppFleet').onclick=()=>window.open('sail/presenter.html','_blank');
+  document.getElementById('ppReset').onclick=openReset;
+}
+document.getElementById('qrOverlay').onclick=()=>document.getElementById('qrOverlay').classList.add('hidden');
+document.getElementById('startReset').onclick=openReset;
+
+/* Reset */
+function openReset(){ document.getElementById('resetModal').classList.remove('hidden'); }
+document.getElementById('resetCancel').onclick=()=>document.getElementById('resetModal').classList.add('hidden');
+document.getElementById('resetConfirm').onclick=async()=>{
+  if(document.getElementById('resetInput').value.trim().toUpperCase()!=='RESET'){ showToast('Type RESET to confirm'); return; }
+  if(!dbReady){ showToast('No live session to reset'); return; }
+  const cols=['compassQuiz','polls','nexusVotes','aspirations','session','pulseCheck','reactions','config'];
+  try{ for(const c of cols){ const s=await getDocs(collection(db,c)); if(s.empty) continue;
+      // Firestore caps a writeBatch at 500 ops; chunk so a busy event (thousands of reactions) still resets.
+      for(let i=0;i<s.docs.length;i+=450){ const b=writeBatch(db); s.docs.slice(i,i+450).forEach(d=>b.delete(d.ref)); await b.commit(); }
+    }
+    document.getElementById('resetModal').classList.add('hidden'); showToast('Session reset — reloading…'); setTimeout(()=>location.reload(),1400);
+  }catch(e){ console.error(e); showToast('Reset failed — check console'); }
+};
+
+/* =====================================================================
+   FX: toast, ripple, confetti, reactions, pollen, engagement pulse
+   ===================================================================== */
+function showToast(m,d=3200){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),d); }
+window.showToast=showToast;
+function ripple(e,btn){ const r=document.createElement('span'); r.className='ripple'; const b=btn.getBoundingClientRect();
+  r.style.left=(e.clientX-b.left)+'px'; r.style.top=(e.clientY-b.top)+'px'; const s=Math.max(b.width,b.height); r.style.width=r.style.height=s+'px';
+  btn.appendChild(r); setTimeout(()=>r.remove(),600); }
+
+function launchConfetti(){
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const ov=document.getElementById('confettiOverlay'); const cols=['#FFE200','#EC3237','#12299c','#ffffff','#E4C400'];
+  for(let i=0;i<70;i++){ const p=document.createElement('div'); p.className='confetti-piece';
+    p.style.left=Math.random()*100+'%'; p.style.background=cols[Math.random()*cols.length|0];
+    p.style.animationDuration=(2.2+Math.random()*2)+'s'; p.style.animationDelay=(Math.random()*.5)+'s';
+    p.style.borderRadius=Math.random()>.5?'50%':'2px'; const sz=8+Math.random()*8; p.style.width=sz+'px'; p.style.height=sz+'px';
+    ov.appendChild(p); setTimeout(()=>p.remove(),4600); }
+}
+let reactTimes=[];
+function spawnReaction(emoji){
+  reactTimes.push(Date.now());
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const ov=document.getElementById('reactionOverlay'); const el=document.createElement('span'); el.className='floating-reaction';
+  el.textContent=emoji; el.style.left=(Math.random()*80)+'px'; ov.appendChild(el); setTimeout(()=>el.remove(),3300);
+}
+setInterval(()=>{ const now=Date.now(); reactTimes=reactTimes.filter(t=>now-t<10000); const level=Math.min(reactTimes.length,5);
+  document.querySelectorAll('#hivePulse .pulse-bar').forEach((b,i)=>{ if(i<level){ b.classList.add('active'); b.style.height=(10+(level-i)*4)+'px'; } else { b.classList.remove('active'); b.style.height='9px'; } });
+},1000);
+
+/* Pollen / bees drifting */
+(function pollen(){
+  const c=document.getElementById('pollenCanvas'); if(!c) return; const ctx=c.getContext('2d');
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches){ return; }
+  let ps=[]; const N=42;
+  function rs(){ c.width=innerWidth; c.height=innerHeight; } rs(); addEventListener('resize',rs);
+  for(let i=0;i<N;i++) ps.push({x:Math.random()*c.width,y:Math.random()*c.height,vx:(Math.random()-.5)*.28,vy:(Math.random()-.5)*.28,r:Math.random()*2+1,a:Math.random()*.3+.05});
+  (function d(){ ctx.clearRect(0,0,c.width,c.height);
+    ps.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; if(p.x<0)p.x=c.width; if(p.x>c.width)p.x=0; if(p.y<0)p.y=c.height; if(p.y>c.height)p.y=0;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7); ctx.fillStyle=`rgba(255,226,0,${p.a})`; ctx.fill(); });
+    for(let i=0;i<ps.length;i++) for(let j=i+1;j<ps.length;j++){ const dx=ps[i].x-ps[j].x, dy=ps[i].y-ps[j].y, dd=Math.sqrt(dx*dx+dy*dy);
+      if(dd<140){ ctx.beginPath(); ctx.moveTo(ps[i].x,ps[i].y); ctx.lineTo(ps[j].x,ps[j].y); ctx.strokeStyle=`rgba(255,226,0,${.05*(1-dd/140)})`; ctx.stroke(); } }
+    requestAnimationFrame(d); })();
+})();
+
+/* =====================================================================
+   SOUND — WebAudio generated (no external files). Presenter only by default.
+   ===================================================================== */
+let audioCtx=null, soundOn=true;
+function startAudio(){ if(!soundOn) return; try{ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended') audioCtx.resume(); }catch(e){} }
+function tone(freq,dur,type='sine',gain=0.05,when=0){ if(!audioCtx||!soundOn) return;
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.type=type; o.frequency.value=freq;
+  const t=audioCtx.currentTime+when; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(gain,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g); g.connect(audioCtx.destination); o.start(t); o.stop(t+dur+0.02); }
+function sfx(kind){ if(!audioCtx||!soundOn) return;
+  if(kind==='join'){ tone(880,0.18,'sine',0.03); }
+  else if(kind==='reveal'){ [523,659,784].forEach((f,i)=>tone(f,0.4,'triangle',0.05,i*0.08)); }
+  else if(kind==='cell'){ tone(660+Math.random()*220,0.14,'sine',0.025); }
+  else if(kind==='flip'){ tone(440,0.12,'square',0.02); }
+  else if(kind==='open'){ tone(392,0.2,'sine',0.035); tone(587,0.25,'sine',0.03,0.06); }
+}
+
+/* Ripple on all .btn */
+document.querySelectorAll('.btn').forEach(b=>b.addEventListener('click',e=>ripple(e,b)));
+
+// Demo helper for rehearsal: presenter can press "D" to inject demo data locally (visual only)
+if(isPresenter){ document.addEventListener('keydown', e=>{ if(e.key==='d' && dbReady){ /* reserved */ } }); }
+</script>
+</body>
+</html>
