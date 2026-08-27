@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Beatty Fleet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="fleet.css">
+</head>
+<body>
+    <!-- Ocean scene (cinematic dusk) -->
+    <div class="ocean">
+        <div class="stars"></div>
+        <div class="sun"></div>
+        <div class="horizon"></div>
+        <div class="sun-path"></div>
+        <div class="sea-shimmer"></div>
+        <div class="wave-layer wave-1"></div>
+        <div class="wave-layer wave-2"></div>
+        <div class="wave-layer wave-3"></div>
+        <div class="wave-layer wave-foam"></div>
+        <div class="vignette"></div>
+    </div>
+
+    <!-- Fleet area -->
+    <div class="fleet-area" id="fleetArea"></div>
+
+    <!-- HUD -->
+    <div class="hud">
+        <div class="hud-counter">
+            <span class="text-yellow-400 font-black text-3xl" id="boatCount">0</span>
+            <span class="text-gray-400 text-sm ml-2">boats in the fleet</span>
+        </div>
+        <div class="hud-keys">
+            <span class="text-gray-500 text-[10px] uppercase tracking-widest">D = demo &middot; A = arrival ribbons</span>
+        </div>
+    </div>
+
+    <!-- Archetype Distribution -->
+    <div class="distribution-panel" id="distributionBar"></div>
+
+    <!-- Title -->
+    <div class="title-bar">
+        <h1 class="text-2xl font-black tracking-tight text-white/80">
+            <span style="color: var(--bty-yellow);">S</span>tewardship &middot;
+            <span style="color: var(--bty-yellow);">A</span>pplied Learning &middot;
+            <span style="color: var(--bty-yellow);">I</span>nternational & Industry &middot;
+            <span style="color: var(--bty-yellow);">L</span>earning
+        </h1>
+        <p class="text-gray-500 text-xs mt-1 tracking-widest uppercase">Beatty Secondary School &middot; Open House Fleet</p>
+        <p class="text-xs mt-2 font-serif italic" style="color:var(--bty-yellow);opacity:0.75;">From our Hive, every Beattyian sets sail.</p>
+    </div>
+
+    <!-- Compass rose -->
+    <div class="compass-rose">
+        <img src="../BTlogo.png" alt="Beatty Crest" class="h-24 w-24 opacity-40" style="width:96px;height:96px;object-fit:contain" onerror="this.style.display='none'">
+    </div>
+
+    <!-- Spotlight overlay -->
+    <div class="spotlight-overlay" id="spotlight" style="display:none;" onclick="closeSpotlight()">
+        <div class="spotlight-card" id="spotlightCard" onclick="event.stopPropagation()"></div>
+    </div>
+
+    <script type="module" src="fleet.js"></script>
+</body>
+</html>

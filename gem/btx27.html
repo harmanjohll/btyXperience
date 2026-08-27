@@ -188,9 +188,10 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .votes-chip{font-family:var(--serif); font-weight:700; color:var(--navy); background:var(--gold); border-radius:12px; padding:.5rem 1.2rem; font-size:clamp(1rem,1.7vw,1.5rem)}
 
 /* --- Fun fact --- */
+.fact-wrap{width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:clamp(16px,3vw,40px)}
 .fact-card{position:relative; text-align:center; padding:clamp(28px,5vw,72px);
   background:linear-gradient(150deg, rgba(255,226,0,.10), rgba(0,6,31,.7)); border:1px solid var(--card-line);
-  border-radius:32px; backdrop-filter:var(--glass); max-width:min(90vw,1100px)}
+  border-radius:32px; backdrop-filter:var(--glass); max-width:min(90vw,1100px); width:100%}
 .fact-num{font-family:var(--serif); font-weight:700; line-height:.9; font-size:clamp(6rem,20vw,17rem);
   background:linear-gradient(160deg,#fff,var(--gold)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
   filter:drop-shadow(0 10px 40px rgba(255,226,0,.3))}
@@ -205,17 +206,39 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .dcard-inner{position:relative; width:100%; height:100%; transition:transform .8s var(--ease); transform-style:preserve-3d}
 .dcard.flip .dcard-inner{transform:rotateY(180deg)}
 .dface{position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border-radius:22px; overflow:hidden; border:1px solid rgba(255,226,0,.2)}
-.dfront{background:var(--navy-850)}
-.dfront .bg{position:absolute; inset:0; background-size:cover; background-position:center; opacity:.55; transition:opacity var(--t) var(--ease)}
-.dcard:hover .dfront .bg{opacity:.8}
-.dfront .scrim{position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,6,31,.15) 30%, rgba(0,6,31,.9))}
-.dfront .txt{position:absolute; left:0; right:0; bottom:0; padding:clamp(12px,1.6vw,22px); z-index:2}
-.dfront .letter{font-family:var(--serif); font-weight:700; color:var(--gold); font-size:clamp(2.6rem,5vw,4.6rem); line-height:1}
-.dfront .word{font-family:var(--serif); color:#fff; font-size:clamp(1rem,1.7vw,1.7rem); letter-spacing:.02em}
+.dfront{background:linear-gradient(180deg,var(--navy-800),var(--navy-900))}
+/* Art is a hero banner on the top ~60%; it fades into a branded panel that
+   carries the gold letter + word. The source art is pre-cropped (see dream/)
+   to remove its baked-in word, so nothing gets sliced by the portrait frame. */
+.dfront .bg{position:absolute; top:0; left:0; right:0; height:60%; background-size:cover; background-position:center; transition:filter var(--t) var(--ease)}
+.dfront .bg:after{content:""; position:absolute; inset:0; background:linear-gradient(180deg, transparent 50%, rgba(4,8,26,.72) 74%, var(--navy-900) 86%)}
+.dcard:hover .dfront .bg{filter:brightness(1.12) saturate(1.05)}
+.dfront .txt{position:absolute; left:0; right:0; top:56%; bottom:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:clamp(10px,1.5vw,20px); text-align:center; z-index:2}
+.dfront .letter{font-family:var(--serif); font-weight:700; color:var(--gold); font-size:clamp(2.8rem,5.2vw,5rem); line-height:.9; text-shadow:0 4px 24px rgba(255,226,0,.25)}
+.dfront .word{font-family:var(--serif); color:#fff; font-size:clamp(1.05rem,1.7vw,1.75rem); letter-spacing:.02em}
+.dfront .hint{margin-top:8px; font-family:var(--sans); font-size:clamp(.58rem,.82vw,.78rem); letter-spacing:.16em; text-transform:uppercase; color:var(--ink-dim)}
 .dback{background:linear-gradient(160deg,var(--navy-700),var(--navy-850)); transform:rotateY(180deg); padding:clamp(16px,2vw,30px); display:flex; flex-direction:column; justify-content:center}
 .dback h4{color:var(--gold); font-size:clamp(1.2rem,2vw,2rem); margin-bottom:16px}
 .dback li{color:var(--ink); font-size:clamp(.82rem,1.15vw,1.2rem); margin-bottom:12px; line-height:1.35; list-style:none; padding-left:22px; position:relative}
 .dback li:before{content:"🐝"; position:absolute; left:0; font-size:.85em}
+/* Exceptional touches: the five cards cascade in (reinforcing D-R-E-A-M), a
+   gold glow answers the cursor, and the value's points rise in sequence when
+   the card is flipped. */
+.dream-grid .dcard{animation:dcardIn .6s var(--ease) backwards}
+.dream-grid .dcard:nth-child(1){animation-delay:.05s}
+.dream-grid .dcard:nth-child(2){animation-delay:.15s}
+.dream-grid .dcard:nth-child(3){animation-delay:.25s}
+.dream-grid .dcard:nth-child(4){animation-delay:.35s}
+.dream-grid .dcard:nth-child(5){animation-delay:.45s}
+@keyframes dcardIn{from{opacity:0;transform:translateY(34px)}to{opacity:1;transform:translateY(0)}}
+.dcard:hover .dface{border-color:rgba(255,226,0,.55); box-shadow:0 22px 54px rgba(0,0,0,.5), 0 0 24px rgba(255,226,0,.12)}
+.dcard.flip .dback h4{animation:dliIn .5s var(--ease) backwards; animation-delay:.3s}
+.dcard.flip .dback li{animation:dliIn .55s var(--ease) backwards}
+.dcard.flip .dback li:nth-child(1){animation-delay:.4s}
+.dcard.flip .dback li:nth-child(2){animation-delay:.53s}
+.dcard.flip .dback li:nth-child(3){animation-delay:.66s}
+@keyframes dliIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media (prefers-reduced-motion:reduce){ .dream-grid .dcard,.dcard.flip .dback h4,.dcard.flip .dback li{animation:none} }
 
 /* --- Globe & map --- */
 .split{display:flex; width:100%; height:100%}
@@ -506,11 +529,11 @@ let heartbeat=null, animId=null;
 
 /* ---------- CONTENT ---------- */
 const dreamValues=[
-  { name:'Discipline',   img:'Discipline.png',   points:["Shaping character through daily routines","Turning good habits into quiet strength","Building a community you can rely on"] },
-  { name:'Resilience',   img:'Resilience.png',   points:["Learning through every challenge","Knowing your strengths under pressure","Growing forward through change"] },
-  { name:'Empathy',      img:'Empathy.png',      points:["Connecting with genuine care","Understanding before being understood","Contributing with compassion"] },
-  { name:'Adaptability', img:'Adaptability.png', points:["Inquiring with an open mind","Responding with intention","Balancing calm with intensity"] },
-  { name:'Mindfulness',  img:'Mindfulness.png',  points:["Respecting self","Respecting others","Respecting the environment"] },
+  { name:'Discipline',   img:'dream/Discipline.png',   pos:'center',    points:["Shaping character through daily routines","Turning good habits into quiet strength","Building a community you can rely on"] },
+  { name:'Resilience',   img:'dream/Resilience.png',   pos:'center',    points:["Learning through every challenge","Knowing your strengths under pressure","Growing forward through change"] },
+  { name:'Empathy',      img:'dream/Empathy.png',      pos:'center',    points:["Connecting with genuine care","Understanding before being understood","Contributing with compassion"] },
+  { name:'Adaptability', img:'dream/Adaptability.png', pos:'center',    points:["Inquiring with an open mind","Responding with intention","Balancing calm with intensity"] },
+  { name:'Mindfulness',  img:'dream/Mindfulness.png',  pos:'72% center',points:["Respecting self","Respecting others","Respecting the environment"] },
 ];
 
 const journeySteps=[
@@ -714,9 +737,8 @@ function renderValues(){
     <div class="dcard" role="button" tabindex="0" aria-label="${v.name} — flip for detail">
       <div class="dcard-inner">
         <div class="dface dfront">
-          <div class="bg" style="background-image:url('${v.img}')"></div>
-          <div class="scrim"></div>
-          <div class="txt"><div class="letter">${v.name[0]}</div><div class="word">${v.name}</div></div>
+          <div class="bg" style="background-image:url('${v.img}'); background-position:${v.pos||'center'}"></div>
+          <div class="txt"><div class="letter">${v.name[0]}</div><div class="word">${v.name}</div><div class="hint">🐝 Tap to explore</div></div>
         </div>
         <div class="dface dback"><h4>${v.name}</h4><ul>${v.points.map(p=>`<li>${p}</li>`).join('')}</ul></div>
       </div>
@@ -725,7 +747,7 @@ function renderValues(){
 
 /* Fun fact */
 function renderFunFact(f){
-  return `<div class="fact-card fade-in"><div class="fact-num">${f.number}</div><div class="fact-label">${f.label}</div><p class="fact-sub">${f.subtitle}</p></div>`;
+  return `<div class="fact-wrap fade-in"><div class="fact-card"><div class="fact-num">${f.number}</div><div class="fact-label">${f.label}</div><p class="fact-sub">${f.subtitle}</p></div></div>`;
 }
 
 /* Pulse */
