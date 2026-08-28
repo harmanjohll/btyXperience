@@ -72,6 +72,15 @@ service cloud.firestore {
       allow write: if signedIn() && request.auth.uid == uid;
     }
 
+    // Sandbox presenter session — the fleet screen (x/fleet.html) broadcasts the
+    // beat (gather / set_sail / …); every phone reads it to sync the collective
+    // Set Sail. Presenter-written, like session/config below. Anonymous auth
+    // can't distinguish the presenter, so tighten before a large public event.
+    match /x_session/{doc} {
+      allow read:  if signedIn();
+      allow write: if signedIn(); // TODO: restrict to the presenter device
+    }
+
     // --- Presenter-owned control documents ---
     // The presenter screen (btx27.html?presenter=true) writes session/state and
     // config/pace; every phone follows them. Anonymous auth can't tell the
