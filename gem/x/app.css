@@ -128,6 +128,15 @@ body::before {
 .corner-boat.grew .cb-inner { animation: cbGrow .6s cubic-bezier(.22,1,.36,1); }
 @media (prefers-reduced-motion: reduce) { .corner-boat, .corner-boat.grew .cb-inner { transition: none; animation: none; } }
 
+/* === READY-TO-SAIL GATE (waiting for the collective cue) === */
+.ready-wait { display: flex; align-items: center; gap: 9px; justify-content: center; }
+.ready-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent-gold);
+    box-shadow: 0 0 12px var(--accent-gold); animation: readyPulse 1.5s ease-in-out infinite; }
+@keyframes readyPulse { 0%,100% { opacity: .45; transform: scale(.8); } 50% { opacity: 1; transform: scale(1.28); } }
+.ready-boat { animation: readyBob 3.6s ease-in-out infinite; filter: drop-shadow(0 10px 26px rgba(0,0,0,.5)); }
+@keyframes readyBob { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-9px) rotate(1deg); } }
+@media (prefers-reduced-motion: reduce) { .ready-dot, .ready-boat { animation: none; } }
+
 .origami-svg {
     width: 100% !important; height: 100% !important;
     display: block;
