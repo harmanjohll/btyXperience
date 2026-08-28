@@ -103,6 +103,31 @@ body::before {
     height: min(70vw, 300px);
 }
 
+/* === PERSISTENT CORNER BOAT (your folded shape, tucked away) === */
+.corner-boat {
+    position: fixed; right: 14px; bottom: 16px; z-index: 45;
+    width: 96px; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+    transition: transform .5s cubic-bezier(.22,1,.36,1), opacity .4s ease;
+}
+.corner-boat[hidden] { display: none; }
+.corner-boat .cb-inner {
+    width: 92px; height: 92px; border-radius: 18px; overflow: hidden;
+    background: radial-gradient(ellipse at 50% 28%, rgba(255,226,0,.12), rgba(4,10,51,.72));
+    border: 1px solid rgba(255,226,0,.30);
+    box-shadow: 0 8px 20px rgba(0,0,0,.5), inset 0 0 18px rgba(0,0,0,.35);
+}
+.corner-boat .cb-inner .origami-svg { filter: drop-shadow(0 3px 8px rgba(0,0,0,.45)); }
+.corner-boat .cb-label {
+    font-size: 9px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--text-muted); font-weight: 600;
+}
+.corner-boat.expand { transform: scale(2.15) translate(-19%, -19%); z-index: 60; }
+.corner-boat.expand .cb-inner { border-color: rgba(255,226,0,.5); }
+@keyframes cbGrow { 0% { transform: scale(.55) rotate(-6deg); opacity: .4; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+.corner-boat.grew .cb-inner { animation: cbGrow .6s cubic-bezier(.22,1,.36,1); }
+@media (prefers-reduced-motion: reduce) { .corner-boat, .corner-boat.grew .cb-inner { transition: none; animation: none; } }
+
 .origami-svg {
     width: 100% !important; height: 100% !important;
     display: block;

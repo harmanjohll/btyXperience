@@ -942,9 +942,6 @@ function renderQuestion(config) {
     <div class="sail-screen">
         <div class="paper-zone">
             ${progressBarHTML(qNum - 1)}
-            <div class="origami-stage medium">
-                ${buildOrigamiSVG(c, paperStage, 280, extras())}
-            </div>
         </div>
         <div class="content-zone">
             <div class="flex items-center gap-2 mb-3">
@@ -1426,6 +1423,23 @@ async function shareCard() {
 /* ============================================================
    ROUTER
    ============================================================ */
+// The boat's fold stage shown in the corner while you answer each question.
+// (During folds the boat is centre-stage; on these steps it tucks into the
+// corner so the question has room and the shape-so-far stays in view.)
+const STAGE_AT_STEP = { 3: 2, 6: 4, 7: 4, 10: 6, 11: 6, 14: 8 };
+let cornerStagePrev = -1;
+function updateCornerBoat() {
+    const el = document.getElementById('cornerBoat');
+    if (!el) return;
+    const stage = STAGE_AT_STEP[step];
+    if (stage === undefined) { el.hidden = true; el.classList.remove('expand'); el.innerHTML = ''; cornerStagePrev = -1; return; }
+    const grew = cornerStagePrev !== -1 && stage !== cornerStagePrev;
+    el.hidden = false;
+    el.innerHTML = `<div class="cb-inner">${buildOrigamiSVG(colors(), stage, 92, extras())}</div><span class="cb-label">Your boat</span>`;
+    if (grew) { el.classList.add('grew'); setTimeout(() => el.classList.remove('grew'), 660); }
+    cornerStagePrev = stage;
+}
+
 function route() {
     const render = () => {
         switch (step) {
@@ -1449,6 +1463,7 @@ function route() {
             case 17: renderArchetypeReveal(); break;
             case 18: renderMemento(); break;
         }
+        updateCornerBoat();
     };
     transition(render);
 }
@@ -1467,6 +1482,11 @@ $app.addEventListener('click', (e) => {
         localStorage.removeItem(SK);
         D = { marks: [] }; step = 0; route();
     }
+});
+
+// Tap the corner boat to peek at it larger, tap again to tuck it back.
+document.getElementById('cornerBoat')?.addEventListener('click', function () {
+    this.classList.toggle('expand'); haptic(12);
 });
 
 /* ============================================================
