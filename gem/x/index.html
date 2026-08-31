@@ -10,6 +10,10 @@
 </head>
 <body class="antialiased">
     <div id="app" class="relative z-10 min-h-screen flex flex-col items-center justify-center p-4 pb-12"></div>
+    <!-- Persistent "your boat" companion: tucked in the corner while you answer
+         questions, growing fold by fold as the session goes. Lives outside #app
+         so page transitions never wipe it. -->
+    <div id="cornerBoat" class="corner-boat" hidden aria-label="Your folded boat so far"></div>
     <script type="module" src="app.js"></script>
 </body>
 </html>

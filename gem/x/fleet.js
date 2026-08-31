@@ -9,7 +9,7 @@ import { buildOrigamiSVG, FIREBASE_CONFIG, LABELS, ARCHETYPES, SAIL_DATA } from 
 // screen — if the venue network blocks or throttles the gstatic CDN. Load it
 // off the critical path instead: the ocean scene renders immediately, boats
 // stream in once live sync connects, and demo mode ('D') works either way.
-let initializeApp, getFirestore, collection, onSnapshot, getAuth, signInAnonymously;
+let initializeApp, getFirestore, collection, onSnapshot, doc, setDoc, serverTimestamp, getAuth, signInAnonymously;
 let db, auth;
 (async () => {
     try {
@@ -19,7 +19,7 @@ let db, auth;
             import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"),
         ]);
         initializeApp = a.initializeApp;
-        ({ getFirestore, collection, onSnapshot } = fs);
+        ({ getFirestore, collection, onSnapshot, doc, setDoc, serverTimestamp } = fs);
         ({ getAuth, signInAnonymously } = au);
         const app = initializeApp(FIREBASE_CONFIG);
         db = getFirestore(app);
@@ -428,6 +428,32 @@ document.addEventListener('keydown', (e) => {
         marks: [],
     });
 });
+
+// === PRESENTER BEATS: broadcast the session cue to every phone ===
+function broadcastBeat(beat) {
+    if (!db || !setDoc || !doc) { showToast('Live sync not ready'); return; }
+    try { setDoc(doc(db, "x_session", "state"), { beat, ts: serverTimestamp ? serverTimestamp() : Date.now() }); }
+    catch (e) { console.warn("Beat broadcast failed:", e); }
+}
+
+// 'S' calls the collective Set Sail \u2014 every phone waiting at its ready-gate
+// launches at once and floods the fleet. 'G' resets the room to "gather".
+document.addEventListener('keydown', (e) => {
+    if (e.key === 's' || e.key === 'S') { broadcastBeat('set_sail'); showSetSailFlourish(); }
+    else if (e.key === 'g' || e.key === 'G') { broadcastBeat('gather'); showToast('Room reset \u2014 gathering'); }
+});
+
+// === SET SAIL FLOURISH \u2014 a full-width call across the fleet ===
+function showSetSailFlourish() {
+    if (document.getElementById('setSailFlourish')) return;
+    const el = document.createElement('div');
+    el.id = 'setSailFlourish';
+    el.className = 'set-sail-flourish';
+    el.innerHTML = `<div class="ssf-inner"><span class="ssf-emoji">\u26F5</span><span class="ssf-text">Set Sail, Beatty!</span></div>`;
+    document.body.appendChild(el);
+    playArrivalChime();
+    setTimeout(() => { el.classList.add('ssf-out'); setTimeout(() => el.remove(), 700); }, 3200);
+}
 
 // === TOAST HELPER ===
 function showToast(msg) {

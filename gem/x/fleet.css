@@ -356,6 +356,29 @@ body {
 }
 .conn-notice b { color: var(--bty-yellow); }
 
+/* === SET SAIL FLOURISH (presenter calls the collective launch) === */
+.set-sail-flourish {
+    position: fixed; inset: 0; z-index: 200; pointer-events: none;
+    display: flex; align-items: center; justify-content: center;
+    animation: ssfIn .6s cubic-bezier(.22,1,.36,1);
+}
+.set-sail-flourish.ssf-out { animation: ssfOut .6s ease forwards; }
+.set-sail-flourish .ssf-inner {
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    background: radial-gradient(ellipse at 50% 50%, rgba(255,226,0,.16), transparent 70%);
+    padding: 40px 80px;
+}
+.set-sail-flourish .ssf-emoji { font-size: clamp(4rem, 10vw, 9rem); filter: drop-shadow(0 0 30px rgba(255,226,0,.5)); animation: ssfBoat 3s ease-in-out; }
+.set-sail-flourish .ssf-text {
+    font-family: Georgia, 'Times New Roman', serif; font-weight: 900;
+    font-size: clamp(2.4rem, 6vw, 5.5rem); color: var(--bty-yellow);
+    text-shadow: 0 0 40px rgba(255,226,0,.5), 0 6px 30px rgba(0,0,0,.6);
+}
+@keyframes ssfIn { 0% { opacity: 0; transform: scale(.7); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes ssfOut { 0% { opacity: 1; } 100% { opacity: 0; transform: scale(1.08); } }
+@keyframes ssfBoat { 0% { transform: translateX(-30px) rotate(-6deg); } 100% { transform: translateX(30px) rotate(6deg); } }
+@media (prefers-reduced-motion: reduce) { .set-sail-flourish, .set-sail-flourish .ssf-emoji { animation: none; } }
+
 /* === TOAST === */
 .presenter-toast {
     position: fixed;

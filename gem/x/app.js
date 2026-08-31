@@ -5,7 +5,7 @@
 // Firebase is loaded via DYNAMIC import (see FIREBASE block below) so a CDN
 // outage on venue wifi can't stop the applet from running — only the shared
 // Fleet sync is lost. Boat rendering + the local experience still work.
-let initializeApp, getFirestore, doc, setDoc, serverTimestamp, getAuth, signInAnonymously;
+let initializeApp, getFirestore, doc, setDoc, serverTimestamp, onSnapshot, getAuth, signInAnonymously;
 import {
     buildOrigamiSVG, haptic, hapticPattern,
     SAIL_DATA, BOAT_DEFAULTS, ARCHETYPES, FOLD_GUIDES, FOLD_FLAPS, FOLD_LABELS, CREASE_LINES, LABELS,
@@ -200,14 +200,36 @@ let db, auth;
             import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"),
         ]);
         initializeApp = a.initializeApp;
-        ({ getFirestore, doc, setDoc, serverTimestamp } = fs);
+        ({ getFirestore, doc, setDoc, serverTimestamp, onSnapshot } = fs);
         ({ getAuth, signInAnonymously } = au);
         const app = initializeApp(FIREBASE_CONFIG);
         db = getFirestore(app);
         auth = getAuth(app);
         await signInAnonymously(auth);
+        startSessionListener();
     } catch (e) { console.warn("SAIL live sync unavailable — running solo:", e); }
 })();
+
+// === PRESENTER SESSION SYNC (hybrid: self-paced fold, collective Set Sail) ===
+// The presenter (x/fleet.html) broadcasts the current "beat" to x_session/state.
+// The phone mostly runs self-paced, but the finale is synchronised: when the
+// presenter calls "Set Sail", every phone waiting at the ready-gate launches at
+// once and the fleet floods on the big screen.
+let sessionBeat = null;
+let onSetSailCue = null;   // the ready-gate registers its launch fn here
+function startSessionListener() {
+    if (!db || !onSnapshot) return;
+    try {
+        onSnapshot(doc(db, "x_session", "state"), (snap) => {
+            const data = (snap && snap.exists && snap.exists()) ? snap.data() : (snap && snap.data ? snap.data() : null);
+            if (!data) return;
+            sessionBeat = data.beat || null;
+            if (sessionBeat === 'set_sail' && typeof onSetSailCue === 'function') {
+                const fn = onSetSailCue; onSetSailCue = null; fn();
+            }
+        }, (e) => console.warn("Session listener:", e));
+    } catch (e) { console.warn("Session listen failed:", e); }
+}
 
 // === STATE ===
 const $app = document.getElementById('app');
@@ -942,9 +964,6 @@ function renderQuestion(config) {
     <div class="sail-screen">
         <div class="paper-zone">
             ${progressBarHTML(qNum - 1)}
-            <div class="origami-stage medium">
-                ${buildOrigamiSVG(c, paperStage, 280, extras())}
-            </div>
         </div>
         <div class="content-zone">
             <div class="flex items-center gap-2 mb-3">
@@ -1373,15 +1392,55 @@ function setSailTransition(onDone) {
     setTimeout(() => { ov.style.transition='opacity .4s'; ov.style.opacity='0'; setTimeout(() => { ov.remove(); onDone && onDone(); }, 420); }, hold);
 }
 
-async function handleLaunch() {
+function handleLaunch() {
     const input = document.getElementById('aspirationInput');
     const word = input.value.trim();
     if (!word) { input.style.borderColor = '#ef4444'; return; }
     D.aspiration = word;
     save();
-    await saveToFirebase();
     hapticPattern([50, 30, 100]);
-    setSailTransition(() => { step = 16; route(); });
+    // Hold at the ready-gate; the boat only joins the fleet on the collective cue.
+    step = 19; route();
+}
+
+// The actual launch — fires on the presenter's "Set Sail" cue, or the phone's
+// own "Set sail now" fallback when running without a presenter. Writes the boat
+// (so it appears on the fleet) at this moment, so a collective cue floods the
+// fleet all at once.
+let launching = false;
+async function doLaunch() {
+    if (launching || D.launched) return;
+    launching = true;
+    onSetSailCue = null;
+    await saveToFirebase();
+    D.launched = true; save();
+    hapticPattern([50, 30, 100]);
+    setSailTransition(() => { launching = false; step = 16; route(); });
+}
+
+function renderReadyToSail() {
+    const c = colors();
+    $app.innerHTML = `
+    <div class="sail-screen ready-screen fade-up">
+        <div class="flex-1 flex flex-col items-center justify-center p-4 text-center">
+            <div class="ready-boat origami-stage medium mb-5">${buildOrigamiSVG(c, 8, 260, extras())}</div>
+            <p class="text-xs mb-1 tracking-[0.28em] uppercase" style="color:var(--accent-gold);">Your boat is ready</p>
+            <h1 class="font-serif text-2xl mb-1" style="color:var(--text-primary);">${(D.aspiration || 'Set sail').toUpperCase()}</h1>
+            <div class="ready-wait mt-4 mb-2">
+                <span class="ready-dot"></span>
+                <span class="text-sm" style="color:var(--text-secondary);">Waiting for the captain's cue…</span>
+            </div>
+            <p class="text-[11px] max-w-xs" style="color:var(--text-muted);">When the whole hall sets sail together, your boat joins the fleet on the big screen. Look up. 🌊</p>
+            <button id="sailNowBtn" class="nav-btn secondary mt-8" style="opacity:0;transition:opacity .5s;">Set sail now</button>
+        </div>
+    </div>`;
+    // Arm the collective cue; if a presenter fires "Set Sail", we launch.
+    onSetSailCue = doLaunch;
+    if (sessionBeat === 'set_sail') { doLaunch(); return; }
+    // Fallback for running without a presenter (standalone / testing): reveal a
+    // self-serve button after a moment so nobody is ever stuck at the gate.
+    const btn = document.getElementById('sailNowBtn');
+    setTimeout(() => { if (btn && btn.isConnected) btn.style.opacity = '1'; }, 6000);
 }
 
 function downloadCard() {
@@ -1426,6 +1485,23 @@ async function shareCard() {
 /* ============================================================
    ROUTER
    ============================================================ */
+// The boat's fold stage shown in the corner while you answer each question.
+// (During folds the boat is centre-stage; on these steps it tucks into the
+// corner so the question has room and the shape-so-far stays in view.)
+const STAGE_AT_STEP = { 3: 2, 6: 4, 7: 4, 10: 6, 11: 6, 14: 8 };
+let cornerStagePrev = -1;
+function updateCornerBoat() {
+    const el = document.getElementById('cornerBoat');
+    if (!el) return;
+    const stage = STAGE_AT_STEP[step];
+    if (stage === undefined) { el.hidden = true; el.classList.remove('expand'); el.innerHTML = ''; cornerStagePrev = -1; return; }
+    const grew = cornerStagePrev !== -1 && stage !== cornerStagePrev;
+    el.hidden = false;
+    el.innerHTML = `<div class="cb-inner">${buildOrigamiSVG(colors(), stage, 92, extras())}</div><span class="cb-label">Your boat</span>`;
+    if (grew) { el.classList.add('grew'); setTimeout(() => el.classList.remove('grew'), 660); }
+    cornerStagePrev = stage;
+}
+
 function route() {
     const render = () => {
         switch (step) {
@@ -1448,8 +1524,11 @@ function route() {
             case 16: renderProcessing(); break;
             case 17: renderArchetypeReveal(); break;
             case 18: renderMemento(); break;
+            case 19: renderReadyToSail(); break;
         }
+        updateCornerBoat();
     };
+    onSetSailCue = null;   // disarm the collective cue unless the ready-gate re-arms it
     transition(render);
 }
 
@@ -1461,6 +1540,7 @@ $app.addEventListener('click', (e) => {
     if (!t) return;
     if (t.id === 'startBtn')        { haptic(15); startAmbient(); injectOcean(); step = 1; route(); }
     if (t.id === 'launchBtn')       { handleLaunch(); }
+    if (t.id === 'sailNowBtn')      { doLaunch(); }
     if (t.id === 'downloadCardBtn') { downloadCard(); }
     if (t.id === 'shareCardBtn')   { shareCard(); }
     if (t.id === 'resetBtn') {
@@ -1469,10 +1549,16 @@ $app.addEventListener('click', (e) => {
     }
 });
 
+// Tap the corner boat to peek at it larger, tap again to tuck it back.
+document.getElementById('cornerBoat')?.addEventListener('click', function () {
+    this.classList.toggle('expand'); haptic(12);
+});
+
 /* ============================================================
    RESUME STATE
    ============================================================ */
-if (D.aspiration)                            step = 18;
+if (D.aspiration && D.launched)              step = 18;   // already sailed → keepsake card
+else if (D.aspiration)                       step = 19;   // named but not yet sailed → ready-gate
 else if (D.learningPick1 !== undefined)      step = 15;
 else if (D.industryPick1 !== undefined)      step = 12;
 else if (D.internationalPick1 !== undefined) step = 11;
