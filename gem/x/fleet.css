@@ -356,6 +356,15 @@ body {
 }
 .conn-notice b { color: var(--bty-yellow); }
 
+/* === EMBED MODE (fleet shown as a scene inside btx27) === */
+/* Hide the standalone chrome; keep the ocean, boats, arrival ribbons and the
+   set-sail flourish so the scene reads as pure "the fleet arrives". */
+html.embed .hud,
+html.embed .title-bar,
+html.embed .compass-rose,
+html.embed .distribution-panel,
+html.embed #connNotice { display: none !important; }
+
 /* === SET SAIL FLOURISH (presenter calls the collective launch) === */
 .set-sail-flourish {
     position: fixed; inset: 0; z-index: 200; pointer-events: none;

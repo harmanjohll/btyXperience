@@ -575,6 +575,7 @@ const journeySteps=[
   { id:'deck_d', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRIJppB8CD0rLo6qLaE4eiXeJHcYviqju1Gf3QChKnv7XsJY2cfYQ0eU8M7pSf5Bos2DcyuIxl6ZCPX/pubembed?start=false&loop=false&delayms=60000" },
   { id:'deck_e', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRxw0Yj77fW9I87q0-XgXfqwGPwdi6RPDXBHb7CMGmEJTdBhELve0N5rAg5WbtS2vivKyV5WZO9gB_m/pubembed?start=false&loop=false&delayms=60000" },
   { id:'pulse_check', type:'pulse_check', title:"How's the Hive Feeling?", desc:"Tap on your phone — let's read the room." },
+  { id:'set_sail', type:'fleet', title:"Set Sail, Beatty!", desc:"Every boat is a Beattyian setting sail from our Hive. Look up — here comes the fleet." },
   { id:'finale', type:'finale', title:"Our Hive of Aspirations", desc:"Every cell is a dream from someone in this room tonight." },
   { id:'deck_f', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vQx7tJCZ8s5AD5S9F7S2kNmAgfEX7KnIP6fLMQfcFCfQr4-9JeUVxFcyYRhzNtZYbBaCvLM1Wz8p1sX/pubembed?start=false&loop=false&delayms=60000" },
   { id:'card', type:'memento', title:"Your Journey Begins", desc:"Check your phone for your personal Beatty Compass Card." },
@@ -666,6 +667,7 @@ function renderContent(step){
     case 'industry_map': return renderMap(step.localData);
     case 'pulse_check': return renderPulse();
     case 'finale': return renderFinale();
+    case 'fleet': return `<iframe src="x/fleet.html?embed=1" title="The Fleet Sets Sail" style="width:100%; height:100%; border:0; display:block" allow="autoplay"></iframe>`;
     case 'memento': return `<div style="text-align:center"><div style="font-size:clamp(5rem,12vw,9rem)">📱</div><h2 class="stage-title" style="font-size:clamp(2rem,4vw,3.6rem); margin-top:10px">Check your phone</h2><p class="stage-sub" style="margin:14px auto 0">Your personal Beatty Compass Card is waiting.</p></div>`;
     case 'video': return `<div style="width:100%; height:100%; background:#000; position:relative; display:flex; align-items:center; justify-content:center">${iframeLoading()}<iframe src="${step.url}" style="width:100%; height:100%; border:0; position:relative; z-index:1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`;
     case 'slide': return `<div style="width:100%; height:100%; background:#000; position:relative">${iframeLoading()}<iframe src="${step.url}" style="width:100%; height:100%; border:0; position:relative; z-index:1" allowfullscreen></iframe></div>`;
@@ -958,7 +960,7 @@ function renderStep(){
     staticContent: step.type==='values'?true:null, ts:Date.now()
   }).catch(()=>{}); }
 
-  const immersive = ['slide','video','globe','industry_map','funfact','finale'].includes(step.type);
+  const immersive = ['slide','video','globe','industry_map','funfact','finale','fleet'].includes(step.type);
   const titleHTML = (!immersive && step.title)?`<p class="eyebrow">${step.id.includes('poll')?'Live Poll':'Beatty'}</p><h2 class="stage-title">${step.title}</h2>`:'';
   const descHTML  = (!immersive && step.desc)?`<p class="stage-sub" style="margin:0 auto 26px">${step.desc}</p>`:'';
   const inner = renderContent(step);
@@ -974,6 +976,11 @@ function renderStep(){
   if(step.type==='chart') paintCompass();
   if(step.type==='poll'){ heartbeat=setInterval(()=>{ if(journeyContent.querySelector(`[data-poll="${step.pollData.id}"]`)) paintPoll(step.pollData.id); },600); }
   if(step.type==='globe'||step.type==='industry_map') paintNexusStats();
+  // Reaching the fleet scene IS the collective "Set Sail" cue: every phone
+  // waiting at its ready-gate launches at once and its boat streams into the
+  // fleet iframe. The scene still renders fine (empty dusk ocean) if nobody
+  // has joined, so the talk always works standalone.
+  if(step.type==='fleet' && isPresenter && dbReady){ setDoc(doc(db,"x_session","state"),{beat:'set_sail',ts:Date.now()}).catch(()=>{}); }
 
   progFill.style.width=`${((currentStep+1)/journeySteps.length)*100}%`;
   prevBtn.style.display = currentStep>0?'inline-block':'none';

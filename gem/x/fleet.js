@@ -407,11 +407,9 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// === DEMO MODE: press 'd' to spawn a test boat ===
-document.addEventListener('keydown', (e) => {
-    if (e.key !== 'd') return;
+// === DEMO MODE: press 'd' (or ?demo=N) to spawn test boats ===
+function spawnDemoBoat() {
     const r = (arr) => arr[Math.floor(Math.random() * arr.length)];
-
     placeBoat({
         uid: 'demo_' + Date.now() + '_' + Math.random().toString(36).slice(2),
         hullColor: r(['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6']),
@@ -427,7 +425,17 @@ document.addEventListener('keydown', (e) => {
         flagIcon: r(['\u2693', '\uD83D\uDD25', '\uD83D\uDC99', '\uD83C\uDF0A', '\uD83E\uDDD8']),
         marks: [],
     });
-});
+}
+document.addEventListener('keydown', (e) => { if (e.key === 'd') spawnDemoBoat(); });
+
+// ?demo=N pre-populates the fleet with N boats \u2014 lets the presenter preview or
+// rehearse the fleet scene (inside btx27) without live phones.
+(function () {
+    const n = parseInt(new URLSearchParams(location.search).get('demo') || '0', 10);
+    if (!n) return;
+    let i = 0;
+    const iv = setInterval(() => { spawnDemoBoat(); if (++i >= n) clearInterval(iv); }, 240);
+})();
 
 // === PRESENTER BEATS: broadcast the session cue to every phone ===
 function broadcastBeat(beat) {
