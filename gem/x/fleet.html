@@ -6,6 +6,9 @@
     <title>The Beatty Fleet</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="fleet.css">
+    <!-- When embedded as a scene inside btx27 (?embed=1), hide the standalone
+         chrome (HUD, title, crest, distribution) — set before render, no flash. -->
+    <script>if(new URLSearchParams(location.search).has('embed'))document.documentElement.classList.add('embed');</script>
 </head>
 <body>
     <!-- Ocean scene (cinematic dusk) -->
