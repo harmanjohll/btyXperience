@@ -146,6 +146,50 @@ body::before {
     color: #04081a; background: var(--accent-gold); box-shadow: 0 0 22px rgba(255,226,0,.5); animation: cbGrow .5s cubic-bezier(.22,1,.36,1); }
 @media (prefers-reduced-motion: reduce) { .follow-boat, .follow-eye { animation: none; } }
 
+/* === ANSWER THE ON-SCREEN QUESTION (poll · nexus · pulse · dream) === */
+.q-eyebrow { font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; font-weight: 800; color: var(--accent-gold); margin-bottom: 10px; }
+.q-question { font-family: 'Georgia','Iowan Old Style','Times New Roman',serif; color: var(--text-primary); font-size: 1.35rem; line-height: 1.2; margin-bottom: 4px; }
+.q-hint { font-size: .72rem; color: var(--text-muted); margin-top: 14px; text-align: center; }
+.q-opts { display: flex; flex-direction: column; gap: 10px; }
+.answer-opt {
+    display: block; width: 100%; text-align: left; cursor: pointer;
+    border: 1px solid rgba(255,226,0,.16); border-radius: 15px;
+    background: linear-gradient(160deg, #12235f, #0a1442); color: var(--text-primary);
+    padding: 15px 16px; font-size: 1rem; font-weight: 600; font-family: inherit;
+    transition: transform .12s cubic-bezier(.22,1,.36,1), border-color .12s, background .12s;
+    animation: fadeUp .4s cubic-bezier(.22,1,.36,1) both;
+}
+.answer-opt:active { transform: scale(.98); }
+.answer-opt.sel { border-color: var(--accent-gold); background: linear-gradient(160deg, #1a2f78, #12235f); box-shadow: 0 0 0 2px rgba(255,226,0,.4); }
+.answer-opt:disabled { opacity: .5; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Live poll result bars */
+.pbar { margin-bottom: 11px; }
+.pbar-lab { display: flex; justify-content: space-between; gap: 8px; color: var(--text-primary); font-size: .86rem; margin-bottom: 5px; font-weight: 600; }
+.pbar-track { height: 24px; background: rgba(255,255,255,.07); border-radius: 8px; overflow: hidden; }
+.pbar-fill { height: 100%; width: 0; border-radius: 8px; background: linear-gradient(90deg, #12299c, #2a49d6); transition: width .8s cubic-bezier(.22,1,.36,1); }
+.pbar.me .pbar-fill { background: linear-gradient(90deg, var(--accent-gold), var(--accent-gold-light)); }
+.pbar.correct .pbar-track { box-shadow: 0 0 0 2px var(--accent-gold); }
+.q-insight { background: rgba(255,226,0,.07); border: 1px solid rgba(255,226,0,.22); border-radius: 13px; padding: 14px; color: var(--text-secondary); font-size: .92rem; line-height: 1.5; margin-top: 15px; }
+
+/* Pulse mood grid */
+.mood-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+.mood-btn { display: flex; flex-direction: column; align-items: center; gap: 7px; cursor: pointer;
+    background: linear-gradient(160deg, #12235f, #0a1442); border: 1px solid rgba(255,226,0,.16); border-radius: 17px;
+    padding: 20px 10px; font-family: inherit; transition: transform .12s, border-color .12s; }
+.mood-btn:active { transform: scale(.96); }
+.mood-btn.sel { border-color: var(--accent-gold); box-shadow: 0 0 0 2px rgba(255,226,0,.4); }
+.mood-e { font-size: 2.4rem; }
+.mood-l { color: var(--text-primary); font-family: 'Georgia',serif; font-size: .98rem; }
+
+/* Dream (aspiration) input */
+.dream-field { width: 100%; padding: 16px; border-radius: 13px; border: 2px solid var(--bg-surface);
+    background: rgba(255,255,255,.05); color: var(--text-primary); text-align: center; font-size: 1.3rem;
+    font-family: 'Georgia',serif; font-weight: 700; outline: none; transition: border-color .2s; }
+.dream-field:focus { border-color: var(--accent-gold); }
+.dream-field::placeholder { color: rgba(124,131,180,.7); font-weight: 400; }
+
 .origami-svg {
     width: 100% !important; height: 100% !important;
     display: block;
