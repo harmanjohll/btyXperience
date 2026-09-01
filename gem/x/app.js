@@ -210,11 +210,11 @@ let db, auth;
     } catch (e) { console.warn("SAIL live sync unavailable — running solo:", e); }
 })();
 
-// === PRESENTER SESSION SYNC (hybrid: self-paced fold, collective Set Sail) ===
-// The presenter (x/fleet.html) broadcasts the current "beat" to x_session/state.
-// The phone mostly runs self-paced, but the finale is synchronised: when the
-// presenter calls "Set Sail", every phone waiting at the ready-gate launches at
-// once and the fleet floods on the big screen.
+// === PRESENTER-DRIVEN SYNC (tight: the phone follows btx27 beat-by-beat) ===
+// btx27 broadcasts one action per slide to x_session/state; the phone renders
+// exactly that (a fold, a "what would you pursue?" question, "look up", name,
+// set sail, card). The boat is built across the whole talk, in step with the
+// presenter — nobody races ahead, nobody is left waiting.
 let sessionBeat = null;
 let onSetSailCue = null;   // the ready-gate registers its launch fn here
 function startSessionListener() {
@@ -222,11 +222,9 @@ function startSessionListener() {
     try {
         onSnapshot(doc(db, "x_session", "state"), (snap) => {
             const data = (snap && snap.exists && snap.exists()) ? snap.data() : (snap && snap.data ? snap.data() : null);
-            if (!data) return;
-            sessionBeat = data.beat || null;
-            if (sessionBeat === 'set_sail' && typeof onSetSailCue === 'function') {
-                const fn = onSetSailCue; onSetSailCue = null; fn();
-            }
+            if (!data || !data.beat) return;
+            sessionBeat = data.beat;
+            applyBeat(data.beat);
         }, (e) => console.warn("Session listener:", e));
     } catch (e) { console.warn("Session listen failed:", e); }
 }
@@ -688,6 +686,9 @@ function renderFoldStep(foldIndex) {
     const chapter = CHAPTER_FOR_FOLD[foldIndex];
     if (chapter) {
         currentChapter = chapter.letter;
+        // In follow/solo mode the presenter's screen provides the framing, so
+        // skip the chapter card and go straight to the fold (keeps it tight).
+        if (foldFollowActive) { renderFoldStepInner(foldIndex); return; }
         showChapterCard(chapter, () => renderFoldStepInner(foldIndex));
         return;
     }
@@ -728,7 +729,7 @@ function renderFoldStepInner(foldIndex) {
     $app.innerHTML = `
     <div class="sail-screen">
         <div class="paper-zone">
-            ${progressBarHTML(questionsDone())}
+            ${foldFollowActive ? '' : progressBarHTML(questionsDone())}
             <div class="origami-stage" id="origamiStage">
                 ${buildOrigamiSVG(c, paperStage, 280, extras())}
                 <div class="fold-flap" style="opacity:0;">
@@ -948,7 +949,12 @@ function renderFoldStepInner(foldIndex) {
 
             const advanceDelay = isBoatReveal ? 3500 : isHatToDiamond ? 1400 : 1000;
             const nextStep = NEXT_STEP_AFTER_FOLD[foldIndex];
-            setTimeout(() => { step = nextStep; route(); }, advanceDelay);
+            // In follow/solo mode a fold returns to the "look up" rest state and
+            // waits for the presenter's next beat, instead of self-advancing.
+            setTimeout(() => {
+                if (foldFollowActive) onFoldBeatDone(foldIndex);
+                else { step = nextStep; route(); }
+            }, advanceDelay);
         }
     });
 }
@@ -959,11 +965,14 @@ function renderFoldStepInner(foldIndex) {
 function renderQuestion(config) {
     const { scenario, question, options, dataKey, backStep, qNum, paperStage, info, sailLetter, sailTitle } = config;
     const c = colors();
+    // Presenter-driven: the big screen owns pacing, so the phone drops its own
+    // progress % and Back (which would desync it from the slide on screen).
+    const followQ = askFollowActive;
 
     $app.innerHTML = `
     <div class="sail-screen">
         <div class="paper-zone">
-            ${progressBarHTML(qNum - 1)}
+            ${followQ ? '' : progressBarHTML(qNum - 1)}
         </div>
         <div class="content-zone">
             <div class="flex items-center gap-2 mb-3">
@@ -980,7 +989,7 @@ function renderQuestion(config) {
             </div>
             ${info ? `<div class="info-panel p-3 mt-3"><p class="text-xs leading-relaxed" style="color:var(--text-secondary);">${info}</p></div>` : ''}
             <div class="nav-bar" id="navBar">
-                <button class="nav-btn secondary" id="backBtn" ${backStep === null ? 'disabled' : ''}>Back</button>
+                ${followQ ? '' : `<button class="nav-btn secondary" id="backBtn" ${backStep === null ? 'disabled' : ''}>Back</button>`}
                 <button class="nav-btn primary" id="nextBtn" disabled>Next</button>
             </div>
         </div>
@@ -1017,7 +1026,7 @@ function renderQuestion(config) {
         });
     });
 
-    document.getElementById('backBtn').addEventListener('click', () => {
+    document.getElementById('backBtn')?.addEventListener('click', () => {
         if (backStep !== null) { step = backStep; route(); }
     });
 
@@ -1031,7 +1040,10 @@ function renderQuestion(config) {
         addMark(dataKey, primaryOpt.id);
         save();
         // Animate stamp press before advancing
-        animateStampPress(dataKey, primaryOpt, paperStage, () => advanceFromQuestion(dataKey));
+        animateStampPress(dataKey, primaryOpt, paperStage, () => {
+            if (askFollowActive) onAskBeatDone();
+            else advanceFromQuestion(dataKey);
+        });
     });
 }
 
@@ -1178,12 +1190,12 @@ function renderAspiration() {
                 style="background:var(--bg-card);color:var(--text-primary);border:2px solid var(--accent-gold);caret-color:var(--accent-gold);"
                 placeholder="e.g. COURAGE">
             <div class="nav-bar">
-                <button class="nav-btn secondary" id="backBtn">Back</button>
+                ${(followMode || soloMode) ? '' : `<button class="nav-btn secondary" id="backBtn">Back</button>`}
                 <button class="nav-btn primary" id="launchBtn">Launch</button>
             </div>
         </div>
     </div>`;
-    document.getElementById('backBtn').addEventListener('click', () => { step = 14; route(); });
+    document.getElementById('backBtn')?.addEventListener('click', () => { step = 14; route(); });
     // Live aspiration on hull
     const aspirationBoat = document.getElementById('aspirationBoat');
     document.getElementById('aspirationInput').addEventListener('input', (e) => {
@@ -1493,13 +1505,167 @@ let cornerStagePrev = -1;
 function updateCornerBoat() {
     const el = document.getElementById('cornerBoat');
     if (!el) return;
-    const stage = STAGE_AT_STEP[step];
-    if (stage === undefined) { el.hidden = true; el.classList.remove('expand'); el.innerHTML = ''; cornerStagePrev = -1; return; }
+    // Only tuck the corner boat into the question screens. In follow/solo mode
+    // the boat's real progress is D.nextFold (folds happen on their own beats),
+    // not the old per-step assumption.
+    if (STAGE_AT_STEP[step] === undefined) { el.hidden = true; el.classList.remove('expand'); el.innerHTML = ''; cornerStagePrev = -1; return; }
+    const stage = (followMode || soloMode) ? Math.min(D.nextFold || 0, 8) : STAGE_AT_STEP[step];
     const grew = cornerStagePrev !== -1 && stage !== cornerStagePrev;
     el.hidden = false;
     el.innerHTML = `<div class="cb-inner">${buildOrigamiSVG(colors(), stage, 92, extras())}</div><span class="cb-label">Your boat</span>`;
     if (grew) { el.classList.add('grew'); setTimeout(() => el.classList.remove('grew'), 660); }
     cornerStagePrev = stage;
+}
+function hideCornerBoat() { const el = document.getElementById('cornerBoat'); if (el) { el.hidden = true; el.classList.remove('expand'); } }
+
+// ============================================================
+//   PRESENTER-DRIVEN FOLLOW MODE  (the phone follows btx27 beat-by-beat)
+// ============================================================
+let followMode = false;
+let currentBeat = null;
+let foldFollowActive = false;   // a fold should return to "look up", not self-advance
+let askFollowActive = false;    // ditto for a question
+let soloMode = false;
+let soloIdx = -1;
+let soloTimerId = null;
+
+// foldIndex → the route() step that renders renderFoldStep(foldIndex)
+const FOLD_STEP_FOR_INDEX = [1, 2, 4, 5, 8, 9, 12, 13];
+// preference beat → the route() step that renders that SAIL question
+//   value → L (flag) · passion → A (boat) · industry → I-sub · destination → I (sail)
+const ASK_STEP = { value: 14, passion: 6, industry: 11, destination: 10 };
+// Solo (no-presenter) practice order
+const SOLO_BEATS = ['fold:0','ask:value','fold:1','ask:passion','fold:2','fold:3','ask:industry','fold:4','ask:destination','fold:5','fold:6','fold:7','name'];
+
+function applyBeat(beatStr) {
+    if (!beatStr) return;
+    followMode = true; soloMode = false;
+    if (soloTimerId) { clearTimeout(soloTimerId); soloTimerId = null; }
+    if (beatStr === currentBeat) return;
+    currentBeat = beatStr;
+    const i = beatStr.indexOf(':');
+    const kind = i < 0 ? beatStr : beatStr.slice(0, i);
+    const arg  = i < 0 ? null : beatStr.slice(i + 1);
+    switch (kind) {
+        case 'join':     renderJoinHold(); break;
+        case 'look':     renderLookUp(); break;
+        case 'fold':     startFoldBeat(); break;
+        case 'ask':      startAskBeat(arg); break;
+        case 'name':     step = 15; route(); break;
+        case 'set_sail': triggerSetSail(); break;
+        case 'card':     D.launched = true; save(); step = 18; route(); break;
+        default:         renderLookUp();
+    }
+}
+
+function startFoldBeat() {
+    const fi = (D.nextFold == null) ? 0 : D.nextFold;
+    if (fi > 7) { renderLookUp('Your boat is folded — look up. 🌊'); return; }
+    foldFollowActive = true;
+    step = FOLD_STEP_FOR_INDEX[fi];
+    route();
+}
+function onFoldBeatDone(foldIndex) {
+    D.nextFold = foldIndex + 1; save();
+    foldFollowActive = false;
+    hapticPattern([25, 40, 60]);
+    renderRest('Beautiful fold.', 'Eyes back on the big screen ✨');
+}
+function startAskBeat(which) {
+    const s = ASK_STEP[which];
+    if (s == null) { renderLookUp(); return; }
+    askFollowActive = true;
+    step = s; route();
+}
+function onAskBeatDone() {
+    askFollowActive = false;
+    hapticPattern([20, 30, 50]);
+    renderRest('Locked in.', 'Eyes back on the big screen ✨');
+}
+function triggerSetSail() {
+    if (D.launched) { step = 16; route(); return; }
+    if (D.aspiration) { doLaunch(); return; }
+    step = 15; route();   // not named yet — let them name; the cue/button launches
+}
+
+/* --- Resting / look-up screens shown between the presenter's beats --- */
+function renderJoinHold() {
+    hideCornerBoat();
+    const c = colors();
+    $app.innerHTML = `
+    <div class="sail-screen follow-screen fade-up">
+        <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
+            <img src="${LOGO_URL}" alt="Beatty" style="width:54px;height:54px;object-fit:contain" class="mb-4" onerror="this.style.display='none'">
+            <p class="text-[10px] mb-2 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">You're aboard</p>
+            <h1 class="font-serif text-2xl mb-4" style="color:var(--text-primary);">Fold your boat with us</h1>
+            <div class="follow-boat mb-4">${buildOrigamiSVG(c, 0, 180, extras())}</div>
+            <p class="text-sm max-w-xs" style="color:var(--text-secondary);">Keep your eyes on the big screen — you'll shape your boat and choose your course as we go. 🌊</p>
+        </div>
+    </div>`;
+    armSoloFallback();
+}
+function renderLookUp(msg) {
+    hideCornerBoat();
+    const c = colors();
+    const stage = Math.min(D.nextFold || 0, 8);
+    $app.innerHTML = `
+    <div class="sail-screen follow-screen fade-up">
+        <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
+            <div class="follow-eye mb-2">👀</div>
+            <h1 class="font-serif text-xl mb-4" style="color:var(--accent-gold);">Look up at the screen</h1>
+            <div class="follow-boat">${buildOrigamiSVG(c, stage, 200, extras())}</div>
+            <p class="text-[11px] mt-4" style="color:var(--text-muted);">${msg || 'Your boat so far'}</p>
+        </div>
+    </div>`;
+    if (soloMode) addSoloNext();
+    else armSoloFallback();
+}
+function renderRest(title, sub) {
+    hideCornerBoat();
+    const c = colors();
+    const stage = Math.min(D.nextFold || 0, 8);
+    $app.innerHTML = `
+    <div class="sail-screen follow-screen fade-up">
+        <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
+            <div class="follow-check mb-2">✓</div>
+            <h1 class="font-serif text-xl mb-1" style="color:var(--accent-gold);">${title}</h1>
+            <p class="text-sm mb-4" style="color:var(--text-secondary);">${sub}</p>
+            <div class="follow-boat">${buildOrigamiSVG(c, stage, 190, extras())}</div>
+        </div>
+    </div>`;
+    if (soloMode) addSoloNext();
+}
+/* --- Solo fallback: practise the whole flow at your own pace if no presenter --- */
+function armSoloFallback() {
+    if (followMode || soloMode) return;
+    clearTimeout(soloTimerId);
+    soloTimerId = setTimeout(() => {
+        if (followMode || soloMode) return;
+        const p = document.querySelector('.follow-screen .flex-1');
+        if (p && !document.getElementById('soloStart')) {
+            const b = document.createElement('button');
+            b.id = 'soloStart'; b.className = 'nav-btn secondary mt-6';
+            b.textContent = 'No presenter? Practise on your own ▶';
+            b.onclick = () => { soloMode = true; soloIdx = 0; runSolo(); };
+            p.appendChild(b);
+        }
+    }, 5000);
+}
+function runSolo() {
+    const beat = SOLO_BEATS[soloIdx];
+    if (!beat) { step = 15; route(); return; }
+    currentBeat = null;
+    const i = beat.indexOf(':'); const kind = i < 0 ? beat : beat.slice(0, i); const arg = i < 0 ? null : beat.slice(i + 1);
+    if (kind === 'fold') startFoldBeat();
+    else if (kind === 'ask') startAskBeat(arg);
+    else if (kind === 'name') { step = 15; route(); }
+}
+function addSoloNext() {
+    const p = document.querySelector('.follow-screen .flex-1'); if (!p) return;
+    const b = document.createElement('button');
+    b.className = 'nav-btn primary mt-6'; b.textContent = 'Next ▶';
+    b.onclick = () => { soloIdx++; runSolo(); };
+    p.appendChild(b);
 }
 
 function route() {
@@ -1555,17 +1721,10 @@ document.getElementById('cornerBoat')?.addEventListener('click', function () {
 });
 
 /* ============================================================
-   RESUME STATE
+   START — presenter-driven. The phone waits in a "fold with us" hold; btx27's
+   beats (or the solo-practice fallback) drive everything from here. Someone who
+   already sailed returns straight to their keepsake card.
    ============================================================ */
-if (D.aspiration && D.launched)              step = 18;   // already sailed → keepsake card
-else if (D.aspiration)                       step = 19;   // named but not yet sailed → ready-gate
-else if (D.learningPick1 !== undefined)      step = 15;
-else if (D.industryPick1 !== undefined)      step = 12;
-else if (D.internationalPick1 !== undefined) step = 11;
-else if (D.subjectPick1 !== undefined)       step = 8;
-else if (D.appliedPick1 !== undefined)       step = 7;
-else if (D.stewardshipPick1 !== undefined)   step = 4;
-
-// Resume ocean if returning mid-journey
-if (step > 0) injectOcean();
-route();
+injectOcean();
+if (D.aspiration && D.launched) { step = 18; route(); }
+else renderJoinHold();

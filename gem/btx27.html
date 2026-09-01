@@ -581,6 +581,38 @@ const journeySteps=[
   { id:'card', type:'memento', title:"Your Journey Begins", desc:"Check your phone for your personal Beatty Compass Card." },
 ];
 
+/* --- What each slide tells the audience phone to do (tight, presenter-led) ---
+   The phone (gem/x/) follows these beat-by-beat: one small action per slide —
+   a single origami fold, a "what would you pursue?" question timed to the topic
+   on screen, or "look up". The four preference questions land exactly at their
+   matching slides (values · passions · industry · destination), and the eight
+   folds are spread evenly between them so the boat is built across the whole
+   talk and finishes right before you name it. Nobody races ahead; nobody waits.
+   ('fold:N' is documentation — the phone always advances its own next fold.) */
+const PHONE_BEAT = {
+  compass:'join',                 // "Fold your boat with us" — hold & get ready
+  video_intro:'fold:0',           // fold 1 — while the intro film plays
+  deck_a:'look',
+  poll_dream:'fold:1',            // fold 2
+  values:'ask:value',             // DREAM values on screen → which value is your compass?
+  deck_b:'fold:2',                // fold 3
+  funfact_cca:'look',
+  poll_cca:'ask:passion',         // 47 CCAs / passions → which problem domain draws you?
+  deck_c:'fold:3',                // fold 4
+  poll_nexus_count:'look',
+  poll_industry:'ask:industry',   // industry pathways → which world of work do you step into?
+  funfact_nexus:'fold:4',         // fold 5
+  nexus_global:'ask:destination', // NEXUS globe → where would the wind take you?
+  nexus_local:'fold:5',           // fold 6
+  deck_d:'fold:6',                // fold 7
+  deck_e:'fold:7',                // fold 8 — boat complete, ready to be named
+  pulse_check:'name',             // name your boat
+  set_sail:'set_sail',            // collective launch → boats flood the fleet scene
+  finale:'look',
+  deck_f:'look',
+  card:'card',
+};
+
 const modalData={
   GeoBali:{ title:"Geography & Literature @ Bali", students:30, duration:"1 Week", desc:"An immersive study of Bali's living landscape — its volcanic geography and the communities who adapt to it.", highlights:["Read a real volcanic landscape","See how communities adapt to their environment","Learn on-site, beyond the classroom"] },
   NZ:{ title:"Leadership & Sustainability @ Aorere College, New Zealand", students:10, duration:"1 Week", desc:"Co-designed with Aorere College — leadership grown through service and sustainability.", highlights:["Sharpen critical & creative thinking","Develop real leadership qualities","See language's role in leading others"] },
@@ -976,11 +1008,14 @@ function renderStep(){
   if(step.type==='chart') paintCompass();
   if(step.type==='poll'){ heartbeat=setInterval(()=>{ if(journeyContent.querySelector(`[data-poll="${step.pollData.id}"]`)) paintPoll(step.pollData.id); },600); }
   if(step.type==='globe'||step.type==='industry_map') paintNexusStats();
-  // Reaching the fleet scene IS the collective "Set Sail" cue: every phone
-  // waiting at its ready-gate launches at once and its boat streams into the
-  // fleet iframe. The scene still renders fine (empty dusk ocean) if nobody
-  // has joined, so the talk always works standalone.
-  if(step.type==='fleet' && isPresenter && dbReady){ setDoc(doc(db,"x_session","state"),{beat:'set_sail',ts:Date.now()}).catch(()=>{}); }
+  // Drive the phones: broadcast ONE small action for the current slide so the
+  // audience app follows beat-by-beat (a fold, a "what would you pursue?"
+  // question, or "look up"). The boat is built across the whole talk, in step
+  // with the presenter — nobody races ahead, nobody is left waiting.
+  if(isPresenter && dbReady){
+    const pb = PHONE_BEAT[step.id] || 'look';
+    setDoc(doc(db,"x_session","state"),{beat:pb, step:currentStep, ts:Date.now()}).catch(()=>{});
+  }
 
   progFill.style.width=`${((currentStep+1)/journeySteps.length)*100}%`;
   prevBtn.style.display = currentStep>0?'inline-block':'none';
