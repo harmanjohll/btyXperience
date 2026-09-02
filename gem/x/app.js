@@ -5,7 +5,7 @@
 // Firebase is loaded via DYNAMIC import (see FIREBASE block below) so a CDN
 // outage on venue wifi can't stop the applet from running — only the shared
 // Fleet sync is lost. Boat rendering + the local experience still work.
-let initializeApp, getFirestore, doc, setDoc, serverTimestamp, onSnapshot, getAuth, signInAnonymously;
+let initializeApp, getFirestore, doc, setDoc, serverTimestamp, onSnapshot, collection, getAuth, signInAnonymously;
 import {
     buildOrigamiSVG, haptic, hapticPattern,
     SAIL_DATA, BOAT_DEFAULTS, ARCHETYPES, FOLD_GUIDES, FOLD_FLAPS, FOLD_LABELS, CREASE_LINES, LABELS,
@@ -200,7 +200,7 @@ let db, auth;
             import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"),
         ]);
         initializeApp = a.initializeApp;
-        ({ getFirestore, doc, setDoc, serverTimestamp, onSnapshot } = fs);
+        ({ getFirestore, doc, setDoc, serverTimestamp, onSnapshot, collection } = fs);
         ({ getAuth, signInAnonymously } = au);
         const app = initializeApp(FIREBASE_CONFIG);
         db = getFirestore(app);
@@ -210,21 +210,24 @@ let db, auth;
     } catch (e) { console.warn("SAIL live sync unavailable — running solo:", e); }
 })();
 
-// === PRESENTER-DRIVEN SYNC (tight: the phone follows btx27 beat-by-beat) ===
-// btx27 broadcasts one action per slide to x_session/state; the phone renders
-// exactly that (a fold, a "what would you pursue?" question, "look up", name,
-// set sail, card). The boat is built across the whole talk, in step with the
-// presenter — nobody races ahead, nobody is left waiting.
+// === PRESENTER-DRIVEN SYNC (the phone follows btx27's session/state) ===
+// btx27 broadcasts the current slide to session/state (currentView + the poll /
+// nexus question data). The phone ANSWERS whatever question is on screen, FOLDS
+// the boat on the passive slides, and SAILS into the fleet on the presenter's
+// cue. One source of truth — the same channel the whole room already shares.
 let sessionBeat = null;
-let onSetSailCue = null;   // the ready-gate registers its launch fn here
+let onSetSailCue = null;   // legacy hook (unused in session/state mode)
 function startSessionListener() {
     if (!db || !onSnapshot) return;
     try {
-        onSnapshot(doc(db, "x_session", "state"), (snap) => {
-            const data = (snap && snap.exists && snap.exists()) ? snap.data() : (snap && snap.data ? snap.data() : null);
-            if (!data || !data.beat) return;
-            sessionBeat = data.beat;
-            applyBeat(data.beat);
+        onSnapshot(doc(db, "session", "state"), (snap) => {
+            const exists = snap && (snap.exists ? (snap.exists.call ? snap.exists() : snap.exists) : true);
+            const data = exists ? (snap.data ? snap.data() : null) : null;
+            if (!data) {                       // no live session yet → wait to board
+                if (!followMode && !(D.aspiration && D.launched)) renderJoinHold();
+                return;
+            }
+            applyView(data);
         }, (e) => console.warn("Session listener:", e));
     } catch (e) { console.warn("Session listen failed:", e); }
 }
@@ -1040,10 +1043,7 @@ function renderQuestion(config) {
         addMark(dataKey, primaryOpt.id);
         save();
         // Animate stamp press before advancing
-        animateStampPress(dataKey, primaryOpt, paperStage, () => {
-            if (askFollowActive) onAskBeatDone();
-            else advanceFromQuestion(dataKey);
-        });
+        animateStampPress(dataKey, primaryOpt, paperStage, () => advanceFromQuestion(dataKey));
     });
 }
 
@@ -1294,66 +1294,50 @@ function renderArchetypeReveal() {
 function renderMemento() {
     stopAmbient();
     const c = colors();
-    const sailOpt  = SAIL_DATA.I.options.find(o => o.id === D.internationalPick1) || SAIL_DATA.I.options[0];
-    const leadOpt  = SAIL_DATA.S.options.find(o => o.id === D.stewardshipPick1) || SAIL_DATA.S.options[0];
-    const chalOpt  = SAIL_DATA.A.options.find(o => o.id === D.appliedPick1) || SAIL_DATA.A.options[0];
-    const valOpt   = SAIL_DATA.L.options.find(o => o.id === D.learningPick1) || SAIL_DATA.L.options[0];
-    const archetype = computeArchetype();
-    const subjectLabel = LABELS.subject[D.subjectPick1] || '';
-    const industryLabel = LABELS.industry[D.industryPick1] || '';
-
-    // 2nd picks for "also drawn to" line
-    const lead2 = D.S_pick2 !== undefined ? SAIL_DATA.S.options[D.S_pick2] : null;
-    const chal2 = D.A_pick2 !== undefined ? SAIL_DATA.A.options[D.A_pick2] : null;
-    const sail2 = D.I_pick2 !== undefined ? SAIL_DATA.I.options[D.I_pick2] : null;
-    const val2  = D.L_pick2 !== undefined ? SAIL_DATA.L.options[D.L_pick2] : null;
+    const gold = 'var(--accent-gold)';
+    // The pathways they chose live on the globe & map.
+    const g = D.global ? D.global.text : null;
+    const l = D.local ? D.local.text : null;
+    const pathText = (g || l)
+        ? `You set your sights on ${g ? `a global exchange to <b style="color:var(--text-primary);">${g}</b>` : ''}${g && l ? ' and ' : ''}${l ? `an industry attachment at <b style="color:var(--text-primary);">${l}</b>` : ''}. Beatty has the pathway waiting.`
+        : `With exchanges and attachments across the world, Beatty has a pathway waiting for you.`;
+    // What they discovered from the live polls.
+    const pk = Object.keys(D.polls || {});
+    const facts = [...new Set(pk.map(k => String(D.polls[k].insight || '').replace('Good guess! ', '')).filter(Boolean))].slice(0, 3);
+    const factsHTML = facts.length
+        ? `<div class="memento-section" style="border-color:${gold};"><h4 class="font-bold uppercase tracking-wide text-[10px] mb-1.5" style="color:${gold};">What you discovered</h4><ul class="text-xs leading-relaxed" style="color:var(--text-secondary);margin:0;padding-left:16px;">${facts.map(t => `<li style="margin-bottom:4px;">${t}</li>`).join('')}</ul></div>`
+        : '';
+    const moodLine = D.pulse ? `<p class="text-[10px] mt-1" style="color:var(--text-muted);">Your pulse tonight: <span style="color:var(--text-secondary);">${D.pulse}</span></p>` : '';
 
     $app.innerHTML = `
     <div class="sail-screen fade-up">
         <div class="content-zone pt-4">
-            <div class="memento-card" id="memento-card" style="border-color:${archetype.color || sailOpt.color};">
+            <div class="memento-card" id="memento-card" style="border-color:${gold};">
                 <div class="memento-header">
-                    <div class="memento-boat">${buildOrigamiSVG(c, 9, 88, extras())}</div>
+                    <div class="memento-boat">${buildOrigamiSVG(c, 9, 92, extras())}</div>
                     <div style="flex:1;min-width:0;">
-                        <h1 class="text-lg font-black leading-tight" style="color:${archetype.color || sailOpt.color};">${archetype.name}</h1>
-                        <p class="text-[10px] font-bold uppercase tracking-widest mt-0.5" style="color:var(--text-muted);">Your Beatty Compass Card</p>
+                        <h1 class="text-lg font-black leading-tight" style="color:${gold};">Your Boat, Your Course</h1>
+                        <p class="text-[10px] font-bold uppercase tracking-widest mt-0.5" style="color:var(--text-muted);">Beatty Compass Card · Open House 2026</p>
+                        ${moodLine}
                     </div>
                 </div>
                 <div class="memento-quote">
-                    <p class="text-sm font-serif italic leading-relaxed" style="color:var(--text-primary);">${archetype.quote}</p>
-                </div>
-                <div style="padding:0 20px 8px;">
-                    <p class="text-xs leading-relaxed" style="color:var(--text-secondary);">${archetype.persona}</p>
+                    <p class="text-sm font-serif italic leading-relaxed" style="color:var(--text-primary);">"You folded it, you named it, you set it sailing. Every Beattyian charts their own course — Non Vi Sed Arte."</p>
                 </div>
                 <div class="memento-divider"></div>
-                <div style="padding:12px 20px;" class="space-y-1.5">
-                    <div class="flex items-start gap-2 rounded-lg p-2" style="background:rgba(255,255,255,0.02);border-left:3px solid ${leadOpt.color};">
-                        <span class="font-black text-[10px] mt-0.5" style="color:var(--accent-gold);">S</span>
-                        <div><p class="text-[10px] font-bold uppercase" style="color:var(--text-muted);">Stewardship</p><p class="text-xs" style="color:var(--text-primary);">${leadOpt.text.split('—')[0].trim()}</p>${lead2 ? `<p class="text-[10px] mt-0.5" style="color:var(--text-muted);">also drawn to ${lead2.text.split('—')[0].trim().toLowerCase()}</p>` : ''}</div>
+                <div style="padding:12px 20px;">
+                    <div class="memento-section mc-path" style="border-color:#12299c;background:rgba(18,41,156,0.18);">
+                        <h4 class="font-bold uppercase tracking-wide text-[10px] mb-1" style="color:#8fa6ff;">Your chosen pathways</h4>
+                        <p class="text-xs leading-relaxed" style="color:var(--text-secondary);">${pathText}</p>
                     </div>
-                    <div class="flex items-start gap-2 rounded-lg p-2" style="background:rgba(255,255,255,0.02);border-left:3px solid ${chalOpt.color};">
-                        <span class="font-black text-[10px] mt-0.5" style="color:var(--accent-gold);">A</span>
-                        <div><p class="text-[10px] font-bold uppercase" style="color:var(--text-muted);">Applied Learning</p><p class="text-xs" style="color:var(--text-primary);">${chalOpt.text.split('—')[0].trim()}${subjectLabel ? ' · '+subjectLabel : ''}</p>${chal2 ? `<p class="text-[10px] mt-0.5" style="color:var(--text-muted);">also drawn to ${chal2.text.split('—')[0].trim().toLowerCase()}</p>` : ''}</div>
-                    </div>
-                    <div class="flex items-start gap-2 rounded-lg p-2" style="background:rgba(255,255,255,0.02);border-left:3px solid ${sailOpt.color};">
-                        <span class="font-black text-[10px] mt-0.5" style="color:var(--accent-gold);">I</span>
-                        <div><p class="text-[10px] font-bold uppercase" style="color:var(--text-muted);">International & Industry</p><p class="text-xs" style="color:var(--text-primary);">${sailOpt.text.split('—')[0].trim()}${industryLabel ? ' · '+industryLabel : ''}</p>${sail2 ? `<p class="text-[10px] mt-0.5" style="color:var(--text-muted);">also drawn to ${sail2.text.split('—')[0].trim().toLowerCase()}</p>` : ''}</div>
-                    </div>
-                    <div class="flex items-start gap-2 rounded-lg p-2" style="background:rgba(255,255,255,0.02);border-left:3px solid ${valOpt.color};">
-                        <span class="font-black text-[10px] mt-0.5" style="color:var(--accent-gold);">L</span>
-                        <div><p class="text-[10px] font-bold uppercase" style="color:var(--text-muted);">Learning to Live, Learn & Love</p><p class="text-xs" style="color:var(--text-primary);">${valOpt.icon||''} ${valOpt.text.split('—')[0].trim()}</p>${val2 ? `<p class="text-[10px] mt-0.5" style="color:var(--text-muted);">also drawn to ${val2.icon||''} ${val2.text.split('—')[0].trim().toLowerCase()}</p>` : ''}</div>
-                    </div>
-                </div>
-                <div class="memento-section" style="border-color:#10b981;">
-                    <h4 class="font-bold uppercase tracking-wide text-[10px] mb-1" style="color:#10b981;">Recommended Pathways</h4>
-                    <p class="text-xs leading-relaxed" style="color:var(--text-secondary);">${archetype.recommended.map(r => `<span style="color:#6ee7b7;">${r}</span>`).join(' · ')}</p>
+                    ${factsHTML}
                 </div>
                 <div class="memento-footer">
                     <p class="text-[10px] mb-1 uppercase tracking-widest" style="color:var(--text-muted);">My aspiration</p>
-                    <p class="text-3xl font-black uppercase tracking-wide" style="color:${archetype.color || sailOpt.color};text-shadow:0 2px 12px rgba(0,0,0,0.5);">${(D.aspiration||'FUTURE LEADER').toUpperCase()}</p>
+                    <p class="text-3xl font-black uppercase tracking-wide" style="color:${gold};text-shadow:0 2px 12px rgba(0,0,0,0.5);">${(D.aspiration || 'FUTURE LEADER').toUpperCase()}</p>
                     <div class="flex items-center justify-center gap-2 mt-3">
                         <img src="${LOGO_URL}" alt="Beatty" class="h-4 w-4 opacity-60" style="width:16px;height:16px;object-fit:contain" onerror="this.style.display='none'">
-                        <p class="text-[10px]" style="color:var(--text-muted);">Beatty Secondary School · Open House 2026</p>
+                        <p class="text-[10px]" style="color:var(--text-muted);">Beatty Secondary School · Harmonising Hearts</p>
                     </div>
                 </div>
             </div>
@@ -1415,19 +1399,21 @@ function handleLaunch() {
     step = 19; route();
 }
 
-// The actual launch — fires on the presenter's "Set Sail" cue, or the phone's
-// own "Set sail now" fallback when running without a presenter. Writes the boat
-// (so it appears on the fleet) at this moment, so a collective cue floods the
-// fleet all at once.
+// The collective launch — fires when the presenter reaches the fleet slide, so
+// the whole hall's boats flood the big screen at once. Writes the boat to the
+// fleet, plays the departure, and lands on the "you've set sail" hold.
 let launching = false;
 async function doLaunch() {
-    if (launching || D.launched) return;
+    if (launching || D.launched) { renderSetSailDone(); return; }
     launching = true;
     onSetSailCue = null;
     await saveToFirebase();
     D.launched = true; save();
-    hapticPattern([50, 30, 100]);
-    setSailTransition(() => { launching = false; step = 16; route(); });
+    hapticPattern([50, 30, 100]); burstConfetti();
+    // Only land on the "set sail" hold if the presenter is still on the fleet
+    // slide — if they've already moved on (e.g. to the finale), don't clobber
+    // the screen applyView has since rendered underneath the departure overlay.
+    setSailTransition(() => { launching = false; if (!currentView || currentView.indexOf('fleet') === 0) renderSetSailDone(); });
 }
 
 function renderReadyToSail() {
@@ -1517,50 +1503,76 @@ function updateCornerBoat() {
     cornerStagePrev = stage;
 }
 function hideCornerBoat() { const el = document.getElementById('cornerBoat'); if (el) { el.hidden = true; el.classList.remove('expand'); } }
+// Tuck the boat-so-far into the corner while the audience answers a question.
+function showCornerBoat() {
+    const el = document.getElementById('cornerBoat');
+    if (!el) return;
+    const stage = Math.min(D.nextFold || 0, 8);
+    const grew = cornerStagePrev !== -1 && stage !== cornerStagePrev;
+    el.hidden = false;
+    el.innerHTML = `<div class="cb-inner">${buildOrigamiSVG(colors(), stage, 92, extras())}</div><span class="cb-label">Your boat</span>`;
+    if (grew) { el.classList.add('grew'); setTimeout(() => el.classList.remove('grew'), 660); }
+    cornerStagePrev = stage;
+}
 
 // ============================================================
-//   PRESENTER-DRIVEN FOLLOW MODE  (the phone follows btx27 beat-by-beat)
+//   PRESENTER-DRIVEN COMPANION  (the phone follows btx27's session/state)
+//   • QUESTION slides  → answer what's on screen (poll · globe · map · pulse ·
+//     dream), feeding the same collections the big screen reads live.
+//   • PASSIVE slides   → fold the boat, one crease at a time, across the talk.
+//   • fleet slide      → the whole hall sets sail together into the fleet.
+//   • memento slide    → keep your Compass Card.
 // ============================================================
 let followMode = false;
-let currentBeat = null;
-let foldFollowActive = false;   // a fold should return to "look up", not self-advance
-let askFollowActive = false;    // ditto for a question
+let currentView = null;           // dedup signature of the last applied slide
+let foldFollowActive = false;     // a fold returns to a rest screen, not self-advance
+let askFollowActive = false;      // (legacy — SAIL question mode; unused here)
 let soloMode = false;
 let soloIdx = -1;
 let soloTimerId = null;
 
 // foldIndex → the route() step that renders renderFoldStep(foldIndex)
 const FOLD_STEP_FOR_INDEX = [1, 2, 4, 5, 8, 9, 12, 13];
-// preference beat → the route() step that renders that SAIL question
-//   value → L (flag) · passion → A (boat) · industry → I-sub · destination → I (sail)
-const ASK_STEP = { value: 14, passion: 6, industry: 11, destination: 10 };
-// Solo (no-presenter) practice order
-const SOLO_BEATS = ['fold:0','ask:value','fold:1','ask:passion','fold:2','fold:3','ask:industry','fold:4','ask:destination','fold:5','fold:6','fold:7','name'];
 
-function applyBeat(beatStr) {
-    if (!beatStr) return;
+// Personalise the boat from the pathways the audience chooses on the map.
+const NEXUS_COLOR = {
+    GeoBali:'#E0793C', NZ:'#2F7D5B', Korea:'#C64B86', MiharaJapan:'#C8536B', MutsuzawaJapan:'#4A6BD0', Estonia:'#3A87B8',
+    Rockwell:'#C9962A', PIL:'#2F6D9E', Journalism:'#C24A50', TamilMurasu:'#8A5CC0', Makita:'#3F8F6A', ASTAR:'#5566CC',
+};
+
+/* --- Dispatch on the presenter's current slide --- */
+function applyView(state) {
+    if (!state) return;
     followMode = true; soloMode = false;
     if (soloTimerId) { clearTimeout(soloTimerId); soloTimerId = null; }
-    if (beatStr === currentBeat) return;
-    currentBeat = beatStr;
-    const i = beatStr.indexOf(':');
-    const kind = i < 0 ? beatStr : beatStr.slice(0, i);
-    const arg  = i < 0 ? null : beatStr.slice(i + 1);
-    switch (kind) {
-        case 'join':     renderJoinHold(); break;
-        case 'look':     renderLookUp(); break;
-        case 'fold':     startFoldBeat(); break;
-        case 'ask':      startAskBeat(arg); break;
-        case 'name':     step = 15; route(); break;
-        case 'set_sail': triggerSetSail(); break;
-        case 'card':     D.launched = true; save(); step = 18; route(); break;
-        default:         renderLookUp();
+    const v = state.currentView || 'chart';
+    // Leaving a poll → drop its live-results listener.
+    if (v !== 'poll' && window.__pollUnsub) { window.__pollUnsub(); window.__pollUnsub = null; }
+    // Signature so a repeated snapshot doesn't re-render, but a NEW poll/nexus does.
+    const sig = v + '|' + (state.pollData?.id || '') + '|' + (state.nexusData?.type || '');
+    if (sig === currentView) return;
+    currentView = sig;
+    lastSessionState = state;
+    switch (v) {
+        case 'poll':          showPoll(state.pollData); break;
+        case 'globe':
+        case 'industry_map':  showNexus(state.nexusData); break;
+        case 'pulse_check':   showPulse(); break;
+        case 'finale':        showDream(); break;
+        case 'fleet':         triggerSetSail(); break;
+        case 'memento':
+        case 'end':           showCard(); break;
+        case 'chart':         renderJoinHold(); break;   // opening room portrait
+        // everything passive (video · slides · values · funfacts) → fold the boat
+        default:              advanceFold(); break;
     }
 }
+let lastSessionState = null;
 
-function startFoldBeat() {
+/* --- Folds on the passive slides --- */
+function advanceFold() {
     const fi = (D.nextFold == null) ? 0 : D.nextFold;
-    if (fi > 7) { renderLookUp('Your boat is folded — look up. 🌊'); return; }
+    if (fi > 7) { renderLookUp('Your boat is folded — eyes on the screen 🌊'); return; }
     foldFollowActive = true;
     step = FOLD_STEP_FOR_INDEX[fi];
     route();
@@ -1569,26 +1581,203 @@ function onFoldBeatDone(foldIndex) {
     D.nextFold = foldIndex + 1; save();
     foldFollowActive = false;
     hapticPattern([25, 40, 60]);
-    renderRest('Beautiful fold.', 'Eyes back on the big screen ✨');
-}
-function startAskBeat(which) {
-    const s = ASK_STEP[which];
-    if (s == null) { renderLookUp(); return; }
-    askFollowActive = true;
-    step = s; route();
-}
-function onAskBeatDone() {
-    askFollowActive = false;
-    hapticPattern([20, 30, 50]);
-    renderRest('Locked in.', 'Eyes back on the big screen ✨');
-}
-function triggerSetSail() {
-    if (D.launched) { step = 16; route(); return; }
-    if (D.aspiration) { doLaunch(); return; }
-    step = 15; route();   // not named yet — let them name; the cue/button launches
+    const done = D.nextFold >= 8;
+    renderRest(done ? 'Your boat is complete! ⛵' : 'Beautiful fold.', 'Eyes back on the big screen ✨');
+    if (soloMode) { soloIdx++; }
 }
 
-/* --- Resting / look-up screens shown between the presenter's beats --- */
+/* ============================================================
+   ANSWER THE ON-SCREEN QUESTION  (ported from joinbtx27, in x/ styling)
+   ============================================================ */
+/* Live trivia poll — vote, then watch the room's bars fill in real time. */
+function showPoll(p) {
+    if (!p) { renderLookUp('Get ready to vote…'); return; }
+    if (D.polls && D.polls[p.id] !== undefined) { showPollResult(p); return; }
+    $app.innerHTML = `
+    <div class="sail-screen fade-up">
+        <div class="content-zone" style="padding-top:20px;">
+            <p class="q-eyebrow">🐝 Live Poll · vote now</p>
+            <h2 class="q-question">${p.question}</h2>
+            <div class="q-opts mt-4">
+                ${p.options.map((o, i) => `<button class="answer-opt" data-poll="${i}">${o}</button>`).join('')}
+            </div>
+            <p class="q-hint">Your vote appears live on the big screen.</p>
+        </div>
+    </div>`;
+    document.querySelectorAll('[data-poll]').forEach(b => b.addEventListener('click', () => {
+        document.querySelectorAll('.answer-opt').forEach(o => o.disabled = true);
+        b.classList.add('sel'); votePoll(p, b.dataset.poll);
+    }));
+    showCornerBoat();
+}
+async function votePoll(p, i) {
+    const idx = parseInt(i), correct = idx === p.correctAnswer;
+    let insight = p.insight || 'Thanks for voting!';
+    if (!correct && p.correctAnswer != null) insight = 'Good guess! ' + (p.insight || '');
+    if (!D.polls) D.polls = {};
+    D.polls[p.id] = { choice: idx, choiceText: p.options[idx], correct, insight }; save();
+    haptic(40);
+    if (db && auth?.currentUser) { try { await setDoc(doc(db, "polls", `${p.id}_${auth.currentUser.uid}`), { pollId: p.id, vote: idx, timestamp: serverTimestamp() }); } catch (e) {} }
+    showPollResult(p);
+}
+function showPollResult(p) {
+    const mine = D.polls?.[p.id];
+    $app.innerHTML = `
+    <div class="sail-screen fade-up">
+        <div class="content-zone" style="padding-top:20px;">
+            <p class="q-eyebrow">${mine?.correct ? '✓ You got it!' : 'Vote recorded'}</p>
+            <h2 class="q-question" style="font-size:1.15rem;">${p.question}</h2>
+            <div class="mt-4" id="liveBars">${p.options.map((o, i) => `
+                <div class="pbar ${mine && mine.choice === i ? 'me' : ''} ${i === p.correctAnswer ? 'correct' : ''}" data-i="${i}">
+                    <div class="pbar-lab"><span>${o} ${i === p.correctAnswer ? '🏆' : ''}${mine && mine.choice === i ? ' · you' : ''}</span><span class="pbar-pc">0%</span></div>
+                    <div class="pbar-track"><div class="pbar-fill"></div></div>
+                </div>`).join('')}</div>
+            <div class="q-insight">${mine?.insight || ''}</div>
+        </div>
+    </div>`;
+    showCornerBoat();
+    if (db && collection && onSnapshot) {
+        if (window.__pollUnsub) window.__pollUnsub();
+        try {
+            window.__pollUnsub = onSnapshot(collection(db, "polls"), (snap) => {
+                const bd = {}; let total = 0;
+                snap.forEach(d => { const x = d.data(); if (x.pollId === p.id) { total++; if (x.vote != null) bd[x.vote] = (bd[x.vote] || 0) + 1; } });
+                p.options.forEach((o, i) => {
+                    const row = document.querySelector(`#liveBars .pbar[data-i="${i}"]`); if (!row) return;
+                    const cnt = bd[i] || 0, pct = total > 0 ? (cnt / total * 100) : 0;
+                    row.querySelector('.pbar-fill').style.width = pct + '%';
+                    row.querySelector('.pbar-pc').textContent = Math.round(pct) + '%';
+                });
+            }, () => {});
+        } catch (e) {}
+    }
+}
+
+/* NEXUS globe / industry map — drop your bee, colour your boat. */
+function showNexus(nd) {
+    if (!nd) { renderLookUp('Choose on the big screen…'); return; }
+    const key = nd.type;                              // 'global' | 'local'
+    if (D[key]) { renderChosenNexus(key); return; }
+    const isGlobe = key === 'global';
+    $app.innerHTML = `
+    <div class="sail-screen fade-up">
+        <div class="content-zone" style="padding-top:20px;">
+            <p class="q-eyebrow">🧭 Chart your course · ${isGlobe ? 'a destination' : 'an industry'}</p>
+            <h2 class="q-question">${isGlobe ? 'Where would the wind take you?' : 'Which world would you step into?'}</h2>
+            <div class="q-opts mt-4">
+                ${nd.options.map(o => `<button class="answer-opt" data-nx="${o.id}" data-nt="${key}" data-ntxt="${o.text.replace(/"/g, '&quot;')}">${o.text}</button>`).join('')}
+            </div>
+            <p class="q-hint">Your bee lands on the big screen — and colours your sail. 🗺️</p>
+        </div>
+    </div>`;
+    document.querySelectorAll('[data-nx]').forEach(b => b.addEventListener('click', () => {
+        document.querySelectorAll('.answer-opt').forEach(o => o.disabled = true);
+        b.classList.add('sel'); chooseNexus(b.dataset.nx, b.dataset.nt, b.dataset.ntxt);
+    }));
+    showCornerBoat();
+}
+async function chooseNexus(id, type, text) {
+    D[type] = { id, text };
+    const col = NEXUS_COLOR[id];
+    if (col) { if (type === 'global') D.sailColor = col; else D.flagColor = col; }
+    save();
+    haptic(30);
+    if (db && auth?.currentUser) { try { await setDoc(doc(db, "nexusVotes", `${type}_${auth.currentUser.uid}`), { nexusId: id, type, timestamp: serverTimestamp() }); } catch (e) {} }
+    renderChosenNexus(type);
+}
+function renderChosenNexus(type) {
+    const c = colors();
+    const pick = D[type];
+    const stage = Math.min(D.nextFold || 0, 8);
+    $app.innerHTML = `
+    <div class="sail-screen follow-screen fade-up">
+        <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
+            <div class="follow-check mb-2">✓</div>
+            <h1 class="font-serif text-xl mb-1" style="color:var(--accent-gold);">Your bee has landed</h1>
+            <p class="text-sm mb-4" style="color:var(--text-secondary);">${pick?.text || ''} — watch the big screen 🗺️</p>
+            <div class="follow-boat">${buildOrigamiSVG(c, stage, 190, extras())}</div>
+        </div>
+    </div>`;
+}
+
+/* Pulse check — tap how the room feels. */
+function showPulse() {
+    if (D.pulse) { renderRest('Thanks for sharing! 💛', 'Your mood is on the big screen'); return; }
+    const moods = [{ k: 'On fire!', e: '🔥' }, { k: 'Excited!', e: '🚀' }, { k: 'Enjoying it', e: '😊' }, { k: 'Tell me more', e: '🤔' }];
+    $app.innerHTML = `
+    <div class="sail-screen fade-up">
+        <div class="content-zone" style="padding-top:20px;">
+            <p class="q-eyebrow">💛 Pulse check · tap your mood</p>
+            <h2 class="q-question">How's it feeling so far?</h2>
+            <div class="mood-grid mt-4">
+                ${moods.map(m => `<button class="mood-btn" data-mood="${m.k}"><span class="mood-e">${m.e}</span><span class="mood-l">${m.k}</span></button>`).join('')}
+            </div>
+        </div>
+    </div>`;
+    document.querySelectorAll('[data-mood]').forEach(b => b.addEventListener('click', () => choosePulse(b.dataset.mood)));
+    showCornerBoat();
+}
+async function choosePulse(k) {
+    D.pulse = k; save(); haptic(30);
+    if (db && auth?.currentUser) { try { await setDoc(doc(db, "pulseCheck", auth.currentUser.uid), { choice: k, timestamp: Date.now() }); } catch (e) {} }
+    renderRest('Thanks for sharing! 💛', 'Your mood is on the big screen');
+}
+
+/* Finale — one-word aspiration, cast into the Hive AND written on your boat. */
+function showDream() {
+    if (D.aspiration && D.dreamSent) { renderRest('Your dream is in the Hive 💛', 'Watch it glow on the big screen ✨'); return; }
+    const c = colors();
+    $app.innerHTML = `
+    <div class="sail-screen fade-up">
+        <div class="content-zone" style="padding-top:18px;">
+            <p class="q-eyebrow">🐝 Add your cell to the Hive</p>
+            <h2 class="q-question">One word — what do you aspire to become?</h2>
+            <div class="origami-stage medium mx-auto my-3" id="dreamBoat" style="max-width:220px;">${buildOrigamiSVG(c, 9, 220, extras())}</div>
+            <input type="text" id="dreamInput" maxlength="16" class="dream-field" placeholder="e.g. Innovator" autocomplete="off">
+            <button class="nav-btn primary w-full mt-3 text-base uppercase tracking-wide" id="dreamBtn">Add to the Hive 🐝</button>
+        </div>
+    </div>`;
+    const f = document.getElementById('dreamInput');
+    f.addEventListener('input', (e) => {
+        D.aspiration = e.target.value.trim();
+        const st = document.getElementById('dreamBoat'); if (st) st.innerHTML = buildOrigamiSVG(c, 9, 220, extras());
+    });
+    f.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitDream(); });
+    document.getElementById('dreamBtn').addEventListener('click', submitDream);
+    try { f.focus(); } catch (e) {}
+}
+async function submitDream() {
+    const f = document.getElementById('dreamInput');
+    const w = (f.value || '').replace(/[^\p{L}\p{N} '-]/gu, '').trim().slice(0, 18);
+    if (!w) { f.style.borderColor = '#ef4444'; return; }
+    D.aspiration = w; D.dreamSent = true; save();
+    hapticPattern([40, 30, 80]); burstConfetti();
+    if (db && auth?.currentUser) { try { await setDoc(doc(db, "aspirations", auth.currentUser.uid), { word: w, timestamp: serverTimestamp() }); } catch (e) {} }
+    saveToFirebase();   // stamp the named dream onto the boat in the fleet
+    if (soloMode) soloIdx++;
+    renderRest('Your dream is in the Hive 💛', 'Watch it glow on the big screen ✨');
+}
+
+/* Collective Set Sail — the whole hall launches at once on the fleet slide. */
+function triggerSetSail() {
+    if (D.launched) { renderSetSailDone(); return; }
+    doLaunch();
+}
+function renderSetSailDone() {
+    const c = colors();
+    $app.innerHTML = `
+    <div class="sail-screen follow-screen fade-up">
+        <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
+            <p class="text-[10px] mb-2 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">You've set sail</p>
+            <h1 class="font-serif text-2xl mb-3" style="color:var(--text-primary);">Look up — you're in the fleet</h1>
+            <div class="follow-boat">${buildOrigamiSVG(c, 8, 210, extras())}</div>
+            <p class="text-sm mt-4 max-w-xs" style="color:var(--text-secondary);">Every boat on the big screen is a Beattyian setting sail from our Hive. 🌊</p>
+        </div>
+    </div>`;
+}
+function showCard() { renderMemento(); }
+
+/* --- Resting / holding screens shown between the presenter's slides --- */
 function renderJoinHold() {
     hideCornerBoat();
     const c = colors();
@@ -1597,9 +1786,9 @@ function renderJoinHold() {
         <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
             <img src="${LOGO_URL}" alt="Beatty" style="width:54px;height:54px;object-fit:contain" class="mb-4" onerror="this.style.display='none'">
             <p class="text-[10px] mb-2 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">You're aboard</p>
-            <h1 class="font-serif text-2xl mb-4" style="color:var(--text-primary);">Fold your boat with us</h1>
-            <div class="follow-boat mb-4">${buildOrigamiSVG(c, 0, 180, extras())}</div>
-            <p class="text-sm max-w-xs" style="color:var(--text-secondary);">Keep your eyes on the big screen — you'll shape your boat and choose your course as we go. 🌊</p>
+            <h1 class="font-serif text-2xl mb-4" style="color:var(--text-primary);">Follow along on the big screen</h1>
+            <div class="follow-boat mb-4">${buildOrigamiSVG(c, Math.min(D.nextFold || 0, 8), 180, extras())}</div>
+            <p class="text-sm max-w-xs" style="color:var(--text-secondary);">Answer the questions, fold your boat as we go, and set sail with the whole hall. 🌊</p>
         </div>
     </div>`;
     armSoloFallback();
@@ -1618,7 +1807,6 @@ function renderLookUp(msg) {
         </div>
     </div>`;
     if (soloMode) addSoloNext();
-    else armSoloFallback();
 }
 function renderRest(title, sub) {
     hideCornerBoat();
@@ -1635,7 +1823,8 @@ function renderRest(title, sub) {
     </div>`;
     if (soloMode) addSoloNext();
 }
-/* --- Solo fallback: practise the whole flow at your own pace if no presenter --- */
+/* --- Solo fallback: fold your boat + add a dream even with no presenter --- */
+const SOLO_SEQ = ['fold', 'fold', 'fold', 'fold', 'fold', 'fold', 'fold', 'fold', 'dream'];
 function armSoloFallback() {
     if (followMode || soloMode) return;
     clearTimeout(soloTimerId);
@@ -1645,26 +1834,24 @@ function armSoloFallback() {
         if (p && !document.getElementById('soloStart')) {
             const b = document.createElement('button');
             b.id = 'soloStart'; b.className = 'nav-btn secondary mt-6';
-            b.textContent = 'No presenter? Practise on your own ▶';
+            b.textContent = 'No presenter? Fold your boat now ▶';
             b.onclick = () => { soloMode = true; soloIdx = 0; runSolo(); };
             p.appendChild(b);
         }
-    }, 5000);
+    }, 6000);
 }
 function runSolo() {
-    const beat = SOLO_BEATS[soloIdx];
-    if (!beat) { step = 15; route(); return; }
-    currentBeat = null;
-    const i = beat.indexOf(':'); const kind = i < 0 ? beat : beat.slice(0, i); const arg = i < 0 ? null : beat.slice(i + 1);
-    if (kind === 'fold') startFoldBeat();
-    else if (kind === 'ask') startAskBeat(arg);
-    else if (kind === 'name') { step = 15; route(); }
+    const s = SOLO_SEQ[soloIdx];
+    if (!s) { showCard(); return; }
+    if (s === 'fold') advanceFold();
+    else if (s === 'dream') showDream();
 }
 function addSoloNext() {
     const p = document.querySelector('.follow-screen .flex-1'); if (!p) return;
+    if (p.querySelector('.solo-next')) return;
     const b = document.createElement('button');
-    b.className = 'nav-btn primary mt-6'; b.textContent = 'Next ▶';
-    b.onclick = () => { soloIdx++; runSolo(); };
+    b.className = 'nav-btn primary mt-6 solo-next'; b.textContent = 'Next ▶';
+    b.onclick = () => { runSolo(); };
     p.appendChild(b);
 }
 
@@ -1711,7 +1898,8 @@ $app.addEventListener('click', (e) => {
     if (t.id === 'shareCardBtn')   { shareCard(); }
     if (t.id === 'resetBtn') {
         localStorage.removeItem(SK);
-        D = { marks: [] }; step = 0; route();
+        D = { marks: [] }; followMode = false; soloMode = false; currentView = null;
+        renderJoinHold();
     }
 });
 
@@ -1721,10 +1909,11 @@ document.getElementById('cornerBoat')?.addEventListener('click', function () {
 });
 
 /* ============================================================
-   START — presenter-driven. The phone waits in a "fold with us" hold; btx27's
-   beats (or the solo-practice fallback) drive everything from here. Someone who
-   already sailed returns straight to their keepsake card.
+   START — presenter-driven. The phone boards with a "follow along" hold; the
+   presenter's session/state then drives everything: answer the on-screen
+   questions, fold the boat on the passive slides, set sail together. Someone
+   who already sailed AND kept their card returns straight to it.
    ============================================================ */
 injectOcean();
-if (D.aspiration && D.launched) { step = 18; route(); }
+if (D.aspiration && D.launched && D.dreamSent) { renderMemento(); }
 else renderJoinHold();
