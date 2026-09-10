@@ -924,3 +924,71 @@ body[data-mode="watch"] .mode-band { background: rgba(0,12,83,.9); }
 @media (prefers-reduced-motion: reduce) {
     .ghost-finger, .pull-dot, .water-line.on, .paper-shake, .boat-rising.snap-open { animation: none !important; }
 }
+
+/* ============================================================
+   THE COMPASS CARD — 9:16 proof object
+   ============================================================ */
+.compass-card {
+    position: relative; width: 100%; aspect-ratio: 9 / 16; overflow: hidden; border-radius: 22px;
+    background: linear-gradient(180deg, #040a33 0%, #0a1650 50%, #061027 100%);
+    border: 1px solid rgba(255,226,0,.35); box-shadow: 0 24px 60px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.04);
+    display: flex; flex-direction: column; color: var(--text-primary);
+    font-family: 'Calibri','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
+}
+.compass-card > * { position: relative; z-index: 1; }
+.cc-paper {
+    position: absolute !important; inset: 0; z-index: 0 !important; pointer-events: none; opacity: .9;
+    background:
+        radial-gradient(ellipse at 50% 30%, rgba(255,226,0,.16), transparent 55%),
+        linear-gradient(178deg, transparent 58%, rgba(255,255,255,.06) 58.2%, transparent 58.6%),
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+.cc-tape {
+    position: absolute !important; right: -14px; top: 14px; width: 118px; height: 22px; transform: rotate(8deg); opacity: .92; z-index: 2 !important;
+    background: repeating-linear-gradient(90deg, #000C53 0 10px, #FFE200 10px 20px); box-shadow: 0 2px 6px rgba(0,0,0,.4);
+}
+.cc-head { display: flex; align-items: center; gap: 10px; padding: 16px 18px 0 22px; }
+.cc-head img { width: 30px; height: 36px; object-fit: contain; }
+.cc-head b { display: block; font-family: 'Georgia','Iowan Old Style',serif; font-size: 1rem; color: #fff; line-height: 1.1; }
+.cc-head small { display: block; font-size: .58rem; letter-spacing: .16em; text-transform: uppercase; color: rgba(255,226,0,.9); margin-top: 2px; }
+.cc-bee { margin-left: auto; margin-right: 34px; font-size: 1.3rem; }
+.cc-boat { position: relative; height: 40%; display: flex; align-items: center; justify-content: center; }
+.cc-boat-tilt { position: relative; width: 78%; max-width: 300px; aspect-ratio: 1; transform: perspective(600px) rotateY(-16deg) rotateX(5deg); filter: drop-shadow(0 14px 22px rgba(0,0,0,.55)); }
+.cc-boat-tilt .origami-svg { width: 100% !important; height: 100% !important; }
+.cc-hand { top: 80%; }
+.cc-water { position: absolute; left: 14%; right: 14%; bottom: 3%; height: 18px; border-radius: 50%; background: radial-gradient(ellipse at 50% 40%, rgba(127,211,247,.5), rgba(18,41,156,.25) 55%, transparent 74%); }
+.cc-word { text-align: center; padding: 0 16px; }
+.cc-word small { display: block; font-size: .58rem; letter-spacing: .3em; text-transform: uppercase; color: rgba(255,255,255,.62); }
+.cc-word h1 { font-family: 'Georgia','Iowan Old Style',serif; font-size: clamp(1.5rem, 8.5vw, 2.2rem); color: #FFE200; line-height: 1.05; margin-top: 2px; word-break: break-word; }
+.cc-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 22px 0; }
+.cc-stamp {
+    width: 118px; height: 118px; border-radius: 50%; border: 2.5px dashed var(--sail, #FFE200); transform: rotate(-11deg);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 8px; gap: 1px;
+    box-shadow: inset 0 0 0 5px rgba(0,0,0,0), inset 0 0 0 6px rgba(255,255,255,.18);
+}
+.cc-stamp b { font-family: 'Georgia',serif; font-size: .82rem; color: var(--sail, #FFE200); line-height: 1.1; }
+.cc-stamp i { font-family: 'Georgia',serif; font-size: .64rem; color: rgba(255,255,255,.8); line-height: 1.1; }
+.cc-stamp em { font-style: normal; font-size: .46rem; letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,.55); margin-top: 3px; }
+.cc-rose { width: 84px; height: 84px; opacity: .95; }
+.cc-facts { list-style: none; margin: 8px 22px 0; padding: 0; font-size: .64rem; color: rgba(255,255,255,.7); line-height: 1.35; }
+.cc-facts li::before { content: '· '; color: #FFE200; }
+.cc-fleet { margin-top: auto; padding: 6px 22px 0; }
+.cc-fleet-lab { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.cc-fleet-lab span { font-family: 'Georgia',serif; font-size: .95rem; color: #fff; }
+.cc-fleet-lab small { font-size: .55rem; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.55); text-align: right; }
+.cc-strip { display: flex; justify-content: center; gap: 3px; margin-top: 6px; height: 22px; align-items: flex-end; }
+.cc-sail { position: relative; display: block; width: 12px; height: 14px; background: var(--c); clip-path: polygon(50% 0, 100% 100%, 0 100%); flex: none; }
+.cc-sail.me { outline: 2px solid #FFE200; outline-offset: 2px; clip-path: none; border-radius: 2px 2px 1px 1px; background: var(--c); transform: scale(1.35); margin: 0 5px; }
+.cc-foot { display: flex; align-items: center; gap: 12px; padding: 8px 18px 14px 22px; }
+.cc-qr { width: 62px; height: 62px; background: #fff; border-radius: 8px; padding: 3px; object-fit: contain; flex: none; }
+.cc-foot b { display: block; font-family: 'Georgia',serif; font-size: .7rem; color: #FFE200; line-height: 1.2; }
+.cc-foot span { display: block; font-size: .68rem; color: #fff; margin-top: 3px; }
+.cc-foot small { display: block; font-size: .58rem; font-style: italic; font-family: 'Georgia',serif; color: rgba(255,255,255,.55); margin-top: 3px; }
+/* press-and-hold overlay */
+.save-ov { position: fixed; inset: 0; z-index: 9990; background: rgba(2,5,24,.94); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 18px; opacity: 0; transition: opacity .3s; }
+.save-ov.on { opacity: 1; }
+.save-ov img { max-height: 70vh; max-width: 92vw; border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.6); -webkit-touch-callout: default; }
+.save-hint { color: var(--text-primary); font-size: .95rem; text-align: center; }
+.save-hint b { color: #FFE200; }
+.save-actions { display: flex; gap: 10px; }
+.save-actions .nav-btn { text-decoration: none; padding: 12px 22px; }

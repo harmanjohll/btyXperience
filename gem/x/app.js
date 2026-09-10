@@ -5,7 +5,7 @@
 // Firebase is loaded via DYNAMIC import (see FIREBASE block below) so a CDN
 // outage on venue wifi can't stop the applet from running — only the shared
 // Fleet sync is lost. Boat rendering + the local experience still work.
-let initializeApp, getFirestore, doc, setDoc, serverTimestamp, onSnapshot, collection, getAuth, signInAnonymously;
+let initializeApp, getFirestore, doc, setDoc, serverTimestamp, onSnapshot, collection, getDocs, getAuth, signInAnonymously;
 import {
     buildOrigamiSVG, haptic, hapticPattern,
     SAIL_DATA, BOAT_DEFAULTS, ARCHETYPES, FOLD_GUIDES, FOLD_FLAPS, FOLD_LABELS, CREASE_LINES, LABELS,
@@ -405,7 +405,7 @@ let db, auth;
             import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"),
         ]);
         initializeApp = a.initializeApp;
-        ({ getFirestore, doc, setDoc, serverTimestamp, onSnapshot, collection } = fs);
+        ({ getFirestore, doc, setDoc, serverTimestamp, onSnapshot, collection, getDocs } = fs);
         ({ getAuth, signInAnonymously } = au);
         const app = initializeApp(FIREBASE_CONFIG);
         db = getFirestore(app);
@@ -1519,61 +1519,213 @@ function renderArchetypeReveal() {
 /* ============================================================
    RENDER: MEMENTO CARD
    ============================================================ */
-function renderMemento() {
-    stopAmbient();
-    const c = colors();
-    const gold = 'var(--accent-gold)';
-    // The pathways they chose live on the globe & map.
-    const g = D.global ? D.global.text : null;
-    const l = D.local ? D.local.text : null;
-    const pathText = (g || l)
-        ? `You set your sights on ${g ? `a global exchange to <b style="color:var(--text-primary);">${g}</b>` : ''}${g && l ? ' and ' : ''}${l ? `an industry attachment at <b style="color:var(--text-primary);">${l}</b>` : ''}. Beatty has the pathway waiting.`
-        : `With exchanges and attachments across the world, Beatty has a pathway waiting for you.`;
-    // What they discovered from the live polls.
-    const pk = Object.keys(D.polls || {});
-    const facts = [...new Set(pk.map(k => String(D.polls[k].insight || '').replace('Good guess! ', '')).filter(Boolean))].slice(0, 3);
-    const factsHTML = facts.length
-        ? `<div class="memento-section" style="border-color:${gold};"><h4 class="font-bold uppercase tracking-wide text-[10px] mb-1.5" style="color:${gold};">What you discovered</h4><ul class="text-xs leading-relaxed" style="color:var(--text-secondary);margin:0;padding-left:16px;">${facts.map(t => `<li style="margin-bottom:4px;">${t}</li>`).join('')}</ul></div>`
-        : '';
-    const moodLine = D.pulse ? `<p class="text-[10px] mt-1" style="color:var(--text-muted);">Your pulse tonight: <span style="color:var(--text-secondary);">${D.pulse}</span></p>` : '';
+/* ============================================================
+   THE COMPASS CARD — a proof object. 9:16, washi grain and a crease, the
+   boat at the ¾ angle they saw in the reveal, the aspiration in handwriting
+   on the hull and large beneath it, a port stamp, a compass rose pointing
+   at the destination, "Boat N of M" with the fleet strip and you ringed,
+   the school QR, the vision line. Share-first; press-and-hold fallback.
+   ============================================================ */
+const EVENT_LINE = 'Set sail from the Hive · Beatty Open House 2026';
+const BOOTH_LINE = 'Show this card at the Hive booth.';
+const VISION_LINE = 'Harmonising Hearts · Thriving Together';
+const QR_URL = '../joinbtyqr.png';
+const CREST_BIG = 'crest-640.png';
+// Rough bearings from Singapore, for the rose.
+const DEST_BEARING = { GeoBali: 150, NZ: 140, Korea: 28, MiharaJapan: 42, MutsuzawaJapan: 42, Estonia: 330 };
+let cardFile = null, cardRendering = null;
 
+function destBearing() { return (D.global && DEST_BEARING[D.global.id]) || 0; }
+function shortDest(t) { return String(t || '').replace(/\s*\(.*?\)\s*/g, '').trim(); }
+
+function compassRoseSVG(size, bearing, gold = '#FFE200') {
+    const pts = [];
+    for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, r = i % 2 ? 34 : 60; pts.push(`${(50 + r * Math.sin(a)).toFixed(1)},${(50 - r * Math.cos(a)).toFixed(1)}`); }
+    const star = pts.map((p, i) => { const q = pts[(i + 1) % 8]; return `<path d="M50,50 L${p} L${q} Z" fill="${i % 2 ? 'rgba(255,255,255,.28)' : 'rgba(255,255,255,.55)'}"/>`; }).join('');
+    return `<svg viewBox="-12 -12 124 124" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="58" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="1" stroke-dasharray="2 3"/>
+        ${star}
+        <g transform="rotate(${bearing} 50 50)"><path d="M50,-4 L57,50 L50,44 L43,50 Z" fill="${gold}"/><path d="M50,104 L57,50 L50,56 L43,50 Z" fill="rgba(255,255,255,.35)"/></g>
+        <circle cx="50" cy="50" r="4.5" fill="#000C53" stroke="${gold}" stroke-width="1.5"/>
+        <text x="50" y="-9" text-anchor="middle" font-size="9" font-weight="700" fill="rgba(255,255,255,.75)" font-family="Georgia,serif">N</text>
+    </svg>`;
+}
+
+/* Where am I in the fleet? Read x_boats once; rank the launched by launch time. */
+function whenDb(ms = 10000) {          // Firebase loads after the first paint; a returning phone renders its card before that
+    return new Promise(res => { const t0 = Date.now(); (function tick() { if (db && getDocs && auth?.currentUser) return res(true); if (Date.now() - t0 > ms) return res(false); setTimeout(tick, 200); })(); });
+}
+async function loadFleetRank() {
+    if (!(await whenDb())) return null;
+    try {
+        const snap = await getDocs(collection(db, 'x_boats'));
+        const boats = [];
+        snap.forEach(d => { const b = d.data() || {}; if (b.launched) boats.push({ uid: d.id, at: b.launchedAt || (b.timestamp && b.timestamp.toMillis ? b.timestamp.toMillis() : 0), sail: b.sailColor || '#F5F0E8' }); });
+        boats.sort((a, b) => a.at - b.at);
+        const me = boats.findIndex(b => b.uid === auth.currentUser.uid);
+        if (me < 0) return null;
+        const W = 20, lo = Math.max(0, me - W), hi = Math.min(boats.length, me + W + 1);
+        D.boatNo = me + 1; D.fleetTotal = boats.length;
+        D.fleetStrip = boats.slice(lo, hi).map(b => b.sail); D.stripMe = me - lo; save();
+        return { n: D.boatNo, total: D.fleetTotal };
+    } catch (e) { return null; }
+}
+function fleetStripHTML() {
+    const strip = D.fleetStrip || [D.sailColor || '#F5F0E8']; const me = D.stripMe ?? 0;
+    return strip.map((col, i) => `<i class="cc-sail${i === me ? ' me' : ''}" style="--c:${col}"></i>`).join('');
+}
+function fleetLabel() { return D.boatNo && D.fleetTotal ? `Boat ${D.boatNo} of ${D.fleetTotal}` : (D.launched ? 'In the fleet' : 'Ready to sail'); }
+
+function renderMemento() {
+    stopAmbient(); hideCornerBoat();
+    const c = colors(); const gold = '#FFE200';
+    const sail = D.sailColor || gold;
+    const word = D.aspiration || 'Beattyian';
+    const g = D.global ? shortDest(D.global.text) : null, l = D.local ? shortDest(D.local.text) : null;
+    const facts = [...new Set(Object.keys(D.polls || {}).map(k => String(D.polls[k].insight || '').replace('Good guess! ', '')).filter(Boolean))].slice(0, 2);
     $app.innerHTML = `
     <div class="sail-screen fade-up">
-        <div class="content-zone pt-4">
-            <div class="memento-card" id="memento-card" style="border-color:${gold};">
-                <div class="memento-header">
-                    <div class="memento-boat">${buildOrigamiSVG(c, 9, 92, extras())}</div>
-                    <div style="flex:1;min-width:0;">
-                        <h1 class="text-lg font-black leading-tight" style="color:${gold};">Your Boat, Your Course</h1>
-                        <p class="text-[10px] font-bold uppercase tracking-widest mt-0.5" style="color:var(--text-muted);">Beatty Compass Card · Open House 2026</p>
-                        ${moodLine}
-                    </div>
+        <div class="content-zone pt-4" style="max-width:400px;">
+            <div class="compass-card" id="memento-card" style="--sail:${sail}">
+                <div class="cc-paper"></div>
+                <div class="cc-tape"></div>
+                <header class="cc-head">
+                    <img src="${LOGO_URL}" alt="" onerror="this.style.display='none'">
+                    <div><b>Beatty Secondary</b><small>Compass Card · Open House 2026</small></div>
+                    <span class="cc-bee">${D.beeIcon || '🐝'}</span>
+                </header>
+                <div class="cc-boat" id="ccBoat">
+                    <div class="cc-boat-tilt">${buildOrigamiSVG(c, 9, 300, { ...extras(), aspiration: '' })}<div class="hand-word cc-hand" style="font-size:${Math.max(15, Math.min(24, 190 / Math.max(6, word.length)))}px">${word}</div></div>
+                    <div class="cc-water"></div>
                 </div>
-                <div class="memento-quote">
-                    <p class="text-sm font-serif italic leading-relaxed" style="color:var(--text-primary);">"You folded it, you named it, you set it sailing. Every Beattyian charts their own course — Non Vi Sed Arte."</p>
+                <div class="cc-word"><small>I'm sailing toward</small><h1>${word}</h1></div>
+                <div class="cc-row">
+                    <div class="cc-stamp">${g || l ? `<b>${g || l}</b>${g && l ? `<i>${l}</i>` : ''}` : '<b>Beatty</b><i>every pathway</i>'}<em>port of call</em></div>
+                    <div class="cc-rose">${compassRoseSVG(84, destBearing(), gold)}</div>
                 </div>
-                <div class="memento-divider"></div>
-                <div style="padding:12px 20px;">
-                    <div class="memento-section mc-path" style="border-color:#12299c;background:rgba(18,41,156,0.18);">
-                        <h4 class="font-bold uppercase tracking-wide text-[10px] mb-1" style="color:#8fa6ff;">Your chosen pathways</h4>
-                        <p class="text-xs leading-relaxed" style="color:var(--text-secondary);">${pathText}</p>
-                    </div>
-                    ${factsHTML}
+                ${facts.length ? `<ul class="cc-facts">${facts.map(f => `<li>${f}</li>`).join('')}</ul>` : ''}
+                <div class="cc-fleet">
+                    <div class="cc-fleet-lab"><span id="ccFleetN">${fleetLabel()}</span><small>${D.beeTag || 'A Beattyian'}${D.pulse ? ' · ' + D.pulse : ''}</small></div>
+                    <div class="cc-strip" id="ccStrip">${fleetStripHTML()}</div>
                 </div>
-                <div class="memento-footer">
-                    <p class="text-[10px] mb-1 uppercase tracking-widest" style="color:var(--text-muted);">My aspiration</p>
-                    <p class="text-3xl font-black uppercase tracking-wide" style="color:${gold};text-shadow:0 2px 12px rgba(0,0,0,0.5);">${(D.aspiration || 'FUTURE LEADER').toUpperCase()}</p>
-                    <div class="flex items-center justify-center gap-2 mt-3">
-                        <img src="${LOGO_URL}" alt="Beatty" class="h-4 w-4 opacity-60" style="width:16px;height:16px;object-fit:contain" onerror="this.style.display='none'">
-                        <p class="text-[10px]" style="color:var(--text-muted);">Beatty Secondary School · Harmonising Hearts</p>
-                    </div>
-                </div>
+                <footer class="cc-foot">
+                    <img class="cc-qr" src="${QR_URL}" alt="" onerror="this.style.display='none'">
+                    <div><b>${EVENT_LINE}</b><span>${BOOTH_LINE}</span><small>${VISION_LINE}</small></div>
+                </footer>
             </div>
-            <button id="downloadCardBtn" class="nav-btn primary w-full mt-4 text-lg uppercase tracking-wide">Download Card</button>
-            ${navigator.share ? '<button id="shareCardBtn" class="nav-btn secondary w-full mt-2 text-sm uppercase tracking-wide">Share</button>' : ''}
-            <button id="resetBtn" class="mt-3 w-full text-sm underline pb-4" style="color:var(--text-muted);">Start Over</button>
+            <button id="shareCardBtn" class="nav-btn primary w-full mt-4 text-base uppercase tracking-wide">${navigator.share ? 'Share my card' : 'Save my card'}</button>
+            ${navigator.share ? '<button id="downloadCardBtn" class="nav-btn secondary w-full mt-2 text-sm uppercase tracking-wide">Save image</button>' : ''}
+            <p class="text-[11px] mt-3 text-center" style="color:var(--text-secondary);">${BOOTH_LINE} ⛵</p>
+            <button id="resetBtn" class="mt-3 w-full text-sm underline pb-4" style="color:var(--text-muted);">Start over</button>
         </div>
     </div>`;
+    // Rank in the fleet (once online), then pre-render the PNG so a share can fire inside the tap.
+    loadFleetRank().then(r => { const n = document.getElementById('ccFleetN'), s = document.getElementById('ccStrip'); if (r && n) n.textContent = fleetLabel(); if (r && s) s.innerHTML = fleetStripHTML(); }).finally(() => { cardFile = null; cardRendering = renderCardPNG().then(f => { cardFile = f; return f; }).catch(() => null); });
+    const boat = document.querySelector('.cc-boat-tilt'); if (boat) enableTilt(boat);
+}
+
+/* ---------- Draw the card as a 1080×1920 PNG, in-house (no html2canvas) ---------- */
+function loadImg(src) { return new Promise((res) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; }); }
+function svgToImg(svg) { return loadImg('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg)); }
+function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+async function renderCardPNG() {
+    const W = 1080, H = 1920, gold = '#FFE200', sail = D.sailColor || gold, word = D.aspiration || 'Beattyian';
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const ctx = cv.getContext('2d');
+    const c = colors();
+    const [boatImg, crest, qr, rose] = await Promise.all([
+        svgToImg(buildOrigamiSVG(c, 9, 760, { ...extras(), aspiration: '', gradientId: 'cardSail' })), loadImg(CREST_BIG), loadImg(QR_URL),
+        svgToImg(compassRoseSVG(230, destBearing(), gold))]);
+    // Navy ground with a warm glow behind the boat
+    const bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#040a33'); bg.addColorStop(0.5, '#0a1650'); bg.addColorStop(1, '#061027'); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    const glow = ctx.createRadialGradient(W / 2, 620, 40, W / 2, 620, 520); glow.addColorStop(0, 'rgba(255,226,0,.20)'); glow.addColorStop(1, 'rgba(255,226,0,0)'); ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
+    // Washi grain + a crease
+    ctx.fillStyle = 'rgba(255,255,255,.045)'; for (let i = 0; i < 9000; i++) { ctx.fillRect(Math.random() * W, Math.random() * H, 2, 2); }
+    ctx.strokeStyle = 'rgba(255,255,255,.08)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, 1180); ctx.lineTo(W, 1140); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,226,0,.35)'; ctx.lineWidth = 3; roundRect(ctx, 22, 22, W - 44, H - 44, 44); ctx.stroke();
+    // Washi tape (navy + yellow)
+    ctx.save(); ctx.translate(110, 96); ctx.rotate(-0.16); ctx.globalAlpha = .92;
+    for (let i = 0; i < 12; i++) { ctx.fillStyle = i % 2 ? '#000C53' : gold; ctx.fillRect(-150 + i * 25, -20, 25, 40); } ctx.restore();
+    // Head
+    if (crest) ctx.drawImage(crest, 78, 130, 96, 118);
+    ctx.fillStyle = '#fff'; ctx.font = '700 44px Georgia, serif'; ctx.textBaseline = 'alphabetic'; ctx.fillText('Beatty Secondary', 196, 188);
+    ctx.fillStyle = 'rgba(255,226,0,.9)'; ctx.font = '600 22px Calibri, "Segoe UI", system-ui, sans-serif'; ctx.fillText('COMPASS CARD  ·  OPEN HOUSE 2026', 198, 226);
+    // The boat, at the ¾ angle, on water
+    const bw = 760, bx = (W - bw) / 2, by = 250;
+    const water = ctx.createRadialGradient(W / 2, by + 730, 20, W / 2, by + 730, 380); water.addColorStop(0, 'rgba(127,211,247,.45)'); water.addColorStop(.6, 'rgba(18,41,156,.25)'); water.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = water; ctx.beginPath(); ctx.ellipse(W / 2, by + 730, 400, 60, 0, 0, Math.PI * 2); ctx.fill();
+    if (boatImg) { ctx.save(); ctx.translate(W / 2, by + bw / 2); ctx.transform(0.95, -0.05, 0.03, 1, 0, 0); ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 24; ctx.drawImage(boatImg, -bw / 2, -bw / 2, bw, bw); ctx.restore(); }
+    // The word in handwriting on the hull
+    ctx.save(); ctx.translate(W / 2, by + 610); ctx.rotate(-0.035); ctx.fillStyle = '#fff6c8'; ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 6;
+    ctx.font = `600 ${Math.max(44, Math.min(66, 540 / Math.max(6, word.length)))}px ${HAND_FONT}`; ctx.textAlign = 'center'; ctx.fillText(word, 0, 0); ctx.restore();
+    // "I'm sailing toward"
+    ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255,255,255,.62)'; ctx.font = '600 24px Calibri, "Segoe UI", system-ui, sans-serif'; ctx.fillText("I ' M   S A I L I N G   T O W A R D", W / 2, 1070);
+    ctx.fillStyle = gold; ctx.font = `700 ${Math.max(60, Math.min(112, 980 / Math.max(6, word.length)))}px Georgia, serif`; ctx.fillText(word, W / 2, 1180);
+    // Port stamp + compass rose
+    const g = D.global ? shortDest(D.global.text) : null, l = D.local ? shortDest(D.local.text) : null;
+    ctx.save(); ctx.translate(300, 1370); ctx.rotate(-0.2); ctx.strokeStyle = sail; ctx.lineWidth = 5; ctx.setLineDash([12, 9]); ctx.beginPath(); ctx.arc(0, 0, 150, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.arc(0, 0, 128, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = sail; ctx.textAlign = 'center'; ctx.font = '700 36px Georgia, serif'; ctx.fillText(g || l || 'Beatty', 0, g && l ? -6 : 10, 230);
+    ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.font = 'italic 24px Georgia, serif'; if (g && l) ctx.fillText(l, 0, 34, 230);
+    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = '600 18px Calibri, system-ui, sans-serif'; ctx.fillText('P O R T   O F   C A L L', 0, 88); ctx.restore();
+    if (rose) ctx.drawImage(rose, 640, 1250, 230, 230);
+    // Boat N of M + the fleet strip, you ringed
+    ctx.textAlign = 'left'; ctx.fillStyle = '#fff'; ctx.font = '700 40px Georgia, serif'; ctx.fillText(fleetLabel(), 90, 1600);
+    ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font = '600 22px Calibri, system-ui, sans-serif'; ctx.fillText(((D.beeTag || 'A Beattyian') + (D.pulse ? '  ·  ' + D.pulse : '')).toUpperCase(), 92, 1636);
+    const strip = D.fleetStrip || [sail], me = D.stripMe ?? 0, sw = Math.min(36, (W - 180) / strip.length), sx0 = 90 + ((W - 180) - sw * strip.length) / 2;
+    strip.forEach((col, i) => { const x = sx0 + i * sw + sw / 2, y = 1700; ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(x, y - 18); ctx.lineTo(x + 11, y + 6); ctx.lineTo(x - 11, y + 6); ctx.closePath(); ctx.fill(); ctx.fillStyle = '#4a3728'; ctx.fillRect(x - 13, y + 8, 26, 5);
+        if (i === me) { ctx.strokeStyle = gold; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y - 2, 22, 0, Math.PI * 2); ctx.stroke(); } });
+    // Footer: QR + lines
+    if (qr) { ctx.fillStyle = '#fff'; roundRect(ctx, W - 300, 1745, 210, 210, 18); ctx.fill(); ctx.drawImage(qr, W - 288, 1757, 186, 186); }
+    ctx.textAlign = 'left'; ctx.fillStyle = gold; ctx.font = '700 26px Georgia, serif'; ctx.fillText(EVENT_LINE, 90, 1790, 640);
+    ctx.fillStyle = '#fff'; ctx.font = '600 26px Calibri, system-ui, sans-serif'; ctx.fillText(BOOTH_LINE, 90, 1836, 640);
+    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = 'italic 22px Georgia, serif'; ctx.fillText(VISION_LINE, 90, 1880, 640);
+    const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
+    return new File([blob], 'Beatty-Compass-Card.png', { type: 'image/png' });
+}
+
+/* Share first (inside the tap when the PNG is ready), then a full-screen image to press-and-hold, then download. */
+function shareCard() {
+    const btn = document.getElementById('shareCardBtn');
+    const text = `I'm sailing toward ${D.aspiration || 'my dream'} ⛵ Beatty Open House 2026`;
+    const tryShare = (file) => {
+        if (file && navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
+            return navigator.share({ files: [file], title: 'My Beatty Compass Card', text }).then(() => true).catch(e => (e && e.name === 'AbortError') ? true : false);
+        }
+        return Promise.resolve(false);
+    };
+    feel('tick');
+    if (cardFile) { tryShare(cardFile).then(done => { if (!done) showSaveOverlay(cardFile); }); return; }
+    if (btn) { btn.textContent = 'Preparing…'; btn.disabled = true; }
+    (cardRendering || renderCardPNG()).then(f => { if (btn) { btn.textContent = navigator.share ? 'Share my card' : 'Save my card'; btn.disabled = false; } if (!f) { showSaveOverlay(null); return; } cardFile = f; tryShare(f).then(done => { if (!done) showSaveOverlay(f); }); });
+}
+function saveCard() {
+    const btn = document.getElementById('downloadCardBtn');
+    if (btn) { btn.textContent = 'Preparing…'; btn.disabled = true; }
+    (cardFile ? Promise.resolve(cardFile) : (cardRendering || renderCardPNG())).then(f => { if (btn) { btn.textContent = 'Save image'; btn.disabled = false; } cardFile = f; showSaveOverlay(f); });
+}
+function showSaveOverlay(file) {
+    const url = file ? URL.createObjectURL(file) : null;
+    const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const ov = document.createElement('div'); ov.className = 'save-ov';
+    ov.innerHTML = `
+        <p class="save-hint">${url ? (isIOS ? 'Press and hold the card → <b>Save to Photos</b>' : 'Press and hold to save · or tap Download') : 'Take a screenshot to keep your card'}</p>
+        ${url ? `<img src="${url}" alt="Your Beatty Compass Card">` : ''}
+        <div class="save-actions">${url && !isIOS ? `<a class="nav-btn primary" download="Beatty-Compass-Card.png" href="${url}">Download</a>` : ''}<button class="nav-btn secondary" id="saveDone">Done</button></div>`;
+    document.body.appendChild(ov);
+    requestAnimationFrame(() => ov.classList.add('on'));
+    ov.querySelector('#saveDone').onclick = () => { ov.classList.remove('on'); setTimeout(() => { ov.remove(); if (url) URL.revokeObjectURL(url); }, 300); };
+}
+let resetArmed = null;
+function startOver(btn) {
+    if (!resetArmed) {
+        resetArmed = setTimeout(() => { resetArmed = null; if (btn && btn.isConnected) btn.textContent = 'Start over'; }, 4000);
+        if (btn) btn.textContent = 'Tap again to erase your card and start over';
+        feel('tick'); return;
+    }
+    clearTimeout(resetArmed); resetArmed = null;
+    localStorage.removeItem(SK);
+    D = { marks: [] }; followMode = false; soloMode = false; currentView = null; cardFile = null;
+    renderBoard();
 }
 
 /* ============================================================
@@ -1655,45 +1807,6 @@ function renderReadyToSail() {
     // No presenter (rehearsal / standalone)? Reveal a self-serve launch after a while.
     const btn = document.getElementById('sailNowBtn');
     setTimeout(() => { if (btn && btn.isConnected && !followMode) btn.style.opacity = '1'; }, 6000);
-}
-
-function downloadCard() {
-    const card = document.getElementById('memento-card');
-    const btn = document.getElementById('downloadCardBtn');
-    // html2canvas loads from a CDN; if it's blocked/offline, calling it throws
-    // synchronously (before the .then), which would strand the button on
-    // "Generating...". Fail gracefully instead — the card is still on screen to
-    // photograph.
-    if (typeof html2canvas === 'undefined') {
-        btn.textContent = 'Screenshot to save'; setTimeout(() => { btn.textContent = 'Download Card'; }, 2200);
-        return;
-    }
-    btn.textContent = 'Generating...'; btn.disabled = true;
-    haptic(40);
-    html2canvas(card, { backgroundColor: '#040a33', scale: 3, useCORS: true }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = 'Beatty-SAIL-Card.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        btn.textContent = 'Download Card'; btn.disabled = false;
-    }).catch(() => { btn.textContent = 'Download Failed'; btn.disabled = false; });
-}
-
-async function shareCard() {
-    const card = document.getElementById('memento-card');
-    const btn = document.getElementById('shareCardBtn');
-    if (typeof html2canvas === 'undefined' || !navigator.share) {
-        btn.textContent = 'Screenshot to share'; setTimeout(() => { btn.textContent = 'Share'; }, 2200);
-        return;
-    }
-    btn.textContent = 'Preparing...'; btn.disabled = true;
-    try {
-        const canvas = await html2canvas(card, { backgroundColor: '#040a33', scale: 3, useCORS: true });
-        const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
-        const file = new File([blob], 'Beatty-SAIL-Card.png', { type: 'image/png' });
-        await navigator.share({ title: 'My Beatty SAIL Card', text: `I'm ${(computeArchetype()).name}! Fold your own boat at Beatty Open House 2026.`, files: [file] });
-    } catch(e) { /* share cancelled or unsupported */ }
-    btn.textContent = 'Share'; btn.disabled = false;
 }
 
 /* ============================================================
@@ -2113,7 +2226,7 @@ function launchNow() {
     clearTimeout(uncuedTimer);
     if (D.launched) { renderAtSea(); return; }
     if (!sailLocalAt) sailLocalAt = Date.now();
-    D.launched = true; D.launchedAt = Date.now(); save();
+    D.launched = true; D.launchedAt = serverNow(); save();
     hapticPattern([15, 30, 15, 30, 120]); playWhoosh();
     saveToFirebase();                                          // launched:true — placed if not already at sea
     const boatEl = document.getElementById('holdBoat');
@@ -2449,13 +2562,9 @@ $app.addEventListener('click', (e) => {
     if (t.id === 'startBtn')        { haptic(15); startAmbient(); injectOcean(); step = 1; route(); }
     if (t.id === 'launchBtn')       { handleLaunch(); }
     if (t.id === 'sailNowBtn')      { doLaunch(); }
-    if (t.id === 'downloadCardBtn') { downloadCard(); }
+    if (t.id === 'downloadCardBtn') { saveCard(); }
     if (t.id === 'shareCardBtn')   { shareCard(); }
-    if (t.id === 'resetBtn') {
-        localStorage.removeItem(SK);
-        D = { marks: [] }; followMode = false; soloMode = false; currentView = null;
-        renderBoard();
-    }
+    if (t.id === 'resetBtn')       { startOver(t); }
 });
 
 // Tap the corner boat to peek at it larger, tap again to tuck it back.
