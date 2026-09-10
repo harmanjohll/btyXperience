@@ -205,6 +205,19 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .sail-ov-call.pop{animation:sailPop .5s var(--ease) both}
 .sail-ov-swatch{display:inline-block; width:.9em; height:.9em; border-radius:50%; box-shadow:0 0 18px currentColor}
 @media (prefers-reduced-motion:reduce){ .set-sail-btn{animation:none} .sail-ov-word.pop,.sail-ov-call.pop{animation:none} }
+.finale-scene{position:absolute; inset:0}
+.finale-sea{position:absolute; inset:0; width:100%; height:100%; border:0; display:block}
+.finale-hive{position:absolute; left:0; right:0; top:0; height:66%; pointer-events:none}
+.finale-hive .hive-cell{pointer-events:auto}
+.hive-count{position:absolute; left:50%; top:clamp(88px,13vh,150px); transform:translateX(-50%); font-family:var(--serif); font-weight:800; color:var(--gold); font-size:clamp(1.4rem,3vw,2.6rem); letter-spacing:.04em; text-shadow:0 4px 30px rgba(0,0,0,.6); pointer-events:none}
+.hive-cell .hive-n{display:block; font-size:.62em; font-weight:800; color:rgba(0,12,83,.72); letter-spacing:.06em; margin-top:2px}
+.hive-cell.many{box-shadow:0 0 44px rgba(255,226,0,.6)}
+.bloom-field{position:absolute; inset:0; display:grid; grid-template-columns:repeat(22,1fr); grid-auto-rows:1fr; gap:8px; padding:clamp(24px,4vh,56px) clamp(24px,5vw,90px)}
+.bloom-field i{display:block; clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); background:rgba(255,226,0,.055); transition:background .22s ease, box-shadow .22s ease, transform .22s ease; transition-delay:calc((9 - var(--r)) * 95ms)}
+.bloom-field.lit i{background:var(--gold); box-shadow:0 0 26px rgba(255,226,0,.65); transform:scale(1.04)}
+.bloom-msg{position:absolute; left:0; right:0; top:0; transition:opacity .4s}
+.bloom-ov{justify-content:center; padding-top:0}
+.bloom-ov .sail-ov-word{font-size:clamp(6rem,22vw,22rem)}
 .votes-chip{font-family:var(--serif); font-weight:700; color:var(--navy); background:var(--gold); border-radius:12px; padding:.5rem 1.2rem; font-size:clamp(1rem,1.7vw,1.5rem)}
 
 /* --- Fun fact --- */
@@ -597,6 +610,7 @@ const journeySteps=[
      nexusData:{ type:'local', options:[ {id:'Rockwell',text:'Rockwell Automation'},{id:'PIL',text:'PIL (Maritime)'},{id:'Journalism',text:'Berita Harian'},{id:'TamilMurasu',text:'Tamil Murasu'},{id:'Makita',text:'Makita (Mechatronics)'},{id:'ASTAR',text:'A*STAR Research'} ] } },
   { id:'deck_d', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRIJppB8CD0rLo6qLaE4eiXeJHcYviqju1Gf3QChKnv7XsJY2cfYQ0eU8M7pSf5Bos2DcyuIxl6ZCPX/pubembed?start=false&loop=false&delayms=60000" },
   { id:'deck_e', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRxw0Yj77fW9I87q0-XgXfqwGPwdi6RPDXBHb7CMGmEJTdBhELve0N5rAg5WbtS2vivKyV5WZO9gB_m/pubembed?start=false&loop=false&delayms=60000" },
+  { id:'hive_wakes', type:'bloom', title:"The Hive Wakes", desc:"Phones up, screens facing out. On zero, we light the hall together." },
   { id:'pulse_check', type:'pulse_check', title:"How's the Hive Feeling?", desc:"Tap on your phone — let's read the room." },
   { id:'set_sail', type:'fleet', title:"Set Sail, Beatty!", desc:"Every boat is a Beattyian setting sail from our Hive. Look up — here comes the fleet." },
   { id:'finale', type:'finale', title:"Our Hive of Aspirations", desc:"Every cell is a dream from someone in this room tonight." },
@@ -751,7 +765,55 @@ function runSailOverlay(localAt){
 }
 function updateSailBtn(step){
   const b=document.getElementById('setSailBtn'); if(!b) return;
-  b.style.display=(isPresenter && step && step.type==='fleet')?'inline-flex':'none';
+  const t=step && step.type;
+  if(isPresenter && t==='fleet'){ b.style.display='inline-flex'; b.dataset.act='sail'; b.innerHTML='⛵&nbsp; SET SAIL'; }
+  else if(isPresenter && t==='bloom'){ b.style.display='inline-flex'; b.dataset.act='bloom'; b.innerHTML='🌟&nbsp; LIGHTS OUT'; }
+  else b.style.display='none';
+}
+function fireBaton(){ const b=document.getElementById('setSailBtn'); if(b && b.dataset.act==='bloom') fireBloom(); else fireSetSail(); }
+
+/* ---------- THE HIVE WAKES: lights out, phones up, ten, nine … bloom ----------
+   The Turn before the Prestige: it proves to the room that it can move as one.
+   Every phone goes black and is held up screen-out (a lamp, not a screen);
+   on zero every phone blooms yellow in the same instant while the honeycomb on
+   the big screen lights from the front of the hall to the back. */
+const BLOOM_LEAD=12000;
+function renderBloom(){
+  const cols=22, rows=10; let cells='';
+  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) cells+=`<i style="--r:${r}"></i>`;
+  return `<div class="bloom-field" id="bloomField">${cells}</div>
+    <div class="bloom-msg" id="bloomMsg"><div class="vis-title center">The Hive Wakes<span class="vs">Phones up, screens facing out. On zero, we light the hall together.</span></div></div>`;
+}
+function fireBloom(){
+  if(!isPresenter) return;
+  if(pendingCue && pendingCue.at > serverNow()) { showToast('Already counting…'); return; }
+  pendingCue={ id:'bloom-'+Date.now(), kind:'bloom', at: serverNow()+BLOOM_LEAD };
+  broadcastSession();
+  runBloomOverlay(pendingCue.at + clockOffset);
+}
+function runBloomOverlay(localAt){
+  document.getElementById('sailOv')?.remove();
+  const msg=document.getElementById('bloomMsg'); if(msg) msg.style.opacity='0';
+  const ov=document.createElement('div'); ov.id='sailOv'; ov.className='sail-ov bloom-ov';
+  ov.innerHTML=`<div class="sail-ov-eyebrow">The Hive Wakes</div><div class="sail-ov-word" id="sailWord">Phones up</div><div class="sail-ov-sub" id="sailSub">Screen facing out. Hold it high.</div>`;
+  document.body.appendChild(ov);
+  const wordEl=document.getElementById('sailWord'), subEl=document.getElementById('sailSub');
+  let lastSec=null, lit=false, done=false;
+  function frame(){
+    if(done) return;
+    const rem=localAt-Date.now();
+    if(!lit){
+      const sec=Math.ceil(rem/1000);
+      if(sec<=10 && sec>=1 && sec!==lastSec){ lastSec=sec; wordEl.textContent=String(sec); wordEl.classList.add('resp'); wordEl.classList.remove('pop'); void wordEl.offsetWidth; wordEl.classList.add('pop'); subEl.textContent=''; sailSound('count'); }
+      if(rem<=0){ lit=true; wordEl.textContent=''; document.getElementById('bloomField')?.classList.add('lit'); sailSound('bloom'); }
+    } else {
+      const t=-rem;
+      if(t>=5000 && !wordEl.textContent){ wordEl.textContent='We can move as one.'; wordEl.classList.remove('resp'); wordEl.classList.remove('pop'); void wordEl.offsetWidth; wordEl.classList.add('pop'); }
+      if(t>=10000){ done=true; ov.classList.add('out'); setTimeout(()=>ov.remove(),800); return; }
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
 }
 
 /* Reveal the answer where it stands: the correct bar ignites gold and the insight
@@ -795,6 +857,7 @@ function renderContent(step){
     case 'industry_map': return renderMap(step.localData);
     case 'pulse_check': return renderPulse();
     case 'finale': return renderFinale();
+    case 'bloom': return renderBloom();
     case 'fleet': return `<iframe src="x/fleet.html?embed=1" title="The Fleet Sets Sail" style="width:100%; height:100%; border:0; display:block" allow="autoplay"></iframe>`;
     case 'memento': return `<div style="text-align:center"><div style="font-size:clamp(5rem,12vw,9rem)">📱</div><h2 class="stage-title" style="font-size:clamp(2rem,4vw,3.6rem); margin-top:10px">Check your phone</h2><p class="stage-sub" style="margin:14px auto 0">Your personal Beatty Compass Card is waiting.</p></div>`;
     case 'video': return `<div style="width:100%; height:100%; background:#000; position:relative; display:flex; align-items:center; justify-content:center">${iframeLoading()}<iframe src="${step.url}" style="width:100%; height:100%; border:0; position:relative; z-index:1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`;
@@ -900,7 +963,16 @@ function paintPulse(){
 
 /* Finale — Hive of Aspirations */
 function renderFinale(){ setTimeout(paintHive,60); const s=journeySteps[currentStep];
-  return `<div id="hiveHost"><div class="vis-title center">${s.title}<span class="vs">${s.desc||''}</span></div><div class="hive-empty" id="hiveEmpty">Waiting for the first aspiration…</div></div>`; }
+  // Two layers: the fleet keeps sailing below (finale mode: boats sit low and
+  // each releases a gold bee-dot that rises), and the honeycomb of aspirations
+  // forms in the sky above — the hive the fleet steers by.
+  return `<div class="finale-scene">
+    <iframe class="finale-sea" src="x/fleet.html?embed=1&finale=1" title="The fleet, still sailing" allow="autoplay"></iframe>
+    <div id="hiveHost" class="finale-hive">
+      <div class="vis-title center">${s.title}<span class="vs">${s.desc||''}</span></div>
+      <div class="hive-count" id="hiveCount"></div>
+      <div class="hive-empty" id="hiveEmpty">Waiting for the first aspiration…</div>
+    </div></div>`; }
 function cleanWord(w){ // sanitize projected audience text: single token, letters/space/hyphen, capped
   return String(w||'').replace(/[^\p{L}\p{N} '-]/gu,'').trim().slice(0,18);
 }
@@ -908,30 +980,39 @@ function cleanWord(w){ // sanitize projected audience text: single token, letter
 // the presenter can also click any cell to hide it, and Firestore rules are the real gate.
 const BLOCKLIST=['fuck','shit','bitch','cunt','dick','pussy','asshole','bastard','slut','whore','nigger','faggot','retard','wank','cock','porn','sex','nazi'];
 function isProfane(w){ const s=String(w||'').toLowerCase(); return BLOCKLIST.some(b=>s.includes(b)); }
+let hiveRot=0, hiveRotTimer=null;
 function paintHive(){
   const host=document.getElementById('hiveHost'); if(!host) return;
-  // De-dupe, sanitize, drop presenter-hidden or profane cells. Cap to keep the honeycomb tidy.
-  const words=[...new Set(live.aspirations.map(cleanWord).filter(w=>w && !isProfane(w) && !hiddenCells.has(w.toLowerCase())))].slice(0,91);
+  // Every dream counts: duplicates are weighted (a bigger, badged cell), not dropped.
+  const counts={}; let total=0;
+  live.aspirations.map(cleanWord).filter(w=>w && !isProfane(w) && !hiddenCells.has(w.toLowerCase())).forEach(w=>{ total++; const k=w.toLowerCase(); if(!counts[k]) counts[k]={w,n:0}; counts[k].n++; });
+  const entries=Object.values(counts).sort((a,b)=>b.n-a.n);
+  const cnt=document.getElementById('hiveCount'); if(cnt) cnt.textContent= total>0 ? `${total} ${total===1?'dream':'dreams'}` : '';
   const empty=document.getElementById('hiveEmpty');
-  if(words.length===0){ if(empty) empty.style.display='block'; return; }
+  if(entries.length===0){ if(empty) empty.style.display='block'; return; }
   if(empty) empty.remove();
-  // Build honeycomb positions in a spiral of hex rings
+  // Cap the comb; beyond it, the outer ring cycles through the long tail every 6 s so every word gets its turn.
+  const CAP=91, TAIL=12; let shown=entries;
+  if(entries.length>CAP){ const fixed=entries.slice(0,CAP-TAIL), tail=entries.slice(CAP-TAIL); const win=[]; for(let k=0;k<TAIL;k++) win.push(tail[(hiveRot+k)%tail.length]); shown=fixed.concat(win);
+    if(!hiveRotTimer) hiveRotTimer=setInterval(()=>{ hiveRot+=TAIL; if(!document.getElementById('hiveHost')){ clearInterval(hiveRotTimer); hiveRotTimer=null; return; } paintHive(); },6000); }
   const W=host.clientWidth, H=host.clientHeight;
-  const cw=Math.max(96, Math.min(160, W/9)), ch=cw*0.88, cx=W/2-cw/2, cy=H/2-ch/2;
-  const coords=hexSpiral(words.length, cw, ch);
-  // Clear stale cells if the set shrank (e.g. after hiding one), so indices stay aligned
-  host.querySelectorAll('.hive-cell').forEach(c=>{ if(+c.dataset.i>=words.length) c.remove(); });
-  words.forEach((w,i)=>{
+  const cw=Math.max(96, Math.min(150, W/9)), ch=cw*0.88, cx=W/2-cw/2, cy=H*0.56-ch/2;
+  const coords=hexSpiral(shown.length, cw, ch);
+  host.querySelectorAll('.hive-cell').forEach(c=>{ if(+c.dataset.i>=shown.length) c.remove(); });
+  shown.forEach((e,i)=>{
+    const label=e.n>1?`${e.w}<span class="hive-n">×${e.n}</span>`:e.w;
     let cell=host.querySelector(`.hive-cell[data-i="${i}"]`);
     if(!cell){ cell=document.createElement('div'); cell.className='hive-cell'; cell.dataset.i=i;
-      cell.style.width=cw+'px'; cell.style.height=ch+'px'; cell.style.fontSize=Math.max(11,Math.min(20,cw/8))+'px';
+      cell.style.width=cw+'px'; cell.style.height=ch+'px';
       host.appendChild(cell);
       const p=coords[i]; cell.style.left=(cx+p.x)+'px'; cell.style.top=(cy+p.y)+'px';
-      cell.textContent=w;
+      cell.innerHTML=label; cell.dataset.w=e.w;
       if(isPresenter){ cell.title='Click to hide (moderation)'; cell.style.cursor='pointer';
-        cell.onclick=()=>{ hiddenCells.add(w.toLowerCase()); cell.remove(); paintHive(); }; }
+        cell.onclick=()=>{ hiddenCells.add(e.w.toLowerCase()); cell.remove(); paintHive(); }; }
       setTimeout(()=>{ cell.classList.add('on'); sfx('cell'); }, 40*i+30);
-    } else { cell.textContent=w; }
+    } else if(cell.dataset.w!==e.w || cell.dataset.n!==String(e.n)){ cell.innerHTML=label; cell.dataset.w=e.w; }
+    cell.dataset.n=e.n; cell.style.fontSize=Math.max(11, Math.min(22, cw/8 + Math.min(6, (e.n-1)*1.5)))+'px';
+    cell.classList.toggle('many', e.n>=3);
   });
 }
 function hexSpiral(n, cw, ch){
@@ -1084,7 +1165,7 @@ function renderStep(){
 
   broadcastSession();
 
-  const immersive = ['slide','video','globe','industry_map','funfact','finale','fleet'].includes(step.type);
+  const immersive = ['slide','video','globe','industry_map','funfact','finale','fleet','bloom'].includes(step.type);
   const titleHTML = (!immersive && step.title)?`<p class="eyebrow">${step.id.includes('poll')?'Live Poll':'Beatty'}</p><h2 class="stage-title">${step.title}</h2>`:'';
   const descHTML  = (!immersive && step.desc)?`<p class="stage-sub" style="margin:0 auto 26px">${step.desc}</p>`:'';
   const inner = renderContent(step);
@@ -1180,7 +1261,7 @@ if(isPresenter){
   document.getElementById('ppQR').onclick=()=>document.getElementById('qrOverlay').classList.remove('hidden');
   document.getElementById('ppSail').onclick=fireSetSail;
   // The big footer button, shown only on the fleet step: the presenter's baton.
-  (function(){ const b=document.createElement('button'); b.id='setSailBtn'; b.className='btn set-sail-btn'; b.innerHTML='⛵&nbsp; SET SAIL'; b.style.display='none'; b.onclick=(e)=>{ ripple(e,b); fireSetSail(); }; nextBtn.insertAdjacentElement('beforebegin', b); })();
+  (function(){ const b=document.createElement('button'); b.id='setSailBtn'; b.className='btn set-sail-btn'; b.innerHTML='⛵&nbsp; SET SAIL'; b.style.display='none'; b.onclick=(e)=>{ ripple(e,b); fireBaton(); }; nextBtn.insertAdjacentElement('beforebegin', b); })();
   document.getElementById('ppFleet').onclick=()=>window.open('sail/presenter.html','_blank');
   document.getElementById('ppReset').onclick=openReset;
 }
@@ -1273,6 +1354,7 @@ function sailSound(kind){ if(!audioCtx||!soundOn) return; const t=audioCtx.curre
       o.connect(f); f.connect(g); g.connect(audioCtx.destination); o.start(t); o.stop(t+5.6); }
     else if(kind==='boom'){ tone(49,1.8,'sine',0.4); tone(73,1.4,'triangle',0.14,0.02); [1046,1318,1568,2093,2637].forEach((fq,i)=>tone(fq,1.6,'sine',0.03,0.06+i*0.05)); }
     else if(kind==='chime'){ tone(1318,0.45,'sine',0.05); tone(1976,0.6,'sine',0.03,0.07); }
+    else if(kind==='bloom'){ tone(65,3.2,'sine',0.3); tone(130,2.6,'triangle',0.08,0.05); [523,659,784,1046].forEach((fq,i)=>tone(fq,2.4,'sine',0.028,0.12+i*0.09)); }
   }catch(e){}
 }
 
@@ -1280,7 +1362,7 @@ function sailSound(kind){ if(!audioCtx||!soundOn) return; const t=audioCtx.curre
 document.querySelectorAll('.btn').forEach(b=>b.addEventListener('click',e=>ripple(e,b)));
 
 // Demo helper for rehearsal: presenter can press "D" to inject demo data locally (visual only)
-if(isPresenter){ document.addEventListener('keydown', e=>{ if(e.key==='d' && dbReady){ /* reserved */ } if((e.key==='s'||e.key==='S') && journeySteps[currentStep]?.type==='fleet' && !e.target.closest('input,textarea')){ fireSetSail(); } }); }
+if(isPresenter){ document.addEventListener('keydown', e=>{ if(e.key==='d' && dbReady){ /* reserved */ } if((e.key==='s'||e.key==='S') && ['fleet','bloom'].includes(journeySteps[currentStep]?.type) && !e.target.closest('input,textarea')){ fireBaton(); } }); }
 </script>
 </body>
 </html>

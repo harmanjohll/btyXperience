@@ -1616,7 +1616,7 @@ function applyView(state) {
     // Nobody follows the show until they've boarded: that one tap is what unlocks
     // sound, keeps the screen awake, and puts their bee in the Hive.
     if (!D.boarded) { if (!document.getElementById('boardGrid')) renderBoard(); return; }
-    if (sailSeq) return;                         // the count is running — nothing interrupts it
+    if (sailSeq || bloomSeq) return;             // a count is running — nothing interrupts it
     const v = state.currentView || 'chart';
     // Leaving a poll → drop its live-results listener.
     if (v !== 'poll' && window.__pollUnsub) { window.__pollUnsub(); window.__pollUnsub = null; }
@@ -1630,7 +1630,8 @@ function applyView(state) {
         case 'globe':
         case 'industry_map':  showNexus(state.nexusData); break;
         case 'pulse_check':   showPulse(); break;
-        case 'finale':        D.dreamSent ? renderRest('Your dream is in the Hive 💛', 'Watch it glow on the big screen ✨') : showName(); break;
+        case 'finale':        D.dreamSent ? renderHiveCell() : showName(); break;
+        case 'bloom':         renderPhonesUp(); break;
         case 'fleet':         triggerSetSail(); break;
         case 'memento':
         case 'end':           showCard(); break;
@@ -1844,7 +1845,7 @@ async function submitName() {
     if (db && auth?.currentUser) { try { await setDoc(doc(db, "aspirations", auth.currentUser.uid), { word: w, timestamp: serverTimestamp() }); } catch (e) {} }
     if (D.launched) saveToFirebase();   // already at sea → repaint the hull in the fleet
     if (soloMode) { soloIdx++; renderRest('Your dream is aboard ⛵', 'Ready to set sail'); return; }
-    renderReadyToSail();
+    if (D.launched) renderHiveCell(); else renderReadyToSail();
 }
 
 /* Collective Set Sail — the whole hall launches at once on the fleet slide. */
@@ -1873,6 +1874,7 @@ let handledCueId = null, sailSeq = null, sailLocalAt = 0, uncuedTimer = null;
 function handleCue(cue) {
     if (!cue || !cue.id || cue.id === handledCueId) return;
     handledCueId = cue.id;
+    if (cue.kind === 'bloom') { startBloomSequence(cue.at + clockOffset); return; }
     if (cue.kind !== 'sail' || D.launched) return;
     clearTimeout(uncuedTimer);
     if (!D.boarded) { D.boarded = true; save(); }   // a late scanner still sails with everyone
@@ -1956,6 +1958,65 @@ function scheduleRollCall() {
 function playTick() { try { const ctx = getAudioCtx(), t = ctx.currentTime; const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(220, t); o.frequency.exponentialRampToValueAtTime(110, t + 0.12); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.12, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18); o.connect(g).connect(ctx.destination); o.start(t); o.stop(t + 0.2); } catch (e) {} }
 function playWhoosh() { try { const ctx = getAudioCtx(), t = ctx.currentTime, dur = 1.2; const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate); const d = buf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; const src = ctx.createBufferSource(); src.buffer = buf; const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 0.9; f.frequency.setValueAtTime(300, t); f.frequency.exponentialRampToValueAtTime(3200, t + dur * 0.7); f.frequency.exponentialRampToValueAtTime(900, t + dur); const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.09, t + 0.35); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); src.connect(f).connect(g).connect(ctx.destination); src.start(t); src.stop(t + dur); } catch (e) {} }
 function playPing() { try { const ctx = getAudioCtx(), t = ctx.currentTime; [1318, 1976].forEach((fq, i) => { const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'; o.frequency.value = fq; const s = t + i * 0.07; g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(0.08, s + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, s + 0.5); o.connect(g).connect(ctx.destination); o.start(s); o.stop(s + 0.55); }); } catch (e) {} }
+
+/* --- The finale: your own cell in the Hive --- */
+function renderHiveCell() {
+    hideCornerBoat();
+    const w = (D.aspiration || '').toUpperCase();
+    $app.innerHTML = `
+    <div class="sail-screen follow-screen fade-up">
+        <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
+            <p class="text-[10px] mb-4 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">Your cell in the Hive</p>
+            <div class="hive-hex"><span>${w}</span></div>
+            <p class="text-sm mt-5 max-w-xs" style="color:var(--text-secondary);">Look up — it's rising off your hull and into the Hive. Every cell up there is a Beattyian's dream. 🐝</p>
+        </div>
+    </div>`;
+}
+
+// ============================================================
+//   THE HIVE WAKES (phone side) — the Turn before the Prestige
+//   Screen black, held up facing out (a lamp, not a screen). Ten … one. On
+//   zero every phone blooms yellow in the same instant. Then back to the show.
+// ============================================================
+let bloomSeq = null;
+function renderPhonesUp() {
+    hideCornerBoat();
+    $app.innerHTML = `
+    <div class="sail-screen follow-screen fade-up">
+        <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
+            <div class="follow-eye mb-2">🐝</div>
+            <p class="text-[10px] mb-2 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">The Hive wakes</p>
+            <h1 class="font-serif text-2xl mb-3" style="color:var(--text-primary);">Phones up. Screen facing out.</h1>
+            <p class="text-sm max-w-xs" style="color:var(--text-secondary);">Hold it high. On zero, we light the hall together.</p>
+        </div>
+    </div>`;
+}
+function startBloomSequence(localAt) {
+    if (bloomSeq) return;
+    hideCornerBoat();
+    $app.innerHTML = `<div class="bloom-screen black" id="bloomScreen"><div class="bloom-hint">Phones up · screen facing out</div><div class="bloom-n" id="bloomN"></div></div>`;
+    let lastSec = null, bloomed = false;
+    function tick() {
+        const rem = localAt - Date.now();
+        const scr = document.getElementById('bloomScreen');
+        if (!bloomed && rem <= 0) {
+            bloomed = true;
+            if (scr) { scr.classList.remove('black', 'pulse'); scr.classList.add('bloom'); const n = document.getElementById('bloomN'); if (n) n.textContent = ''; }
+            hapticPattern([60, 40, 220]);
+            setTimeout(() => { bloomSeq = null; currentView = null; if (lastSessionState) applyView(lastSessionState); else renderAboard(); }, 6000);
+            return;
+        }
+        const sec = Math.ceil(rem / 1000);
+        if (sec <= 10 && sec >= 1 && sec !== lastSec) {
+            lastSec = sec;
+            if (scr) { scr.classList.remove('pulse'); void scr.offsetWidth; scr.classList.add('pulse'); }
+            const n = document.getElementById('bloomN'); if (n) n.textContent = String(sec);
+            haptic(20);
+        }
+        bloomSeq = requestAnimationFrame(tick);
+    }
+    bloomSeq = requestAnimationFrame(tick);
+}
 
 /* --- Resting / holding screens shown between the presenter's slides --- */
 /* --- Boarding: "Which bee are you?" — one tap puts you in the Hive and unlocks the phone --- */

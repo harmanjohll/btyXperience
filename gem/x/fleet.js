@@ -44,6 +44,9 @@ const distBarEl       = document.getElementById('distributionBar');
 // === STATE ===
 const boats        = new Map();
 const boatElements = new Map();
+// Finale mode: the fleet keeps sailing beneath the honeycomb; boats sit low and each
+// releases a gold bee-dot that rises into the sky — the word leaving the hull.
+const FINALE = new URLSearchParams(location.search).has('finale');
 const archetypeCounts = {};
 let autoSpotlightEnabled = true;
 let autoSpotlightTimer   = null;
@@ -213,7 +216,7 @@ function placeBoat(data) {
     const areaH = fleetArea.clientHeight;
     // Depth: 0 = far (near the horizon, small & faint), 1 = near (foreground, big & bright)
     const depth = Math.random();
-    const yTop = areaH * 0.28, yBot = areaH * 0.86;
+    const yTop = areaH * (FINALE ? 0.60 : 0.28), yBot = areaH * 0.88;
     const y = yTop + depth * (yBot - yTop);
     // Spread evenly: place each boat in the least-populated horizontal zone,
     // jittered. Pure random clusters lopsidedly when only a few boats are on
@@ -259,6 +262,9 @@ function placeBoat(data) {
 
     const count = boatElements.size;
     boatCountEl.textContent = count;
+    // Stragglers tick the big number up after the waves have landed.
+    if (released && !FINALE) { const big = document.getElementById('fleetBig'); if (big && big.classList.contains('sailing')) { big.dataset.n = count; big.innerHTML = `<span class="fb-n">${count}</span><span class="fb-l">${count === 1 ? 'boat' : 'boats'} set sail</span>`; } }
+    if (FINALE) setTimeout(() => riseBeeDot(x + size / 2, y + size * 0.35), 700 + Math.random() * 1100);
 
     // Arrival chime
     playArrivalChime();
@@ -273,7 +279,7 @@ function placeBoat(data) {
     // parting line, "your boat is joining the fleet." A manual click still opens
     // the rich modal spotlight below.
     // …but not while a wave is landing: 200 ribbons would blanket the sea.
-    if (autoSpotlightEnabled && !(releaseAt && Date.now() < releaseAt + 3000)) {
+    if (autoSpotlightEnabled && !FINALE && !(releaseAt && Date.now() < releaseAt + 3000)) {
         featureBoatInPlace(el);
         enqueueRibbon(data, archetype);
     }
@@ -402,7 +408,7 @@ function startFleetListener() {
 //   lands large, and the roll call spotlights each destination in turn.
 // ============================================================
 const harbour = new Map();
-let released = false, releaseAt = 0;
+let released = FINALE, releaseAt = 0;   // in the finale everyone has already sailed
 let stragglers = [], stragglerTimer = null;
 let handledCueId = null, uncuedTimer = null;
 let fleetOffset = 0; const fleetSamples = []; let lastSts = null;
@@ -493,6 +499,13 @@ function rollCall(dest, last) {
 }
 // Rehearsal without a presenter: S releases the harbour on an 8-second count.
 document.addEventListener('keydown', (e) => { if ((e.key === 's' || e.key === 'S') && !releaseAt && !e.target.closest('input,textarea')) scheduleRelease(Date.now() + 8000); });
+
+// === FINALE: a bee-dot rises from the hull into the honeycomb sky ===
+function riseBeeDot(x, y) {
+    const d = document.createElement('div'); d.className = 'bee-dot';
+    d.style.left = x + 'px'; d.style.top = y + 'px'; d.style.setProperty('--drift', ((Math.random() - 0.5) * 60).toFixed(0) + 'px');
+    fleetArea.appendChild(d); setTimeout(() => d.remove(), 2800);
+}
 
 // === WAITING HINT (live, but no boats yet) ===
 function showWaitingHint() {
