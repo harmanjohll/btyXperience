@@ -190,6 +190,23 @@ body::before {
 .dream-field:focus { border-color: var(--accent-gold); }
 .dream-field::placeholder { color: rgba(124,131,180,.7); font-weight: 400; }
 
+/* Boarding: which bee are you? */
+.bee-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.bee-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; min-height: 96px;
+    background: linear-gradient(160deg, #12235f, #0a1442); border: 1px solid rgba(255,226,0,.18); border-radius: 16px;
+    padding: 14px 8px 12px; font-family: inherit; color: var(--text-primary); transition: transform .12s, border-color .12s; }
+.bee-btn:active { transform: scale(.96); border-color: var(--accent-gold); }
+.bee-ic { font-size: 1.9rem; line-height: 1; }
+.bee-nm { font-family: 'Georgia',serif; font-size: .95rem; line-height: 1.15; text-align: center; }
+.bee-tag { font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent-gold); font-weight: 800; }
+
+/* A vote that's locked in, waiting for the presenter's reveal */
+.q-locked { background: rgba(255,255,255,.05); border: 1px solid rgba(255,226,0,.22); border-radius: 15px; padding: 18px 16px; text-align: center; }
+.q-locked-pick { font-family: 'Georgia',serif; font-size: 1.15rem; color: var(--text-primary); margin-bottom: 6px; }
+.q-locked-pick b { color: var(--accent-gold); }
+.q-locked-count { font-size: .82rem; color: var(--text-muted); }
+.q-locked-count span { color: var(--accent-gold); font-weight: 800; }
+
 .origami-svg {
     width: 100% !important; height: 100% !important;
     display: block;

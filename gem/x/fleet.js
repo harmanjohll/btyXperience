@@ -232,9 +232,11 @@ function placeBoat(data) {
 
     el.innerHTML = buildMiniBoat(data, size);
     el.dataset.uid = data.uid;
+    el.dataset.size = size;
+    el.dataset.glow = (4 + depth * 8).toFixed(1);
 
-    // Colour glow matching archetype
-    el.style.filter = `drop-shadow(0 0 ${4 + depth * 8}px ${archetype.color || '#D4A843'})`;
+    // Glow in the boat's own sail colour — identity you can see from the back row
+    el.style.filter = `drop-shadow(0 0 ${4 + depth * 8}px ${data.sailColor || '#FFE200'})`;
 
     // Golden wake ripple at the arrival point
     const wake = document.createElement('div');
@@ -249,7 +251,7 @@ function placeBoat(data) {
         el.style.animationDelay = bobDelay + 's';
     }, { once: true });
 
-    el.addEventListener('click', () => showSpotlight(data));
+    el.onclick = () => showSpotlight(data);
     fleetArea.appendChild(el);
     boatElements.set(data.uid, el);
 
@@ -272,6 +274,16 @@ function placeBoat(data) {
         featureBoatInPlace(el);
         enqueueRibbon(data, archetype);
     }
+}
+
+// === REPAINT A BOAT IN PLACE (its dream or colours arrived, or changed) ===
+function updateBoat(data) {
+    const el = boatElements.get(data.uid); if (!el) return;
+    const size = parseFloat(el.dataset.size) || 60;
+    data._archetype = computeArchetypeForData(data);
+    el.innerHTML = buildMiniBoat(data, size);
+    el.style.filter = `drop-shadow(0 0 ${parseFloat(el.dataset.glow) || 8}px ${data.sailColor || '#FFE200'})`;
+    el.onclick = () => showSpotlight(data);
 }
 
 // === IN-PLACE FEATURE: halo the newest boat on the sea ===
@@ -300,7 +312,7 @@ function pumpRibbon() {
     renderRibbon(data, archetype);
 }
 function renderRibbon(data, archetype) {
-    const ac = archetype.color || '#FFE200';
+    const ac = data.sailColor || '#FFE200';
     const waiting = ribbonQueue.length;
     const el = document.createElement('div');
     el.className = 'arrival-ribbon';
@@ -308,8 +320,8 @@ function renderRibbon(data, archetype) {
         <div class="ribbon-boat">${buildMiniBoat(data, 46)}</div>
         <div class="ribbon-text">
             <span class="ribbon-kicker">Now setting sail</span>
-            <span class="ribbon-name" style="color:${ac};">${archetype.name}</span>
-            <span class="ribbon-asp">${(data.aspiration || 'VOYAGER').toUpperCase()}</span>
+            <span class="ribbon-name" style="color:${ac};">${data.aspiration ? data.aspiration.toUpperCase() : 'A BEATTYIAN'}</span>
+            <span class="ribbon-asp">${data.global?.text || data.local?.text || 'From our Hive'}</span>
         </div>
         ${waiting > 0 ? `<div class="ribbon-more">+${waiting}</div>` : ''}`;
     document.body.appendChild(el);
@@ -372,7 +384,9 @@ function startFleetListener() {
             if (change.type === 'added' || change.type === 'modified') {
                 const data = { uid: change.doc.id, ...change.doc.data() };
                 boats.set(data.uid, data);
-                if (data.aspiration) placeBoat(data);
+                // Every launched boat sails — named or not. A boat whose dream or
+                // colours arrive later is repainted in place, never added twice.
+                if (boatElements.has(data.uid)) updateBoat(data); else placeBoat(data);
             }
         });
     }, (err) => console.warn("Fleet listener error:", err));

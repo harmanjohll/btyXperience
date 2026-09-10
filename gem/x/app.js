@@ -19,6 +19,41 @@ function getAudioCtx() {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     return audioCtx;
 }
+
+// === BOARDING: one tap unlocks everything the phone needs for the whole show ===
+// iOS only plays sound after a user gesture (and only resumes a context inside
+// it); Android only vibrates after the page has been tapped; the screen wake
+// lock must be requested from a gesture and re-taken when the page comes back.
+// The "Which bee are you?" tap is that gesture.
+let wakeLock = null;
+let silentEl = null;
+function unlockAudio() {
+    try {
+        const ctx = getAudioCtx();
+        if (ctx.state === 'suspended') ctx.resume();
+        const buf = ctx.createBuffer(1, 1, 22050); const src = ctx.createBufferSource();
+        src.buffer = buf; src.connect(ctx.destination); src.start(0);
+        // An <audio> element flips the iOS audio session out of "ambient", so Web
+        // Audio keeps playing even with the ring switch on silent.
+        if (!silentEl) {
+            silentEl = document.createElement('audio'); silentEl.setAttribute('playsinline', '');
+            silentEl.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';
+            silentEl.volume = 0.01;
+        }
+        silentEl.play().catch(() => {});
+    } catch (e) {}
+}
+async function takeWakeLock() {
+    try { if ('wakeLock' in navigator && document.visibilityState === 'visible') wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
+}
+function primeVibrate() { try { if (navigator.vibrate) navigator.vibrate(1); } catch (e) {} }
+// Keep the unlocks alive: phones sleep, tabs hide, contexts get suspended.
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return;
+    takeWakeLock();
+    try { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {}
+});
+document.addEventListener('touchend', () => { try { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {} }, { passive: true });
 function playCreaseSound() {
     try {
         const ctx = getAudioCtx();
@@ -223,8 +258,8 @@ function startSessionListener() {
         onSnapshot(doc(db, "session", "state"), (snap) => {
             const exists = snap && (snap.exists ? (snap.exists.call ? snap.exists() : snap.exists) : true);
             const data = exists ? (snap.data ? snap.data() : null) : null;
-            if (!data) {                       // no live session yet → wait to board
-                if (!followMode && !(D.aspiration && D.launched)) renderJoinHold();
+            if (!data) {                       // no live session yet → wait aboard
+                if (!followMode && !(D.aspiration && D.launched && D.dreamSent)) { D.boarded ? renderAboard() : renderBoard(); }
                 return;
             }
             applyView(data);
@@ -1417,28 +1452,25 @@ async function doLaunch() {
 }
 
 function renderReadyToSail() {
+    hideCornerBoat();
     const c = colors();
     $app.innerHTML = `
     <div class="sail-screen ready-screen fade-up">
         <div class="flex-1 flex flex-col items-center justify-center p-4 text-center">
-            <div class="ready-boat origami-stage medium mb-5">${buildOrigamiSVG(c, 8, 260, extras())}</div>
+            <div class="ready-boat origami-stage medium mb-5">${buildOrigamiSVG(c, 9, 260, extras())}</div>
             <p class="text-xs mb-1 tracking-[0.28em] uppercase" style="color:var(--accent-gold);">Your boat is ready</p>
             <h1 class="font-serif text-2xl mb-1" style="color:var(--text-primary);">${(D.aspiration || 'Set sail').toUpperCase()}</h1>
             <div class="ready-wait mt-4 mb-2">
                 <span class="ready-dot"></span>
-                <span class="text-sm" style="color:var(--text-secondary);">Waiting for the captain's cue…</span>
+                <span class="text-sm" style="color:var(--text-secondary);">Hold it — waiting for the captain's cue…</span>
             </div>
             <p class="text-[11px] max-w-xs" style="color:var(--text-muted);">When the whole hall sets sail together, your boat joins the fleet on the big screen. Look up. 🌊</p>
             <button id="sailNowBtn" class="nav-btn secondary mt-8" style="opacity:0;transition:opacity .5s;">Set sail now</button>
         </div>
     </div>`;
-    // Arm the collective cue; if a presenter fires "Set Sail", we launch.
-    onSetSailCue = doLaunch;
-    if (sessionBeat === 'set_sail') { doLaunch(); return; }
-    // Fallback for running without a presenter (standalone / testing): reveal a
-    // self-serve button after a moment so nobody is ever stuck at the gate.
+    // No presenter (rehearsal / standalone)? Reveal a self-serve launch after a while.
     const btn = document.getElementById('sailNowBtn');
-    setTimeout(() => { if (btn && btn.isConnected) btn.style.opacity = '1'; }, 6000);
+    setTimeout(() => { if (btn && btn.isConnected && !followMode) btn.style.opacity = '1'; }, 6000);
 }
 
 function downloadCard() {
@@ -1535,34 +1567,51 @@ let soloTimerId = null;
 const FOLD_STEP_FOR_INDEX = [1, 2, 4, 5, 8, 9, 12, 13];
 
 // Personalise the boat from the pathways the audience chooses on the map.
+// Sail = destination, flag = industry. Chosen to stay distinct from each other
+// AND from a navy sea on a projector from the back row: no navy, no dark blues.
 const NEXUS_COLOR = {
-    GeoBali:'#E0793C', NZ:'#2F7D5B', Korea:'#C64B86', MiharaJapan:'#C8536B', MutsuzawaJapan:'#4A6BD0', Estonia:'#3A87B8',
-    Rockwell:'#C9962A', PIL:'#2F6D9E', Journalism:'#C24A50', TamilMurasu:'#8A5CC0', Makita:'#3F8F6A', ASTAR:'#5566CC',
+    GeoBali:'#F28C28', NZ:'#2BB3A8', Korea:'#D64FA0', MiharaJapan:'#EC5A5F', MutsuzawaJapan:'#B5D334', Estonia:'#7FD3F7',
+    Rockwell:'#FFE200', PIL:'#F5F0E8', Journalism:'#EC3237', TamilMurasu:'#A77BEA', Makita:'#2BB3A8', ASTAR:'#7FD3F7',
 };
+// The eight bees of the Hive — must match btx27's compass chart keys exactly.
+const BEES = [
+    { name:'The Innovator',            icon:'⚙️', tag:'Builder Bee' },
+    { name:'The Global Explorer',      icon:'🧭', tag:'Scout Bee' },
+    { name:'The Industry Trailblazer', icon:'🏗️', tag:'Forager Bee' },
+    { name:'The Community Steward',    icon:'🤝', tag:'Guardian Bee' },
+    { name:'The Creative Artist',      icon:'🎭', tag:'Dancer Bee' },
+    { name:'The STEM Futurist',        icon:'🔬', tag:'Architect Bee' },
+    { name:'The Voice Amplifier',      icon:'📣', tag:'Herald Bee' },
+    { name:'The Eco-Strategist',       icon:'🌱', tag:'Keeper Bee' },
+];
 
 /* --- Dispatch on the presenter's current slide --- */
 function applyView(state) {
     if (!state) return;
     followMode = true; soloMode = false;
     if (soloTimerId) { clearTimeout(soloTimerId); soloTimerId = null; }
+    lastSessionState = state;
+    // Nobody follows the show until they've boarded: that one tap is what unlocks
+    // sound, keeps the screen awake, and puts their bee in the Hive.
+    if (!D.boarded) { if (!document.getElementById('boardGrid')) renderBoard(); return; }
     const v = state.currentView || 'chart';
     // Leaving a poll → drop its live-results listener.
     if (v !== 'poll' && window.__pollUnsub) { window.__pollUnsub(); window.__pollUnsub = null; }
-    // Signature so a repeated snapshot doesn't re-render, but a NEW poll/nexus does.
-    const sig = v + '|' + (state.pollData?.id || '') + '|' + (state.nexusData?.type || '');
+    // Signature so a repeated snapshot doesn't re-render, but a NEW poll/nexus — or
+    // the presenter revealing the answer — does.
+    const sig = v + '|' + (state.pollData?.id || '') + '|' + (state.nexusData?.type || '') + '|' + (state.revealed ? 'R' : '');
     if (sig === currentView) return;
     currentView = sig;
-    lastSessionState = state;
     switch (v) {
-        case 'poll':          showPoll(state.pollData); break;
+        case 'poll':          showPoll(state.pollData, !!state.revealed); break;
         case 'globe':
         case 'industry_map':  showNexus(state.nexusData); break;
         case 'pulse_check':   showPulse(); break;
-        case 'finale':        showDream(); break;
+        case 'finale':        D.dreamSent ? renderRest('Your dream is in the Hive 💛', 'Watch it glow on the big screen ✨') : showName(); break;
         case 'fleet':         triggerSetSail(); break;
         case 'memento':
         case 'end':           showCard(); break;
-        case 'chart':         renderJoinHold(); break;   // opening room portrait
+        case 'chart':         renderAboard(); break;   // the opening room portrait
         // everything passive (video · slides · values · funfacts) → fold the boat
         default:              advanceFold(); break;
     }
@@ -1590,9 +1639,12 @@ function onFoldBeatDone(foldIndex) {
    ANSWER THE ON-SCREEN QUESTION  (ported from joinbtx27, in x/ styling)
    ============================================================ */
 /* Live trivia poll — vote, then watch the room's bars fill in real time. */
-function showPoll(p) {
+let pollRevealed = false;
+function showPoll(p, revealed) {
+    pollRevealed = !!revealed;
     if (!p) { renderLookUp('Get ready to vote…'); return; }
     if (D.polls && D.polls[p.id] !== undefined) { showPollResult(p); return; }
+    if (pollRevealed) { showPollResult(p); return; }   // revealed before you voted → watch the answer
     $app.innerHTML = `
     <div class="sail-screen fade-up">
         <div class="content-zone" style="padding-top:20px;">
@@ -1622,29 +1674,40 @@ async function votePoll(p, i) {
 }
 function showPollResult(p) {
     const mine = D.polls?.[p.id];
+    const revealed = pollRevealed;
+    // Before the reveal the phone knows only that you're in and how many have
+    // answered — the answer belongs to the big screen, on the presenter's cue.
+    const eyebrow = !revealed ? 'Locked in ✓' : (mine ? (mine.correct ? '✓ You got it!' : 'Good guess!') : 'The answer');
     $app.innerHTML = `
     <div class="sail-screen fade-up">
         <div class="content-zone" style="padding-top:20px;">
-            <p class="q-eyebrow">${mine?.correct ? '✓ You got it!' : 'Vote recorded'}</p>
+            <p class="q-eyebrow">${eyebrow}</p>
             <h2 class="q-question" style="font-size:1.15rem;">${p.question}</h2>
+            ${!revealed ? `
+            <div class="q-locked mt-4">
+                <div class="q-locked-pick">${mine ? `You chose <b>${mine.choiceText}</b>` : 'Eyes on the big screen'}</div>
+                <div class="q-locked-count"><span id="pollCount">…</span> answered · the answer is coming</div>
+            </div>` : `
             <div class="mt-4" id="liveBars">${p.options.map((o, i) => `
                 <div class="pbar ${mine && mine.choice === i ? 'me' : ''} ${i === p.correctAnswer ? 'correct' : ''}" data-i="${i}">
                     <div class="pbar-lab"><span>${o} ${i === p.correctAnswer ? '🏆' : ''}${mine && mine.choice === i ? ' · you' : ''}</span><span class="pbar-pc">0%</span></div>
                     <div class="pbar-track"><div class="pbar-fill"></div></div>
                 </div>`).join('')}</div>
-            <div class="q-insight">${mine?.insight || ''}</div>
+            <div class="q-insight">${p.insight || ''}</div>`}
         </div>
     </div>`;
     showCornerBoat();
+    if (revealed) hapticPattern(mine?.correct ? [30, 40, 90] : [40]);
     if (db && collection && onSnapshot) {
         if (window.__pollUnsub) window.__pollUnsub();
         try {
             window.__pollUnsub = onSnapshot(collection(db, "polls"), (snap) => {
                 const bd = {}; let total = 0;
                 snap.forEach(d => { const x = d.data(); if (x.pollId === p.id) { total++; if (x.vote != null) bd[x.vote] = (bd[x.vote] || 0) + 1; } });
+                const cnt = document.getElementById('pollCount'); if (cnt) cnt.textContent = total;
                 p.options.forEach((o, i) => {
                     const row = document.querySelector(`#liveBars .pbar[data-i="${i}"]`); if (!row) return;
-                    const cnt = bd[i] || 0, pct = total > 0 ? (cnt / total * 100) : 0;
+                    const c = bd[i] || 0, pct = total > 0 ? (c / total * 100) : 0;
                     row.querySelector('.pbar-fill').style.width = pct + '%';
                     row.querySelector('.pbar-pc').textContent = Math.round(pct) + '%';
                 });
@@ -1702,7 +1765,7 @@ function renderChosenNexus(type) {
 
 /* Pulse check — tap how the room feels. */
 function showPulse() {
-    if (D.pulse) { renderRest('Thanks for sharing! 💛', 'Your mood is on the big screen'); return; }
+    if (D.pulse) { D.dreamSent ? renderReadyToSail() : showName(); return; }
     const moods = [{ k: 'On fire!', e: '🔥' }, { k: 'Excited!', e: '🚀' }, { k: 'Enjoying it', e: '😊' }, { k: 'Tell me more', e: '🤔' }];
     $app.innerHTML = `
     <div class="sail-screen fade-up">
@@ -1720,21 +1783,24 @@ function showPulse() {
 async function choosePulse(k) {
     D.pulse = k; save(); haptic(30);
     if (db && auth?.currentUser) { try { await setDoc(doc(db, "pulseCheck", auth.currentUser.uid), { choice: k, timestamp: Date.now() }); } catch (e) {} }
-    renderRest('Thanks for sharing! 💛', 'Your mood is on the big screen');
+    // Straight on to naming the boat — it must carry its dream before it sails.
+    if (D.dreamSent) renderReadyToSail(); else showName();
 }
 
 /* Finale — one-word aspiration, cast into the Hive AND written on your boat. */
-function showDream() {
-    if (D.aspiration && D.dreamSent) { renderRest('Your dream is in the Hive 💛', 'Watch it glow on the big screen ✨'); return; }
+/* Name your boat — one word, your dream. It sails on the hull AND joins the Hive. */
+function showName() {
+    hideCornerBoat();
     const c = colors();
     $app.innerHTML = `
     <div class="sail-screen fade-up">
         <div class="content-zone" style="padding-top:18px;">
-            <p class="q-eyebrow">🐝 Add your cell to the Hive</p>
+            <p class="q-eyebrow">⛵ Name your boat</p>
             <h2 class="q-question">One word — what do you aspire to become?</h2>
             <div class="origami-stage medium mx-auto my-3" id="dreamBoat" style="max-width:220px;">${buildOrigamiSVG(c, 9, 220, extras())}</div>
-            <input type="text" id="dreamInput" maxlength="16" class="dream-field" placeholder="e.g. Innovator" autocomplete="off">
-            <button class="nav-btn primary w-full mt-3 text-base uppercase tracking-wide" id="dreamBtn">Add to the Hive 🐝</button>
+            <input type="text" id="dreamInput" maxlength="16" class="dream-field" placeholder="e.g. Innovator" autocomplete="off" autocapitalize="characters">
+            <button class="nav-btn primary w-full mt-3 text-base uppercase tracking-wide" id="dreamBtn">Write it on the hull ⛵</button>
+            <p class="q-hint">It sails with you — and joins the Hive of aspirations.</p>
         </div>
     </div>`;
     const f = document.getElementById('dreamInput');
@@ -1742,20 +1808,20 @@ function showDream() {
         D.aspiration = e.target.value.trim();
         const st = document.getElementById('dreamBoat'); if (st) st.innerHTML = buildOrigamiSVG(c, 9, 220, extras());
     });
-    f.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitDream(); });
-    document.getElementById('dreamBtn').addEventListener('click', submitDream);
+    f.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitName(); });
+    document.getElementById('dreamBtn').addEventListener('click', submitName);
     try { f.focus(); } catch (e) {}
 }
-async function submitDream() {
+async function submitName() {
     const f = document.getElementById('dreamInput');
     const w = (f.value || '').replace(/[^\p{L}\p{N} '-]/gu, '').trim().slice(0, 18);
     if (!w) { f.style.borderColor = '#ef4444'; return; }
     D.aspiration = w; D.dreamSent = true; save();
-    hapticPattern([40, 30, 80]); burstConfetti();
+    hapticPattern([40, 30, 80]);
     if (db && auth?.currentUser) { try { await setDoc(doc(db, "aspirations", auth.currentUser.uid), { word: w, timestamp: serverTimestamp() }); } catch (e) {} }
-    saveToFirebase();   // stamp the named dream onto the boat in the fleet
-    if (soloMode) soloIdx++;
-    renderRest('Your dream is in the Hive 💛', 'Watch it glow on the big screen ✨');
+    if (D.launched) saveToFirebase();   // already at sea → repaint the hull in the fleet
+    if (soloMode) { soloIdx++; renderRest('Your dream is aboard ⛵', 'Ready to set sail'); return; }
+    renderReadyToSail();
 }
 
 /* Collective Set Sail — the whole hall launches at once on the fleet slide. */
@@ -1778,17 +1844,45 @@ function renderSetSailDone() {
 function showCard() { renderMemento(); }
 
 /* --- Resting / holding screens shown between the presenter's slides --- */
-function renderJoinHold() {
+/* --- Boarding: "Which bee are you?" — one tap puts you in the Hive and unlocks the phone --- */
+function renderBoard() {
+    hideCornerBoat();
+    $app.innerHTML = `
+    <div class="sail-screen fade-up">
+        <div class="content-zone" style="padding-top:22px;">
+            <img src="${LOGO_URL}" alt="Beatty" style="width:46px;height:46px;object-fit:contain;margin:0 auto 10px;display:block" onerror="this.style.display='none'">
+            <p class="q-eyebrow" style="text-align:center;">🐝 Come into the Hive</p>
+            <h2 class="q-question" style="text-align:center;">Which bee are you?</h2>
+            <p class="q-hint" style="margin:6px 0 14px;">Tap one to board. Your bee lands on the big screen.</p>
+            <div class="bee-grid" id="boardGrid">
+                ${BEES.map((b, i) => `<button class="bee-btn" data-bee="${i}"><span class="bee-ic">${b.icon}</span><span class="bee-nm">${b.name.replace('The ', '')}</span><span class="bee-tag">${b.tag}</span></button>`).join('')}
+            </div>
+        </div>
+    </div>`;
+    document.querySelectorAll('[data-bee]').forEach(btn => btn.addEventListener('click', () => board(BEES[+btn.dataset.bee])));
+}
+function board(bee) {
+    // Everything that needs a user gesture happens inside this tap.
+    unlockAudio(); primeVibrate(); takeWakeLock();
+    haptic(25);
+    D.boarded = true; D.bee = bee.name; D.beeTag = bee.tag; D.beeIcon = bee.icon;
+    save();
+    if (db && auth?.currentUser) { try { setDoc(doc(db, "compassQuiz", auth.currentUser.uid), { archetype: bee.name, timestamp: serverTimestamp() }).catch(() => {}); } catch (e) {} }
+    try { startAmbient(); } catch (e) {}
+    currentView = null;                         // re-apply whatever the presenter is on
+    if (lastSessionState) applyView(lastSessionState); else renderAboard();
+}
+function renderAboard() {
     hideCornerBoat();
     const c = colors();
     $app.innerHTML = `
     <div class="sail-screen follow-screen fade-up">
         <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
-            <img src="${LOGO_URL}" alt="Beatty" style="width:54px;height:54px;object-fit:contain" class="mb-4" onerror="this.style.display='none'">
-            <p class="text-[10px] mb-2 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">You're aboard</p>
-            <h1 class="font-serif text-2xl mb-4" style="color:var(--text-primary);">Follow along on the big screen</h1>
-            <div class="follow-boat mb-4">${buildOrigamiSVG(c, Math.min(D.nextFold || 0, 8), 180, extras())}</div>
-            <p class="text-sm max-w-xs" style="color:var(--text-secondary);">Answer the questions, fold your boat as we go, and set sail with the whole hall. 🌊</p>
+            <div style="font-size:2.6rem;line-height:1" class="mb-2">${D.beeIcon || '🐝'}</div>
+            <p class="text-[10px] mb-1 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">You're in the Hive</p>
+            <h1 class="font-serif text-2xl mb-1" style="color:var(--text-primary);">${D.beeTag || 'Beattyian'}</h1>
+            <p class="text-sm mb-5 max-w-xs" style="color:var(--text-secondary);">Find yourself on the big screen. You'll fold a boat, chart a course and set sail with the whole hall. 🌊</p>
+            <div class="follow-boat">${buildOrigamiSVG(c, Math.min(D.nextFold || 0, 8), 170, extras())}</div>
         </div>
     </div>`;
     armSoloFallback();
@@ -1844,7 +1938,7 @@ function runSolo() {
     const s = SOLO_SEQ[soloIdx];
     if (!s) { showCard(); return; }
     if (s === 'fold') advanceFold();
-    else if (s === 'dream') showDream();
+    else if (s === 'dream') showName();
 }
 function addSoloNext() {
     const p = document.querySelector('.follow-screen .flex-1'); if (!p) return;
@@ -1899,7 +1993,7 @@ $app.addEventListener('click', (e) => {
     if (t.id === 'resetBtn') {
         localStorage.removeItem(SK);
         D = { marks: [] }; followMode = false; soloMode = false; currentView = null;
-        renderJoinHold();
+        renderBoard();
     }
 });
 
@@ -1916,4 +2010,5 @@ document.getElementById('cornerBoat')?.addEventListener('click', function () {
    ============================================================ */
 injectOcean();
 if (D.aspiration && D.launched && D.dreamSent) { renderMemento(); }
-else renderJoinHold();
+else if (D.boarded) renderAboard();
+else renderBoard();

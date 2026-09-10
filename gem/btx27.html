@@ -185,6 +185,7 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 @keyframes winPulse{0%{box-shadow:0 0 0 0 rgba(255,226,0,.55)}70%{box-shadow:0 0 0 16px rgba(255,226,0,0)}100%{box-shadow:0 0 0 0 rgba(255,226,0,0)}}
 :focus-visible{outline:2px solid var(--gold); outline-offset:2px}
 #resetInput:focus{border-color:var(--gold) !important}
+.poll-insight{margin:clamp(16px,3vh,28px) auto 0; max-width:1100px; text-align:center; font-family:var(--serif); font-size:clamp(1.2rem,2.2vw,1.9rem); color:#fff; background:rgba(255,226,0,.08); border:1px solid rgba(255,226,0,.32); border-radius:16px; padding:16px 26px; animation:fadeUp .6s var(--ease) both}
 .votes-chip{font-family:var(--serif); font-weight:700; color:var(--navy); background:var(--gold); border-radius:12px; padding:.5rem 1.2rem; font-size:clamp(1rem,1.7vw,1.5rem)}
 
 /* --- Fun fact --- */
@@ -641,6 +642,35 @@ function initListeners(){
 }
 function aggregate(snap,prop){ const r={total:0,breakdown:{}}; snap.forEach(d=>{ const x=d.data(); r.total++; const v=x[prop]; if(v!=null) r.breakdown[v]=(r.breakdown[v]||0)+1; }); return r; }
 
+/* ---------- Session broadcast (the one channel every phone follows) ---------- */
+// Only the presenter screen owns/broadcasts session/state; follower screens render locally.
+// `revealed` lets the phones hold the answer back until the presenter reveals it.
+function broadcastSession(){
+  const step=journeySteps[currentStep]; if(!step) return;
+  if(!(dbReady && isPresenter)) return;
+  setDoc(doc(db,"session","state"),{
+    currentView:step.type, pollData:step.pollData||null, nexusData:step.nexusData||null,
+    title:step.title||'', description:step.desc||'', url:step.url||null,
+    revealed: !!step.revealed, step: currentStep,
+    staticContent: step.type==='values'?true:null, ts:Date.now()
+  }).catch(()=>{});
+}
+
+/* Reveal the answer where it stands: the correct bar ignites gold and the insight
+   lands as the punchline. No slide reload — the reveal is a moment, not a page. */
+function revealPollInPlace(step){
+  const p=step.pollData; const host=journeyContent.querySelector(`[data-poll="${p.id}"]`);
+  if(!host){ goRender(); return; }
+  host.querySelectorAll('.poll-opt').forEach(row=>{
+    if(+row.dataset.i!==p.correctAnswer) return;
+    row.classList.add('win'); row.querySelector('.poll-fill')?.classList.add('correct');
+    const lab=row.querySelector('.poll-label'); if(lab && !/🏆/.test(lab.textContent)) lab.textContent+=' 🏆';
+  });
+  const wait=host.querySelector('.poll-wait'); if(wait) wait.remove();
+  if(p.insight && !host.querySelector('.poll-insight')){ const ins=document.createElement('p'); ins.className='poll-insight'; ins.textContent=p.insight; host.appendChild(ins); }
+  nextBtn.textContent='Next ❯';
+}
+
 /* ---------- Participant counter ---------- */
 let lastCount=-1;
 function updateParticipant(n){
@@ -717,7 +747,8 @@ function renderPoll(p){
         <div class="poll-track"><div class="poll-fill ${correct&&revealed?'correct':''}" style="width:${pct}%">${Math.round(pct)}%</div></div>
       </div>`; }).join('')}
     </div>
-    ${total===0?'<p style="text-align:center; color:var(--ink-dim); margin-top:26px; font-size:1.3rem">Waiting for votes… answer on your phone.</p>':''}
+    ${total===0&&!revealed?'<p class="poll-wait" style="text-align:center; color:var(--ink-dim); margin-top:26px; font-size:1.3rem">Waiting for votes… answer on your phone.</p>':''}
+    ${revealed&&p.insight?`<p class="poll-insight">${p.insight}</p>`:''}
   </div>`;
 }
 function paintPoll(id){
@@ -953,12 +984,7 @@ function renderStep(){
   const step=journeySteps[currentStep];
   progText.textContent=`Step ${currentStep+1} / ${journeySteps.length}`;
 
-  // Only the presenter screen owns/broadcasts session/state; follower screens render locally.
-  if(dbReady && isPresenter){ setDoc(doc(db,"session","state"),{
-    currentView:step.type, pollData:step.pollData||null, nexusData:step.nexusData||null,
-    title:step.title||'', description:step.desc||'', url:step.url||null,
-    staticContent: step.type==='values'?true:null, ts:Date.now()
-  }).catch(()=>{}); }
+  broadcastSession();
 
   const immersive = ['slide','video','globe','industry_map','funfact','finale','fleet'].includes(step.type);
   const titleHTML = (!immersive && step.title)?`<p class="eyebrow">${step.id.includes('poll')?'Live Poll':'Beatty'}</p><h2 class="stage-title">${step.title}</h2>`:'';
@@ -1008,7 +1034,7 @@ nextBtn.addEventListener('click',(e)=>{
   if(!started){ beginJourney(); return; }   // footer button also starts the journey (Begin may be scrolled off)
   ripple(e, nextBtn);
   const step=journeySteps[currentStep];
-  if(step.type==='poll' && !step.revealed){ step.revealed=true; goRender(); sfx('reveal'); launchConfetti(); return; }
+  if(step.type==='poll' && !step.revealed){ step.revealed=true; revealPollInPlace(step); broadcastSession(); sfx('reveal'); launchConfetti(); return; }
   if(currentStep<journeySteps.length-1){ currentStep++; goRender(); if(isPresenter) writePace(); }
   else { finishJourney(); }
 });
@@ -1065,7 +1091,7 @@ document.getElementById('resetCancel').onclick=()=>document.getElementById('rese
 document.getElementById('resetConfirm').onclick=async()=>{
   if(document.getElementById('resetInput').value.trim().toUpperCase()!=='RESET'){ showToast('Type RESET to confirm'); return; }
   if(!dbReady){ showToast('No live session to reset'); return; }
-  const cols=['compassQuiz','polls','nexusVotes','aspirations','session','pulseCheck','reactions','config'];
+  const cols=['compassQuiz','polls','nexusVotes','aspirations','session','pulseCheck','reactions','config','x_boats','x_session'];
   try{ for(const c of cols){ const s=await getDocs(collection(db,c)); if(s.empty) continue;
       // Firestore caps a writeBatch at 500 ops; chunk so a busy event (thousands of reactions) still resets.
       for(let i=0;i<s.docs.length;i+=450){ const b=writeBatch(db); s.docs.slice(i,i+450).forEach(d=>b.delete(d.ref)); await b.commit(); }

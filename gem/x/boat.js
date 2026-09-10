@@ -511,6 +511,14 @@ export function buildOrigamiSVG(colors, stage, size = 280, extras = {}) {
         <line x1="140" y1="45" x2="140" y2="195" stroke="${colors.mast}" stroke-width="3" stroke-linecap="round"/>
         <path d="M145,55 L145,185 L222,173 Z" fill="${sf}" ${wf} stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
         <path d="M135,60 L135,180 L75,170 Z" fill="${sf}" ${wf} opacity="0.5"/>
+        <!-- The bee volant: Admiral Beatty's crest bee, in flight, at the head of every sail.
+             From 20 m it reads as a single gold mark; up close it is the school. -->
+        <g transform="translate(158,96)" opacity="0.95">
+            <ellipse cx="-2.4" cy="-4.4" rx="3.4" ry="1.9" fill="rgba(255,255,255,0.9)" transform="rotate(-22 -2.4 -4.4)"/>
+            <ellipse cx="2.6" cy="-4.4" rx="3.4" ry="1.9" fill="rgba(255,255,255,0.9)" transform="rotate(22 2.6 -4.4)"/>
+            <ellipse cx="0" cy="0" rx="5.4" ry="3.5" fill="#FFE200" stroke="#000C53" stroke-width="0.7"/>
+            <path d="M-2.8,-2.4 L-2.8,2.4 M0.2,-3 L0.2,3 M3,-2.2 L3,2.2" stroke="#000C53" stroke-width="1.1" stroke-linecap="round"/>
+        </g>
         ${flag ? `<path d="M140,45 L140,25 L166,31 L140,37 Z" fill="${colors.flag}"/>${fi}` : ''}
         ${marks}
     </svg>`;
