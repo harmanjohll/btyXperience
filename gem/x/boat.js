@@ -193,7 +193,10 @@ export const STAMP_MARKS = {
     japan:       { small: false, svg: `<g><circle cx="15" cy="15" r="14" fill="currentColor" opacity="0.08"/><circle cx="15" cy="15" r="14" fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.85"/><circle cx="15" cy="13" r="4" fill="currentColor" opacity="0.45"/><path d="M12,17 Q12,21 15,23 Q18,21 18,17" fill="currentColor" opacity="0.3"/></g>` },
     nz:          { small: false, svg: `<g><circle cx="15" cy="15" r="14" fill="currentColor" opacity="0.08"/><circle cx="15" cy="15" r="14" fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.85"/><path d="M15,5 Q18,10 16,15 Q14,20 15,26 M15,5 Q12,10 14,15 Q16,20 15,26" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.6"/><path d="M11,8 Q13,11 15,10 M19,8 Q17,11 15,10 M11,20 Q13,17 15,18 M19,20 Q17,17 15,18" fill="none" stroke="currentColor" stroke-width="0.9" opacity="0.5"/></g>` },
     estonia:     { small: false, svg: `<g><circle cx="15" cy="15" r="14" fill="currentColor" opacity="0.08"/><circle cx="15" cy="15" r="14" fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.85"/><rect x="9" y="8" width="12" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.6"/><path d="M12,12 L18,12 M12,15 L16,15 M12,18 L18,18" stroke="currentColor" stroke-width="1" opacity="0.5" stroke-linecap="round"/><circle cx="21" cy="8" r="2.5" fill="currentColor" opacity="0.5"/></g>` },
+    bali:        { small: false, color: '#F28C28', svg: `<g><circle cx="15" cy="15" r="14" fill="currentColor" opacity="0.08"/><circle cx="15" cy="15" r="14" fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.85"/><path d="M6,21 L12,9 L16,15 L19,11 L24,21 Z" fill="currentColor" opacity="0.8"/><path d="M5,24 Q9,21 13,24 Q17,27 21,24 Q23,23 25,24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></g>` },
     // I_sub — smaller
+    press:       { small: true, color: '#EC3237', svg: `<g><circle cx="10" cy="10" r="9" fill="currentColor" opacity="0.08"/><circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.75"/><rect x="5" y="5.5" width="10" height="9" rx="1" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M7,8.5 L13,8.5 M7,11 L13,11 M7,13 L10,13" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></g>` },
+    makita:      { small: true, color: '#2BB3A8', svg: `<g><circle cx="10" cy="10" r="9" fill="currentColor" opacity="0.08"/><circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.75"/><circle cx="10" cy="10" r="3.2" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M10,3.5 L10,6 M10,14 L10,16.5 M3.5,10 L6,10 M14,10 L16.5,10 M5.4,5.4 L7.2,7.2 M12.8,12.8 L14.6,14.6 M14.6,5.4 L12.8,7.2 M7.2,12.8 L5.4,14.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></g>` },
     rockwell:    { small: true, svg: `<g><circle cx="10" cy="10" r="9" fill="currentColor" opacity="0.08"/><circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.75"/><rect x="4" y="6" width="12" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="1" opacity="0.6"/><circle cx="8" cy="10" r="2" fill="currentColor" opacity="0.5"/><circle cx="12" cy="10" r="2" fill="currentColor" opacity="0.5"/></g>` },
     astar:       { small: true, svg: `<g><circle cx="10" cy="10" r="9" fill="currentColor" opacity="0.08"/><circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.75"/><polygon points="10,3 11.5,7.5 16,7.5 12.5,10.5 13.5,15 10,12 6.5,15 7.5,10.5 4,7.5 8.5,7.5" fill="currentColor" opacity="0.55"/></g>` },
     pil:         { small: true, svg: `<g><circle cx="10" cy="10" r="9" fill="currentColor" opacity="0.08"/><circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.75"/><path d="M4,12 Q7,8 10,12 Q13,16 16,12" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.6" stroke-linecap="round"/><path d="M6,14 Q9,10 12,14" fill="none" stroke="currentColor" stroke-width="1" opacity="0.5"/></g>` },
@@ -211,18 +214,18 @@ Object.entries(STAMP_MARKS).forEach(([id, s]) => {
     for (const key of ['S','A','I','L']) {
         const d = SAIL_DATA[key];
         const opt = d.options.find(o => o.id === id) || (d.subOptions && d.subOptions.find(o => o.id === id));
-        if (opt) { s.color = opt.color; break; }
+        if (opt) { if (!s.color) s.color = opt.color; break; }
     }
 });
 
 /* ── MARK POSITIONS — centred geometry ──
    Stages 0-5: paper/hat shape centred.  Stages 6-7: diamond.  8+: boat. */
 export const MARK_SLOTS = {
-    S:     { paper: { x: 180, y: 128 }, diamond: { x: 168, y: 108 }, boat: { x: 115, y: 225 } },
-    A:     { paper: { x: 108, y: 142 }, diamond: { x: 112, y: 115 }, boat: { x: 150, y: 225 } },
-    A_sub: { paper: { x: 145, y: 152 }, diamond: { x: 140, y: 100 }, boat: { x: 170, y: 215 } },
-    I:     { paper: { x: 148, y: 112 }, diamond: { x: 140, y: 88 },  boat: { x: 170, y: 125 } },
-    I_sub: { paper: { x: 170, y: 128 }, diamond: { x: 162, y: 98 },  boat: { x: 185, y: 140 } },
+    S:     { paper: { x: 180, y: 128 }, diamond: { x: 168, y: 108 }, boat: { x: 92,  y: 214 } },
+    A:     { paper: { x: 108, y: 142 }, diamond: { x: 112, y: 115 }, boat: { x: 126, y: 214 } },
+    A_sub: { paper: { x: 145, y: 152 }, diamond: { x: 140, y: 100 }, boat: { x: 178, y: 216 } },
+    I:     { paper: { x: 148, y: 112 }, diamond: { x: 140, y: 88 },  boat: { x: 174, y: 116 } },
+    I_sub: { paper: { x: 170, y: 128 }, diamond: { x: 162, y: 98 },  boat: { x: 198, y: 148 } },
     L:     { paper: null, diamond: null, boat: { x: 155, y: 38 } },
 };
 
