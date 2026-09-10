@@ -550,7 +550,7 @@ function progressBarHTML(qDone) {
 }
 
 function spawnParticles(container, count = 12) {
-    const cols = ['#D4A843','#F0D68A','#f5f0e8','#e8e0d0','#c9bfae','#8b5cf6'];
+    const cols = ['#FFE200','#F0D68A','#f5f0e8','#e8e0d0','#c9bfae','#8b5cf6'];
     for (let i = 0; i < count; i++) {
         const p = document.createElement('div');
         p.className = 'launch-particle';
@@ -1444,7 +1444,7 @@ function renderAspiration() {
    ============================================================ */
 function renderProcessing() {
     const archetype = computeArchetype();
-    const ac = archetype.color || '#D4A843';
+    const ac = archetype.color || '#FFE200';
     const c = colors();
 
     // Build letter-by-letter name HTML
@@ -1734,7 +1734,7 @@ function startOver(btn) {
 // Celebratory confetti at the "Set Sail" moment (Beatty navy/gold/red).
 function burstConfetti() {
     if (window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches) return;
-    const cols = ['#FFE200', '#EC3237', '#12299c', '#ffffff', '#E4C400'];
+    const cols = ['#FFE200', '#EC3237', '#12299c', '#ffffff', '#FFF3A0'];
     for (let i = 0; i < 44; i++) {
         const p = document.createElement('div');
         const sz = 7 + Math.random() * 7;
@@ -2130,8 +2130,8 @@ async function submitName() {
     if (!(await submitNameGuard(w, f))) return;
     D.aspiration = w; D.dreamSent = true; save();
     hapticPattern([40, 30, 80]);
+    saveToFirebase();                   // into the harbour now (launched:false) — or, at sea already, repaint the hull
     if (db && auth?.currentUser) { try { await setDoc(doc(db, "aspirations", auth.currentUser.uid), { word: w, timestamp: serverTimestamp() }); } catch (e) {} }
-    if (D.launched) saveToFirebase();   // already at sea → repaint the hull in the fleet
     if (soloMode) { soloIdx++; renderRest('Your dream is aboard ⛵', 'Ready to set sail'); return; }
     renderNameWriting(w, () => { if (D.launched) renderHiveCell(); else renderReadyToSail(); });
 }
@@ -2140,8 +2140,10 @@ async function submitNameGuard(w, f) {
     return true;
 }
 /* The word writes itself on the hull in handwriting, pencil scratching, and ends on a rising arpeggio. */
+let writingToken = 0;
 function renderNameWriting(word, next) {
     hideCornerBoat();
+    const token = ++writingToken;
     const c = colors();
     $app.innerHTML = `
     <div class="sail-screen follow-screen fade-up">
@@ -2153,7 +2155,8 @@ function renderNameWriting(word, next) {
     const host = document.getElementById('nameBoat');
     const wait = handwrite(host, word, { size: Math.max(18, Math.min(28, 210 / Math.max(6, word.length))), per: 110 });
     setTimeout(() => { playArpeggio(); feel('chapter', host); }, wait - 120);
-    setTimeout(next, wait + 900);
+    // If the captain's cue (or anything else) took the screen meanwhile, leave it alone.
+    setTimeout(() => { if (token !== writingToken || sailSeq || D.launched || !document.getElementById('nameBoat')) return; next(); }, wait + 900);
 }
 
 /* Collective Set Sail — the whole hall launches at once on the fleet slide. */

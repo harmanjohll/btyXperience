@@ -2,7 +2,9 @@
    Rich spotlight, archetype distribution, arrival chime, milestones.
 */
 
-import { buildOrigamiSVG, FIREBASE_CONFIG, LABELS, ARCHETYPES, SAIL_DATA } from './boat.js';
+import { buildOrigamiSVG, FIREBASE_CONFIG, LABELS, ARCHETYPES, SAIL_DATA, cleanWord, wordOK } from './boat.js';
+// Words projected on a 4 m screen pass the same hygiene as the presenter's hive: one token, no profanity.
+function showWord(w) { const c = cleanWord(w); return c && wordOK(c) ? c : ''; }
 
 // === FIREBASE (dynamic import) ===
 // A static firebase import would kill the whole module — and blank the big
@@ -129,7 +131,7 @@ function buildMiniBoat(data, size = 60) {
         mast: '#3d2b1a',
     };
     let svg = buildOrigamiSVG(colors, 8, size, {
-        aspiration: data.aspiration,
+        aspiration: showWord(data.aspiration),
         flagIcon: data.flagIcon,
         marks: data.marks || [],
     });
@@ -149,7 +151,7 @@ function updateDistributionBar() {
     if (total === 0) { distBarEl.innerHTML = ''; return; }
 
     const entries = Object.entries(ARCHETYPES).map(([key, arch]) => ({
-        key, name: arch.name, color: arch.color || '#D4A843',
+        key, name: arch.name, color: arch.color || '#FFE200',
         count: archetypeCounts[key] || 0,
     })).filter(e => e.count > 0).sort((a, b) => b.count - a.count);
 
@@ -349,7 +351,7 @@ window.closeSpotlight = function() {
 
 function showSpotlight(data) {
     const archetype = data._archetype || computeArchetypeForData(data);
-    const ac = archetype.color || '#D4A843';
+    const ac = archetype.color || '#FFE200';
 
     // Resolve choice labels
     function choiceLabel(labelMap, key) {
@@ -380,7 +382,7 @@ function showSpotlight(data) {
                 <span class="text-gray-300">${choiceLabel(LABELS.learning, data.learningChoice ?? data.learningPick1)}</span>
             </div>
         </div>
-        <button onclick="closeSpotlight()" class="mt-6 px-6 py-2 font-bold rounded-xl text-sm" style="background:${ac}; color:#0f172a;">Close</button>
+        <button onclick="closeSpotlight()" class="mt-6 px-6 py-2 font-bold rounded-xl text-sm" style="background:${ac}; color:#000C53;">Close</button>
     `;
     spotlightEl.style.display = 'flex';
 }

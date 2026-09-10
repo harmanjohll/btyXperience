@@ -110,6 +110,9 @@ header .crest{height:clamp(52px,7vh,80px); width:auto; filter:drop-shadow(0 4px 
 .pulse-bar{width:5px; height:9px; border-radius:3px; background:var(--gold); transition:height .3s var(--ease); opacity:.5}
 .pulse-bar.active{opacity:1}
 #participantPill{font-size:clamp(1rem,1.7vw,1.5rem); min-width:180px; justify-content:center}
+.qr-pill{padding:4px 12px 4px 4px; gap:9px; cursor:pointer; font-size:clamp(.6rem,.9vw,.78rem); line-height:1.1; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-dim)}
+.qr-pill img{width:clamp(38px,5vh,52px); height:auto; background:#fff; border-radius:7px; padding:2px; display:block}
+.qr-pill.hidden{display:none}
 #participantPill .n{font-family:var(--serif); color:#fff}
 .count-bump{animation:bump .45s var(--ease)}
 @keyframes bump{0%{transform:scale(1)}45%{transform:scale(1.18)}100%{transform:scale(1)}}
@@ -357,6 +360,11 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .pp-btn{width:100%; border:none; border-radius:10px; padding:9px; font-weight:700; font-size:.78rem; cursor:pointer; color:#fff; margin-bottom:8px; transition:filter var(--t-fast)}
 .pp-btn:hover{filter:brightness(1.18)}
 .pp-row{display:flex; gap:8px}
+.pp-toggle{display:block; margin-left:auto; margin-bottom:8px; background:rgba(0,6,31,.9); border:1px solid var(--card-line); color:var(--ink-dim); border-radius:999px; padding:6px 12px; font-size:.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; opacity:.55; transition:opacity var(--t-fast)}
+.pp-toggle:hover{opacity:1}
+.pp-toggle span{display:inline-block; margin-left:6px; padding:1px 6px; border-radius:6px; background:rgba(255,255,255,.1); font-size:.62rem}
+#presenterPanel.collapsed .pp-box{display:none}
+#presenterPanel:not(.collapsed) .pp-toggle{opacity:1}
 .pp-row .pp-btn{margin-bottom:0}
 .pp-blue{background:#12299c} .pp-grey{background:#33384f} .pp-gold{background:var(--gold-deep); color:var(--navy)} .pp-red{background:#7a1f22; border:1px solid rgba(236,50,55,.4)}
 
@@ -407,17 +415,14 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 <div id="toast">Notification</div>
 
 <!-- Presenter panel -->
-<div id="presenterPanel" class="hidden">
+<div id="presenterPanel" class="hidden collapsed">
+  <button id="ppToggle" class="pp-toggle" title="Presenter controls (P)">⚙ Presenter <span>P</span></button>
   <div class="pp-box">
     <h3>Presenter Controls</h3>
     <div id="ppStep" class="pp-step">—</div>
     <div class="pp-row" style="margin-bottom:8px">
-      <button id="ppPace" class="pp-btn pp-blue">Pace: Audience</button>
       <button id="ppSound" class="pp-btn pp-grey">🔊 Sound</button>
-    </div>
-    <div class="pp-row" style="margin-bottom:8px">
       <button id="ppQR" class="pp-btn pp-grey">Show QR</button>
-      <button id="ppFleet" class="pp-btn pp-grey">Fleet View</button>
     </div>
     <div class="pp-row" style="margin-bottom:8px">
       <button id="ppSail" class="pp-btn pp-gold">⛵ Set Sail (S)</button>
@@ -467,6 +472,7 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
     <div class="pill" id="hivePulse" title="The Hive is buzzing">
       <span class="pulse-bar"></span><span class="pulse-bar"></span><span class="pulse-bar"></span><span class="pulse-bar"></span><span class="pulse-bar"></span>
     </div>
+    <div class="pill qr-pill hidden" id="qrPill" title="Show the join QR large"><img src="joinbtyqr.png" alt="Scan to join" onerror="this.style.display='none'"><span>Scan<br>to join</span></div>
     <div class="pill" id="participantPill" aria-live="polite"><span>🐝</span><span class="n" id="pCount">Warming up…</span></div>
   </div>
 </header>
@@ -942,7 +948,7 @@ function renderContent(step){
     case 'finale': return renderFinale();
     case 'bloom': return renderBloom();
     case 'fold': return renderFold(step);
-    case 'fleet': return `<iframe src="x/fleet.html?embed=1" title="The Fleet Sets Sail" style="width:100%; height:100%; border:0; display:block" allow="autoplay"></iframe>`;
+    case 'fleet': return `<div style="width:100%; height:100%; position:relative; background:#00061f">${iframeLoading()}<iframe src="x/fleet.html?embed=1" title="The Fleet Sets Sail" style="width:100%; height:100%; border:0; display:block; position:relative; z-index:1" allow="autoplay"></iframe></div>`;
     case 'memento': return `<div style="text-align:center"><div style="font-size:clamp(5rem,12vw,9rem)">📱</div><h2 class="stage-title" style="font-size:clamp(2rem,4vw,3.6rem); margin-top:10px">Check your phone</h2><p class="stage-sub" style="margin:14px auto 0">Your personal Beatty Compass Card is waiting.</p></div>`;
     case 'video': return `<div style="width:100%; height:100%; background:#000; position:relative; display:flex; align-items:center; justify-content:center">${iframeLoading()}<iframe src="${step.url}" style="width:100%; height:100%; border:0; position:relative; z-index:1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`;
     case 'slide': return `<div style="width:100%; height:100%; background:#000; position:relative">${iframeLoading()}<iframe src="${step.url}" style="width:100%; height:100%; border:0; position:relative; z-index:1" allowfullscreen></iframe></div>`;
@@ -983,7 +989,7 @@ function renderPoll(p){
   return `<div class="wrap" data-poll="${p.id}">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:24px; margin-bottom:clamp(20px,4vh,44px)">
       <h2 class="poll-q">${p.question}</h2>
-      <div class="votes-chip">🐝 <span class="pv">${total}</span> votes</div>
+      <div class="votes-chip">🐝 <span class="pv">${total}</span><span class="pvm">${live.compass.total>0?` of ${live.compass.total}`:''}</span> voted</div>
     </div>
     <div>${p.options.map((o,i)=>{
       const c=d.breakdown?.[i]||0, pct= total>0?(c/total*100):0, correct=i===p.correctAnswer;
@@ -1001,6 +1007,7 @@ function paintPoll(id){
   const host=journeyContent.querySelector(`[data-poll="${id}"]`); if(!host) return;
   const d=live.polls[id]||{total:0,breakdown:{}}, total=d.total||0;
   host.querySelector('.pv').textContent=total;
+  const pvm=host.querySelector('.pvm'); if(pvm) pvm.textContent= live.compass.total>0?` of ${live.compass.total}`:'';
   s.pollData.options.forEach((o,i)=>{
     const c=d.breakdown?.[i]||0, pct= total>0?(c/total*100):0;
     const row=host.querySelector(`.poll-opt[data-i="${i}"]`); if(!row) return;
@@ -1292,6 +1299,7 @@ function beginJourney(){
   startAudio();
   document.getElementById('start').classList.add('hidden');
   document.getElementById('journey').classList.remove('hidden');
+  document.getElementById('qrPill').classList.remove('hidden');   // latecomers can join from any view
   renderStep();
 }
 document.getElementById('beginBtn').addEventListener('click', beginJourney);
@@ -1301,10 +1309,10 @@ nextBtn.addEventListener('click',(e)=>{
   ripple(e, nextBtn);
   const step=journeySteps[currentStep];
   if(step.type==='poll' && !step.revealed){ step.revealed=true; revealPollInPlace(step); broadcastSession(); sfx('reveal'); launchConfetti(); return; }
-  if(currentStep<journeySteps.length-1){ currentStep++; goRender(); if(isPresenter) writePace(); }
+  if(currentStep<journeySteps.length-1){ currentStep++; goRender(); }
   else { finishJourney(); }
 });
-prevBtn.addEventListener('click',(e)=>{ if(!started) return; ripple(e,prevBtn); if(currentStep>0){ journeySteps[currentStep].revealed=false; currentStep--; goRender(); if(isPresenter) writePace(); } });
+prevBtn.addEventListener('click',(e)=>{ if(!started) return; ripple(e,prevBtn); if(currentStep>0){ journeySteps[currentStep].revealed=false; currentStep--; goRender(); } });
 
 function finishJourney(){
   journeyContent.innerHTML=`<div class="wrap" style="text-align:center">
@@ -1312,6 +1320,7 @@ function finishJourney(){
     <h2 class="stage-title" style="font-size:clamp(2.2rem,5vw,4.2rem); margin-top:8px">Your Journey Begins Now</h2>
     <p class="stage-sub" style="margin:18px auto 0">Thank you for stepping into the Hive. We can't wait to help your aspirations take flight.</p>
     <p style="font-family:var(--serif); color:var(--gold); font-style:italic; font-size:clamp(1.2rem,2vw,1.8rem); margin-top:22px">Non Vi Sed Arte</p>
+    <p style="color:#fff; margin-top:18px; font-size:clamp(1.05rem,1.7vw,1.5rem)">Save your <b style="color:var(--gold)">Compass Card</b> · show it at the <b style="color:var(--gold)">Hive booth</b> ⛵</p>
     <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:26px">
       <a href="https://go.gov.sg/probeatty" target="_blank" rel="noopener" class="btn btn-primary" style="text-decoration:none">Explore Beatty ➜</a>
       <a href="https://www.beattysec.moe.edu.sg/" target="_blank" rel="noopener" class="btn btn-ghost" style="text-decoration:none">Our Website</a>
@@ -1324,34 +1333,41 @@ function finishJourney(){
 }
 
 // Keyboard
+let deckKeyArmed=0;
+function deckOnScreen(){ const st=journeySteps[currentStep]; return started && st && (st.type==='slide' || st.type==='video'); }
 document.addEventListener('keydown',e=>{
-  if(['ArrowRight',' ','Enter'].includes(e.key) && document.activeElement.tagName!=='INPUT'){ e.preventDefault(); nextBtn.click(); }
-  else if(e.key==='ArrowLeft'){ prevBtn.click(); }
+  if(e.target.closest && e.target.closest('input,textarea')) return;
+  const fwd=['ArrowRight',' ','Enter','PageDown'].includes(e.key), back=['ArrowLeft','PageUp'].includes(e.key);
+  if(!fwd && !back) return;
+  e.preventDefault();
+  if(deckOnScreen()){                     // a deck is showing — page inside it by clicking it; a second press within 1.5 s moves the journey on
+    const now=Date.now();
+    if(now-deckKeyArmed>1500){ deckKeyArmed=now; showToast(fwd?'Deck on screen · click the deck to page through it — press → again (or NEXT ❯) to move on':'Deck on screen · press ← again to go back a step'); return; }
+    deckKeyArmed=0;
+  }
+  if(fwd) nextBtn.click(); else prevBtn.click();
 });
 
 /* =====================================================================
    PRESENTER CONTROLS
    ===================================================================== */
-let paceMode='audience';
-function writePace(){ if(paceMode==='presenter' && dbReady) setDoc(doc(db,"config","pace"),{mode:'presenter',step:currentStep}).catch(()=>{}); }
 function updatePPStep(){ const s=journeySteps[currentStep]; const el=document.getElementById('ppStep'); if(el) el.textContent=`Step ${currentStep+1}/${journeySteps.length}: ${s.title||s.id}`; }
 if(isPresenter){
   document.getElementById('presenterPanel').classList.remove('hidden');
   document.getElementById('startReset').classList.remove('hidden');
+  const togglePanel=()=>document.getElementById('presenterPanel').classList.toggle('collapsed');
+  document.getElementById('ppToggle').onclick=togglePanel;
+  document.addEventListener('keydown',e=>{ if((e.key==='p'||e.key==='P') && !(e.target.closest && e.target.closest('input,textarea'))) togglePanel(); });
   updatePPStep();
-  document.getElementById('ppPace').onclick=async(ev)=>{ paceMode= paceMode==='audience'?'presenter':'audience';
-    const b=ev.target; b.textContent= paceMode==='audience'?'Pace: Audience':'Pace: Presenter'; b.className='pp-btn '+(paceMode==='presenter'?'pp-gold':'pp-blue');
-    if(dbReady) await setDoc(doc(db,"config","pace"),{mode:paceMode,step:currentStep}).catch(()=>{});
-    showToast(paceMode==='presenter'?'You now control the pace':'Audience self-paces'); };
   document.getElementById('ppSound').onclick=(ev)=>{ soundOn=!soundOn; ev.target.textContent= soundOn?'🔊 Sound':'🔇 Muted'; ev.target.className='pp-btn '+(soundOn?'pp-grey':'pp-red'); if(soundOn){ startAudio(); sfx('reveal'); } };
   document.getElementById('ppQR').onclick=()=>document.getElementById('qrOverlay').classList.remove('hidden');
   document.getElementById('ppSail').onclick=fireSetSail;
   // The big footer button, shown only on the fleet step: the presenter's baton.
   (function(){ const b=document.createElement('button'); b.id='setSailBtn'; b.className='btn set-sail-btn'; b.innerHTML='⛵&nbsp; SET SAIL'; b.style.display='none'; b.onclick=(e)=>{ ripple(e,b); fireBaton(); }; nextBtn.insertAdjacentElement('beforebegin', b); })();
-  document.getElementById('ppFleet').onclick=()=>window.open('sail/presenter.html','_blank');
   document.getElementById('ppReset').onclick=openReset;
 }
 document.getElementById('qrOverlay').onclick=()=>document.getElementById('qrOverlay').classList.add('hidden');
+document.getElementById('qrPill').onclick=()=>document.getElementById('qrOverlay').classList.remove('hidden');
 document.getElementById('startReset').onclick=openReset;
 
 /* Reset */

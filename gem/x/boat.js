@@ -503,7 +503,7 @@ export function buildOrigamiSVG(colors, stage, size = 280, extras = {}) {
     return `<svg viewBox="${vb}" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg" class="origami-svg">
         ${washiDefs()}
         <defs>${sgDef}</defs>
-        <ellipse cx="140" cy="268" rx="95" ry="5" fill="rgba(59,130,246,0.08)"/>
+        <ellipse cx="140" cy="268" rx="95" ry="5" fill="rgba(127,211,247,0.10)"/>
         <path d="M58,195 L78,253 L202,253 L222,195 Z" fill="${colors.hull}" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
         <line x1="68" y1="203" x2="212" y2="203" stroke="rgba(255,255,255,0.05)" stroke-width="0.5"/>
         ${asp}
