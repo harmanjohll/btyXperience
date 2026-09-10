@@ -168,7 +168,7 @@ export const FIREBASE_CONFIG = {
     projectId: "btyx-61dc6", storageBucket: "btyx-61dc6.appspot.com",
     messagingSenderId: "851137405745", appId: "1:851137405745:web:c95b86b6f0462a9bc20610",
 };
-export const LOGO_URL = '../BTlogo.png';  // local (same-origin) — no remote hotlink to fail on venue wifi
+export const LOGO_URL = 'crest.png';       // a 256 px crest (the 2 MB original never goes to a phone)
 
 /* ── HANKO STAMP MARKS ── */
 export const STAMP_MARKS = {
@@ -496,7 +496,7 @@ export function buildOrigamiSVG(colors, stage, size = 280, extras = {}) {
     const sgDef = colors.sailGradient
         ? `<linearGradient id="${gid}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:${colors.sailGradient[0]}"/><stop offset="100%" style="stop-color:${colors.sailGradient[1]}"/></linearGradient>` : '';
     const sf = colors.sailGradient ? `url(#${gid})` : colors.sail;
-    const asp = extras.aspiration ? `<text x="140" y="244" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="8" font-weight="800" font-family="Calibri,'Segoe UI',system-ui,sans-serif" letter-spacing="2">${extras.aspiration.toUpperCase()}</text>` : '';
+    const asp = extras.aspiration ? `<text x="140" y="244" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="11" font-weight="600" font-family="${HAND_FONT}" letter-spacing="0.5">${extras.aspiration}</text>` : '';
     const fi = extras.flagIcon ? `<text x="157" y="35" text-anchor="middle" font-size="11">${extras.flagIcon}</text>` : '';
     const flag = stage >= 9;
 
@@ -509,8 +509,8 @@ export function buildOrigamiSVG(colors, stage, size = 280, extras = {}) {
         ${asp}
         <rect x="135" y="253" width="10" height="12" rx="2" fill="${colors.keel}"/>
         <line x1="140" y1="45" x2="140" y2="195" stroke="${colors.mast}" stroke-width="3" stroke-linecap="round"/>
-        <path d="M145,55 L145,185 L222,173 Z" fill="${sf}" ${wf} stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
-        <path d="M135,60 L135,180 L75,170 Z" fill="${sf}" ${wf} opacity="0.5"/>
+        <path class="sail-cloth" d="M145,55 L145,185 L222,173 Z" fill="${sf}" ${wf} stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+        <path class="sail-cloth" d="M135,60 L135,180 L75,170 Z" fill="${sf}" ${wf} opacity="0.5"/>
         <!-- The bee volant: Admiral Beatty's crest bee, in flight, at the head of every sail.
              From 20 m it reads as a single gold mark; up close it is the school. -->
         <g transform="translate(158,96)" opacity="0.95">
@@ -519,10 +519,17 @@ export function buildOrigamiSVG(colors, stage, size = 280, extras = {}) {
             <ellipse cx="0" cy="0" rx="5.4" ry="3.5" fill="#FFE200" stroke="#000C53" stroke-width="0.7"/>
             <path d="M-2.8,-2.4 L-2.8,2.4 M0.2,-3 L0.2,3 M3,-2.2 L3,2.2" stroke="#000C53" stroke-width="1.1" stroke-linecap="round"/>
         </g>
-        ${flag ? `<path d="M140,45 L140,25 L166,31 L140,37 Z" fill="${colors.flag}"/>${fi}` : ''}
+        ${flag ? `<path class="flag-cloth" d="M140,45 L140,25 L166,31 L140,37 Z" fill="${colors.flag}"/>${fi}` : ''}
         ${marks}
     </svg>`;
 }
+
+/* ── Words that go on a 4 m screen: one token, letters only, capped, never profane.
+   The presenter keeps its own copy of this list (btx27.html) plus a per-word kill switch. ── */
+export const HAND_FONT = "'Caveat','Segoe Script','Bradley Hand','Snell Roundhand','Savoye LET','Noteworthy','Chalkboard SE','Comic Sans MS',cursive";
+const BLOCKLIST = ['fuck','shit','bitch','cunt','dick','pussy','asshole','bastard','slut','whore','nigger','faggot','retard','wank','cock','porn','sex','nazi'];
+export function cleanWord(w) { return String(w || '').replace(/[^\p{L}\p{N} '-]/gu, '').trim().slice(0, 18); }
+export function wordOK(w) { const s = String(w || '').toLowerCase().replace(/[^a-z]/g, ''); return !!s && !BLOCKLIST.some(b => s.includes(b)); }
 
 export function haptic(duration = 30) { if (navigator.vibrate) navigator.vibrate(duration); }
 export function hapticPattern(pattern) { if (navigator.vibrate) navigator.vibrate(pattern); }

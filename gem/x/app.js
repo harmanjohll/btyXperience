@@ -10,7 +10,7 @@ import {
     buildOrigamiSVG, haptic, hapticPattern,
     SAIL_DATA, BOAT_DEFAULTS, ARCHETYPES, FOLD_GUIDES, FOLD_FLAPS, FOLD_LABELS, CREASE_LINES, LABELS,
     STAMP_MARKS, MARK_SLOTS,
-    FIREBASE_CONFIG, LOGO_URL,
+    FIREBASE_CONFIG, LOGO_URL, HAND_FONT, cleanWord, wordOK,
 } from './boat.js';
 
 // === PAPER CREASE SOUND (Web Audio API) ===
@@ -163,6 +163,146 @@ function playFoldSound() {
         src.start(ctx.currentTime);
     } catch(e) { /* audio not supported */ }
 }
+/* ============================================================
+   THE SIX SOUNDS — all paper-coloured, all under 1.5 s. No music on the
+   phone, so each fold is heard: crease slide (gain follows the finger),
+   lock, chapter chime, reveal hit, departure whoosh, found-you ping.
+   ============================================================ */
+let slideSrc = null, slideGain = null, slideFilter = null, slideDecay = null;
+function startSlideNoise() {
+    try {
+        stopSlideNoise(true);
+        const ctx = getAudioCtx(), dur = 2;
+        const buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
+        const d = buf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+        slideSrc = ctx.createBufferSource(); slideSrc.buffer = buf; slideSrc.loop = true;
+        slideFilter = ctx.createBiquadFilter(); slideFilter.type = 'bandpass'; slideFilter.frequency.value = 3200; slideFilter.Q.value = 0.7;
+        slideGain = ctx.createGain(); slideGain.gain.value = 0.0001;
+        slideSrc.connect(slideFilter).connect(slideGain).connect(ctx.destination); slideSrc.start();
+    } catch (e) {}
+}
+function setSlideSpeed(v) {        // v: 0 (still) → 1 (fast) — the paper only sounds while it moves
+    try {
+        if (!slideGain) return; const ctx = getAudioCtx();
+        slideGain.gain.setTargetAtTime(Math.min(0.22, 0.015 + v * 0.2), ctx.currentTime, 0.03);
+        slideFilter.frequency.setTargetAtTime(2600 + v * 2400, ctx.currentTime, 0.05);
+        clearTimeout(slideDecay); slideDecay = setTimeout(() => { try { slideGain && slideGain.gain.setTargetAtTime(0.0001, getAudioCtx().currentTime, 0.05); } catch (e) {} }, 90);
+    } catch (e) {}
+}
+function stopSlideNoise(immediate) {
+    try {
+        clearTimeout(slideDecay);
+        if (!slideSrc) return; const ctx = getAudioCtx(); const src = slideSrc, g = slideGain; slideSrc = null; slideGain = null; slideFilter = null;
+        if (immediate) { try { src.stop(); } catch (e) {} return; }
+        g.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.04); setTimeout(() => { try { src.stop(); } catch (e) {} }, 250);
+    } catch (e) {}
+}
+function playLock() {              // the crease seals: a dry click over a short crinkle
+    try {
+        const ctx = getAudioCtx(), t = ctx.currentTime;
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = 'triangle'; o.frequency.setValueAtTime(1800, t); o.frequency.exponentialRampToValueAtTime(600, t + 0.05);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.18, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+        o.connect(g).connect(ctx.destination); o.start(t); o.stop(t + 0.08);
+        playCreaseSound();
+    } catch (e) {}
+}
+function playChapterChime() {      // two notes: a hat, a diamond
+    try {
+        const ctx = getAudioCtx(), t = ctx.currentTime;
+        [[659, 0], [988, 0.16]].forEach(([f, dt]) => {
+            const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'; o.frequency.value = f;
+            g.gain.setValueAtTime(0.0001, t + dt); g.gain.exponentialRampToValueAtTime(0.14, t + dt + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + dt + 0.55);
+            o.connect(g).connect(ctx.destination); o.start(t + dt); o.stop(t + dt + 0.6);
+        });
+    } catch (e) {}
+}
+function playWhump() {             // the reveal hit: the hull snaps open
+    try {
+        const ctx = getAudioCtx(), t = ctx.currentTime;
+        const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine';
+        o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(38, t + 0.28);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.6, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.34);
+        o.connect(g).connect(ctx.destination); o.start(t); o.stop(t + 0.36);
+        const dur = 0.14, buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate), d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3);
+        const src = ctx.createBufferSource(); src.buffer = buf; const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900;
+        const ng = ctx.createGain(); ng.gain.value = 0.35; src.connect(lp).connect(ng).connect(ctx.destination); src.start(t);
+    } catch (e) {}
+}
+function playArpeggio() {          // rising three notes: the name is on the hull
+    try {
+        const ctx = getAudioCtx(), t = ctx.currentTime;
+        [523.25, 659.25, 783.99].forEach((f, i) => {
+            const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'; o.frequency.value = f; const st = t + i * 0.13;
+            g.gain.setValueAtTime(0.0001, st); g.gain.exponentialRampToValueAtTime(0.13, st + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, st + 0.75);
+            o.connect(g).connect(ctx.destination); o.start(st); o.stop(st + 0.8);
+        });
+    } catch (e) {}
+}
+function playPencil(sec) {         // a pencil writing on paper, for as long as the word takes
+    try {
+        const ctx = getAudioCtx(), t = ctx.currentTime, dur = Math.max(0.3, Math.min(3, sec));
+        const buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate), d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+        const src = ctx.createBufferSource(); src.buffer = buf;
+        const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1400; bp.Q.value = 1.1;
+        const g = ctx.createGain(); g.gain.value = 0.0001;
+        const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.type = 'sine'; lfo.frequency.value = 9; lg.gain.value = 0.05; lfo.connect(lg).connect(g.gain);
+        g.gain.setValueAtTime(0.06, t); g.gain.setValueAtTime(0.06, t + dur - 0.05); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        src.connect(bp).connect(g).connect(ctx.destination); src.start(t); lfo.start(t); src.stop(t + dur); lfo.stop(t + dur);
+    } catch (e) {}
+}
+
+/* The haptic map. Android: real ticks. iOS has no web vibration, so the paper
+   itself shakes 2–3 px instead of the phone. */
+const HAPTIC = { tick: 12, lock: 35, chapter: [20, 40, 20], reveal: [50, 30, 100, 30, 80], depart: [15, 30, 15, 30, 120] };
+function feel(kind, el) {
+    const v = HAPTIC[kind];
+    if (navigator.vibrate) { try { navigator.vibrate(v); } catch (e) {} return; }
+    if (kind === 'tick') return;
+    const t = el || document.getElementById('origamiStage') || document.querySelector('.follow-boat');
+    if (!t) return;
+    t.classList.remove('paper-shake'); void t.offsetWidth; t.classList.add('paper-shake');
+}
+
+/* Tilt the phone, tilt the boat. (iOS asks permission — we ask on a tap, never mid-gesture.) */
+let tiltEl = null, tiltBound = false;
+function enableTilt(el) {
+    tiltEl = el;
+    if (tiltBound) return; tiltBound = true;
+    window.addEventListener('deviceorientation', (e) => {
+        if (!tiltEl || !tiltEl.isConnected) { tiltEl = null; return; }
+        const g = Math.max(-16, Math.min(16, (e.gamma || 0) * 0.5));
+        const b = Math.max(-8, Math.min(8, ((e.beta || 0) - 45) * 0.15));
+        tiltEl.style.transform = `perspective(500px) rotateZ(${g.toFixed(1)}deg) rotateX(${b.toFixed(1)}deg)`;
+    }, { passive: true });
+}
+function requestTiltPermission() {
+    try { if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') DeviceOrientationEvent.requestPermission().catch(() => {}); } catch (e) {}
+}
+const NEEDS_TILT_TAP = (() => { try { return typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'; } catch (e) { return false; } })();
+
+/* The word writes itself on the hull, letter by letter, with a pencil scratch.
+   Returns how long it takes (ms) so the caller can time what follows. */
+function handwrite(host, word, { size = 22, per = 95, top = '80%' } = {}) {
+    const el = document.createElement('div'); el.className = 'hand-word'; el.style.fontSize = size + 'px'; el.style.top = top;
+    el.innerHTML = [...word].map((ch, i) => `<span style="animation-delay:${i * per}ms">${ch === ' ' ? '&nbsp;' : ch}</span>`).join('');
+    host.appendChild(el);
+    playPencil(word.length * per / 1000 + 0.15);
+    return word.length * per + 320;
+}
+
+/* Hat → Diamond → Boat: a mini-reveal with a two-note chime at each. */
+const CHAPTER_AT = { 5: ['🎩', "That's a hat!"], 6: ['💎', 'Now a diamond'] };
+function chapterFlash(nextFold) {
+    const ch = CHAPTER_AT[nextFold]; if (!ch) return;
+    playChapterChime(); feel('chapter');
+    const el = document.createElement('div'); el.className = 'chapter-flash'; el.innerHTML = `<span>${ch[0]}</span>${ch[1]}`;
+    document.body.appendChild(el);
+    setTimeout(() => el.classList.add('out'), 1500); setTimeout(() => el.remove(), 2000);
+}
+
 function playRevealSound() {
     try {
         const ctx = getAudioCtx();
@@ -489,178 +629,155 @@ function transition(renderFn) {
 /* ============================================================
    FOLD-ON-PAPER INTERACTION + ink trail
    ============================================================ */
+/* ── Fold physics. Finger-driven and reversible to 60 %; past that it folds
+   itself with a 220 ms decelerating spring and a little overshoot; let go
+   early and it springs back. 52 px targets with a weak magnetic snap, the
+   target brightening as the finger nears, ±8 mm off the crease tolerated.
+   Idle 1.5 s → a ghost fingertip traces the gesture, no text, and vanishes
+   the moment a real finger lands. ── */
+const SNAP_AT = 0.6;     // released past this → completes itself
+const AUTO_AT = 0.94;    // dragged this far → snaps home
+function easeOutBack(t) { const c = 1.35; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); }
 function setupFoldInteraction(stageEl, foldIndex, onComplete) {
     const guide = FOLD_GUIDES[foldIndex];
     const flap = FOLD_FLAPS[foldIndex];
+    const crease = CREASE_LINES[foldIndex];
     const stageRect = stageEl.getBoundingClientRect();
-    const stageSize = stageRect.width;
+    const stageSize = stageRect.width || 280;
     const s = stageSize / 280;
-
-    const sc = {
-        from: { x: guide.from.x * s, y: guide.from.y * s },
-        to:   { x: guide.to.x * s,   y: guide.to.y * s },
-    };
+    const sc = { from: { x: guide.from.x * s, y: guide.from.y * s }, to: { x: guide.to.x * s, y: guide.to.y * s } };
 
     const overlay = stageEl.querySelector('.fold-overlay');
     const dot = stageEl.querySelector('.fold-dot');
     const target = stageEl.querySelector('.fold-target');
     const dragSvg = stageEl.querySelector('.fold-drag-line');
     const ringCircle = stageEl.querySelector('.fold-progress-ring circle');
+    const ring = stageEl.querySelector('.fold-progress-ring');
     const svgEl = stageEl.querySelector('.origami-svg');
     const flapEl = stageEl.querySelector('.fold-flap');
+    const shadowEl = stageEl.querySelector('.fold-shadow');
 
-    dot.style.left = sc.from.x + 'px';
-    dot.style.top = sc.from.y + 'px';
-    target.style.left = sc.to.x + 'px';
-    target.style.top = sc.to.y + 'px';
-
-    const dx = sc.to.x - sc.from.x;
-    const dy = sc.to.y - sc.from.y;
-    const totalDist = Math.sqrt(dx*dx + dy*dy);
-
+    dot.style.left = sc.from.x + 'px'; dot.style.top = sc.from.y + 'px';
+    target.style.left = sc.to.x + 'px'; target.style.top = sc.to.y + 'px';
+    ring.style.left = sc.from.x + 'px'; ring.style.top = sc.from.y + 'px';
+    const dx = sc.to.x - sc.from.x, dy = sc.to.y - sc.from.y;
+    const totalDist = Math.max(1, Math.hypot(dx, dy));
     const circ = 2 * Math.PI * 15;
-    ringCircle.style.strokeDasharray = circ;
-    ringCircle.style.strokeDashoffset = circ;
+    ringCircle.style.strokeDasharray = circ; ringCircle.style.strokeDashoffset = circ;
+    // The shadow that sweeps across the crease as the flap closes.
+    if (shadowEl && crease) {
+        const ang = Math.atan2(crease.y2 - crease.y1, crease.x2 - crease.x1) * 180 / Math.PI;
+        shadowEl.style.left = ((crease.x1 + crease.x2) / 2 * s) + 'px'; shadowEl.style.top = ((crease.y1 + crease.y2) / 2 * s) + 'px';
+        shadowEl.style.width = (Math.hypot(crease.x2 - crease.x1, crease.y2 - crease.y1) * s) + 'px';
+        shadowEl.style.setProperty('--ang', ang + 'deg');
+    }
 
-    const ring = stageEl.querySelector('.fold-progress-ring');
-    ring.style.left = sc.from.x + 'px';
-    ring.style.top = sc.from.y + 'px';
-
-    // Ink trail canvas
     let canvas, ctx, inkFadeInterval;
+    let isDown = false, completed = false, anim = null, curP = 0, touched = false, ghostTimer = null, ghostEl = null;
 
-    let isDown = false, completed = false;
-
-    function getPos(e) {
-        const rect = overlay.getBoundingClientRect();
-        const cx = e.touches ? e.touches[0].clientX : e.clientX;
-        const cy = e.touches ? e.touches[0].clientY : e.clientY;
-        return { x: cx - rect.left, y: cy - rect.top };
-    }
-
+    function getPos(e) { const rect = overlay.getBoundingClientRect(); const t = e.touches ? e.touches[0] : e; return { x: t.clientX - rect.left, y: t.clientY - rect.top }; }
     function startInkTrail() {
-        canvas = document.createElement('canvas');
-        canvas.className = 'ink-trail-canvas';
-        canvas.width = stageSize;
-        canvas.height = stageSize;
-        stageEl.appendChild(canvas);
-        ctx = canvas.getContext('2d');
-        inkFadeInterval = setInterval(() => {
-            ctx.globalCompositeOperation = 'destination-out';
-            ctx.fillStyle = 'rgba(0,0,0,0.04)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.globalCompositeOperation = 'source-over';
-        }, 33);
+        canvas = document.createElement('canvas'); canvas.className = 'ink-trail-canvas'; canvas.width = stageSize; canvas.height = stageSize;
+        stageEl.appendChild(canvas); ctx = canvas.getContext('2d');
+        inkFadeInterval = setInterval(() => { ctx.globalCompositeOperation = 'destination-out'; ctx.fillStyle = 'rgba(0,0,0,0.04)'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.globalCompositeOperation = 'source-over'; }, 33);
     }
-
     function drawInk(pos) {
         if (!ctx) return;
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(212, 168, 67, 0.55)';
-        ctx.fill();
-        // Glow
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, 6, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(212, 168, 67, 0.12)';
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(pos.x, pos.y, 2.5, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255,226,0,0.55)'; ctx.fill();
+        ctx.beginPath(); ctx.arc(pos.x, pos.y, 6, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255,226,0,0.12)'; ctx.fill();
+    }
+    function stopInkTrail() { if (inkFadeInterval) clearInterval(inkFadeInterval); if (canvas) { const cv = canvas; setTimeout(() => cv.remove(), 600); } canvas = null; ctx = null; }
+
+    // One painter for the whole fold at progress p (0 flat → 1 folded).
+    function applyP(p) {
+        curP = p;
+        ringCircle.style.strokeDashoffset = circ * (1 - Math.min(1, p));
+        target.style.opacity = (0.45 + 0.55 * Math.min(1, p)).toFixed(2);
+        target.style.transform = `translate(-50%,-50%) scale(${(1 + 0.3 * Math.min(1, p)).toFixed(3)})`;
+        if (flap.clipFrom && flapEl) {
+            flapEl.style.opacity = p > 0.01 ? '1' : '0';
+            const interp = `polygon(${interpolatePolygon(flap.clipFrom, flap.clipTo, p)})`;
+            flapEl.style.clipPath = interp; flapEl.style.webkitClipPath = interp;
+            const flapSvg = flapEl.querySelector('.origami-svg');
+            if (flapSvg) { flapSvg.style.transformOrigin = flap.axis; flapSvg.style.transform = `${flap.rotate}(${(p * flap.maxDeg).toFixed(1)}deg)`; }
+            flapEl.style.filter = `brightness(${(1 - 0.22 * Math.min(1, p)).toFixed(3)})`;
+        }
+        if (shadowEl) shadowEl.style.opacity = (Math.min(1, p) * 0.55).toFixed(2);
+    }
+    function animateTo(to, ms, overshoot, done) {
+        if (anim) cancelAnimationFrame(anim);
+        const from = curP, t0 = performance.now();
+        (function frame(now) {
+            const t = Math.min(1, (now - t0) / ms);
+            const e = overshoot ? easeOutBack(t) : 1 - Math.pow(1 - t, 3);
+            applyP(Math.max(0, Math.min(1.08, from + (to - from) * e)));
+            if (t < 1) anim = requestAnimationFrame(frame); else { anim = null; applyP(to); done && done(); }
+        })(t0);
+    }
+    function finish() {
+        completed = true; isDown = false;
+        svgEl.style.transform = ''; stageEl.classList.remove('tilting');
+        dragSvg.innerHTML = ''; stopInkTrail(); killGhost();
+        if (flapEl) flapEl.style.opacity = '0';
+        if (shadowEl) shadowEl.style.opacity = '0';
+        onComplete();
     }
 
-    function stopInkTrail() {
-        if (inkFadeInterval) clearInterval(inkFadeInterval);
-        if (canvas) setTimeout(() => canvas.remove(), 600);
+    // Ghost fingertip: teaches the gesture without a word.
+    function ghost() {
+        if (touched || completed || !overlay.isConnected) return;
+        killGhost(false);
+        ghostEl = document.createElement('div'); ghostEl.className = 'ghost-finger';
+        ghostEl.style.left = sc.from.x + 'px'; ghostEl.style.top = sc.from.y + 'px';
+        stageEl.appendChild(ghostEl);
+        const a = ghostEl.animate([
+            { transform: 'translate(-50%,-50%) scale(.6)', opacity: 0 },
+            { transform: 'translate(-50%,-50%) scale(1)', opacity: .85, offset: .15 },
+            { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(1)`, opacity: .85, offset: .85 },
+            { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(.6)`, opacity: 0 }
+        ], { duration: 1500, easing: 'cubic-bezier(.4,0,.2,1)' });
+        a.onfinish = () => { if (ghostEl) ghostEl.remove(); ghostEl = null; if (!touched) ghostTimer = setTimeout(ghost, 1300); };
     }
+    function killGhost(stop = true) { if (ghostEl) { ghostEl.remove(); ghostEl = null; } if (stop) { clearTimeout(ghostTimer); ghostTimer = null; } }
+    ghostTimer = setTimeout(ghost, 1500);
 
     function start(e) {
-        if (completed) return;
+        if (completed || anim) return;
         e.preventDefault();
         const pos = getPos(e);
-        const d = Math.sqrt((pos.x-sc.from.x)**2 + (pos.y-sc.from.y)**2);
-        if (d > 55) return;
-        isDown = true;
-        haptic(15);
-        dot.style.animation = 'none';
+        if (Math.hypot(pos.x - sc.from.x, pos.y - sc.from.y) > 60) return;
+        touched = true; killGhost(); isDown = true;
+        feel('tick');
+        dot.style.animation = 'none'; target.style.animation = 'none';
         stageEl.classList.add('tilting');
+        svgEl.style.transform = 'perspective(400px) rotateX(5deg)';     // the paper pre-bends under the finger
         startInkTrail();
     }
-
     function move(e) {
         if (!isDown || completed) return;
         e.preventDefault();
         const pos = getPos(e);
-
-        // Ink trail
         drawInk(pos);
-
-        // Drag line
-        dragSvg.innerHTML = `<svg viewBox="0 0 ${stageSize} ${stageSize}" width="${stageSize}" height="${stageSize}">
-            <line x1="${sc.from.x}" y1="${sc.from.y}" x2="${pos.x}" y2="${pos.y}"/>
-        </svg>`;
-
-        // Paper tilt
-        const progressX = (pos.x - sc.from.x) / stageSize;
-        const progressY = (pos.y - sc.from.y) / stageSize;
-        const tiltX = -progressY * 12;
-        const tiltY = progressX * 8;
-        svgEl.style.transform = `perspective(400px) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
-
-        // Progress
-        const distToTarget = Math.sqrt((pos.x-sc.to.x)**2 + (pos.y-sc.to.y)**2);
-        const progress = Math.max(0, Math.min(1, 1 - distToTarget / totalDist));
-        ringCircle.style.strokeDashoffset = circ * (1 - progress);
-
-        // Fold flap visualization
-        if (flap.clipFrom && flapEl) {
-            flapEl.style.opacity = '1';
-            const interp = `polygon(${interpolatePolygon(flap.clipFrom, flap.clipTo, progress)})`;
-            flapEl.style.clipPath = interp;
-            flapEl.style.webkitClipPath = interp;
-            const deg = progress * flap.maxDeg;
-            const flapSvg = flapEl.querySelector('.origami-svg');
-            if (flapSvg) {
-                flapSvg.style.transformOrigin = flap.axis;
-                flapSvg.style.transform = `${flap.rotate}(${deg}deg)`;
-            }
-        }
-
-        // Move ring with finger
-        ring.style.left = pos.x + 'px';
-        ring.style.top = pos.y + 'px';
-
-        // Haptic + sound milestones
-        if (progress > 0.3 && progress < 0.33) { haptic(15); playCreaseSound(); }
-        if (progress > 0.6 && progress < 0.63) { haptic(20); playCreaseSound(); }
-        if (progress > 0.85 && progress < 0.88) { haptic(30); playCreaseSound(); }
-
-        if (distToTarget < 30) {
-            completed = true; isDown = false;
-            svgEl.style.transform = '';
-            stageEl.classList.remove('tilting');
-            if (flapEl) flapEl.style.opacity = '0';
-            stopInkTrail();
-            haptic(80);
-            onComplete();
-        }
+        dragSvg.innerHTML = `<svg viewBox="0 0 ${stageSize} ${stageSize}" width="${stageSize}" height="${stageSize}"><line x1="${sc.from.x}" y1="${sc.from.y}" x2="${pos.x}" y2="${pos.y}"/></svg>`;
+        const progressX = (pos.x - sc.from.x) / stageSize, progressY = (pos.y - sc.from.y) / stageSize;
+        svgEl.style.transform = `perspective(400px) rotateX(${(5 - progressY * 12).toFixed(2)}deg) rotateY(${(progressX * 8).toFixed(2)}deg)`;
+        // Progress is how far along the dot→target line the finger has come; drifting off it is fine.
+        const along = ((pos.x - sc.from.x) * dx + (pos.y - sc.from.y) * dy) / (totalDist * totalDist);
+        const p = Math.max(0, Math.min(1, along));
+        ring.style.left = pos.x + 'px'; ring.style.top = pos.y + 'px';
+        const prev = curP; applyP(p);
+        [0.25, 0.5, 0.75].forEach(m => { if (prev < m && p >= m) { feel('tick'); playCreaseSound(); } });
+        if (p >= AUTO_AT) { isDown = false; animateTo(1, 220, true, finish); }
     }
-
     function end() {
         if (!isDown || completed) return;
-        isDown = false;
-        dragSvg.innerHTML = '';
-        svgEl.style.transform = '';
-        stageEl.classList.remove('tilting');
-        dot.style.animation = '';
-        stopInkTrail();
-        if (flapEl) {
-            flapEl.style.opacity = '0';
-            const flapSvg = flapEl.querySelector('.origami-svg');
-            if (flapSvg) flapSvg.style.transform = '';
-        }
-        ring.style.left = sc.from.x + 'px';
-        ring.style.top = sc.from.y + 'px';
-        ringCircle.style.strokeDashoffset = circ;
+        isDown = false; dragSvg.innerHTML = ''; stopInkTrail();
+        ring.style.left = sc.from.x + 'px'; ring.style.top = sc.from.y + 'px';
+        if (curP >= SNAP_AT) { animateTo(1, 240, true, finish); return; }        // past the point of no return: it folds itself
+        svgEl.style.transform = ''; stageEl.classList.remove('tilting');
+        dot.style.animation = ''; target.style.animation = '';
+        animateTo(0, 260, true, () => { if (flapEl) flapEl.style.opacity = '0'; });   // springs back
     }
-
     overlay.addEventListener('mousedown', start);
     overlay.addEventListener('mousemove', move);
     overlay.addEventListener('mouseup', end);
@@ -668,6 +785,115 @@ function setupFoldInteraction(stageEl, foldIndex, onComplete) {
     overlay.addEventListener('touchstart', start, { passive: false });
     overlay.addEventListener('touchmove', move, { passive: false });
     overlay.addEventListener('touchend', end);
+    overlay.addEventListener('touchcancel', end);
+}
+
+/* ── Fold 8 is a different gesture: the pull-open. Two glowing corners resist
+   while the paper bulges and the camera drifts to water level; then it gives. ── */
+function setupPullOpen(stageEl, onSnap) {
+    const rect = stageEl.getBoundingClientRect(); const size = rect.width || 280; const s = size / 280;
+    const overlay = stageEl.querySelector('.fold-overlay'); const svgEl = stageEl.querySelector('.origami-svg');
+    const dots = { l: stageEl.querySelector('.pull-dot.l'), r: stageEl.querySelector('.pull-dot.r') };
+    const corners = { l: { x: 50 * s, y: 140 * s, dir: -1 }, r: { x: 230 * s, y: 140 * s, dir: 1 } };
+    const TRAVEL = 78 * s;
+    const ocean = document.querySelector('.ocean-canvas');
+    let side = null, isDown = false, done = false, startX = 0, p = 0, anim = null, touched = false, ghostTimer = null, ghostEl = null;
+    function pos(e) { const r = overlay.getBoundingClientRect(); const t = e.touches ? e.touches[0] : e; return { x: t.clientX - r.left, y: t.clientY - r.top }; }
+    function paint(q) {
+        p = q;
+        const v = Math.pow(Math.max(0, Math.min(1, q)), 1.8);          // resists at first, then gives
+        svgEl.style.transform = `perspective(500px) rotateX(${(9 * v).toFixed(2)}deg) scale(${(1 + 0.05 * v).toFixed(3)},${(1 + 0.11 * v).toFixed(3)}) translateY(${(12 * v).toFixed(1)}px)`;
+        if (dots.l) dots.l.style.setProperty('--pull', (-22 * v).toFixed(1) + 'px');
+        if (dots.r) dots.r.style.setProperty('--pull', (22 * v).toFixed(1) + 'px');
+        setWaveIntensity(13 + 14 * v);
+        if (ocean) ocean.style.transform = `translateY(${(-26 * v).toFixed(1)}px)`;
+    }
+    function animateTo(to, ms, cb) {
+        if (anim) cancelAnimationFrame(anim); const from = p, t0 = performance.now();
+        (function frame(now) { const t = Math.min(1, (now - t0) / ms); paint(from + (to - from) * easeOutBack(t)); if (t < 1) anim = requestAnimationFrame(frame); else { anim = null; paint(to); cb && cb(); } })(t0);
+    }
+    function ghost() {
+        if (touched || done || !overlay.isConnected) return;
+        if (ghostEl) ghostEl.remove();
+        ghostEl = document.createElement('div'); ghostEl.className = 'ghost-finger';
+        ghostEl.style.left = corners.r.x + 'px'; ghostEl.style.top = corners.r.y + 'px'; stageEl.appendChild(ghostEl);
+        const a = ghostEl.animate([
+            { transform: 'translate(-50%,-50%) scale(.6)', opacity: 0 }, { transform: 'translate(-50%,-50%) scale(1)', opacity: .85, offset: .2 },
+            { transform: `translate(calc(-50% + ${TRAVEL * 0.9}px), -50%) scale(1)`, opacity: .85, offset: .85 }, { transform: `translate(calc(-50% + ${TRAVEL * 0.9}px), -50%) scale(.6)`, opacity: 0 }
+        ], { duration: 1500, easing: 'cubic-bezier(.4,0,.2,1)' });
+        a.onfinish = () => { if (ghostEl) ghostEl.remove(); ghostEl = null; if (!touched) ghostTimer = setTimeout(ghost, 1300); };
+    }
+    ghostTimer = setTimeout(ghost, 1500);
+    function snap() {
+        done = true; isDown = false; clearTimeout(ghostTimer); if (ghostEl) ghostEl.remove();
+        overlay.remove(); Object.values(dots).forEach(d => d && (d.style.opacity = '0'));
+        onSnap();
+    }
+    function start(e) {
+        if (done || anim) return; e.preventDefault();
+        const q = pos(e);
+        side = ['l', 'r'].find(k => Math.hypot(q.x - corners[k].x, q.y - corners[k].y) <= 60); if (!side) return;
+        touched = true; clearTimeout(ghostTimer); if (ghostEl) { ghostEl.remove(); ghostEl = null; }
+        isDown = true; startX = q.x; feel('tick');
+        Object.values(dots).forEach(d => d && (d.style.animation = 'none'));
+    }
+    function move(e) {
+        if (!isDown || done) return; e.preventDefault();
+        const q = pos(e); const prev = p;
+        const np = Math.max(0, Math.min(1, ((q.x - startX) * corners[side].dir) / TRAVEL));
+        paint(np);
+        [0.35, 0.7].forEach(m => { if (prev < m && np >= m) { feel('tick'); playCreasePitched(0.7); } });
+        if (np >= 0.85) snap();
+    }
+    function end() {
+        if (!isDown || done) return; isDown = false;
+        if (p >= 0.6) { animateTo(1, 200, snap); return; }
+        animateTo(0, 320, null);
+    }
+    overlay.addEventListener('mousedown', start); overlay.addEventListener('mousemove', move); overlay.addEventListener('mouseup', end); overlay.addEventListener('mouseleave', end);
+    overlay.addEventListener('touchstart', start, { passive: false }); overlay.addEventListener('touchmove', move, { passive: false }); overlay.addEventListener('touchend', end); overlay.addEventListener('touchcancel', end);
+}
+
+/* The reveal: resist → silence → snap → water → sail → handwriting → arpeggio; then tilt. */
+function revealBoat(stageEl, foldIndex) {
+    const c = colors(); const svgEl = stageEl.querySelector('.origami-svg');
+    const ocean = document.querySelector('.ocean-canvas');
+    // 1 · Silence. 400 ms with nothing — the gasp lives in the gap.
+    stopAmbient(); stopSlideNoise(true);
+    $app.classList.add('hush');
+    setTimeout(() => {
+        // 2 · Snap. The hull opens in 300 ms with a whump and a double pulse.
+        $app.classList.remove('hush');
+        playWhump(); feel('reveal', stageEl);
+        const baseC = { ...c, hull: BOAT_DEFAULTS.hull, sail: BOAT_DEFAULTS.sail, sailGradient: null, flag: BOAT_DEFAULTS.flag };
+        if (svgEl) svgEl.outerHTML = `<div class="boat-rising snap-open">${buildOrigamiSVG(baseC, 8, 280, { ...extras(), aspiration: '' })}</div>`;
+        $app.classList.add('screen-shake'); setTimeout(() => $app.classList.remove('screen-shake'), 400);
+        // 3 · Water. The surface under it becomes sea.
+        const water = document.createElement('div'); water.className = 'water-line'; stageEl.appendChild(water);
+        requestAnimationFrame(() => water.classList.add('on'));
+        spawnRipples(stageEl); waveSurge(); setWaveIntensity(16); if (ocean) ocean.style.transform = '';
+        // 4 · The sail rises in the destination colour.
+        setTimeout(() => {
+            const rising = stageEl.querySelector('.boat-rising'); if (!rising) return;
+            rising.classList.remove('snap-open');
+            rising.innerHTML = buildOrigamiSVG(c, 9, 280, { ...extras(), aspiration: '' });
+            rising.querySelectorAll('.sail-cloth, .flag-cloth').forEach((el, i) => {
+                el.style.transformBox = 'fill-box'; el.style.transformOrigin = '50% 100%';
+                try { el.animate([{ transform: 'scaleY(0.04)' }, { transform: 'scaleY(1.06)', offset: 0.75 }, { transform: 'scaleY(1)' }], { duration: 700, delay: i * 90, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'both' }); } catch (e) {}
+            });
+            spawnParticles(stageEl, getIntensity().particles + 10);
+            // 5 · The name writes itself on the hull (if it has one yet), then a rising arpeggio.
+            const word = (D.aspiration || '').trim();
+            const wait = word ? handwrite(stageEl, word, { size: Math.max(16, Math.min(24, 200 / Math.max(6, word.length))) }) : 0;
+            setTimeout(() => { playArpeggio(); feel('chapter', stageEl); }, 700 + wait);
+            // 6 · Tilt the phone, tilt the boat.
+            setTimeout(() => enableTilt(rising), 800 + wait);
+            setTimeout(() => {
+                if (foldFollowActive) onFoldBeatDone(foldIndex);
+                else { step = NEXT_STEP_AFTER_FOLD[foldIndex]; route(); }
+            }, 2700 + wait);
+        }, 380);
+    }, 400);
 }
 
 function interpolatePolygon(fromPoly, toPoly, t) {
@@ -787,69 +1013,71 @@ function renderFoldStepInner(foldIndex) {
     const paperStage = STAGE_FOR_FOLD[foldIndex];
     const isBoatReveal = foldIndex === 7;
 
-    // Arrow SVG
-    const fx = guide.from.x, fy = guide.from.y;
-    const tx = guide.to.x, ty = guide.to.y;
-    const adx = tx-fx, ady = ty-fy;
-    const aLen = Math.sqrt(adx*adx+ady*ady);
-    const ux = adx/aLen, uy = ady/aLen;
-    const ahX = fx+adx*0.75, ahY = fy+ady*0.75;
-    const sz = 7;
+    // A faint path hint; the ghost fingertip does the real teaching.
+    const fx = guide.from.x, fy = guide.from.y, tx = guide.to.x, ty = guide.to.y;
+    const adx = tx - fx, ady = ty - fy, aLen = Math.hypot(adx, ady) || 1, ux = adx / aLen, uy = ady / aLen;
+    const ahX = fx + adx * 0.75, ahY = fy + ady * 0.75, sz = 7;
+    const guides = isBoatReveal
+        ? `<div class="fold-overlay"></div>
+           <div class="pull-dot l" style="left:${(50 / 280 * 100).toFixed(2)}%;top:50%"></div>
+           <div class="pull-dot r" style="left:${(230 / 280 * 100).toFixed(2)}%;top:50%"></div>`
+        : `<svg class="fold-arrow" viewBox="0 0 280 280" style="width:100%;height:100%;">
+               <line x1="${fx}" y1="${fy}" x2="${fx + adx * 0.78}" y2="${fy + ady * 0.78}"/>
+               <polygon points="${ahX},${ahY} ${ahX - ux * sz - uy * sz * 0.5},${ahY - uy * sz + ux * sz * 0.5} ${ahX - ux * sz + uy * sz * 0.5},${ahY - uy * sz - ux * sz * 0.5}"/>
+           </svg>
+           <div class="fold-shadow"></div>
+           <div class="fold-overlay"></div>
+           <div class="fold-dot"></div>
+           <div class="fold-target"></div>
+           <div class="fold-progress-ring"><svg viewBox="0 0 36 36" style="width:100%;height:100%"><circle cx="18" cy="18" r="15"/></svg></div>
+           <div class="fold-drag-line"></div>`;
+    const hint = isBoatReveal
+        ? `Hold a <span style="color:var(--accent-gold);font-weight:700;">glowing corner</span> and <span style="color:var(--accent-gold);font-weight:700;">pull it outward</span>`
+        : `Drag the <span style="color:var(--accent-gold);font-weight:700;">glowing dot</span> to the target · then <span style="color:var(--accent-gold);font-weight:700;">slide along the crease</span>`;
 
     $app.innerHTML = `
     <div class="sail-screen">
         <div class="paper-zone">
             ${foldFollowActive ? '' : progressBarHTML(questionsDone())}
-            <div class="origami-stage" id="origamiStage">
+            <div class="origami-stage${isBoatReveal ? ' pull-stage' : ''}" id="origamiStage">
                 ${buildOrigamiSVG(c, paperStage, 280, extras())}
                 <div class="fold-flap" style="opacity:0;">
                     ${buildOrigamiSVG(c, paperStage, 280, extras())}
                 </div>
-                <svg class="fold-arrow" viewBox="0 0 280 280" style="width:100%;height:100%;">
-                    <line x1="${fx}" y1="${fy}" x2="${fx+adx*0.78}" y2="${fy+ady*0.78}"/>
-                    <polygon points="${ahX},${ahY} ${ahX-ux*sz-uy*sz*0.5},${ahY-uy*sz+ux*sz*0.5} ${ahX-ux*sz+uy*sz*0.5},${ahY-uy*sz-ux*sz*0.5}"/>
-                </svg>
-                <div class="fold-overlay"></div>
-                <div class="fold-dot"></div>
-                <div class="fold-target"></div>
-                <div class="fold-progress-ring"><svg viewBox="0 0 36 36" width="36" height="36"><circle cx="18" cy="18" r="15"/></svg></div>
-                <div class="fold-drag-line"></div>
+                ${guides}
             </div>
         </div>
         <div class="content-zone text-center">
-            <div class="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-2" style="background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.3);">
-                <div class="fold-badge">${foldIndex+1}</div>
-                <span class="font-bold text-sm" style="color:var(--accent-gold-light);">Fold ${foldIndex+1} of 8</span>
+            <div class="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-2" style="background:rgba(255,226,0,0.1);border:1px solid rgba(255,226,0,0.3);">
+                <div class="fold-badge">${foldIndex + 1}</div>
+                <span class="font-bold text-sm" style="color:var(--accent-gold-light);">Fold ${foldIndex + 1} of 8</span>
             </div>
             <div class="fold-step-indicator justify-center">
                 <div class="fold-step-mini">${buildOrigamiSVG(BOAT_DEFAULTS, paperStage, 24)}</div>
                 <span class="fold-step-arrow-icon">→</span>
-                <div class="fold-step-mini">${buildOrigamiSVG(BOAT_DEFAULTS, Math.min(paperStage+1, 8), 24)}</div>
+                <div class="fold-step-mini">${buildOrigamiSVG(BOAT_DEFAULTS, Math.min(paperStage + 1, 8), 24)}</div>
             </div>
             <p class="text-xs mb-1" style="color:var(--text-secondary);">${FOLD_LABELS[foldIndex]}</p>
-            <p class="text-[10px]" style="color:var(--text-muted);">Drag from the <span style="color:var(--accent-gold);font-weight:700;">glowing dot</span> toward the target · then <span style="color:var(--accent-gold);font-weight:700;">slide along the crease</span></p>
+            <p class="text-[10px]" style="color:var(--text-muted);">${hint}</p>
         </div>
     </div>`;
 
     const stageEl = document.getElementById('origamiStage');
-    setupFoldInteraction(stageEl, foldIndex, () => {
-        // Play light crease sound on drag completion
-        playCreaseSound();
+    if (isBoatReveal) { setupPullOpen(stageEl, () => revealBoat(stageEl, foldIndex)); return; }
 
-        // Hide guides
-        stageEl.querySelector('.fold-dot').style.opacity = '0';
-        stageEl.querySelector('.fold-target').style.opacity = '0';
-        stageEl.querySelector('.fold-arrow').style.opacity = '0';
-        stageEl.querySelector('.fold-progress-ring').style.opacity = '0';
+    setupFoldInteraction(stageEl, foldIndex, () => {
+        playLock(); feel('lock', stageEl);
+
+        // Hide the guides
+        ['.fold-dot', '.fold-target', '.fold-arrow', '.fold-progress-ring'].forEach(q => { const el = stageEl.querySelector(q); if (el) el.style.opacity = '0'; });
         stageEl.querySelector('.fold-drag-line').innerHTML = '';
 
-        // === ANIMATED HAND-ALONG-CREASE interaction ===
+        // === THE IRON: a finger slides along the crease to seal it ===
         const creaseLine = CREASE_LINES[foldIndex];
         const stageRect2 = stageEl.getBoundingClientRect();
-        const s2 = stageRect2.width / 280;
+        const s2 = (stageRect2.width || 280) / 280;
         const cx1 = creaseLine.x1 * s2, cy1 = creaseLine.y1 * s2;
         const cx2 = creaseLine.x2 * s2, cy2 = creaseLine.y2 * s2;
-        const cLen = Math.sqrt((cx2-cx1)**2 + (cy2-cy1)**2);
 
         const creaseOverlay = document.createElement('div');
         creaseOverlay.className = 'crease-overlay';
@@ -864,93 +1092,66 @@ function renderFoldStepInner(foldIndex) {
 
         const handEl = creaseOverlay.querySelector('.crease-hand');
         const sealedLine = creaseOverlay.querySelector('.crease-sealed-line');
-        let creaseDown = false, creaseDone = false;
+        let creaseDown = false, creaseDone = false, lastT = 0, lastX = 0, lastY = 0, lastTick = 0;
 
         function creasePos(e) {
             const rect = creaseOverlay.getBoundingClientRect();
             const ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
             const ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-            // Project onto crease line
             const dx = cx2 - cx1, dy = cy2 - cy1;
             let t = ((ex - cx1) * dx + (ey - cy1) * dy) / (dx * dx + dy * dy);
             t = Math.max(0, Math.min(1, t));
-            return { t, x: cx1 + dx * t, y: cy1 + dy * t };
+            return { t, x: cx1 + dx * t, y: cy1 + dy * t, ex, ey };
         }
-
         function creaseStart(e) {
             if (creaseDone) return;
             e.preventDefault();
             const p = creasePos(e);
-            if (Math.sqrt((p.x - cx1)**2 + (p.y - cy1)**2) > 60 && p.t < 0.15) return; // must start near beginning
-            creaseDown = true;
+            if (Math.hypot(p.x - cx1, p.y - cy1) > 60 && p.t < 0.15) return;   // start near the beginning
+            creaseDown = true; lastT = performance.now(); lastX = p.ex; lastY = p.ey; lastTick = 0;
             handEl.style.transition = 'none';
-            haptic(15);
+            feel('tick'); startSlideNoise();
         }
-
         function creaseMove(e) {
             if (!creaseDown || creaseDone) return;
             e.preventDefault();
             const p = creasePos(e);
-            const dustMultiplier = getIntensity().gain / 0.2; // 1→1.75 across chapters
+            const dustMultiplier = getIntensity().gain / 0.2;
+            // The sound follows the finger's speed — still finger, silent paper.
+            const now = performance.now(), dt = Math.max(8, now - lastT);
+            const speed = Math.hypot(p.ex - lastX, p.ey - lastY) / dt;          // px per ms
+            lastT = now; lastX = p.ex; lastY = p.ey;
+            setSlideSpeed(Math.min(1, speed / 1.1));
 
-            // Move hand
-            handEl.style.left = p.x + 'px';
-            handEl.style.top = p.y + 'px';
-
-            // Living Crease: deepening stroke-width and darkening colour
+            handEl.style.left = p.x + 'px'; handEl.style.top = p.y + 'px';
             const sw = 1.5 + p.t * 3.5 * dustMultiplier;
             sealedLine.setAttribute('stroke-width', sw);
-            const r = Math.round(180 - p.t * 60);
-            const g = Math.round(140 - p.t * 40);
+            const r = Math.round(180 - p.t * 60), g = Math.round(140 - p.t * 40);
             sealedLine.setAttribute('stroke', `rgba(${r},${g},50,${(0.6 + p.t * 0.35).toFixed(2)})`);
-
-            // Grow sealed line behind hand
-            sealedLine.setAttribute('x2', p.x);
-            sealedLine.setAttribute('y2', p.y);
-
-            // Living Crease: dust particles at finger position
-            if (Math.random() < 0.35 * dustMultiplier) {
-                spawnDust(p.x, p.y, Math.ceil(2 * dustMultiplier));
-            }
-
-            // Pitch-shifted crease sounds + progressive haptics
-            const pitch = 1.0 + p.t * 0.25; // 1.0x → 1.25x
-            if (p.t > 0.25 && p.t < 0.28) { playCreasePitched(pitch); haptic(Math.round(15 * dustMultiplier)); }
-            if (p.t > 0.5 && p.t < 0.53) { playCreasePitched(pitch); haptic(Math.round(20 * dustMultiplier)); }
-            if (p.t > 0.75 && p.t < 0.78) { playCreasePitched(pitch); haptic(Math.round(25 * dustMultiplier)); }
+            sealedLine.setAttribute('x2', p.x); sealedLine.setAttribute('y2', p.y);
+            if (Math.random() < 0.35 * dustMultiplier) spawnDust(p.x, p.y, Math.ceil(2 * dustMultiplier));
+            // 10–15 ms ticks along the slide
+            if (p.t - lastTick >= 0.12) { lastTick = p.t; feel('tick'); }
 
             if (p.t > 0.9) {
                 creaseDone = true; creaseDown = false;
-                // Snap to end
+                stopSlideNoise();
                 handEl.style.transition = 'left 0.15s, top 0.15s';
-                handEl.style.left = cx2 + 'px';
-                handEl.style.top = cy2 + 'px';
-                sealedLine.setAttribute('x2', cx2);
-                sealedLine.setAttribute('y2', cy2);
-                // Dust burst at completion
+                handEl.style.left = cx2 + 'px'; handEl.style.top = cy2 + 'px';
+                sealedLine.setAttribute('x2', cx2); sealedLine.setAttribute('y2', cy2);
                 spawnDust(cx2, cy2, Math.ceil(6 * dustMultiplier));
-                // Final seal
                 handEl.classList.add('crease-hand-done');
-                haptic(60);
-                playFoldSound();
-                setTimeout(() => {
-                    creaseOverlay.remove();
-                    finishFold();
-                }, 500);
+                feel('lock', stageEl); playLock();
+                setTimeout(() => { creaseOverlay.remove(); finishFold(); }, 450);
             }
         }
-
         function creaseEnd() {
             if (!creaseDown || creaseDone) return;
-            creaseDown = false;
-            // Spring hand back to start
+            creaseDown = false; stopSlideNoise();
             handEl.style.transition = 'left 0.3s cubic-bezier(0.22,1,0.36,1), top 0.3s cubic-bezier(0.22,1,0.36,1)';
-            handEl.style.left = cx1 + 'px';
-            handEl.style.top = cy1 + 'px';
-            sealedLine.setAttribute('x2', cx1);
-            sealedLine.setAttribute('y2', cy1);
+            handEl.style.left = cx1 + 'px'; handEl.style.top = cy1 + 'px';
+            sealedLine.setAttribute('x2', cx1); sealedLine.setAttribute('y2', cy1);
         }
-
         creaseOverlay.addEventListener('mousedown', creaseStart);
         creaseOverlay.addEventListener('mousemove', creaseMove);
         creaseOverlay.addEventListener('mouseup', creaseEnd);
@@ -958,69 +1159,29 @@ function renderFoldStepInner(foldIndex) {
         creaseOverlay.addEventListener('touchstart', creaseStart, { passive: false });
         creaseOverlay.addEventListener('touchmove', creaseMove, { passive: false });
         creaseOverlay.addEventListener('touchend', creaseEnd);
+        creaseOverlay.addEventListener('touchcancel', creaseEnd);
 
         function finishFold() {
             const isHatToDiamond = foldIndex === 5;
             const intensity = getIntensity();
+            if (!isHatToDiamond) stageEl.classList.add('fold-animating');
 
-            if (isBoatReveal) {
-                stageEl.classList.add('boat-reveal');
-                hapticPattern([50, 30, 100, 30, 80]);
-            } else if (!isHatToDiamond) {
-                stageEl.classList.add('fold-animating');
-            }
-
-            // Flash
             const flash = document.createElement('div');
             flash.className = 'fold-flash';
             stageEl.appendChild(flash);
             setTimeout(() => flash.remove(), 700);
 
-            // Update SVG to next stage
             const svgInner = stageEl.querySelector('.origami-svg');
-
-            if (isBoatReveal) {
-                // === DRAMATIC BOAT REVEAL ===
-                svgInner.style.transition = 'transform 1.2s cubic-bezier(0.22,1,0.36,1)';
-                svgInner.style.transform = 'scaleX(1.5) scaleY(0.45)';
-                setTimeout(() => {
-                    // First show boat in washi base colours (no user colours yet)
-                    const baseC = { ...c, hull: BOAT_DEFAULTS.hull, sail: BOAT_DEFAULTS.sail, sailGradient: null, flag: BOAT_DEFAULTS.flag };
-                    svgInner.outerHTML = `<div class="boat-rising">${buildOrigamiSVG(baseC, 8, 280, extras())}</div>`;
-                    playRevealSound();
-                    waveSurge();
-                    // Screen shake
-                    $app.classList.add('screen-shake');
-                    setTimeout(() => $app.classList.remove('screen-shake'), 400);
-                    stageEl.classList.remove('boat-reveal');
-                    stageEl.classList.add('boat-reveal');
-                    spawnParticles(stageEl, intensity.particles + 10);
-                    spawnRipples(stageEl);
-                    // Fade in user's chosen colours after 500ms
-                    setTimeout(() => {
-                        const rising = stageEl.querySelector('.boat-rising');
-                        if (rising) rising.innerHTML = buildOrigamiSVG(c, 8, 280, extras());
-                    }, 500);
-                }, 1200);
-            } else if (isHatToDiamond) {
+            if (isHatToDiamond) {
                 svgInner.style.transition = 'transform 0.6s cubic-bezier(0.22,1,0.36,1)';
                 svgInner.style.transform = 'scaleX(0.35) scaleY(1.3)';
-                haptic(intensity.hapticBase);
-                setTimeout(() => {
-                    svgInner.outerHTML = buildOrigamiSVG(c, 6, 280, extras());
-                    spawnParticles(stageEl, intensity.particles);
-                }, 650);
+                setTimeout(() => { svgInner.outerHTML = buildOrigamiSVG(c, 6, 280, extras()); spawnParticles(stageEl, intensity.particles); }, 650);
             } else {
-                setTimeout(() => {
-                    svgInner.outerHTML = buildOrigamiSVG(c, paperStage + 1, 280, extras());
-                    spawnParticles(stageEl, intensity.particles);
-                }, 450);
+                setTimeout(() => { svgInner.outerHTML = buildOrigamiSVG(c, paperStage + 1, 280, extras()); spawnParticles(stageEl, intensity.particles); }, 450);
             }
 
-            const advanceDelay = isBoatReveal ? 3500 : isHatToDiamond ? 1400 : 1000;
+            const advanceDelay = isHatToDiamond ? 1400 : 1000;
             const nextStep = NEXT_STEP_AFTER_FOLD[foldIndex];
-            // In follow/solo mode a fold returns to the "look up" rest state and
-            // waits for the presenter's next beat, instead of self-advancing.
             setTimeout(() => {
                 if (foldFollowActive) onFoldBeatDone(foldIndex);
                 else { step = nextStep; route(); }
@@ -1664,7 +1825,7 @@ function advanceFold() {
 function onFoldBeatDone(foldIndex) {
     D.nextFold = foldIndex + 1; save();
     clearTimeout(foldAssistTimer);
-    hapticPattern([25, 40, 60]);
+    chapterFlash(D.nextFold);                            // 🎩 at 5, 💎 at 6 — the boat has its own reveal
     saveToFirebase();                                   // progress → the presenter's "N folded" count
     if (soloMode) { foldFollowActive = false; soloIdx++; renderRest('Beautiful fold.', 'Eyes back on the big screen ✨'); return; }
     if ((D.nextFold || 0) < (D.foldTarget || 0)) { setTimeout(continueFolding, 380); return; }   // one more in this beat
@@ -1851,14 +2012,35 @@ function showName() {
 }
 async function submitName() {
     const f = document.getElementById('dreamInput');
-    const w = (f.value || '').replace(/[^\p{L}\p{N} '-]/gu, '').trim().slice(0, 18);
+    const w = cleanWord(f.value);
     if (!w) { f.style.borderColor = '#ef4444'; return; }
+    if (!(await submitNameGuard(w, f))) return;
     D.aspiration = w; D.dreamSent = true; save();
     hapticPattern([40, 30, 80]);
     if (db && auth?.currentUser) { try { await setDoc(doc(db, "aspirations", auth.currentUser.uid), { word: w, timestamp: serverTimestamp() }); } catch (e) {} }
     if (D.launched) saveToFirebase();   // already at sea → repaint the hull in the fleet
     if (soloMode) { soloIdx++; renderRest('Your dream is aboard ⛵', 'Ready to set sail'); return; }
-    if (D.launched) renderHiveCell(); else renderReadyToSail();
+    renderNameWriting(w, () => { if (D.launched) renderHiveCell(); else renderReadyToSail(); });
+}
+async function submitNameGuard(w, f) {
+    if (!wordOK(w)) { f.value = ''; f.placeholder = 'Let’s keep it kind — try another word'; f.style.borderColor = '#ef4444'; feel('tick'); return false; }
+    return true;
+}
+/* The word writes itself on the hull in handwriting, pencil scratching, and ends on a rising arpeggio. */
+function renderNameWriting(word, next) {
+    hideCornerBoat();
+    const c = colors();
+    $app.innerHTML = `
+    <div class="sail-screen follow-screen fade-up">
+        <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
+            <p class="text-[10px] mb-3 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">Writing it on the hull</p>
+            <div class="origami-stage medium" id="nameBoat" style="max-width:260px;">${buildOrigamiSVG(c, 9, 260, { ...extras(), aspiration: '' })}</div>
+        </div>
+    </div>`;
+    const host = document.getElementById('nameBoat');
+    const wait = handwrite(host, word, { size: Math.max(18, Math.min(28, 210 / Math.max(6, word.length))), per: 110 });
+    setTimeout(() => { playArpeggio(); feel('chapter', host); }, wait - 120);
+    setTimeout(next, wait + 900);
 }
 
 /* Collective Set Sail — the whole hall launches at once on the fleet slide. */
@@ -2189,9 +2371,11 @@ function renderRest(title, sub) {
             <div class="follow-check mb-2">✓</div>
             <h1 class="font-serif text-xl mb-1" style="color:var(--accent-gold);">${title}</h1>
             <p class="text-sm mb-4" style="color:var(--text-secondary);">${sub}</p>
-            <div class="follow-boat">${buildOrigamiSVG(c, stage, 190, extras())}</div>
+            <div class="follow-boat" id="restBoat">${buildOrigamiSVG(c, stage, 190, extras())}</div>
+            ${stage >= 8 ? `<p class="text-[10px] mt-3 tracking-[0.2em] uppercase" style="color:var(--text-muted);">${NEEDS_TILT_TAP ? 'Tap the boat, then tilt your phone' : 'Tilt your phone'} 🌊</p>` : ''}
         </div>
     </div>`;
+    if (stage >= 8) { const b = document.getElementById('restBoat'); enableTilt(b); b.onclick = () => { requestTiltPermission(); feel('tick'); }; }
     if (soloMode) addSoloNext();
 }
 /* --- Solo fallback: fold your boat + add a dream even with no presenter --- */
