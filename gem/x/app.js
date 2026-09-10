@@ -752,6 +752,7 @@ let currentChapter = 'S';
 function getIntensity() { return CHAPTER_INTENSITY[currentChapter] || CHAPTER_INTENSITY.S; }
 
 function renderFoldStep(foldIndex) {
+    armFoldAssist(foldIndex);
     const chapter = CHAPTER_FOR_FOLD[foldIndex];
     if (chapter) {
         currentChapter = chapter.letter;
@@ -1562,12 +1563,15 @@ function showCornerBoat() {
     const el = document.getElementById('cornerBoat');
     if (!el) return;
     const stage = Math.min(D.nextFold || 0, 8);
+    const waiting = Math.max(0, (D.foldTarget || 0) - (D.nextFold || 0));
     const grew = cornerStagePrev !== -1 && stage !== cornerStagePrev;
     el.hidden = false;
-    el.innerHTML = `<div class="cb-inner">${buildOrigamiSVG(colors(), stage, 92, extras())}</div><span class="cb-label">Your boat</span>`;
+    el.innerHTML = `<div class="cb-inner">${buildOrigamiSVG(colors(), stage, 92, extras())}${waiting ? `<span class="cb-badge">${waiting}</span>` : ''}</div><span class="cb-label">${waiting ? (waiting === 1 ? '1 fold waiting · tap' : waiting + ' folds waiting · tap') : 'Your boat'}</span>`;
+    el.classList.toggle('waiting', waiting > 0);
     if (grew) { el.classList.add('grew'); setTimeout(() => el.classList.remove('grew'), 660); }
     cornerStagePrev = stage;
 }
+function cornerCatchUp() { if ((D.nextFold || 0) > 0 || (D.foldTarget || 0) > 0) showCornerBoat(); else hideCornerBoat(); }
 
 // ============================================================
 //   PRESENTER-DRIVEN COMPANION  (the phone follows btx27's session/state)
@@ -1620,11 +1624,14 @@ function applyView(state) {
     const v = state.currentView || 'chart';
     // Leaving a poll → drop its live-results listener.
     if (v !== 'poll' && window.__pollUnsub) { window.__pollUnsub(); window.__pollUnsub = null; }
-    // Signature so a repeated snapshot doesn't re-render, but a NEW poll/nexus — or
-    // the presenter revealing the answer — does.
-    const sig = v + '|' + (state.pollData?.id || '') + '|' + (state.nexusData?.type || '') + '|' + (state.revealed ? 'R' : '');
+    // Signature so a repeated snapshot doesn't re-render, but a NEW slide — or the
+    // presenter revealing the answer — does.
+    const sig = v + '|' + (state.step ?? '') + '|' + (state.pollData?.id || '') + '|' + (state.nexusData?.type || '') + '|' + (state.revealed ? 'R' : '') + '|' + (state.fold ? state.fold.to : '') + '|' + (state.card ? (state.card.title || '') + (state.card.keys || []).length : '');
     if (sig === currentView) return;
     currentView = sig;
+    chapterNow = state.chapter || chapterNow;
+    if (v !== 'fold') { foldFollowActive = false; clearTimeout(foldAssistTimer); }
+    setMode(RESPOND_VIEWS.includes(v) ? 'respond' : WATCH_VIEWS.includes(v) ? 'watch' : 'glance');
     switch (v) {
         case 'poll':          showPoll(state.pollData, !!state.revealed); break;
         case 'globe':
@@ -1635,9 +1642,13 @@ function applyView(state) {
         case 'fleet':         triggerSetSail(); break;
         case 'memento':
         case 'end':           showCard(); break;
-        case 'chart':         renderAboard(); break;   // the opening room portrait
-        // everything passive (video · slides · values · funfacts) → fold the boat
-        default:              advanceFold(); break;
+        case 'chart':         renderAboard(); break;          // the opening room portrait
+        case 'fold':          startFoldBeat(state.fold); break; // "Fold with us" — presenter-led
+        case 'video':         renderWatch(state); break;
+        case 'slide':         renderGlance(state, 'deck'); break;
+        case 'values':        renderGlance(state, 'values'); break;
+        case 'funfact':       renderGlance(state, 'funfact'); break;
+        default:              renderWatch(state); break;
     }
 }
 let lastSessionState = null;
@@ -1652,11 +1663,13 @@ function advanceFold() {
 }
 function onFoldBeatDone(foldIndex) {
     D.nextFold = foldIndex + 1; save();
-    foldFollowActive = false;
+    clearTimeout(foldAssistTimer);
     hapticPattern([25, 40, 60]);
-    const done = D.nextFold >= 8;
-    renderRest(done ? 'Your boat is complete! ⛵' : 'Beautiful fold.', 'Eyes back on the big screen ✨');
-    if (soloMode) { soloIdx++; }
+    saveToFirebase();                                   // progress → the presenter's "N folded" count
+    if (soloMode) { foldFollowActive = false; soloIdx++; renderRest('Beautiful fold.', 'Eyes back on the big screen ✨'); return; }
+    if ((D.nextFold || 0) < (D.foldTarget || 0)) { setTimeout(continueFolding, 380); return; }   // one more in this beat
+    foldFollowActive = false;
+    renderRest(D.nextFold >= 8 ? 'Your boat is complete! ⛵' : 'Beautiful fold.', 'Eyes back on the big screen ✨');
 }
 
 /* ============================================================
@@ -2018,6 +2031,95 @@ function startBloomSequence(localAt) {
     bloomSeq = requestAnimationFrame(tick);
 }
 
+// ============================================================
+//   THE PHONE BETWEEN QUESTIONS — three modes, one chapter strip
+//   WATCH  (dim, still — the big screen owns the eyes)
+//   GLANCE (one title, one line or number — for the back row)
+//   RESPOND (the phone is primary — a gold band says "your turn")
+// ============================================================
+const CHAPTERS = ['Into the Hive', 'Who we are', 'Our values', 'Passions', 'NEXUS@BTY', 'Your pathway', 'Set sail', 'Your journey'];
+const RESPOND_VIEWS = ['chart', 'poll', 'globe', 'industry_map', 'pulse_check', 'finale', 'fold', 'memento', 'end'];
+const WATCH_VIEWS = ['video', 'fleet', 'bloom'];
+let chapterNow = '';
+function setMode(mode) {
+    document.body.dataset.mode = mode;
+    if (!document.getElementById('modeBandT')) {
+        ['modeBandT', 'modeBandB'].forEach(id => { const d = document.createElement('div'); d.id = id; d.className = 'mode-band'; document.body.appendChild(d); });
+    }
+}
+function chapterStrip() {
+    const idx = CHAPTERS.indexOf(chapterNow);
+    return `<div class="ch-strip">${CHAPTERS.map((c, i) => `<span class="ch-dot${i < idx ? ' done' : ''}${i === idx ? ' now' : ''}"></span>`).join('')}<span class="ch-name">${chapterNow || ''}</span></div>`;
+}
+function renderWatch(state) {
+    hideCornerBoat();
+    $app.innerHTML = `
+    <div class="sail-screen follow-screen watch-screen fade-up">
+        ${chapterStrip()}
+        <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
+            <div class="watch-glyph">▲</div>
+            <p class="text-[10px] mt-3 tracking-[0.3em] uppercase" style="color:var(--text-muted);">Eyes on the screen</p>
+            ${state && state.title ? `<h1 class="font-serif text-lg mt-2" style="color:var(--text-secondary);">${state.title}</h1>` : ''}
+        </div>
+    </div>`;
+    cornerCatchUp();
+}
+function renderGlance(state, kind) {
+    hideCornerBoat();
+    let body = '';
+    if (kind === 'funfact' && state.funfact) {
+        const f = state.funfact; const n = parseInt(String(f.number).replace(/[^0-9]/g, ''), 10);
+        body = `<div class="glance-num" id="glanceNum">${isNaN(n) ? f.number : '0'}</div><div class="glance-label">${f.label || ''}</div><p class="glance-sub">${f.subtitle || ''}</p>`;
+        setTimeout(() => { if (isNaN(n)) return; const el = document.getElementById('glanceNum'); if (!el) return; const t0 = performance.now();
+            (function tick(now) { const p = Math.min(1, (now - t0) / 1200); el.textContent = Math.round(n * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(tick); })(t0); }, 60);
+    } else if (kind === 'values') {
+        body = `<div class="glance-title">D.R.E.A.M.</div><div class="dream-chips">${[['D','Discipline'],['R','Resilience'],['E','Empathy'],['A','Adaptability'],['M','Mindfulness']].map(([l, w]) => `<div class="dream-chip"><b>${l}</b>${w}</div>`).join('')}</div><p class="glance-sub">The values every Beattyian sails under.</p>`;
+    } else {
+        const c = state.card; const hasCard = !!(c && (c.title || (c.keys && c.keys.length)));
+        body = hasCard
+            ? `<div class="glance-title">${c.title || state.chapter || ''}</div>${c.keys && c.keys.length ? `<ul class="glance-keys">${c.keys.map(k => `<li>${k}</li>`).join('')}</ul>` : ''}`
+            : `<div class="watch-glyph" style="color:var(--accent-gold)">▲</div><div class="glance-title" style="margin-top:12px">${state.chapter || 'On screen now'}</div><p class="glance-sub">Eyes on the screen.</p>`;
+    }
+    $app.innerHTML = `
+    <div class="sail-screen follow-screen glance-screen fade-up">
+        ${chapterStrip()}
+        <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">${body}</div>
+    </div>`;
+    cornerCatchUp();
+}
+
+/* --- Fold with us: a presenter-led beat of two folds --- */
+let foldAssistTimer = null;
+function startFoldBeat(f) {
+    if (!f) { renderWatch(lastSessionState || {}); return; }
+    D.foldTarget = Math.max(D.foldTarget || 0, f.to); save();
+    continueFolding();
+}
+function continueFolding() {
+    const target = D.foldTarget || 0;
+    if ((D.nextFold || 0) >= target) { renderRest(target >= 8 ? 'Your boat is complete! ⛵' : 'Your boat is ahead ✨', 'Eyes on the screen'); return; }
+    foldFollowActive = true;
+    step = FOLD_STEP_FOR_INDEX[D.nextFold || 0];
+    route();
+}
+// Nobody may arrive at Set Sail without a boat: after 30 s on one fold, offer to finish it.
+function armFoldAssist(foldIndex) {
+    clearTimeout(foldAssistTimer);
+    if (!foldFollowActive) return;
+    foldAssistTimer = setTimeout(() => {
+        const zone = document.querySelector('.sail-screen .content-zone'); if (!zone || document.getElementById('foldAssistBtn')) return;
+        const b = document.createElement('button'); b.id = 'foldAssistBtn'; b.className = 'nav-btn secondary mt-3 w-full'; b.textContent = 'Stuck? Fold it for me ▸';
+        b.onclick = () => { b.disabled = true; foldAssist(foldIndex); };
+        zone.appendChild(b);
+    }, 30000);
+}
+function foldAssist(foldIndex) {
+    const st = document.getElementById('origamiStage');
+    if (st) { st.querySelectorAll('.crease-overlay').forEach(o => o.remove()); const svg = st.querySelector('.origami-svg'); if (svg) svg.outerHTML = buildOrigamiSVG(colors(), Math.min(8, STAGE_FOR_FOLD[foldIndex] + 1), 280, extras()); }
+    haptic(40); try { playFoldSound(); } catch (e) {}
+    setTimeout(() => onFoldBeatDone(foldIndex), 600);
+}
+
 /* --- Resting / holding screens shown between the presenter's slides --- */
 /* --- Boarding: "Which bee are you?" — one tap puts you in the Hive and unlocks the phone --- */
 function renderBoard() {
@@ -2174,6 +2276,8 @@ $app.addEventListener('click', (e) => {
 
 // Tap the corner boat to peek at it larger, tap again to tuck it back.
 document.getElementById('cornerBoat')?.addEventListener('click', function () {
+    // Behind on folds? The corner is where you catch up, on any passive slide.
+    if (followMode && !foldFollowActive && (D.nextFold || 0) < (D.foldTarget || 0)) { haptic(12); continueFolding(); return; }
     this.classList.toggle('expand'); haptic(12);
 });
 

@@ -207,9 +207,9 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 @media (prefers-reduced-motion:reduce){ .set-sail-btn{animation:none} .sail-ov-word.pop,.sail-ov-call.pop{animation:none} }
 .finale-scene{position:absolute; inset:0}
 .finale-sea{position:absolute; inset:0; width:100%; height:100%; border:0; display:block}
-.finale-hive{position:absolute; left:0; right:0; top:0; height:66%; pointer-events:none}
+.finale-hive{position:absolute; left:0; right:0; top:0; height:70%; pointer-events:none}
 .finale-hive .hive-cell{pointer-events:auto}
-.hive-count{position:absolute; left:50%; top:clamp(88px,13vh,150px); transform:translateX(-50%); font-family:var(--serif); font-weight:800; color:var(--gold); font-size:clamp(1.4rem,3vw,2.6rem); letter-spacing:.04em; text-shadow:0 4px 30px rgba(0,0,0,.6); pointer-events:none}
+.hive-count{position:absolute; right:clamp(24px,4vw,70px); top:clamp(88px,13vh,150px); font-family:var(--serif); font-weight:800; color:var(--gold); font-size:clamp(1.4rem,3vw,2.6rem); letter-spacing:.04em; text-shadow:0 4px 30px rgba(0,0,0,.6); pointer-events:none}
 .hive-cell .hive-n{display:block; font-size:.62em; font-weight:800; color:rgba(0,12,83,.72); letter-spacing:.06em; margin-top:2px}
 .hive-cell.many{box-shadow:0 0 44px rgba(255,226,0,.6)}
 .bloom-field{position:absolute; inset:0; display:grid; grid-template-columns:repeat(22,1fr); grid-auto-rows:1fr; gap:8px; padding:clamp(24px,4vh,56px) clamp(24px,5vw,90px)}
@@ -218,6 +218,21 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .bloom-msg{position:absolute; left:0; right:0; top:0; transition:opacity .4s}
 .bloom-ov{justify-content:center; padding-top:0}
 .bloom-ov .sail-ov-word{font-size:clamp(6rem,22vw,22rem)}
+#journeyContent.respond, .journey-content.respond{box-shadow:inset 0 0 0 4px rgba(255,226,0,.85); border-radius:14px}
+.fold-stage{position:absolute; inset:0; display:grid; grid-template-columns:1.25fr 1fr; align-items:center; gap:clamp(20px,4vw,60px); padding:clamp(20px,4vh,50px) clamp(30px,5vw,90px)}
+.fold-demo{display:flex; align-items:center; justify-content:center; min-height:300px}
+.fd-pair{display:flex; align-items:center; gap:clamp(10px,2vw,30px); animation:fadeUp .5s var(--ease) both}
+.fd-from,.fd-to{width:clamp(200px,24vw,340px); height:clamp(200px,24vw,340px); filter:drop-shadow(0 20px 40px rgba(0,0,0,.55))}
+.fd-from{opacity:.62}
+.fd-arrow{font-size:clamp(2rem,4vw,4rem); color:var(--gold)}
+.fold-wait{font-size:6rem}
+.fold-side .stage-title{font-size:clamp(1.8rem,3.4vw,3.4rem); display:flex; align-items:center; gap:14px}
+.fold-letter{display:inline-flex; align-items:center; justify-content:center; width:1.35em; height:1.35em; border-radius:14px; background:var(--gold); color:var(--navy); font-weight:800}
+.fold-cap{font-family:var(--serif); color:#fff; font-size:clamp(1.1rem,1.9vw,1.7rem); min-height:2.4em}
+.fold-count{margin-top:18px; display:inline-flex; align-items:baseline; gap:12px; background:rgba(255,226,0,.08); border:1px solid rgba(255,226,0,.3); border-radius:14px; padding:10px 18px}
+.fold-count .fc-n{font-family:var(--serif); font-weight:800; font-size:clamp(2rem,4vw,3.6rem); color:var(--gold); font-variant-numeric:tabular-nums}
+.fold-count .fc-l{font-size:clamp(.8rem,1.3vw,1.1rem); letter-spacing:.12em; text-transform:uppercase; color:var(--ink-dim)}
+.fold-count.most{box-shadow:0 0 30px rgba(255,226,0,.35)}
 .votes-chip{font-family:var(--serif); font-weight:700; color:var(--navy); background:var(--gold); border-radius:12px; padding:.5rem 1.2rem; font-size:clamp(1rem,1.7vw,1.5rem)}
 
 /* --- Fun fact --- */
@@ -572,10 +587,12 @@ const dreamValues=[
   { name:'Mindfulness',  img:'dream/Mindfulness.png',  pos:'72% center',points:["Respecting self","Respecting others","Respecting the environment"] },
 ];
 
+let boatMod=null; import('./x/boat.js').then(m=>{ boatMod=m; }).catch(()=>{});   // the same origami the phones fold
 const journeySteps=[
   { id:'compass', type:'chart', title:"The Hive Awakens", desc:"A living portrait of everyone in the room, right now." },
   { id:'video_intro', type:'video', url:"https://www.youtube.com/embed/6xpckUCGIlE?autoplay=1&modestbranding=1&rel=0&controls=0" },
   { id:'deck_a', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRpjJ-5NgPJO2LRLdKEcpBgqv-xMAriN5QxdbJSPLS5IE2y2pjNhE0icRG8lKqp0x0dM0KbbS9e1HWK/pubembed?start=false&loop=false&delayms=60000" },
+  { id:'fold_s', type:'fold', title:"Fold with us · S", desc:"Stewardship — the foundation.", fold:{letter:'S', name:'Stewardship', sub:'The Foundation', from:0, to:2} },
   { id:'poll_dream', type:'poll', title:"Live Poll · Our Core Values", pollData:{ id:'dream_poll',
      question:"What does D.R.E.A.M. stand for at Beatty?",
      options:["Discipline, Respect, Excellence, Achievement, Mindfulness","Discipline, Resilience, Empathy, Adaptability, Mindfulness","Diligence, Respect, Empathy, Adaptability, Mastery","Determination, Resilience, Excellence, Ambition, Mindfulness"],
@@ -583,6 +600,7 @@ const journeySteps=[
   { id:'values', type:'values', title:"The D.R.E.A.M. We Live By", desc:"Tap a value to see how it grows a Beattyian. Non Vi Sed Arte — not with force, but with skill." },
   { id:'deck_b', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vSrojJmwv5d-ElzN38A8S1Q_YAYl1_VulE6jPSFy6n8dEjPUnzNltCRstS8VC3fUgSg7Xd0fYN4-NWZ/pubembed?start=false&loop=false&delayms=60000" },
   { id:'funfact_cca', type:'funfact', funfactData:{ number:"47", label:"CCAs to belong to", subtitle:"Across Uniformed Groups, Performing Arts, Sports & Games and Clubs — a hive has a place for every kind of bee." } },
+  { id:'fold_a', type:'fold', title:"Fold with us · A", desc:"Applied Learning — the structure.", fold:{letter:'A', name:'Applied Learning', sub:'The Structure', from:2, to:4} },
   { id:'poll_cca', type:'poll', title:"Live Poll · Pursuing Passions", pollData:{ id:'cca',
      question:"What share of students get their 1st or 2nd choice CCA?",
      options:["50%","70%","90%","100%"], correctAnswer:2,
@@ -597,6 +615,7 @@ const journeySteps=[
      options:["Sustainability","Journalism & Media","Engineering & AI","None — we do all of these"], correctAnswer:3,
      insight:"A trick! Beatty offers all of these. Every passion has a pathway." } },
   { id:'funfact_nexus', type:'funfact', funfactData:{ number:"6", label:"Destinations our students learn in each year", subtitle:"From Estonia to New Zealand — Beattyians explore the world." } },
+  { id:'fold_i', type:'fold', title:"Fold with us · I", desc:"International & Industry — the sail.", fold:{letter:'I', name:'International & Industry', sub:'The Sail', from:4, to:6} },
   { id:'nexus_global', type:'globe', title:"Exploring New Skies, Building Ties", desc:"NEXUS@BTY international exchanges. Choose the one that calls to you — your bee lands on the globe.",
      nexusData:{ type:'global', options:[ {id:'GeoBali',text:'Bali (Geography)'},{id:'NZ',text:'New Zealand'},{id:'Korea',text:'South Korea (A.I.)'},{id:'MiharaJapan',text:'Japan (Social Sciences)'},{id:'MutsuzawaJapan',text:'Japan (STEM)'},{id:'Estonia',text:'Estonia (Cyber)'} ] } },
   { id:'nexus_local', type:'industry_map', title:"Dive into the Wonders of Work", desc:"NEXUS@BTY industry attachments across Singapore. Where would you thrive?",
@@ -611,12 +630,35 @@ const journeySteps=[
   { id:'deck_d', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRIJppB8CD0rLo6qLaE4eiXeJHcYviqju1Gf3QChKnv7XsJY2cfYQ0eU8M7pSf5Bos2DcyuIxl6ZCPX/pubembed?start=false&loop=false&delayms=60000" },
   { id:'deck_e', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRxw0Yj77fW9I87q0-XgXfqwGPwdi6RPDXBHb7CMGmEJTdBhELve0N5rAg5WbtS2vivKyV5WZO9gB_m/pubembed?start=false&loop=false&delayms=60000" },
   { id:'hive_wakes', type:'bloom', title:"The Hive Wakes", desc:"Phones up, screens facing out. On zero, we light the hall together." },
+  { id:'fold_l', type:'fold', title:"Fold with us · L", desc:"Learning to Live, Learn & Love — the flag. Pull it open: a boat.", fold:{letter:'L', name:'Learning to Live, Learn & Love', sub:'The Flag', from:6, to:8} },
   { id:'pulse_check', type:'pulse_check', title:"How's the Hive Feeling?", desc:"Tap on your phone — let's read the room." },
   { id:'set_sail', type:'fleet', title:"Set Sail, Beatty!", desc:"Every boat is a Beattyian setting sail from our Hive. Look up — here comes the fleet." },
   { id:'finale', type:'finale', title:"Our Hive of Aspirations", desc:"Every cell is a dream from someone in this room tonight." },
   { id:'deck_f', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vQx7tJCZ8s5AD5S9F7S2kNmAgfEX7KnIP6fLMQfcFCfQr4-9JeUVxFcyYRhzNtZYbBaCvLM1Wz8p1sX/pubembed?start=false&loop=false&delayms=60000" },
   { id:'card', type:'memento', title:"Your Journey Begins", desc:"Check your phone for your personal Beatty Compass Card." },
 ];
+
+/* ---------- What the phone shows alongside each slide ----------
+   Chapters are structural (a strip of dots on the phone, current one named);
+   PHONE_CARD is what a GLANCE card says during a slide deck — a title and up to
+   three takeaways a parent would want to remember. Fill these from each deck's
+   content; while empty the phone shows the chapter and "eyes on the screen". */
+const CHAPTER_OF={ compass:'Into the Hive', video_intro:'Who we are', deck_a:'Who we are', fold_s:'Who we are',
+  poll_dream:'Our values', values:'Our values', deck_b:'Our values',
+  funfact_cca:'Passions', fold_a:'Passions', poll_cca:'Passions', deck_c:'Passions',
+  poll_nexus_count:'NEXUS@BTY', poll_industry:'NEXUS@BTY', funfact_nexus:'NEXUS@BTY', fold_i:'NEXUS@BTY', nexus_global:'NEXUS@BTY', nexus_local:'NEXUS@BTY', deck_d:'NEXUS@BTY',
+  deck_e:'Your pathway', hive_wakes:'Set sail', fold_l:'Set sail', pulse_check:'Set sail', set_sail:'Set sail', finale:'Set sail',
+  deck_f:'Your journey', card:'Your journey' };
+const PHONE_CARD={
+  deck_a:{ title:'', keys:[] },   // e.g. title:'Welcome to Beatty', keys:['Est. 1953 · named after Admiral Beatty', '…', '…']
+  deck_b:{ title:'', keys:[] },
+  deck_c:{ title:'', keys:[] },
+  deck_d:{ title:'', keys:[] },
+  deck_e:{ title:'', keys:[] },
+  deck_f:{ title:'', keys:[] },
+};
+journeySteps.forEach(st=>{ if(!st.ch) st.ch=CHAPTER_OF[st.id]||''; });
+const RESPOND_TYPES=['chart','poll','globe','industry_map','pulse_check','finale','fold'];
 
 const modalData={
   GeoBali:{ title:"Geography & Literature @ Bali", students:30, duration:"1 Week", desc:"An immersive study of Bali's living landscape — its volcanic geography and the communities who adapt to it.", highlights:["Read a real volcanic landscape","See how communities adapt to their environment","Learn on-site, beyond the classroom"] },
@@ -636,6 +678,9 @@ const modalData={
 /* ---------- Firebase listeners ---------- */
 function initListeners(){
   startClockListener();
+  // Fold progress: each phone writes its boat's nextFold as it folds → "137 / 212 folded".
+  onSnapshot(collection(db,"x_boats"), snap=>{ const m={}; snap.forEach(d=>{ m[d.id]=d.data().nextFold||0; }); live.folds=m;
+    if(journeySteps[currentStep]?.type==='fold') paintFoldCount(); }, err=>console.warn(err));
   onSnapshot(collection(db,"compassQuiz"), snap=>{
     const r=aggregate(snap,'archetype'); live.compass=r;
     updateParticipant(r.total);
@@ -691,6 +736,7 @@ function broadcastSession(){
     currentView:step.type, pollData:step.pollData||null, nexusData:step.nexusData||null,
     title:step.title||'', description:step.desc||'', url:step.url||null,
     revealed: !!step.revealed, step: currentStep,
+    chapter: step.ch||'', funfact: step.funfactData||null, card: PHONE_CARD[step.id]||null, fold: step.fold||null,
     staticContent: step.type==='values'?true:null,
     ts:lastWriteTs, sts:serverTimestamp(), cue
   }).catch(()=>{});
@@ -784,6 +830,43 @@ function renderBloom(){
   return `<div class="bloom-field" id="bloomField">${cells}</div>
     <div class="bloom-msg" id="bloomMsg"><div class="vis-title center">The Hive Wakes<span class="vs">Phones up, screens facing out. On zero, we light the hall together.</span></div></div>`;
 }
+/* ---------- FOLD WITH US: a presenter-led fold beat ----------
+   The room folds together. The big screen demos the two folds on a loop (the
+   same SVG stages the phones use), names the chapter, and counts the boats that
+   have reached this stage so the presenter knows when to move on (~80%). */
+let foldDemoTimer=null;
+function renderFold(step){
+  const f=step.fold; setTimeout(()=>{ runFoldDemo(f); paintFoldCount(); },50);
+  return `<div class="fold-stage">
+    <div class="fold-demo" id="foldDemo"></div>
+    <div class="fold-side">
+      <p class="eyebrow">Fold with us</p>
+      <h2 class="stage-title"><span class="fold-letter">${f.letter}</span>${f.name}</h2>
+      <p class="stage-sub" style="margin:6px 0 18px">${f.sub} · folds ${f.from+1}–${f.to}</p>
+      <p class="fold-cap" id="foldCap"></p>
+      <div class="fold-count" id="foldCount"><span class="fc-n">0</span><span class="fc-l">boats folded</span></div>
+    </div></div>`;
+}
+function runFoldDemo(f){
+  if(foldDemoTimer){ clearInterval(foldDemoTimer); foldDemoTimer=null; }
+  const host=document.getElementById('foldDemo'), cap=document.getElementById('foldCap'); if(!host) return;
+  let i=f.from;
+  const draw=()=>{ if(!document.getElementById('foldDemo')){ clearInterval(foldDemoTimer); foldDemoTimer=null; return; }
+    if(!boatMod){ host.innerHTML='<div class="fold-wait">⛵</div>'; return; }
+    const st=boatMod.STAGE_FOR_FOLD?boatMod.STAGE_FOR_FOLD[i]:i; const nxt=Math.min(8,(boatMod.STAGE_FOR_FOLD?boatMod.STAGE_FOR_FOLD[i]:i)+1);
+    host.innerHTML=`<div class="fd-pair"><div class="fd-from">${boatMod.buildOrigamiSVG(boatMod.BOAT_DEFAULTS, st, 300)}</div><div class="fd-arrow">→</div><div class="fd-to">${boatMod.buildOrigamiSVG(boatMod.BOAT_DEFAULTS, nxt, 300)}</div></div>`;
+    if(cap) cap.textContent=`Fold ${i+1} · ${(boatMod.FOLD_LABELS&&boatMod.FOLD_LABELS[i])||''}`;
+    i++; if(i>=f.to) i=f.from; };
+  draw(); foldDemoTimer=setInterval(draw,2600);
+}
+function paintFoldCount(){
+  const s=journeySteps[currentStep]; if(!s||s.type!=='fold') return;
+  const el=document.getElementById('foldCount'); if(!el) return;
+  const folds=live.folds||{}; const n=Object.values(folds).filter(v=>v>=s.fold.to).length; const total=Math.max(live.compass?.total||0, Object.keys(folds).length);
+  el.querySelector('.fc-n').textContent=n; el.querySelector('.fc-l').textContent= total>0 ? `of ${total} boats folded` : 'boats folded';
+  el.classList.toggle('most', total>0 && n/total>=0.8);
+}
+
 function fireBloom(){
   if(!isPresenter) return;
   if(pendingCue && pendingCue.at > serverNow()) { showToast('Already counting…'); return; }
@@ -858,6 +941,7 @@ function renderContent(step){
     case 'pulse_check': return renderPulse();
     case 'finale': return renderFinale();
     case 'bloom': return renderBloom();
+    case 'fold': return renderFold(step);
     case 'fleet': return `<iframe src="x/fleet.html?embed=1" title="The Fleet Sets Sail" style="width:100%; height:100%; border:0; display:block" allow="autoplay"></iframe>`;
     case 'memento': return `<div style="text-align:center"><div style="font-size:clamp(5rem,12vw,9rem)">📱</div><h2 class="stage-title" style="font-size:clamp(2rem,4vw,3.6rem); margin-top:10px">Check your phone</h2><p class="stage-sub" style="margin:14px auto 0">Your personal Beatty Compass Card is waiting.</p></div>`;
     case 'video': return `<div style="width:100%; height:100%; background:#000; position:relative; display:flex; align-items:center; justify-content:center">${iframeLoading()}<iframe src="${step.url}" style="width:100%; height:100%; border:0; position:relative; z-index:1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`;
@@ -996,7 +1080,7 @@ function paintHive(){
   if(entries.length>CAP){ const fixed=entries.slice(0,CAP-TAIL), tail=entries.slice(CAP-TAIL); const win=[]; for(let k=0;k<TAIL;k++) win.push(tail[(hiveRot+k)%tail.length]); shown=fixed.concat(win);
     if(!hiveRotTimer) hiveRotTimer=setInterval(()=>{ hiveRot+=TAIL; if(!document.getElementById('hiveHost')){ clearInterval(hiveRotTimer); hiveRotTimer=null; return; } paintHive(); },6000); }
   const W=host.clientWidth, H=host.clientHeight;
-  const cw=Math.max(96, Math.min(150, W/9)), ch=cw*0.88, cx=W/2-cw/2, cy=H*0.56-ch/2;
+  const cw=Math.max(96, Math.min(150, W/9)), ch=cw*0.88, cx=W/2-cw/2, cy=H*0.5-ch/2;
   const coords=hexSpiral(shown.length, cw, ch);
   host.querySelectorAll('.hive-cell').forEach(c=>{ if(+c.dataset.i>=shown.length) c.remove(); });
   shown.forEach((e,i)=>{
@@ -1164,8 +1248,10 @@ function renderStep(){
   progText.textContent=`Step ${currentStep+1} / ${journeySteps.length}`;
 
   broadcastSession();
+  document.getElementById('sailOv')?.remove();   // a cue overlay never outlives its step
+  journeyContent.classList.toggle('respond', RESPOND_TYPES.includes(step.type));   // gold frame = "phones, it's your turn"
 
-  const immersive = ['slide','video','globe','industry_map','funfact','finale','fleet','bloom'].includes(step.type);
+  const immersive = ['slide','video','globe','industry_map','funfact','finale','fleet','bloom','fold'].includes(step.type);
   const titleHTML = (!immersive && step.title)?`<p class="eyebrow">${step.id.includes('poll')?'Live Poll':'Beatty'}</p><h2 class="stage-title">${step.title}</h2>`:'';
   const descHTML  = (!immersive && step.desc)?`<p class="stage-sub" style="margin:0 auto 26px">${step.desc}</p>`:'';
   const inner = renderContent(step);

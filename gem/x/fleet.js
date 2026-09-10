@@ -509,7 +509,7 @@ function riseBeeDot(x, y) {
 
 // === WAITING HINT (live, but no boats yet) ===
 function showWaitingHint() {
-    if (document.getElementById('fleetHint') || boatElements.size > 0) return;
+    if (FINALE || document.getElementById('fleetHint') || boatElements.size > 0) return;
     const el = document.createElement('div');
     el.id = 'fleetHint';
     el.className = 'fleet-hint';
