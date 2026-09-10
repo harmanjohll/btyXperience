@@ -784,3 +784,29 @@ body::before {
     .fold-dot { animation: none !important; }
     .fold-overlay { cursor: pointer; }
 }
+
+
+/* === THE COLLECTIVE SET SAIL (phone) === */
+.hold-screen { transition: filter .5s ease; }
+.hold-screen.dim { filter: brightness(.8); }
+.hold-boat { position: relative; width: 230px; height: 230px; margin: 0 auto; filter: drop-shadow(0 12px 26px rgba(0,0,0,.55)); }
+.hold-boat.tug { animation: holdTug .42s cubic-bezier(.22,1,.36,1); }
+@keyframes holdTug { 0% { transform: translateY(0); } 40% { transform: translateY(-9px) scale(1.02); } 100% { transform: translateY(0); } }
+.hold-ring { position: absolute; left: 50%; top: 66%; width: 92px; height: 92px; margin: -46px 0 0 -46px; border-radius: 50%;
+    border: 2px solid rgba(255,226,0,.75); box-shadow: 0 0 22px rgba(255,226,0,.35), inset 0 0 18px rgba(255,226,0,.12);
+    animation: holdRing 1.6s ease-in-out infinite; pointer-events: none; }
+@keyframes holdRing { 0%,100% { transform: scale(.94); opacity: .55; } 50% { transform: scale(1.06); opacity: 1; } }
+.hold-boat.depart { animation: holdDepart 1.3s cubic-bezier(.5,0,.9,.4) forwards; }
+.hold-boat.depart .hold-ring { display: none; }
+@keyframes holdDepart { 0% { transform: translateY(0) scale(1); opacity: 1; } 22% { transform: translateY(-14px) scale(1.03); } 100% { transform: translateY(-120vh) scale(.28); opacity: .1; } }
+#holdWord.word-pop { animation: wordPop .5s cubic-bezier(.22,1,.36,1) both; }
+@keyframes wordPop { 0% { transform: scale(.7); opacity: 0; } 60% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); } }
+.atsea-screen::before, .atsea-screen::after { content: ''; position: fixed; left: 0; right: 0; height: 14px; background: var(--sail, #FFE200); z-index: 44; box-shadow: 0 0 28px var(--sail, #FFE200); }
+.atsea-screen::before { top: 0; } .atsea-screen::after { bottom: 0; }
+.atsea-swatch { width: 64px; height: 64px; border-radius: 50%; margin: 6px auto 0; box-shadow: 0 0 30px currentColor; }
+.rollcall { margin-top: 18px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.rc-word { font-family: 'Georgia',serif; font-size: 2rem; color: var(--accent-gold-light); }
+.rc-sub { font-size: .85rem; color: var(--text-secondary); }
+.atsea-screen.rc-flash { animation: rcFlash .5s ease-in-out 3; }
+@keyframes rcFlash { 50% { background: color-mix(in srgb, var(--sail, #FFE200) 35%, transparent); } }
+@media (prefers-reduced-motion: reduce) { .hold-boat.tug, .hold-ring, #holdWord.word-pop, .atsea-screen.rc-flash { animation: none; } .hold-boat.depart { animation-duration: .4s; } }

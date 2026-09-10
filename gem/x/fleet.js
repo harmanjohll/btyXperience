@@ -164,6 +164,7 @@ function updateDistributionBar() {
 const MILESTONES = [10, 25, 50, 100, 200, 500];
 let lastMilestone = 0;
 function checkMilestone(count) {
+    if (releaseAt) return;   // the launch has its own number; no milestone flashes over it
     const hit = MILESTONES.filter(m => m <= count && m > lastMilestone);
     if (hit.length === 0) return;
     lastMilestone = Math.max(...hit);
@@ -225,6 +226,7 @@ function placeBoat(data) {
     const bobDelay = Math.random() * 4;
 
     el.style.left = x + 'px';
+    el.style.setProperty('--gx', (x / areaW).toFixed(2));   // gust stagger, left → right
     el.style.top  = y + 'px';
     el.style.opacity = (0.72 + depth * 0.28).toFixed(2);
     el.style.zIndex = String(10 + Math.round(depth * 100));
@@ -270,7 +272,8 @@ function placeBoat(data) {
     // ("Now setting sail — <Archetype> · <ASPIRATION>") that echoes the phone's
     // parting line, "your boat is joining the fleet." A manual click still opens
     // the rich modal spotlight below.
-    if (autoSpotlightEnabled) {
+    // …but not while a wave is landing: 200 ribbons would blanket the sea.
+    if (autoSpotlightEnabled && !(releaseAt && Date.now() < releaseAt + 3000)) {
         featureBoatInPlace(el);
         enqueueRibbon(data, archetype);
     }
@@ -379,19 +382,117 @@ function showSpotlight(data) {
 // === LISTEN TO FIREBASE (invoked from the dynamic-import block once ready) ===
 function startFleetListener() {
     if (!db || !onSnapshot) return;
+    startSessionListener();
     onSnapshot(collection(db, "x_boats"), (snapshot) => {
         snapshot.docChanges().forEach(change => {
             if (change.type === 'added' || change.type === 'modified') {
-                const data = { uid: change.doc.id, ...change.doc.data() };
-                boats.set(data.uid, data);
-                // Every launched boat sails — named or not. A boat whose dream or
-                // colours arrive later is repainted in place, never added twice.
-                if (boatElements.has(data.uid)) updateBoat(data); else placeBoat(data);
+                onBoatDoc({ uid: change.doc.id, ...change.doc.data() });
             }
         });
     }, (err) => console.warn("Fleet listener error:", err));
     showWaitingHint();
 }
+
+// ============================================================
+//   THE COLLECTIVE SET SAIL — harbour · cue · waves · gust · roll call
+//   Phones write their boat when they reach the ready gate (launched:false):
+//   the harbour fills and the screen counts "N boats ready". The presenter's
+//   cue names a server time; at that instant the harbour releases in three
+//   waves (so the eye sees it grow), a gust ripples every sail, the number
+//   lands large, and the roll call spotlights each destination in turn.
+// ============================================================
+const harbour = new Map();
+let released = false, releaseAt = 0;
+let stragglers = [], stragglerTimer = null;
+let handledCueId = null, uncuedTimer = null;
+let fleetOffset = 0; const fleetSamples = []; let lastSts = null;
+const DEST_ROLL = [
+    { id:'GeoBali', name:'Bali', col:'#F28C28' }, { id:'NZ', name:'New Zealand', col:'#2BB3A8' }, { id:'Korea', name:'South Korea', col:'#D64FA0' },
+    { id:'MiharaJapan', name:'Mihara, Japan', col:'#EC5A5F' }, { id:'MutsuzawaJapan', name:'Mutsuzawa, Japan', col:'#B5D334' }, { id:'Estonia', name:'Estonia', col:'#7FD3F7' },
+];
+function startSessionListener() {
+    if (!db || !onSnapshot || !doc) return;
+    try {
+        onSnapshot(doc(db, "session", "state"), (snap) => {
+            const d = (snap && snap.data) ? snap.data() : null; if (!d) return;
+            // Clock: the presenter stamps every write with a server timestamp; on the
+            // presenter's own machine it lands fast — assume ~120 ms in flight.
+            const sts = typeof d.sts === 'number' ? d.sts : (d.sts && typeof d.sts.toMillis === 'function' ? d.sts.toMillis() : null);
+            if (sts != null && sts !== lastSts) {
+                lastSts = sts; fleetSamples.push(Date.now() - sts - 120); if (fleetSamples.length > 5) fleetSamples.shift();
+                const a = [...fleetSamples].sort((x, y) => x - y); fleetOffset = a[Math.floor(a.length / 2)];
+            }
+            if (d.cue && d.cue.kind === 'sail' && d.cue.id !== handledCueId) { handledCueId = d.cue.id; scheduleRelease(d.cue.at + fleetOffset); }
+            // Safety: on the fleet slide with no cue for a long while, release anyway.
+            if (d.currentView === 'fleet' && !released && !releaseAt && !uncuedTimer) {
+                uncuedTimer = setTimeout(() => { if (!released && !releaseAt) scheduleRelease(Date.now() + 1000); }, 25000);
+            }
+        }, () => {});
+    } catch (e) {}
+}
+function onBoatDoc(data) {
+    boats.set(data.uid, data);
+    if (boatElements.has(data.uid)) { updateBoat(data); return; }               // repaint in place
+    if (!data.launched && !released) { harbour.set(data.uid, data); updateReadyCount(); return; }
+    if (releaseAt && Date.now() < releaseAt + 2600) {                              // arrived mid-launch → next wave
+        stragglers.push(data); clearTimeout(stragglerTimer);
+        stragglerTimer = setTimeout(flushStragglers, Math.max(50, (releaseAt + 2700) - Date.now())); return;
+    }
+    placeBoat(data);
+}
+function flushStragglers() { const q = stragglers; stragglers = []; q.forEach((d, i) => setTimeout(() => placeBoat(d), i * 120)); }
+function bigEl() {
+    let el = document.getElementById('fleetBig');
+    if (!el) { el = document.createElement('div'); el.id = 'fleetBig'; el.className = 'fleet-big'; document.body.appendChild(el); }
+    return el;
+}
+function updateReadyCount() {
+    if (released) return;
+    const el = bigEl(); el.className = 'fleet-big ready';
+    el.innerHTML = `<span class="fb-n">${harbour.size}</span><span class="fb-l">${harbour.size === 1 ? 'boat' : 'boats'} ready</span>`;
+    const hint = document.getElementById('fleetHint'); if (hint && harbour.size > 0) hint.remove();
+}
+function scheduleRelease(localAt) {
+    if (released || releaseAt) return;
+    releaseAt = localAt; clearTimeout(uncuedTimer);
+    const t0 = Math.max(0, localAt - Date.now());
+    setTimeout(() => document.body.classList.add('countdown'), Math.max(0, t0 - 8000));
+    [[600, 0.4], [1300, 0.5], [2000, 1]].forEach(([dt, frac], i, arr) => setTimeout(() => releaseWave(frac, i === arr.length - 1), t0 + dt));
+    setTimeout(() => document.body.classList.remove('countdown'), t0 + 500);
+    setTimeout(() => { gust(); setInterval(gust, 8000); }, t0 + 4000);
+    DEST_ROLL.forEach((d, i) => setTimeout(() => rollCall(d, i === DEST_ROLL.length - 1), t0 + 12000 + i * 3000));
+    setTimeout(() => bigEl().classList.add('fade'), t0 + 40000);
+}
+function releaseWave(frac, last) {
+    const pool = [...harbour.values()];
+    if (last) released = true;
+    const n = last ? pool.length : Math.ceil(pool.length * frac);
+    for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }   // a wave is a spread of the room
+    pool.slice(0, n).forEach((d, i) => { harbour.delete(d.uid); setTimeout(() => placeBoat(d), i * 45); });
+    showBigCount(n);
+}
+function showBigCount(justReleased) {
+    const el = bigEl(); el.className = 'fleet-big sailing';
+    const target = boatElements.size + (justReleased || 0);
+    const from = parseInt(el.dataset.n || '0', 10) || 0;
+    const t0 = performance.now(), dur = 1400;
+    (function tick(now) {
+        const p = Math.min(1, (now - t0) / dur); const v = Math.round(from + (target - from) * (1 - Math.pow(1 - p, 3)));
+        el.innerHTML = `<span class="fb-n">${v}</span><span class="fb-l">${v === 1 ? 'boat' : 'boats'} set sail</span>`; el.dataset.n = v;
+        if (p < 1) requestAnimationFrame(tick);
+    })(t0);
+}
+function gust() { fleetArea.classList.remove('gust'); void fleetArea.offsetWidth; fleetArea.classList.add('gust'); }
+function rollCall(dest, last) {
+    let cap = document.getElementById('fleetCall');
+    if (!cap) { cap = document.createElement('div'); cap.id = 'fleetCall'; cap.className = 'fleet-call'; document.body.appendChild(cap); }
+    cap.innerHTML = `<span class="fc-swatch" style="background:${dest.col};color:${dest.col}"></span>${dest.name} — <em>wave!</em>`;
+    cap.classList.remove('pop', 'out'); void cap.offsetWidth; cap.classList.add('pop');
+    boatElements.forEach((el, uid) => { const d = boats.get(uid); el.classList.toggle('called', !!(d && d.global && d.global.id === dest.id)); });
+    setTimeout(() => { boatElements.forEach(el => el.classList.remove('called')); if (last) cap.classList.add('out'); }, 2800);
+}
+// Rehearsal without a presenter: S releases the harbour on an 8-second count.
+document.addEventListener('keydown', (e) => { if ((e.key === 's' || e.key === 'S') && !releaseAt && !e.target.closest('input,textarea')) scheduleRelease(Date.now() + 8000); });
 
 // === WAITING HINT (live, but no boats yet) ===
 function showWaitingHint() {

@@ -186,6 +186,25 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 :focus-visible{outline:2px solid var(--gold); outline-offset:2px}
 #resetInput:focus{border-color:var(--gold) !important}
 .poll-insight{margin:clamp(16px,3vh,28px) auto 0; max-width:1100px; text-align:center; font-family:var(--serif); font-size:clamp(1.2rem,2.2vw,1.9rem); color:#fff; background:rgba(255,226,0,.08); border:1px solid rgba(255,226,0,.32); border-radius:16px; padding:16px 26px; animation:fadeUp .6s var(--ease) both}
+.set-sail-btn{background:var(--gold); color:var(--navy); font-family:var(--serif); font-weight:800; font-size:1.05rem; letter-spacing:.06em; padding:.85rem 1.4rem; border-radius:14px; border:none; cursor:pointer; margin-right:12px; box-shadow:0 0 0 0 rgba(255,226,0,.5); animation:sailPulse 1.8s ease-in-out infinite}
+@keyframes sailPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,226,0,.45)}50%{box-shadow:0 0 0 12px rgba(255,226,0,0)}}
+.sail-ov{position:fixed; inset:0; z-index:180; pointer-events:none; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding-top:clamp(70px,11vh,140px); text-align:center; transition:background .5s ease}
+.sail-ov.dim{background:rgba(0,3,20,.32)}
+.sail-ov.go{background:transparent}
+.sail-ov.out{opacity:0; transition:opacity .8s ease}
+.sail-ov-eyebrow{font-size:clamp(.8rem,1.4vw,1.2rem); letter-spacing:.34em; text-transform:uppercase; color:var(--gold); font-weight:800; text-shadow:0 2px 20px rgba(0,0,0,.6)}
+.sail-ov-word{font-family:var(--serif); font-weight:800; color:#fff; font-size:clamp(3.4rem,9vw,9.5rem); line-height:1; margin-top:12px; text-shadow:0 6px 40px rgba(0,0,0,.7), 0 0 60px rgba(255,226,0,.25); letter-spacing:.02em}
+.sail-ov-word.resp{color:var(--gold)}
+.sail-ov-word.pop{animation:sailPop .55s var(--ease) both}
+@keyframes sailPop{0%{transform:scale(.72); opacity:0}60%{transform:scale(1.06); opacity:1}100%{transform:scale(1)}}
+.sail-ov-sub{margin-top:18px; font-size:clamp(1rem,1.8vw,1.5rem); color:#EAECF7; max-width:56ch; text-shadow:0 2px 14px rgba(0,0,0,.7)}
+.sail-ov-sub em{color:var(--gold); font-style:italic}
+.sail-ov-call{position:absolute; left:50%; bottom:clamp(120px,16vh,190px); transform:translateX(-50%); font-family:var(--serif); font-size:clamp(1.6rem,3.2vw,3rem); color:#fff; background:rgba(0,6,31,.72); border:1px solid rgba(255,226,0,.35); border-radius:999px; padding:14px 34px; white-space:nowrap; text-shadow:0 2px 14px rgba(0,0,0,.6); display:none}
+.sail-ov-call:not(:empty){display:inline-flex; align-items:center; gap:14px}
+.sail-ov-call em{color:var(--gold)}
+.sail-ov-call.pop{animation:sailPop .5s var(--ease) both}
+.sail-ov-swatch{display:inline-block; width:.9em; height:.9em; border-radius:50%; box-shadow:0 0 18px currentColor}
+@media (prefers-reduced-motion:reduce){ .set-sail-btn{animation:none} .sail-ov-word.pop,.sail-ov-call.pop{animation:none} }
 .votes-chip{font-family:var(--serif); font-weight:700; color:var(--navy); background:var(--gold); border-radius:12px; padding:.5rem 1.2rem; font-size:clamp(1rem,1.7vw,1.5rem)}
 
 /* --- Fun fact --- */
@@ -372,6 +391,9 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
       <button id="ppQR" class="pp-btn pp-grey">Show QR</button>
       <button id="ppFleet" class="pp-btn pp-grey">Fleet View</button>
     </div>
+    <div class="pp-row" style="margin-bottom:8px">
+      <button id="ppSail" class="pp-btn pp-gold">⛵ Set Sail (S)</button>
+    </div>
     <button id="ppReset" class="pp-btn pp-red">Reset Session</button>
   </div>
 </div>
@@ -468,7 +490,7 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 // unreachable on venue wifi, the module STILL runs — the presentation boots
 // in offline/demo mode instead of the whole page going dead. (A static
 // `import` resolves before any code runs, so a CDN failure would kill everything.)
-let initializeApp, getFirestore, collection, getDocs, writeBatch, onSnapshot, doc, setDoc, getAuth, signInAnonymously;
+let initializeApp, getFirestore, collection, getDocs, writeBatch, onSnapshot, doc, setDoc, serverTimestamp, getAuth, signInAnonymously;
 async function loadFirebase(){
   const [appM, fsM, authM] = await Promise.all([
     import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
@@ -476,7 +498,7 @@ async function loadFirebase(){
     import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"),
   ]);
   initializeApp = appM.initializeApp;
-  ({ getFirestore, collection, getDocs, writeBatch, onSnapshot, doc, setDoc } = fsM);
+  ({ getFirestore, collection, getDocs, writeBatch, onSnapshot, doc, setDoc, serverTimestamp } = fsM);
   ({ getAuth, signInAnonymously } = authM);
 }
 
@@ -599,6 +621,7 @@ const modalData={
 
 /* ---------- Firebase listeners ---------- */
 function initListeners(){
+  startClockListener();
   onSnapshot(collection(db,"compassQuiz"), snap=>{
     const r=aggregate(snap,'archetype'); live.compass=r;
     updateParticipant(r.total);
@@ -648,12 +671,87 @@ function aggregate(snap,prop){ const r={total:0,breakdown:{}}; snap.forEach(d=>{
 function broadcastSession(){
   const step=journeySteps[currentStep]; if(!step) return;
   if(!(dbReady && isPresenter)) return;
+  lastWriteLocal=Date.now(); lastWriteTs=lastWriteLocal;
+  const cue=(pendingCue && pendingCue.at > serverNow()-60000) ? pendingCue : null;
   setDoc(doc(db,"session","state"),{
     currentView:step.type, pollData:step.pollData||null, nexusData:step.nexusData||null,
     title:step.title||'', description:step.desc||'', url:step.url||null,
     revealed: !!step.revealed, step: currentStep,
-    staticContent: step.type==='values'?true:null, ts:Date.now()
+    staticContent: step.type==='values'?true:null,
+    ts:lastWriteTs, sts:serverTimestamp(), cue
   }).catch(()=>{});
+}
+
+/* ---------- Shared clock ----------
+   Every "together" moment is scheduled at a SERVER time a few seconds ahead, and
+   each screen fires it on its own clock. The presenter learns (local − server)
+   by reading back its own writes: the server stamps `sts`; we know when we sent
+   it and when the confirmation came back. Median of the last few samples. */
+let clockOffset=0; const clockSamples=[]; let lastWriteLocal=0, lastWriteTs=0;
+function serverNow(){ return Date.now()-clockOffset; }
+function startClockListener(){
+  if(!(dbReady && isPresenter)) return;
+  try{ onSnapshot(doc(db,"session","state"), snap=>{
+    try{
+      if(!snap.exists() || (snap.metadata && snap.metadata.hasPendingWrites)) return;
+      const d=snap.data(); if(!d || d.ts!==lastWriteTs) return;
+      const sts = typeof d.sts==='number' ? d.sts : (d.sts && typeof d.sts.toMillis==='function' ? d.sts.toMillis() : null);
+      if(sts==null) return;
+      clockSamples.push((lastWriteLocal+Date.now())/2 - sts); if(clockSamples.length>7) clockSamples.shift();
+      const a=[...clockSamples].sort((x,y)=>x-y); clockOffset=a[Math.floor(a.length/2)];
+    }catch(e){}
+  }, ()=>{}); }catch(e){}
+}
+
+/* ---------- SET SAIL: one cue, one clock, two screens ----------
+   The presenter's button arms a cue 8 s ahead. The big screen paces the
+   call-and-response (NON VI / SED ARTE ×3), the phones hold their boats and tug
+   on every response, and on the third "Sed Arte!" every boat leaves every phone
+   in the same instant while the fleet releases from harbour in three waves. */
+let pendingCue=null;
+const SAIL_LEAD=8000;
+const SAIL_WORDS=[[6000,'NON VI',false],[5000,'SED ARTE',true],[4000,'NON VI',false],[3000,'SED ARTE',true],[2000,'NON VI',false],[1000,'SED ARTE!',true]]   // ms remaining before the release;
+const DEST_ROLL=[{id:'GeoBali',name:'Bali',col:'#F28C28'},{id:'NZ',name:'New Zealand',col:'#2BB3A8'},{id:'Korea',name:'South Korea',col:'#D64FA0'},{id:'MiharaJapan',name:'Mihara, Japan',col:'#EC5A5F'},{id:'MutsuzawaJapan',name:'Mutsuzawa, Japan',col:'#B5D334'},{id:'Estonia',name:'Estonia',col:'#7FD3F7'}];
+function fireSetSail(){
+  if(!isPresenter) return;
+  if(pendingCue && pendingCue.at > serverNow()) { showToast('Already counting…'); return; }
+  pendingCue={ id:'sail-'+Date.now(), kind:'sail', at: serverNow()+SAIL_LEAD };
+  broadcastSession();
+  runSailOverlay(pendingCue.at + clockOffset);
+}
+function runSailOverlay(localAt){
+  document.getElementById('sailOv')?.remove();
+  const ov=document.createElement('div'); ov.id='sailOv'; ov.className='sail-ov';
+  ov.innerHTML=`<div class="sail-ov-eyebrow">Set Sail, Beatty</div><div class="sail-ov-word" id="sailWord">Hold your boat</div><div class="sail-ov-sub" id="sailSub">Thumb on your boat. I say <em>Non Vi</em> — you say <em>Sed Arte</em>. On the third, let go.</div><div class="sail-ov-call" id="sailCall"></div>`;
+  document.body.appendChild(ov);
+  const wordEl=document.getElementById('sailWord'), subEl=document.getElementById('sailSub'), callEl=document.getElementById('sailCall');
+  let wi=0, riser=false, dimmed=false, fired=false, rc=-1, done=false;
+  function frame(){
+    if(done) return;
+    const rem=localAt-Date.now();
+    if(!riser && rem<=6000){ riser=true; sailSound('riser'); }
+    while(wi<SAIL_WORDS.length && rem<=SAIL_WORDS[wi][0]){
+      const [,w,resp]=SAIL_WORDS[wi++];
+      wordEl.textContent=w; wordEl.classList.remove('pop'); void wordEl.offsetWidth; wordEl.classList.add('pop');
+      wordEl.classList.toggle('resp',resp); if(resp) sailSound('count');
+      subEl.textContent='';
+    }
+    if(!dimmed && rem<=500){ dimmed=true; ov.classList.add('dim'); wordEl.textContent=''; }
+    if(!fired && rem<=0){ fired=true; ov.classList.remove('dim'); ov.classList.add('go'); sailSound('boom'); }
+    if(fired){
+      const t=-rem;                                   // ms since launch
+      if(t>=12000 && t<12000+DEST_ROLL.length*3000){ const i=Math.floor((t-12000)/3000); if(i!==rc){ rc=i; const d=DEST_ROLL[i];
+        callEl.innerHTML=`<span class="sail-ov-swatch" style="background:${d.col}"></span>${d.name} — <em>wave!</em>`; callEl.classList.remove('pop'); void callEl.offsetWidth; callEl.classList.add('pop'); sailSound('chime'); } }
+      else if(t>=12000+DEST_ROLL.length*3000 && callEl.textContent){ callEl.textContent=''; }
+      if(t>=42000){ done=true; ov.classList.add('out'); setTimeout(()=>ov.remove(),800); return; }
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+function updateSailBtn(step){
+  const b=document.getElementById('setSailBtn'); if(!b) return;
+  b.style.display=(isPresenter && step && step.type==='fleet')?'inline-flex':'none';
 }
 
 /* Reveal the answer where it stands: the correct bar ignites gold and the insight
@@ -1010,6 +1108,7 @@ function renderStep(){
   else if(currentStep===journeySteps.length-1) label='Finish';
   nextBtn.textContent=label;
   if(isPresenter) updatePPStep();
+  updateSailBtn(step);
 }
 
 // Animated step transition wrapper
@@ -1079,6 +1178,9 @@ if(isPresenter){
     showToast(paceMode==='presenter'?'You now control the pace':'Audience self-paces'); };
   document.getElementById('ppSound').onclick=(ev)=>{ soundOn=!soundOn; ev.target.textContent= soundOn?'🔊 Sound':'🔇 Muted'; ev.target.className='pp-btn '+(soundOn?'pp-grey':'pp-red'); if(soundOn){ startAudio(); sfx('reveal'); } };
   document.getElementById('ppQR').onclick=()=>document.getElementById('qrOverlay').classList.remove('hidden');
+  document.getElementById('ppSail').onclick=fireSetSail;
+  // The big footer button, shown only on the fleet step: the presenter's baton.
+  (function(){ const b=document.createElement('button'); b.id='setSailBtn'; b.className='btn set-sail-btn'; b.innerHTML='⛵&nbsp; SET SAIL'; b.style.display='none'; b.onclick=(e)=>{ ripple(e,b); fireSetSail(); }; nextBtn.insertAdjacentElement('beforebegin', b); })();
   document.getElementById('ppFleet').onclick=()=>window.open('sail/presenter.html','_blank');
   document.getElementById('ppReset').onclick=openReset;
 }
@@ -1160,12 +1262,25 @@ function sfx(kind){ if(!audioCtx||!soundOn) return;
   else if(kind==='flip'){ tone(440,0.12,'square',0.02); }
   else if(kind==='open'){ tone(392,0.2,'sine',0.035); tone(587,0.25,'sine',0.03,0.06); }
 }
+/* The hall's PA is the hit; the phones are texture. */
+function sailSound(kind){ if(!audioCtx||!soundOn) return; const t=audioCtx.currentTime;
+  try{
+    if(kind==='count'){ tone(98,0.5,'sine',0.16); tone(196,0.3,'triangle',0.05,0.01); }
+    else if(kind==='riser'){ const o=audioCtx.createOscillator(), g=audioCtx.createGain(), f=audioCtx.createBiquadFilter();
+      o.type='sawtooth'; o.frequency.setValueAtTime(110,t); o.frequency.exponentialRampToValueAtTime(880,t+5.4);
+      f.type='lowpass'; f.frequency.setValueAtTime(260,t); f.frequency.exponentialRampToValueAtTime(5200,t+5.4);
+      g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.10,t+5.3); g.gain.exponentialRampToValueAtTime(0.0001,t+5.5);
+      o.connect(f); f.connect(g); g.connect(audioCtx.destination); o.start(t); o.stop(t+5.6); }
+    else if(kind==='boom'){ tone(49,1.8,'sine',0.4); tone(73,1.4,'triangle',0.14,0.02); [1046,1318,1568,2093,2637].forEach((fq,i)=>tone(fq,1.6,'sine',0.03,0.06+i*0.05)); }
+    else if(kind==='chime'){ tone(1318,0.45,'sine',0.05); tone(1976,0.6,'sine',0.03,0.07); }
+  }catch(e){}
+}
 
 /* Ripple on all .btn */
 document.querySelectorAll('.btn').forEach(b=>b.addEventListener('click',e=>ripple(e,b)));
 
 // Demo helper for rehearsal: presenter can press "D" to inject demo data locally (visual only)
-if(isPresenter){ document.addEventListener('keydown', e=>{ if(e.key==='d' && dbReady){ /* reserved */ } }); }
+if(isPresenter){ document.addEventListener('keydown', e=>{ if(e.key==='d' && dbReady){ /* reserved */ } if((e.key==='s'||e.key==='S') && journeySteps[currentStep]?.type==='fleet' && !e.target.closest('input,textarea')){ fireSetSail(); } }); }
 </script>
 </body>
 </html>

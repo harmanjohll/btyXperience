@@ -54,6 +54,36 @@ document.addEventListener('visibilitychange', () => {
     try { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {}
 });
 document.addEventListener('touchend', () => { try { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) {} }, { passive: true });
+
+// === SHARED CLOCK ===
+// Every "together" moment is scheduled at a SERVER time; each phone fires it on
+// its own clock. We learn (local − server) by writing our own compassQuiz doc
+// with a server timestamp and reading it back: we know when we sent it and when
+// the confirmation returned. Median of a few samples. Firestore's propagation
+// delay never enters the picture, because cues are scheduled seconds ahead.
+let clockOffset = 0; const clockSamples = [];
+function serverNow() { return Date.now() - clockOffset; }
+function syncClock() {
+    if (!db || !auth?.currentUser || !onSnapshot) return;
+    try {
+        const ref = doc(db, "compassQuiz", auth.currentUser.uid);
+        const lt = Date.now();
+        setDoc(ref, { archetype: D.bee || 'Beattyian', timestamp: serverTimestamp(), lt }).catch(() => {});
+        let unsub = null;
+        unsub = onSnapshot(ref, (snap) => {
+            try {
+                if (snap.metadata && snap.metadata.hasPendingWrites) return;
+                const d = snap.data ? snap.data() : null; if (!d || d.lt !== lt) return;
+                const st = typeof d.timestamp === 'number' ? d.timestamp : (d.timestamp && typeof d.timestamp.toMillis === 'function' ? d.timestamp.toMillis() : null);
+                if (st == null) return;
+                clockSamples.push((lt + Date.now()) / 2 - st); if (clockSamples.length > 5) clockSamples.shift();
+                const a = [...clockSamples].sort((x, y) => x - y); clockOffset = a[Math.floor(a.length / 2)];
+                if (unsub) unsub();
+            } catch (e) {}
+        }, () => {});
+        setTimeout(() => { try { unsub && unsub(); } catch (e) {} }, 15000);
+    } catch (e) {}
+}
 function playCreaseSound() {
     try {
         const ctx = getAudioCtx();
@@ -262,6 +292,7 @@ function startSessionListener() {
                 if (!followMode && !(D.aspiration && D.launched && D.dreamSent)) { D.boarded ? renderAboard() : renderBoard(); }
                 return;
             }
+            if (data.cue) handleCue(data.cue);
             applyView(data);
         }, (e) => console.warn("Session listener:", e));
     } catch (e) { console.warn("Session listen failed:", e); }
@@ -1438,21 +1469,12 @@ function handleLaunch() {
 // the whole hall's boats flood the big screen at once. Writes the boat to the
 // fleet, plays the departure, and lands on the "you've set sail" hold.
 let launching = false;
-async function doLaunch() {
-    if (launching || D.launched) { renderSetSailDone(); return; }
-    launching = true;
-    onSetSailCue = null;
-    await saveToFirebase();
-    D.launched = true; save();
-    hapticPattern([50, 30, 100]); burstConfetti();
-    // Only land on the "set sail" hold if the presenter is still on the fleet
-    // slide — if they've already moved on (e.g. to the finale), don't clobber
-    // the screen applyView has since rendered underneath the departure overlay.
-    setSailTransition(() => { launching = false; if (!currentView || currentView.indexOf('fleet') === 0) renderSetSailDone(); });
-}
+function doLaunch() { launchNow(); }   // the "Set sail now" fallback button (no presenter)
 
 function renderReadyToSail() {
     hideCornerBoat();
+    saveToFirebase();                            // launched:false → the fleet's harbour counts you
+    syncClock();
     const c = colors();
     $app.innerHTML = `
     <div class="sail-screen ready-screen fade-up">
@@ -1594,6 +1616,7 @@ function applyView(state) {
     // Nobody follows the show until they've boarded: that one tap is what unlocks
     // sound, keeps the screen awake, and puts their bee in the Hive.
     if (!D.boarded) { if (!document.getElementById('boardGrid')) renderBoard(); return; }
+    if (sailSeq) return;                         // the count is running — nothing interrupts it
     const v = state.currentView || 'chart';
     // Leaving a poll → drop its live-results listener.
     if (v !== 'poll' && window.__pollUnsub) { window.__pollUnsub(); window.__pollUnsub = null; }
@@ -1826,22 +1849,113 @@ async function submitName() {
 
 /* Collective Set Sail — the whole hall launches at once on the fleet slide. */
 function triggerSetSail() {
-    if (D.launched) { renderSetSailDone(); return; }
-    doLaunch();
+    if (D.launched) { renderAtSea(); return; }
+    if (sailSeq) return;                                       // the count is running
+    if (D.dreamSent) renderReadyToSail(); else showName();     // get to the gate
+    // No cue for a long while (the button was never pressed)? Launch anyway.
+    clearTimeout(uncuedTimer);
+    uncuedTimer = setTimeout(() => { if (!D.launched && !sailSeq) launchNow(); }, 25000);
 }
-function renderSetSailDone() {
+function renderSetSailDone() { renderAtSea(); }
+function showCard() { renderMemento(); }
+
+// ============================================================
+//   THE COLLECTIVE SET SAIL (phone side)
+//   The presenter's cue names a server time. We hold the boat under the thumb
+//   through the NON VI / SED ARTE count, tugging on every response, and let go
+//   at that instant — the same instant the fleet on the big screen releases.
+//   Network latency hides inside the 1.3 s departure.
+// ============================================================
+const SAIL_WORDS = [[6000,'NON VI',false],[5000,'SED ARTE',true],[4000,'NON VI',false],[3000,'SED ARTE',true],[2000,'NON VI',false],[1000,'SED ARTE!',true]]   // ms remaining before the release;
+const DEST_ORDER = ['GeoBali','NZ','Korea','MiharaJapan','MutsuzawaJapan','Estonia'];
+const COLOUR_NAME = { '#F28C28':'orange', '#2BB3A8':'teal', '#D64FA0':'magenta', '#EC5A5F':'coral', '#B5D334':'lime', '#7FD3F7':'sky-blue', '#FFE200':'gold', '#F5F0E8':'white' };
+let handledCueId = null, sailSeq = null, sailLocalAt = 0, uncuedTimer = null;
+function handleCue(cue) {
+    if (!cue || !cue.id || cue.id === handledCueId) return;
+    handledCueId = cue.id;
+    if (cue.kind !== 'sail' || D.launched) return;
+    clearTimeout(uncuedTimer);
+    if (!D.boarded) { D.boarded = true; save(); }   // a late scanner still sails with everyone
+    startSailSequence(cue.at + clockOffset);
+}
+function startSailSequence(localAt) {
+    if (sailSeq) return;
+    sailLocalAt = localAt;
+    hideCornerBoat();
     const c = colors();
     $app.innerHTML = `
-    <div class="sail-screen follow-screen fade-up">
-        <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
-            <p class="text-[10px] mb-2 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">You've set sail</p>
-            <h1 class="font-serif text-2xl mb-3" style="color:var(--text-primary);">Look up — you're in the fleet</h1>
-            <div class="follow-boat">${buildOrigamiSVG(c, 8, 210, extras())}</div>
-            <p class="text-sm mt-4 max-w-xs" style="color:var(--text-secondary);">Every boat on the big screen is a Beattyian setting sail from our Hive. 🌊</p>
+    <div class="sail-screen hold-screen fade-up" id="holdScreen">
+        <div class="flex-1 flex flex-col items-center justify-center p-4 text-center">
+            <p class="text-[10px] mb-2 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">Set Sail, Beatty</p>
+            <h1 class="font-serif text-2xl mb-3" id="holdWord" style="color:var(--text-primary);min-height:1.2em;">Hold your boat</h1>
+            <div class="hold-boat" id="holdBoat">${buildOrigamiSVG(c, 9, 230, extras())}<div class="hold-ring"></div></div>
+            <p class="text-sm mt-4 max-w-xs" id="holdSub" style="color:var(--text-secondary);">Thumb on the boat. On the third <em style="color:var(--accent-gold);">Sed Arte</em> — let go, and look up.</p>
         </div>
     </div>`;
+    let wi = 0, dimmed = false;
+    const wordEl = document.getElementById('holdWord'), boatEl = document.getElementById('holdBoat'), subEl = document.getElementById('holdSub');
+    // Skip straight past words whose moment has already gone (late cue delivery).
+    const rem0 = localAt - Date.now(); while (wi < SAIL_WORDS.length && rem0 <= SAIL_WORDS[wi][0] - 900) wi++;
+    function tick() {
+        const rem = localAt - Date.now();
+        while (wi < SAIL_WORDS.length && rem <= SAIL_WORDS[wi][0]) {
+            const [, w, resp] = SAIL_WORDS[wi++];
+            if (wordEl) { wordEl.textContent = w; wordEl.style.color = resp ? 'var(--accent-gold-light)' : 'var(--text-primary)'; wordEl.classList.remove('word-pop'); void wordEl.offsetWidth; wordEl.classList.add('word-pop'); }
+            if (subEl) subEl.textContent = '';
+            if (resp) { haptic(30); tugBoat(boatEl); playTick(); }
+        }
+        if (!dimmed && rem <= 500) { dimmed = true; document.getElementById('holdScreen')?.classList.add('dim'); if (wordEl) wordEl.textContent = ''; }
+        if (rem <= 0) { sailSeq = null; launchNow(); return; }
+        sailSeq = requestAnimationFrame(tick);
+    }
+    sailSeq = requestAnimationFrame(tick);
 }
-function showCard() { renderMemento(); }
+function tugBoat(el) { if (!el) return; el.classList.remove('tug'); void el.offsetWidth; el.classList.add('tug'); }
+function launchNow() {
+    if (sailSeq) { cancelAnimationFrame(sailSeq); sailSeq = null; }
+    clearTimeout(uncuedTimer);
+    if (D.launched) { renderAtSea(); return; }
+    if (!sailLocalAt) sailLocalAt = Date.now();
+    D.launched = true; D.launchedAt = Date.now(); save();
+    hapticPattern([15, 30, 15, 30, 120]); playWhoosh();
+    saveToFirebase();                                          // launched:true — placed if not already at sea
+    const boatEl = document.getElementById('holdBoat');
+    if (boatEl) { boatEl.classList.add('depart'); setTimeout(renderAtSea, 1400); }
+    else setSailTransition(renderAtSea);
+}
+function renderAtSea() {
+    hideCornerBoat();
+    const c = colors();
+    const col = D.sailColor || '#FFE200', name = COLOUR_NAME[col] || 'coloured';
+    const dest = D.global;
+    $app.innerHTML = `
+    <div class="sail-screen atsea-screen fade-up" id="atSea" style="--sail:${col}">
+        <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
+            <p class="text-[10px] mb-2 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">You've set sail</p>
+            <h1 class="font-serif text-2xl mb-2" style="color:var(--text-primary);">Look up — you're in the fleet</h1>
+            <div class="atsea-swatch" style="background:${col};color:${col}"></div>
+            <p class="text-sm mt-3 max-w-xs" style="color:var(--text-secondary);">Find the <b style="color:${col}">${name}</b> sail${dest && dest.text ? ` bound for <b style="color:var(--text-primary)">${dest.text}</b>` : ''}. Every boat on the big screen is a Beattyian setting sail from our Hive. 🌊</p>
+            <div class="follow-boat mt-4">${buildOrigamiSVG(c, 9, 150, extras())}</div>
+            <div class="rollcall" id="rollCall" hidden><span class="rc-word">Wave! 👋</span><span class="rc-sub" id="rcSub"></span></div>
+        </div>
+    </div>`;
+    scheduleRollCall();
+}
+function scheduleRollCall() {
+    if (!sailLocalAt || !D.global || !D.global.id) return;
+    const i = DEST_ORDER.indexOf(D.global.id); if (i < 0) return;
+    const when = sailLocalAt + 12000 + i * 3000 - Date.now(); if (when < -2500) return;
+    setTimeout(() => {
+        const rc = document.getElementById('rollCall'), scr = document.getElementById('atSea'); if (!rc || !scr) return;
+        const sub = document.getElementById('rcSub'); if (sub) sub.textContent = (D.global.text || '') + " — that's you!";
+        rc.hidden = false; scr.classList.add('rc-flash'); hapticPattern([40, 60, 40]); playPing();
+        setTimeout(() => { rc.hidden = true; scr.classList.remove('rc-flash'); }, 2800);
+    }, Math.max(0, when));
+}
+/* Phone sounds for the launch — small, paper-coloured; the hall's PA carries the hit. */
+function playTick() { try { const ctx = getAudioCtx(), t = ctx.currentTime; const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(220, t); o.frequency.exponentialRampToValueAtTime(110, t + 0.12); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.12, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18); o.connect(g).connect(ctx.destination); o.start(t); o.stop(t + 0.2); } catch (e) {} }
+function playWhoosh() { try { const ctx = getAudioCtx(), t = ctx.currentTime, dur = 1.2; const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate); const d = buf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; const src = ctx.createBufferSource(); src.buffer = buf; const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 0.9; f.frequency.setValueAtTime(300, t); f.frequency.exponentialRampToValueAtTime(3200, t + dur * 0.7); f.frequency.exponentialRampToValueAtTime(900, t + dur); const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.09, t + 0.35); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); src.connect(f).connect(g).connect(ctx.destination); src.start(t); src.stop(t + dur); } catch (e) {} }
+function playPing() { try { const ctx = getAudioCtx(), t = ctx.currentTime; [1318, 1976].forEach((fq, i) => { const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'; o.frequency.value = fq; const s = t + i * 0.07; g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(0.08, s + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, s + 0.5); o.connect(g).connect(ctx.destination); o.start(s); o.stop(s + 0.55); }); } catch (e) {} }
 
 /* --- Resting / holding screens shown between the presenter's slides --- */
 /* --- Boarding: "Which bee are you?" — one tap puts you in the Hive and unlocks the phone --- */
@@ -1867,7 +1981,7 @@ function board(bee) {
     haptic(25);
     D.boarded = true; D.bee = bee.name; D.beeTag = bee.tag; D.beeIcon = bee.icon;
     save();
-    if (db && auth?.currentUser) { try { setDoc(doc(db, "compassQuiz", auth.currentUser.uid), { archetype: bee.name, timestamp: serverTimestamp() }).catch(() => {}); } catch (e) {} }
+    syncClock();                                // writes compassQuiz + learns the clock
     try { startAmbient(); } catch (e) {}
     currentView = null;                         // re-apply whatever the presenter is on
     if (lastSessionState) applyView(lastSessionState); else renderAboard();
