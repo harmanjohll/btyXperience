@@ -168,7 +168,7 @@ export const FIREBASE_CONFIG = {
     projectId: "btyx-61dc6", storageBucket: "btyx-61dc6.appspot.com",
     messagingSenderId: "851137405745", appId: "1:851137405745:web:c95b86b6f0462a9bc20610",
 };
-export const LOGO_URL = '../BTlogo.png';  // local (same-origin) — no remote hotlink to fail on venue wifi
+export const LOGO_URL = 'crest.png';       // a 256 px crest (the 2 MB original never goes to a phone)
 
 /* ── HANKO STAMP MARKS ── */
 export const STAMP_MARKS = {
@@ -193,7 +193,10 @@ export const STAMP_MARKS = {
     japan:       { small: false, svg: `<g><circle cx="15" cy="15" r="14" fill="currentColor" opacity="0.08"/><circle cx="15" cy="15" r="14" fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.85"/><circle cx="15" cy="13" r="4" fill="currentColor" opacity="0.45"/><path d="M12,17 Q12,21 15,23 Q18,21 18,17" fill="currentColor" opacity="0.3"/></g>` },
     nz:          { small: false, svg: `<g><circle cx="15" cy="15" r="14" fill="currentColor" opacity="0.08"/><circle cx="15" cy="15" r="14" fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.85"/><path d="M15,5 Q18,10 16,15 Q14,20 15,26 M15,5 Q12,10 14,15 Q16,20 15,26" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.6"/><path d="M11,8 Q13,11 15,10 M19,8 Q17,11 15,10 M11,20 Q13,17 15,18 M19,20 Q17,17 15,18" fill="none" stroke="currentColor" stroke-width="0.9" opacity="0.5"/></g>` },
     estonia:     { small: false, svg: `<g><circle cx="15" cy="15" r="14" fill="currentColor" opacity="0.08"/><circle cx="15" cy="15" r="14" fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.85"/><rect x="9" y="8" width="12" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.6"/><path d="M12,12 L18,12 M12,15 L16,15 M12,18 L18,18" stroke="currentColor" stroke-width="1" opacity="0.5" stroke-linecap="round"/><circle cx="21" cy="8" r="2.5" fill="currentColor" opacity="0.5"/></g>` },
+    bali:        { small: false, color: '#F28C28', svg: `<g><circle cx="15" cy="15" r="14" fill="currentColor" opacity="0.08"/><circle cx="15" cy="15" r="14" fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.85"/><path d="M6,21 L12,9 L16,15 L19,11 L24,21 Z" fill="currentColor" opacity="0.8"/><path d="M5,24 Q9,21 13,24 Q17,27 21,24 Q23,23 25,24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></g>` },
     // I_sub — smaller
+    press:       { small: true, color: '#EC3237', svg: `<g><circle cx="10" cy="10" r="9" fill="currentColor" opacity="0.08"/><circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.75"/><rect x="5" y="5.5" width="10" height="9" rx="1" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M7,8.5 L13,8.5 M7,11 L13,11 M7,13 L10,13" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></g>` },
+    makita:      { small: true, color: '#2BB3A8', svg: `<g><circle cx="10" cy="10" r="9" fill="currentColor" opacity="0.08"/><circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.75"/><circle cx="10" cy="10" r="3.2" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M10,3.5 L10,6 M10,14 L10,16.5 M3.5,10 L6,10 M14,10 L16.5,10 M5.4,5.4 L7.2,7.2 M12.8,12.8 L14.6,14.6 M14.6,5.4 L12.8,7.2 M7.2,12.8 L5.4,14.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></g>` },
     rockwell:    { small: true, svg: `<g><circle cx="10" cy="10" r="9" fill="currentColor" opacity="0.08"/><circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.75"/><rect x="4" y="6" width="12" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="1" opacity="0.6"/><circle cx="8" cy="10" r="2" fill="currentColor" opacity="0.5"/><circle cx="12" cy="10" r="2" fill="currentColor" opacity="0.5"/></g>` },
     astar:       { small: true, svg: `<g><circle cx="10" cy="10" r="9" fill="currentColor" opacity="0.08"/><circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.75"/><polygon points="10,3 11.5,7.5 16,7.5 12.5,10.5 13.5,15 10,12 6.5,15 7.5,10.5 4,7.5 8.5,7.5" fill="currentColor" opacity="0.55"/></g>` },
     pil:         { small: true, svg: `<g><circle cx="10" cy="10" r="9" fill="currentColor" opacity="0.08"/><circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.75"/><path d="M4,12 Q7,8 10,12 Q13,16 16,12" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.6" stroke-linecap="round"/><path d="M6,14 Q9,10 12,14" fill="none" stroke="currentColor" stroke-width="1" opacity="0.5"/></g>` },
@@ -211,18 +214,18 @@ Object.entries(STAMP_MARKS).forEach(([id, s]) => {
     for (const key of ['S','A','I','L']) {
         const d = SAIL_DATA[key];
         const opt = d.options.find(o => o.id === id) || (d.subOptions && d.subOptions.find(o => o.id === id));
-        if (opt) { s.color = opt.color; break; }
+        if (opt) { if (!s.color) s.color = opt.color; break; }
     }
 });
 
 /* ── MARK POSITIONS — centred geometry ──
    Stages 0-5: paper/hat shape centred.  Stages 6-7: diamond.  8+: boat. */
 export const MARK_SLOTS = {
-    S:     { paper: { x: 180, y: 128 }, diamond: { x: 168, y: 108 }, boat: { x: 115, y: 225 } },
-    A:     { paper: { x: 108, y: 142 }, diamond: { x: 112, y: 115 }, boat: { x: 150, y: 225 } },
-    A_sub: { paper: { x: 145, y: 152 }, diamond: { x: 140, y: 100 }, boat: { x: 170, y: 215 } },
-    I:     { paper: { x: 148, y: 112 }, diamond: { x: 140, y: 88 },  boat: { x: 170, y: 125 } },
-    I_sub: { paper: { x: 170, y: 128 }, diamond: { x: 162, y: 98 },  boat: { x: 185, y: 140 } },
+    S:     { paper: { x: 180, y: 128 }, diamond: { x: 168, y: 108 }, boat: { x: 92,  y: 214 } },
+    A:     { paper: { x: 108, y: 142 }, diamond: { x: 112, y: 115 }, boat: { x: 126, y: 214 } },
+    A_sub: { paper: { x: 145, y: 152 }, diamond: { x: 140, y: 100 }, boat: { x: 178, y: 216 } },
+    I:     { paper: { x: 148, y: 112 }, diamond: { x: 140, y: 88 },  boat: { x: 174, y: 116 } },
+    I_sub: { paper: { x: 170, y: 128 }, diamond: { x: 162, y: 98 },  boat: { x: 198, y: 148 } },
     L:     { paper: null, diamond: null, boat: { x: 155, y: 38 } },
 };
 
@@ -496,25 +499,40 @@ export function buildOrigamiSVG(colors, stage, size = 280, extras = {}) {
     const sgDef = colors.sailGradient
         ? `<linearGradient id="${gid}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:${colors.sailGradient[0]}"/><stop offset="100%" style="stop-color:${colors.sailGradient[1]}"/></linearGradient>` : '';
     const sf = colors.sailGradient ? `url(#${gid})` : colors.sail;
-    const asp = extras.aspiration ? `<text x="140" y="244" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="8" font-weight="800" font-family="Calibri,'Segoe UI',system-ui,sans-serif" letter-spacing="2">${extras.aspiration.toUpperCase()}</text>` : '';
+    const asp = extras.aspiration ? `<text x="140" y="244" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="11" font-weight="600" font-family="${HAND_FONT}" letter-spacing="0.5">${extras.aspiration}</text>` : '';
     const fi = extras.flagIcon ? `<text x="157" y="35" text-anchor="middle" font-size="11">${extras.flagIcon}</text>` : '';
     const flag = stage >= 9;
 
     return `<svg viewBox="${vb}" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg" class="origami-svg">
         ${washiDefs()}
         <defs>${sgDef}</defs>
-        <ellipse cx="140" cy="268" rx="95" ry="5" fill="rgba(59,130,246,0.08)"/>
+        <ellipse cx="140" cy="268" rx="95" ry="5" fill="rgba(127,211,247,0.10)"/>
         <path d="M58,195 L78,253 L202,253 L222,195 Z" fill="${colors.hull}" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
         <line x1="68" y1="203" x2="212" y2="203" stroke="rgba(255,255,255,0.05)" stroke-width="0.5"/>
         ${asp}
         <rect x="135" y="253" width="10" height="12" rx="2" fill="${colors.keel}"/>
         <line x1="140" y1="45" x2="140" y2="195" stroke="${colors.mast}" stroke-width="3" stroke-linecap="round"/>
-        <path d="M145,55 L145,185 L222,173 Z" fill="${sf}" ${wf} stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
-        <path d="M135,60 L135,180 L75,170 Z" fill="${sf}" ${wf} opacity="0.5"/>
-        ${flag ? `<path d="M140,45 L140,25 L166,31 L140,37 Z" fill="${colors.flag}"/>${fi}` : ''}
+        <path class="sail-cloth" d="M145,55 L145,185 L222,173 Z" fill="${sf}" ${wf} stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+        <path class="sail-cloth" d="M135,60 L135,180 L75,170 Z" fill="${sf}" ${wf} opacity="0.5"/>
+        <!-- The bee volant: Admiral Beatty's crest bee, in flight, at the head of every sail.
+             From 20 m it reads as a single gold mark; up close it is the school. -->
+        <g transform="translate(158,96)" opacity="0.95">
+            <ellipse cx="-2.4" cy="-4.4" rx="3.4" ry="1.9" fill="rgba(255,255,255,0.9)" transform="rotate(-22 -2.4 -4.4)"/>
+            <ellipse cx="2.6" cy="-4.4" rx="3.4" ry="1.9" fill="rgba(255,255,255,0.9)" transform="rotate(22 2.6 -4.4)"/>
+            <ellipse cx="0" cy="0" rx="5.4" ry="3.5" fill="#FFE200" stroke="#000C53" stroke-width="0.7"/>
+            <path d="M-2.8,-2.4 L-2.8,2.4 M0.2,-3 L0.2,3 M3,-2.2 L3,2.2" stroke="#000C53" stroke-width="1.1" stroke-linecap="round"/>
+        </g>
+        ${flag ? `<path class="flag-cloth" d="M140,45 L140,25 L166,31 L140,37 Z" fill="${colors.flag}"/>${fi}` : ''}
         ${marks}
     </svg>`;
 }
+
+/* ── Words that go on a 4 m screen: one token, letters only, capped, never profane.
+   The presenter keeps its own copy of this list (btx27.html) plus a per-word kill switch. ── */
+export const HAND_FONT = "'Caveat','Segoe Script','Bradley Hand','Snell Roundhand','Savoye LET','Noteworthy','Chalkboard SE','Comic Sans MS',cursive";
+const BLOCKLIST = ['fuck','shit','bitch','cunt','dick','pussy','asshole','bastard','slut','whore','nigger','faggot','retard','wank','cock','porn','sex','nazi'];
+export function cleanWord(w) { return String(w || '').replace(/[^\p{L}\p{N} '-]/gu, '').trim().slice(0, 18); }
+export function wordOK(w) { const s = String(w || '').toLowerCase().replace(/[^a-z]/g, ''); return !!s && !BLOCKLIST.some(b => s.includes(b)); }
 
 export function haptic(duration = 30) { if (navigator.vibrate) navigator.vibrate(duration); }
 export function hapticPattern(pattern) { if (navigator.vibrate) navigator.vibrate(pattern); }
