@@ -1012,3 +1012,35 @@ body[data-mode="watch"] .mode-band { background: rgba(0,12,83,.9); }
 .save-hint b { color: #FFE200; }
 .save-actions { display: flex; gap: 10px; }
 .save-actions .nav-btn { text-decoration: none; padding: 12px 22px; }
+
+/* ============================================================
+   BOARDING — find your bee in five quick picks; and the link pill
+   ============================================================ */
+.hexprog { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; }
+.hexprog span { width: 14px; height: 14px; background: rgba(255,255,255,.12); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); transition: background .3s; }
+.hexprog span.on { background: var(--accent-gold); }
+.hexprog span.cur { background: rgba(255,226,0,.45); box-shadow: 0 0 10px rgba(255,226,0,.5); }
+.quiz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.quiz-opt {
+    position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+    padding: 12px 8px 10px; border-radius: 14px; border: 1.5px solid rgba(255,255,255,.1);
+    background: linear-gradient(160deg, #12235f, #0a1442); color: var(--text-primary); font-family: inherit; font-size: .8rem; line-height: 1.2;
+    transition: transform .12s, border-color .12s, background .12s;
+}
+.quiz-opt:active { transform: scale(.97); }
+.quiz-opt:disabled { opacity: .55; }
+.quiz-opt.first, .quiz-opt.second { opacity: 1; border-color: var(--accent-gold); background: linear-gradient(160deg, #1a2f78, #12235f); }
+.quiz-opt.second { border-color: rgba(255,226,0,.55); }
+.quiz-opt .qo-ic { font-size: 1.5rem; line-height: 1; }
+.quiz-opt .qo-rank { position: absolute; top: -8px; right: -6px; min-width: 30px; padding: 3px 7px; border-radius: 999px; background: var(--accent-gold); color: #04081a; font-size: .6rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; opacity: 0; transform: scale(.6); transition: opacity .18s, transform .18s; }
+.quiz-opt.second .qo-rank { background: #fff3a0; }
+.quiz-opt.first .qo-rank, .quiz-opt.second .qo-rank { opacity: 1; transform: scale(1); }
+.bee-reveal-ic { font-size: 4rem; line-height: 1; animation: cbGrow .7s cubic-bezier(.22,1,.36,1); filter: drop-shadow(0 0 18px rgba(255,226,0,.45)); }
+#linkPill {
+    position: fixed; top: 8px; left: 10px; z-index: 80; pointer-events: none;
+    font-size: .58rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 700;
+    padding: 4px 9px; border-radius: 999px; background: rgba(4,10,51,.85); border: 1px solid rgba(255,255,255,.14); color: var(--text-muted);
+}
+#linkPill[data-state="live"] { color: #9BE7C4; border-color: rgba(155,231,196,.45); }
+#linkPill[data-state="waiting"] { color: var(--accent-gold); border-color: rgba(255,226,0,.35); }
+#linkPill[data-state="offline"] { color: #ffb4b6; border-color: rgba(236,50,55,.5); }

@@ -415,7 +415,7 @@ let stragglers = [], stragglerTimer = null;
 let handledCueId = null, uncuedTimer = null;
 let fleetOffset = 0; const fleetSamples = []; let lastSts = null;
 const DEST_ROLL = [
-    { id:'GeoBali', name:'Bali', col:'#F28C28' }, { id:'NZ', name:'New Zealand', col:'#2BB3A8' }, { id:'Korea', name:'South Korea', col:'#D64FA0' },
+    { id:'Hanoi', name:'Hanoi', col:'#8E7CFF' }, { id:'GeoBali', name:'Bali', col:'#F28C28' }, { id:'NZ', name:'New Zealand', col:'#2BB3A8' }, { id:'Korea', name:'South Korea', col:'#D64FA0' },
     { id:'MiharaJapan', name:'Mihara, Japan', col:'#EC5A5F' }, { id:'MutsuzawaJapan', name:'Mutsuzawa, Japan', col:'#B5D334' }, { id:'Estonia', name:'Estonia', col:'#7FD3F7' },
 ];
 function startSessionListener() {
