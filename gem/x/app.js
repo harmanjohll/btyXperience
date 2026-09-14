@@ -46,7 +46,7 @@ function unlockAudio() {
 async function takeWakeLock() {
     try { if ('wakeLock' in navigator && document.visibilityState === 'visible') wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
 }
-function primeVibrate() { try { if (navigator.vibrate) navigator.vibrate(1); } catch (e) {} }
+function primeVibrate() { try { if (navigator.vibrate) navigator.vibrate(30); } catch (e) {} }   // the join tap itself is felt on Android
 // Keep the unlocks alive: phones sleep, tabs hide, contexts get suspended.
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible') return;
@@ -412,7 +412,7 @@ let db, auth;
         auth = getAuth(app);
         await signInAnonymously(auth);
         startSessionListener();
-    } catch (e) { console.warn("SAIL live sync unavailable — running solo:", e); }
+    } catch (e) { console.warn("SAIL live sync unavailable — running solo:", e); setLink('offline'); }
 })();
 
 // === PRESENTER-DRIVEN SYNC (the phone follows btx27's session/state) ===
@@ -421,6 +421,12 @@ let db, auth;
 // the boat on the passive slides, and SAILS into the fleet on the presenter's
 // cue. One source of truth — the same channel the whole room already shares.
 let sessionBeat = null;
+let linkEl = null;
+function setLink(state, step) {
+    if (!linkEl) { linkEl = document.createElement('div'); linkEl.id = 'linkPill'; document.body.appendChild(linkEl); }
+    const t = { connecting: 'Connecting…', live: '● Live' + (step != null ? ' · step ' + (step + 1) : ''), waiting: 'Live · waiting for the presenter', offline: 'Offline · your own copy' }[state] || state;
+    linkEl.textContent = t; linkEl.dataset.state = state;
+}
 let onSetSailCue = null;   // legacy hook (unused in session/state mode)
 function startSessionListener() {
     if (!db || !onSnapshot) return;
@@ -429,12 +435,18 @@ function startSessionListener() {
             const exists = snap && (snap.exists ? (snap.exists.call ? snap.exists() : snap.exists) : true);
             const data = exists ? (snap.data ? snap.data() : null) : null;
             if (!data) {                       // no live session yet → wait aboard
-                if (!followMode && !(D.aspiration && D.launched && D.dreamSent)) { D.boarded ? renderAboard() : renderBoard(); }
+                setLink('waiting');
+                if (!followMode && !quizActive && !(D.aspiration && D.launched && D.dreamSent)) {
+                    if (D.boarded) { if (!document.querySelector('.follow-screen')) renderAboard(); }
+                    else if (!document.getElementById('boardBtn')) renderBoard();   // never re-render under a finger
+                }
                 return;
             }
+            setLink('live', data.step);
+            if (quizActive) { lastSessionState = data; return; }   // finish finding your bee first; the show is waiting
             if (data.cue) handleCue(data.cue);
             applyView(data);
-        }, (e) => console.warn("Session listener:", e));
+        }, (e) => { console.warn("Session listener:", e); setLink('offline'); });
     } catch (e) { console.warn("Session listen failed:", e); }
 }
 
@@ -1535,7 +1547,7 @@ const FOLDED_LINE = 'You folded it. You named it. You set it sailing.';
 const QR_URL = '../joinbtyqr.png';
 const CREST_BIG = 'crest-640.png';
 // Rough bearings from Singapore, for the rose.
-const DEST_BEARING = { GeoBali: 150, NZ: 140, Korea: 28, MiharaJapan: 42, MutsuzawaJapan: 42, Estonia: 330 };
+const DEST_BEARING = { Hanoi: 5, GeoBali: 150, NZ: 140, Korea: 28, MiharaJapan: 42, MutsuzawaJapan: 42, Estonia: 330 };
 let cardFile = null, cardRendering = null;
 
 /* Who you are in the Hive — the eight bees, in Beatty's voice. */
@@ -1552,7 +1564,7 @@ const BEE_PROFILES = {
 function beeProfile() { return BEE_PROFILES[D.bee] || { color: '#FFE200', quote: 'Non Vi Sed Arte — not by force, but by skill.', persona: 'A Beattyian: every bee has a place in the Hive, and a course of its own.', recommended: ['NEXUS@BTY exchanges', 'Industry attachments', 'Leaders for Life Programme'], s: null, a: null }; }
 
 /* The boat wears its voyage: every choice made tonight becomes a stamp. */
-const DEST_STAMP = { GeoBali: 'bali', NZ: 'nz', Korea: 'korea', MiharaJapan: 'japan', MutsuzawaJapan: 'japan', Estonia: 'estonia' };
+const DEST_STAMP = { Hanoi: 'hanoi', GeoBali: 'bali', NZ: 'nz', Korea: 'korea', MiharaJapan: 'japan', MutsuzawaJapan: 'japan', Estonia: 'estonia' };
 const IND_STAMP = { Rockwell: 'rockwell', PIL: 'pil', ASTAR: 'astar', Journalism: 'press', TamilMurasu: 'press', Makita: 'makita' };
 const PULSE_STAMP = { 'On fire!': 'resilience', 'Excited!': 'adaptability', 'Enjoying it': 'empathy', 'Tell me more': 'mindfulness' };
 function stampBoat() {
@@ -1954,7 +1966,7 @@ const FOLD_STEP_FOR_INDEX = [1, 2, 4, 5, 8, 9, 12, 13];
 // Sail = destination, flag = industry. Chosen to stay distinct from each other
 // AND from a navy sea on a projector from the back row: no navy, no dark blues.
 const NEXUS_COLOR = {
-    GeoBali:'#F28C28', NZ:'#2BB3A8', Korea:'#D64FA0', MiharaJapan:'#EC5A5F', MutsuzawaJapan:'#B5D334', Estonia:'#7FD3F7',
+    GeoBali:'#F28C28', NZ:'#2BB3A8', Korea:'#D64FA0', MiharaJapan:'#EC5A5F', MutsuzawaJapan:'#B5D334', Estonia:'#7FD3F7', Hanoi:'#8E7CFF',
     Rockwell:'#FFE200', PIL:'#F5F0E8', Journalism:'#EC3237', TamilMurasu:'#A77BEA', Makita:'#2BB3A8', ASTAR:'#7FD3F7',
 };
 // The eight bees of the Hive — must match btx27's compass chart keys exactly.
@@ -1977,7 +1989,7 @@ function applyView(state) {
     lastSessionState = state;
     // Nobody follows the show until they've boarded: that one tap is what unlocks
     // sound, keeps the screen awake, and puts their bee in the Hive.
-    if (!D.boarded) { if (!document.getElementById('boardGrid')) renderBoard(); return; }
+    if (!D.boarded) { if (!document.getElementById('boardBtn')) renderBoard(); return; }
     if (sailSeq || bloomSeq) return;             // a count is running — nothing interrupts it
     const v = state.currentView || 'chart';
     // Leaving a poll → drop its live-results listener.
@@ -2263,8 +2275,8 @@ function showCard() { renderMemento(); }
 //   Network latency hides inside the 1.3 s departure.
 // ============================================================
 const SAIL_WORDS = [[6000,'NON VI',false],[5000,'SED ARTE',true],[4000,'NON VI',false],[3000,'SED ARTE',true],[2000,'NON VI',false],[1000,'SED ARTE!',true]]   // ms remaining before the release;
-const DEST_ORDER = ['GeoBali','NZ','Korea','MiharaJapan','MutsuzawaJapan','Estonia'];
-const COLOUR_NAME = { '#F28C28':'orange', '#2BB3A8':'teal', '#D64FA0':'magenta', '#EC5A5F':'coral', '#B5D334':'lime', '#7FD3F7':'sky-blue', '#FFE200':'gold', '#F5F0E8':'white' };
+const DEST_ORDER = ['Hanoi','GeoBali','NZ','Korea','MiharaJapan','MutsuzawaJapan','Estonia'];
+const COLOUR_NAME = { '#8E7CFF':'violet', '#F28C28':'orange', '#2BB3A8':'teal', '#D64FA0':'magenta', '#EC5A5F':'coral', '#B5D334':'lime', '#7FD3F7':'sky-blue', '#FFE200':'gold', '#F5F0E8':'white' };
 let handledCueId = null, sailSeq = null, sailLocalAt = 0, uncuedTimer = null;
 function handleCue(cue) {
     if (!cue || !cue.id || cue.id === handledCueId) return;
@@ -2504,32 +2516,91 @@ function foldAssist(foldIndex) {
 
 /* --- Resting / holding screens shown between the presenter's slides --- */
 /* --- Boarding: "Which bee are you?" — one tap puts you in the Hive and unlocks the phone --- */
+// Five quick picks find your bee — first choice counts double, second counts once.
+// (The same five questions the join page used; option order matches the eight bees.)
+const QUIZ = [
+    { q: 'When facing a challenge, I first…', o: ['look for a tech solution', 'seek different perspectives', 'consider real-world applications', 'think about who needs help', 'imagine a creative response', 'analyse the patterns', 'ask what story matters', 'weigh the environmental impact'] },
+    { q: 'I feel most energised when…', o: ['building something new', 'learning about other cultures', 'seeing my work in action', 'helping others grow', 'performing or creating', 'solving complex puzzles', 'sharing important ideas', 'working on a green initiative'] },
+    { q: 'My ideal Beatty experience includes…', o: ['Machine Learning projects', 'international exchanges', 'industry attachments', 'leading initiatives', 'concert performances', 'science research', 'journalism opportunities', 'a sustainability project'] },
+    { q: 'I learn best by…', o: ['tinkering and building prototypes', 'immersing myself in new places', 'working on real projects', 'leading a group', 'expressing my ideas', 'deep research', 'interviewing people', 'analysing systems'] },
+    { q: 'A successful future means I am…', o: ['creating technology', 'bridging cultures', 'leading my industry', 'making a difference', 'inspiring people', 'advancing knowledge', 'giving a voice to others', 'building a sustainable world'] },
+];
+let quizActive = false, qIndex = 0, qScores = null;
 function renderBoard() {
     hideCornerBoat();
     $app.innerHTML = `
     <div class="sail-screen fade-up">
         <div class="content-zone" style="padding-top:22px;">
-            <img src="${LOGO_URL}" alt="Beatty" style="width:46px;height:46px;object-fit:contain;margin:0 auto 10px;display:block" onerror="this.style.display='none'">
+            <img src="${LOGO_URL}" alt="Beatty" style="width:52px;height:64px;object-fit:contain;margin:0 auto 12px;display:block" onerror="this.style.display='none'">
             <p class="q-eyebrow" style="text-align:center;">🐝 Come into the Hive</p>
-            <h2 class="q-question" style="text-align:center;">Which bee are you?</h2>
-            <p class="q-hint" style="margin:6px 0 14px;">Tap one to board. Your bee lands on the big screen.</p>
-            <div class="bee-grid" id="boardGrid">
-                ${BEES.map((b, i) => `<button class="bee-btn" data-bee="${i}"><span class="bee-ic">${b.icon}</span><span class="bee-nm">${b.name.replace('The ', '')}</span><span class="bee-tag">${b.tag}</span></button>`).join('')}
-            </div>
+            <h2 class="q-question" style="text-align:center;">Beatty Open House</h2>
+            <p class="q-hint" style="margin:8px 0 18px;">Five quick picks find your bee. Then your phone follows the big screen — polls, folds, and setting sail together.</p>
+            <button class="nav-btn primary w-full" id="boardBtn" style="font-size:1.05rem;padding:16px;">Tap to board 🐝</button>
+            <p class="q-hint" style="margin-top:14px;">One tap turns on sound and keeps your screen awake.</p>
         </div>
     </div>`;
-    document.querySelectorAll('[data-bee]').forEach(btn => btn.addEventListener('click', () => board(BEES[+btn.dataset.bee])));
+    document.getElementById('boardBtn').addEventListener('click', board);
 }
-function board(bee) {
+function board() {
     // Everything that needs a user gesture happens inside this tap.
     unlockAudio(); primeVibrate(); takeWakeLock();
     haptic(25);
-    D.boarded = true; D.bee = bee.name; D.beeTag = bee.tag; D.beeIcon = bee.icon;
-    save(); stampBoat();
-    syncClock();                                // writes compassQuiz + learns the clock
+    D.boarded = true; save();
+    syncClock();                                // writes compassQuiz (joined) + learns the clock
     try { startAmbient(); } catch (e) {}
-    currentView = null;                         // re-apply whatever the presenter is on
-    if (lastSessionState) applyView(lastSessionState); else renderAboard();
+    if (D.bee) { currentView = null; if (lastSessionState) applyView(lastSessionState); else renderAboard(); return; }
+    quizActive = true; qIndex = 0; qScores = BEES.map(() => 0);
+    renderQuiz();
+}
+function renderQuiz() {
+    hideCornerBoat();
+    const item = QUIZ[qIndex]; let first = -1;
+    $app.innerHTML = `
+    <div class="sail-screen fade-up">
+        <div class="content-zone" style="padding-top:16px;">
+            <div class="hexprog">${QUIZ.map((_, i) => `<span class="${i < qIndex ? 'on' : i === qIndex ? 'cur' : ''}"></span>`).join('')}</div>
+            <p class="q-eyebrow" style="text-align:center;">Find your bee · ${qIndex + 1} of ${QUIZ.length}</p>
+            <h2 class="q-question" style="text-align:center;">${item.q}</h2>
+            <p class="q-hint" style="margin:6px 0 12px;">Tap your <b style="color:var(--accent-gold)">first</b> choice, then your <b style="color:var(--accent-gold)">second</b>.</p>
+            <div class="quiz-grid">${item.o.map((t, i) => `<button class="quiz-opt" data-i="${i}"><span class="qo-ic">${BEES[i].icon}</span><span class="qo-t">${t}</span><span class="qo-rank"></span></button>`).join('')}</div>
+        </div>
+    </div>`;
+    $app.querySelectorAll('.quiz-opt').forEach(b => b.addEventListener('click', () => {
+        const i = +b.dataset.i;
+        if (first < 0) { first = i; b.classList.add('first'); b.querySelector('.qo-rank').textContent = '1st'; feel('tick'); playCreaseSound(); return; }
+        if (i === first) return;
+        b.classList.add('second'); b.querySelector('.qo-rank').textContent = '2nd'; feel('tick'); playCreaseSound();
+        qScores[first] += 2; qScores[i] += 1;
+        $app.querySelectorAll('.quiz-opt').forEach(o => o.disabled = true);
+        setTimeout(() => { qIndex++; if (qIndex >= QUIZ.length) finishQuiz(); else renderQuiz(); }, 380);
+    }));
+}
+function finishQuiz() {
+    let best = 0; qScores.forEach((v, i) => { if (v > qScores[best]) best = i; });
+    const bee = BEES[best];
+    D.bee = bee.name; D.beeTag = bee.tag; D.beeIcon = bee.icon; D.beeScores = qScores; save();
+    stampBoat(); writeCompass();
+    renderBeeReveal(bee);
+}
+function writeCompass() {
+    if (!db || !auth?.currentUser) return;
+    try { setDoc(doc(db, "compassQuiz", auth.currentUser.uid), { archetype: D.bee, done: true, timestamp: serverTimestamp() }).catch(() => {}); } catch (e) {}
+}
+function renderBeeReveal(bee) {
+    const prof = BEE_PROFILES[bee.name] || {};
+    $app.innerHTML = `
+    <div class="sail-screen follow-screen fade-up">
+        <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
+            <p class="text-[10px] mb-3 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">Your compass points to</p>
+            <div class="bee-reveal-ic">${bee.icon}</div>
+            <h1 class="font-serif text-2xl mt-2" style="color:var(--accent-gold);">${bee.name}</h1>
+            <p class="text-[11px] tracking-[0.2em] uppercase mt-1" style="color:var(--text-secondary);">${bee.tag} · you've joined the Hive</p>
+            <p class="font-serif italic text-sm mt-4 max-w-xs" style="color:var(--text-primary);">“${prof.quote || 'Non Vi Sed Arte'}”</p>
+            <p class="text-[11px] mt-4" style="color:var(--text-muted);">Look up — your bee lands on the big screen.</p>
+        </div>
+    </div>`;
+    playChapterChime(); feel('chapter');
+    setTimeout(() => { quizActive = false; currentView = null; if (lastSessionState) applyView(lastSessionState); else renderAboard(); }, 2600);
 }
 function renderAboard() {
     hideCornerBoat();
@@ -2589,11 +2660,11 @@ function armSoloFallback() {
         if (p && !document.getElementById('soloStart')) {
             const b = document.createElement('button');
             b.id = 'soloStart'; b.className = 'nav-btn secondary mt-6';
-            b.textContent = 'No presenter? Fold your boat now ▶';
+            b.textContent = 'Practise a fold while you wait ▶';
             b.onclick = () => { soloMode = true; soloIdx = 0; runSolo(); };
             p.appendChild(b);
         }
-    }, 6000);
+    }, 20000);
 }
 function runSolo() {
     const s = SOLO_SEQ[soloIdx];

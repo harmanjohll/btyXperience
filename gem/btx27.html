@@ -6,10 +6,7 @@
 <title>The Beatty Experience · The Hive</title>
 <meta name="description" content="Beatty Secondary Open House — Harmonising Hearts, Thriving Together.">
 
-<!-- Three.js for the wireframe globe. Loaded with a graceful fallback (see initGlobe). -->
-<script>window.__THREE_OK=false;</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
-        onload="window.__THREE_OK=true;" onerror="window.__THREE_OK=false;"></script>
+<!-- The NEXUS voyage chart is an inline SVG (no CDN, no WebGL): identical on every laptop and projector. -->
 
 <style>
 /* ============================================================
@@ -309,8 +306,36 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 
 .map-host{flex:2; position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; border-right:1px solid rgba(255,226,0,.14)}
 .map-inner{position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center}
-.map-img{position:absolute; inset:0; width:100%; height:100%; object-fit:contain;
-  filter:brightness(0) invert(1) sepia(1) saturate(6) hue-rotate(1deg) drop-shadow(0 0 12px rgba(255,226,0,.5)); opacity:.85}
+.map-img{position:absolute; inset:0; width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 0 22px rgba(255,226,0,.28)) drop-shadow(0 18px 30px rgba(0,0,0,.5))}
+.map-img.raw{filter:brightness(0) invert(1) sepia(1) saturate(6) hue-rotate(1deg) drop-shadow(0 0 12px rgba(255,226,0,.5)); opacity:.85}
+.map-grid{position:absolute; inset:0; background-image:linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px); background-size:8% 8%; pointer-events:none}
+.map-host{background:radial-gradient(ellipse at 50% 55%, #0f2266, #040a33 75%)}
+.mpin .stem{width:2px; height:22px; background:rgba(255,255,255,.7)}
+.mpin .mcnt{margin-left:8px; font-family:var(--serif); color:var(--navy); opacity:.75}
+.mpin .mcnt:empty{display:none}
+.mpin.home .lbl{background:rgba(0,6,31,.92); color:var(--gold); border-color:var(--gold)}
+.mpin.home .dot{background:var(--gold); width:16px; height:16px; box-shadow:0 0 18px var(--gold)}
+.mpin.chosen .dot{transform:scale(1.25)}
+.vis-title.bottom{top:auto; bottom:22px}
+.chart-host{background:#061027}
+#voyageChart{position:absolute; inset:0; width:100%; height:100%}
+#voyageChart .grid line{stroke:rgba(255,255,255,.07); stroke-width:1}
+#voyageChart .grid line.eq{stroke:rgba(255,226,0,.25); stroke-dasharray:6 8}
+#voyageChart .arc{fill:none; stroke-width:2.2; opacity:.9; stroke-dasharray:9 11; animation:chartDash 1.8s linear infinite}
+#voyageChart .arc-glow{fill:none; stroke-width:10; opacity:.16}
+@keyframes chartDash{to{stroke-dashoffset:-40}}
+#voyageChart .cboat{filter:drop-shadow(0 0 4px rgba(255,255,255,.5))}
+#voyageChart .cpin{cursor:pointer}
+#voyageChart .cpin.home{cursor:default}
+#voyageChart .cpin .halo{opacity:.16; transition:r .6s var(--ease)}
+#voyageChart .cpin .ring{fill:none; stroke-width:2; opacity:.7}
+#voyageChart .cpin .dot{stroke:#fff; stroke-width:2.5}
+#voyageChart .cpin.home .halo{opacity:.22; animation:homePulse 2.6s ease-in-out infinite}
+@keyframes homePulse{0%,100%{opacity:.16}50%{opacity:.34}}
+#voyageChart .lbl{fill:#fff; font-family:var(--sans); font-weight:700; font-size:17px; paint-order:stroke; stroke:#000C53; stroke-width:6px; stroke-linejoin:round}
+#voyageChart .cpin.home .lbl{fill:var(--gold); font-size:19px}
+#voyageChart .cnt{fill:var(--gold); font-family:var(--serif); font-weight:700; font-size:24px; paint-order:stroke; stroke:#000C53; stroke-width:6px}
+#voyageChart .chart-note{fill:rgba(255,255,255,.45); font-family:var(--sans); font-size:12px; letter-spacing:.24em}
 .mpin{position:absolute; transform:translate(-50%,-100%); display:flex; flex-direction:column; align-items:center; cursor:pointer; transition:transform .2s; z-index:5}
 .mpin:hover{transform:translate(-50%,-100%) scale(1.12); z-index:50}
 .mpin .lbl{font-family:var(--serif); font-weight:700; color:var(--navy); background:var(--gold); padding:5px 12px; border-radius:9px; font-size:clamp(.72rem,1.05vw,1.15rem); white-space:nowrap; box-shadow:0 6px 14px rgba(0,0,0,.45); border:2px solid #fff}
@@ -360,6 +385,17 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .pp-btn{width:100%; border:none; border-radius:10px; padding:9px; font-weight:700; font-size:.78rem; cursor:pointer; color:#fff; margin-bottom:8px; transition:filter var(--t-fast)}
 .pp-btn:hover{filter:brightness(1.18)}
 .pp-row{display:flex; gap:8px}
+.compass-done[hidden]{display:none}
+.compass-done{display:flex; align-items:center; gap:16px; justify-content:center; margin-top:18px; color:var(--ink-dim); font-size:clamp(.95rem,1.5vw,1.3rem)}
+.compass-done .cd-bar{width:min(38vw,420px); height:12px; border-radius:6px; background:rgba(255,255,255,.08); overflow:hidden}
+.compass-done .cd-fill{height:100%; width:0; background:linear-gradient(90deg,var(--gold-deep),var(--gold)); transition:width .6s var(--ease)}
+.compass-done.all{color:var(--gold); font-weight:700}
+#liveBadge{font-size:clamp(.62rem,.9vw,.8rem); letter-spacing:.16em; text-transform:uppercase; color:var(--ink-dim); padding:8px 14px}
+#liveBadge.live{color:#9BE7C4; border-color:rgba(155,231,196,.45)}
+#liveBadge.warn{color:#ffb4b6; border-color:rgba(236,50,55,.5)}
+.mode-note{margin-top:14px; font-size:clamp(.85rem,1.15vw,1rem); color:var(--ink-dim); display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+.mode-note.live{color:#9BE7C4}
+.mode-note button{background:rgba(255,226,0,.12); border:1px solid var(--gold); color:var(--gold); border-radius:8px; padding:.45rem .9rem; font-weight:700; cursor:pointer}
 .pp-toggle{display:block; margin-left:auto; margin-bottom:8px; background:rgba(0,6,31,.9); border:1px solid var(--card-line); color:var(--ink-dim); border-radius:999px; padding:6px 12px; font-size:.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; opacity:.55; transition:opacity var(--t-fast)}
 .pp-toggle:hover{opacity:1}
 .pp-toggle span{display:inline-block; margin-left:6px; padding:1px 6px; border-radius:6px; background:rgba(255,255,255,.1); font-size:.62rem}
@@ -472,6 +508,7 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
     <div class="pill" id="hivePulse" title="The Hive is buzzing">
       <span class="pulse-bar"></span><span class="pulse-bar"></span><span class="pulse-bar"></span><span class="pulse-bar"></span><span class="pulse-bar"></span>
     </div>
+    <div class="pill" id="liveBadge" title="Only a screen opened with ?presenter=true drives the phones">VIEW ONLY</div>
     <div class="pill qr-pill hidden" id="qrPill" title="Show the join QR large"><img src="joinbtyqr.png" alt="Scan to join" onerror="this.style.display='none'"><span>Scan<br>to join</span></div>
     <div class="pill" id="participantPill" aria-live="polite"><span>🐝</span><span class="n" id="pCount">Warming up…</span></div>
   </div>
@@ -492,6 +529,7 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
           <p style="font-family:var(--serif); font-size:clamp(1.6rem,3vw,2.6rem); color:#fff">Scan to join</p>
           <p style="color:var(--ink-dim); font-size:clamp(1rem,1.6vw,1.4rem)">Take out your phone — your journey is personal.</p>
           <button id="beginBtn" class="btn btn-primary" style="align-self:flex-start; margin-top:6px; font-size:1.2rem; padding:1rem 2.4rem">Begin the Journey ➜</button>
+          <p id="modeNote" class="mode-note"></p>
           <button id="startReset" class="hidden" style="align-self:flex-start; background:rgba(236,50,55,.15); color:#ffb4b6; border:1px solid rgba(236,50,55,.3); padding:.5rem 1rem; border-radius:8px; font-size:.85rem; cursor:pointer">⚠ Reset Session</button>
         </div>
       </div>
@@ -564,9 +602,19 @@ const isPresenter = new URLSearchParams(location.search).get('presenter')==='tru
 loadFirebase()
   .then(()=>{ app=initializeApp(firebaseConfig); db=getFirestore(app); auth=getAuth(app); return signInAnonymously(auth); })
   .then(()=>{ dbReady=true; initListeners(); broadcastIfActive(); })
-  .catch(e=>{ console.warn("Live sync unavailable — presenting in demo mode:",e); showToast("Live sync offline — presenting in demo mode"); });
+  .catch(e=>{ console.warn("Live sync unavailable — presenting in demo mode:",e); showToast("Live sync offline — presenting in demo mode"); const b=document.getElementById('liveBadge'); if(b){ b.textContent='OFFLINE'; b.className='pill warn'; } });
 // Re-broadcast current state once auth is ready, in case the presenter started early.
 function broadcastIfActive(){ if(started && isPresenter) renderStep(); }
+// Say plainly which screen this is. Only ?presenter=true drives the phones; a plain copy is a mirror.
+(function(){ const b=document.getElementById('liveBadge'), n=document.getElementById('modeNote');
+  if(isPresenter){ b.textContent='● LIVE'; b.classList.add('live'); n.className='mode-note live'; n.innerHTML='● This screen is <b>live</b> — every phone on the audience link follows it.'; }
+  else { b.textContent='VIEW ONLY'; n.innerHTML='<span>View-only copy — phones are <b>not</b> following this screen.</span><button id="goLive">Present live ➜</button>';
+    document.getElementById('goLive').onclick=()=>{ location.search='?presenter=true'; }; }
+})();
+let lastSyncToast=0;
+function syncFail(e){ const now=Date.now(); if(now-lastSyncToast<30000) return; lastSyncToast=now;
+  showToast('⚠ Phones are not receiving this step — '+((e&&(e.code||e.message))||'write failed'), 6000);
+  const b=document.getElementById('liveBadge'); if(b){ b.textContent='⚠ NOT SYNCING'; b.className='pill warn'; } }
 
 /* ---------- DOM ---------- */
 const journeyContent=document.getElementById('journeyContent');
@@ -605,7 +653,7 @@ const journeySteps=[
      correctAnswer:1, insight:"Correct! D.R.E.A.M. — Discipline, Resilience, Empathy, Adaptability, Mindfulness — guides every Beattyian." } },
   { id:'values', type:'values', title:"The D.R.E.A.M. We Live By", desc:"Tap a value to see how it grows a Beattyian. Non Vi Sed Arte — not with force, but with skill." },
   { id:'deck_b', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vSrojJmwv5d-ElzN38A8S1Q_YAYl1_VulE6jPSFy6n8dEjPUnzNltCRstS8VC3fUgSg7Xd0fYN4-NWZ/pubembed?start=false&loop=false&delayms=60000" },
-  { id:'funfact_cca', type:'funfact', funfactData:{ number:"47", label:"CCAs to belong to", subtitle:"Across Uniformed Groups, Performing Arts, Sports & Games and Clubs — a hive has a place for every kind of bee." } },
+  { id:'funfact_cca', type:'funfact', funfactData:{ number:"17", label:"CCAs to belong to", subtitle:"Across Uniformed Groups, Performing Arts, Sports & Games and Clubs — a hive has a place for every kind of bee." } },
   { id:'fold_a', type:'fold', title:"Fold with us · A", desc:"Applied Learning — the structure.", fold:{letter:'A', name:'Applied Learning', sub:'The Structure', from:2, to:4} },
   { id:'poll_cca', type:'poll', title:"Live Poll · Pursuing Passions", pollData:{ id:'cca',
      question:"What share of students get their 1st or 2nd choice CCA?",
@@ -614,16 +662,16 @@ const journeySteps=[
   { id:'deck_c', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vSPBCKf2jwhgnzADjp6D8QcYaz5aSykXkmBsCCSgYNS5QugQUIPYg1pHoD9i3WBkKxH7BjZaTqQvQZe/pubembed?start=false&loop=false&delayms=60000" },
   { id:'poll_nexus_count', type:'poll', title:"Live Poll · Our Opportunities", pollData:{ id:'nexus_count_v2',
      question:"How many international exchanges & industry attachments does Beatty offer?",
-     options:["None","3 & 3","6 & 6","10 & 15"], correctAnswer:2,
-     insight:"6 international exchanges + 6 industry attachments — 12 doors into the wider world." } },
+     options:["4 & 4","6 & 6","8 & 6","10 & 10"], correctAnswer:2,
+     insight:"8 international exchanges + 6 industry attachments — 14 doors into the wider world." } },
   { id:'poll_industry', type:'poll', title:"Live Poll · Our Pathways", pollData:{ id:'industry',
      question:"Which is NOT an area students can dive into at Beatty?",
      options:["Sustainability","Journalism & Media","Engineering & AI","None — we do all of these"], correctAnswer:3,
      insight:"A trick! Beatty offers all of these. Every passion has a pathway." } },
-  { id:'funfact_nexus', type:'funfact', funfactData:{ number:"6", label:"Destinations our students learn in each year", subtitle:"From Estonia to New Zealand — Beattyians explore the world." } },
+  { id:'funfact_nexus', type:'funfact', funfactData:{ number:"8", label:"International exchanges every year", subtitle:"From Hanoi to New Zealand, Estonia to Bali — Beattyians explore the world." } },
   { id:'fold_i', type:'fold', title:"Fold with us · I", desc:"International & Industry — the sail.", fold:{letter:'I', name:'International & Industry', sub:'The Sail', from:4, to:6} },
   { id:'nexus_global', type:'globe', title:"Exploring New Skies, Building Ties", desc:"NEXUS@BTY international exchanges. Choose the one that calls to you — your bee lands on the globe.",
-     nexusData:{ type:'global', options:[ {id:'GeoBali',text:'Bali (Geography)'},{id:'NZ',text:'New Zealand'},{id:'Korea',text:'South Korea (A.I.)'},{id:'MiharaJapan',text:'Japan (Social Sciences)'},{id:'MutsuzawaJapan',text:'Japan (STEM)'},{id:'Estonia',text:'Estonia (Cyber)'} ] } },
+     nexusData:{ type:'global', options:[ {id:'GeoBali',text:'Bali (Geography)'},{id:'NZ',text:'New Zealand'},{id:'Korea',text:'South Korea (A.I.)'},{id:'MiharaJapan',text:'Japan (Social Sciences)'},{id:'MutsuzawaJapan',text:'Japan (STEM)'},{id:'Estonia',text:'Estonia (Cyber)'},{id:'Hanoi',text:'Vietnam (Hanoi)'} ] } },
   { id:'nexus_local', type:'industry_map', title:"Dive into the Wonders of Work", desc:"NEXUS@BTY industry attachments across Singapore. Where would you thrive?",
      localData:[
        {id:"Rockwell", name:"Rockwell", pos:{x:18,y:47}},
@@ -672,6 +720,7 @@ const modalData={
   Korea:{ title:"Artificial Intelligence @ South Korea", students:12, duration:"1 Week", desc:"Step into the future of technology in one of the world's most innovative societies.", highlights:["Hands-on with applied A.I.","Learn from a leading tech culture","Bring the future home to Beatty"] },
   MiharaJapan:{ title:"Social Sciences @ Mihara, Japan", students:14, duration:"1 Week", desc:"A transformative exchange with Hiroshima University High School.", highlights:["Deepen global & cultural literacy","Grow social-emotional competencies","Live rich Japanese culture"] },
   MutsuzawaJapan:{ title:"STEM @ Mutsuzawa, Japan", students:14, duration:"1 Week", desc:"Shaping future leaders in science and technology innovation.", highlights:["Deepen global & cultural literacy","Grow social-emotional competencies","Live rich Japanese culture"] },
+  Hanoi:{ title:"Culture & Enterprise @ Hanoi, Vietnam", students:20, duration:"1 Week", desc:"An immersion in Vietnam's capital — its history, its fast-growing enterprises and a city changing by the year.", highlights:["Deepen global & cultural literacy","See a young economy up close","Bring a wider world back to Beatty"] },
   Estonia:{ title:"Cybersecurity @ Estonia", students:16, duration:"1 Week", desc:"Learn from the world's leading digital society and dive deep into cybersecurity.", highlights:["Explore digital citizenship","Cultural exchange & Estonian film","Research a secure digital future"] },
   Rockwell:{ title:"Engineering @ Rockwell Automation", students:12, duration:"7–8 months", desc:"A head start in industrial automation — cybersecurity, digital twinning and sustainability." },
   PIL:{ title:"Maritime, Materials & Corporate Communications @ Pacific International Lines", students:12, duration:"7–8 months", desc:"Understand global trade — sustainable logistics, innovative materials and corporate engagement." },
@@ -688,8 +737,10 @@ function initListeners(){
   onSnapshot(collection(db,"x_boats"), snap=>{ const m={}; snap.forEach(d=>{ m[d.id]=d.data().nextFold||0; }); live.folds=m;
     if(journeySteps[currentStep]?.type==='fold') paintFoldCount(); }, err=>console.warn(err));
   onSnapshot(collection(db,"compassQuiz"), snap=>{
-    const r=aggregate(snap,'archetype'); live.compass=r;
-    updateParticipant(r.total);
+    // Every phone writes a doc on the join tap (joined); the archetype becomes real when its compass quiz is done.
+    const r={total:0,joined:0,breakdown:{}}; snap.forEach(d=>{ const x=d.data(); r.joined++; const v=x.archetype; if(v && ARCH_KEYS.includes(v)){ r.total++; r.breakdown[v]=(r.breakdown[v]||0)+1; } });
+    live.compass=r;
+    updateParticipant(r.joined, r.total);
     if(journeySteps[currentStep]?.type==='chart') paintCompass();
   }, err=>console.warn(err));
 
@@ -745,7 +796,7 @@ function broadcastSession(){
     chapter: step.ch||'', funfact: step.funfactData||null, card: PHONE_CARD[step.id]||null, fold: step.fold||null,
     staticContent: step.type==='values'?true:null,
     ts:lastWriteTs, sts:serverTimestamp(), cue
-  }).catch(()=>{});
+  }).catch(syncFail);
 }
 
 /* ---------- Shared clock ----------
@@ -777,7 +828,7 @@ function startClockListener(){
 let pendingCue=null;
 const SAIL_LEAD=8000;
 const SAIL_WORDS=[[6000,'NON VI',false],[5000,'SED ARTE',true],[4000,'NON VI',false],[3000,'SED ARTE',true],[2000,'NON VI',false],[1000,'SED ARTE!',true]]   // ms remaining before the release;
-const DEST_ROLL=[{id:'GeoBali',name:'Bali',col:'#F28C28'},{id:'NZ',name:'New Zealand',col:'#2BB3A8'},{id:'Korea',name:'South Korea',col:'#D64FA0'},{id:'MiharaJapan',name:'Mihara, Japan',col:'#EC5A5F'},{id:'MutsuzawaJapan',name:'Mutsuzawa, Japan',col:'#B5D334'},{id:'Estonia',name:'Estonia',col:'#7FD3F7'}];
+const DEST_ROLL=[{id:'Hanoi',name:'Hanoi',col:'#8E7CFF'},{id:'GeoBali',name:'Bali',col:'#F28C28'},{id:'NZ',name:'New Zealand',col:'#2BB3A8'},{id:'Korea',name:'South Korea',col:'#D64FA0'},{id:'MiharaJapan',name:'Mihara, Japan',col:'#EC5A5F'},{id:'MutsuzawaJapan',name:'Mutsuzawa, Japan',col:'#B5D334'},{id:'Estonia',name:'Estonia',col:'#7FD3F7'}];
 function fireSetSail(){
   if(!isPresenter) return;
   if(pendingCue && pendingCue.at > serverNow()) { showToast('Already counting…'); return; }
@@ -922,8 +973,8 @@ function revealPollInPlace(step){
 
 /* ---------- Participant counter ---------- */
 let lastCount=-1;
-function updateParticipant(n){
-  pCount.textContent = n>0 ? `${n} in the Hive` : "Warming up…";
+function updateParticipant(n, done){
+  pCount.textContent = n>0 ? `${n} in the Hive${done!=null?` · ${done} ready`:''}` : "Warming up…";
   if(n!==lastCount){ lastCount=n; const pill=document.getElementById('participantPill'); pill.classList.add('count-bump'); setTimeout(()=>pill.classList.remove('count-bump'),450);
     if(n>0){ sfx('join'); } }
 }
@@ -968,12 +1019,17 @@ function renderCompass(){
         <div class="tag">${a.tag}</div>
       </div>`).join('')
   }</div>
-  <p id="compassWait" style="text-align:center; color:var(--ink-dim); margin-top:22px; font-size:clamp(1rem,1.6vw,1.4rem)">Waiting for the first bees to arrive… scan to join.</p></div>`;
+  <p id="compassWait" style="text-align:center; color:var(--ink-dim); margin-top:22px; font-size:clamp(1rem,1.6vw,1.4rem)">Waiting for the first bees to arrive… scan to join.</p>
+  <div id="compassDone" class="compass-done" hidden><div class="cd-bar"><div class="cd-fill"></div></div><span class="cd-text"></span></div></div>`;
 }
 function paintCompass(){
   const grid=document.getElementById('compassGrid'); if(!grid) return;
-  const total=live.compass.total||0, bd=live.compass.breakdown||{};
-  const wait=document.getElementById('compassWait'); if(wait) wait.style.display= total>0?'none':'block';
+  const total=live.compass.total||0, bd=live.compass.breakdown||{}, joined=live.compass.joined||0;
+  const wait=document.getElementById('compassWait'); if(wait) wait.style.display= joined>0?'none':'block';
+  const done=document.getElementById('compassDone');
+  if(done){ done.hidden= joined===0; const all= joined>0 && total>=joined;
+    done.querySelector('.cd-fill').style.width=(joined>0? total/joined*100 : 0)+'%'; done.classList.toggle('all', all);
+    done.querySelector('.cd-text').textContent= all ? `All ${joined} bees have found their place ✓` : `${total} of ${joined} have found their bee — a few still choosing…`; }
   let max=0,maxKey=null; ARCH_KEYS.forEach(k=>{ if((bd[k]||0)>max){max=bd[k];maxKey=k;} });
   grid.querySelectorAll('.arch-cell').forEach(cell=>{
     const k=cell.dataset.arch, c=bd[k]||0, pct= total>0?(c/total*100):0;
@@ -1130,106 +1186,71 @@ let globe,scene,cam,renderer,spinning=true; const gpins=[];
 let globeDragging=false, globePM={x:0,y:0};
 function globeOnPointerUp(){ globeDragging=false; }
 function globeOnResize(){ const host=document.getElementById('globeHost'); if(!renderer||!cam||!host) return; cam.aspect=host.clientWidth/host.clientHeight; cam.updateProjectionMatrix(); renderer.setSize(host.clientWidth,host.clientHeight); }
+/* NEXUS voyage chart — an inline SVG: Beatty at the centre, a route to every
+   exchange, a little sail travelling each route, a pin that grows with the
+   room's choices. No CDN, no WebGL, so it looks the same everywhere. */
+const destinations={
+  Hanoi:{lat:21.03,lon:105.85,name:'Vietnam · Hanoi',col:'#8E7CFF',lab:'left'},
+  Korea:{lat:37.56,lon:126.97,name:'A.I. · South Korea',col:'#D64FA0',lab:'left'},
+  MiharaJapan:{lat:34.40,lon:133.08,name:'Social Sciences · Mihara',col:'#EC5A5F',lab:'above'},
+  MutsuzawaJapan:{lat:35.43,lon:140.32,name:'STEM · Mutsuzawa',col:'#B5D334',lab:'below'},
+  GeoBali:{lat:-8.67,lon:115.22,name:'Geography · Bali',col:'#F28C28',lab:'below'},
+  NZ:{lat:-41.28,lon:174.77,name:'Sustainability · New Zealand',col:'#2BB3A8',lab:'left'},
+  Estonia:{lat:59.43,lon:24.75,name:'Cyber · Estonia',col:'#7FD3F7',lab:'right'},
+  Singapore:{lat:1.29,lon:103.85,name:'Beatty · Singapore',home:true,lab:'left'}
+};
+const CHART={W:1000,H:600,lon0:12,lon1:195,lat0:78,lat1:-56};
+function chartXY(lat,lon){ return { x:(lon-CHART.lon0)/(CHART.lon1-CHART.lon0)*CHART.W, y:(CHART.lat0-lat)/(CHART.lat0-CHART.lat1)*CHART.H }; }
 function renderGlobe(){
-  setTimeout(initGlobe,60);
   const s=journeySteps[currentStep];
+  const home=chartXY(destinations.Singapore.lat,destinations.Singapore.lon);
+  let grid='';
+  for(let lon=20;lon<CHART.lon1;lon+=20){ const x=chartXY(0,lon).x; grid+=`<line x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${CHART.H}"/>`; }
+  for(let lat=-40;lat<=60;lat+=20){ const y=chartXY(lat,0).y; grid+=`<line x1="0" y1="${y.toFixed(1)}" x2="${CHART.W}" y2="${y.toFixed(1)}"${lat===0?' class="eq"':''}/>`; }
+  const routes=Object.entries(destinations).filter(([,d])=>!d.home).map(([id,d],i)=>{
+    const p=chartXY(d.lat,d.lon); const mx=(home.x+p.x)/2, my=Math.min(home.y,p.y)-Math.abs(p.x-home.x)*0.18-36;
+    const path=`M${home.x.toFixed(1)},${home.y.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+    return `<g class="route" data-id="${id}"><path d="${path}" class="arc-glow" style="stroke:${d.col}"/><path d="${path}" class="arc" style="stroke:${d.col}"/>
+      <polygon points="9,0 -7,-6 -7,6" fill="${d.col}" class="cboat"><animateMotion dur="${(7+i*0.9).toFixed(1)}s" begin="${(i*0.7).toFixed(1)}s" repeatCount="indefinite" rotate="auto" path="${path}"/></polygon></g>`; }).join('');
+  const pins=Object.entries(destinations).map(([id,d])=>{
+    const p=chartXY(d.lat,d.lon), col=d.col||'#FFE200';
+    const L={above:{x:0,y:-44,a:'middle'},below:{x:0,y:58,a:'middle'},left:{x:-26,y:7,a:'end'},right:{x:26,y:7,a:'start'}}[d.lab||'above'];
+    const C={above:{x:0,y:-26},below:{x:0,y:40},left:{x:-26,y:-14},right:{x:26,y:-14}}[d.lab||'above'];
+    return `<g class="cpin${d.home?' home':''}" data-id="${id}" transform="translate(${p.x.toFixed(1)},${p.y.toFixed(1)})"${d.home?'':` onclick="showNexusModal('${id}')"`}>
+      <circle class="halo" r="${d.home?30:18}" style="fill:${col}"/><circle class="ring" r="${d.home?14:11}" style="stroke:${col}"/><circle class="dot" r="${d.home?8:6}" style="fill:${col}"/>
+      <text class="cnt" x="${C.x}" y="${C.y}" text-anchor="${L.a}"></text>
+      <text class="lbl" x="${L.x}" y="${L.y}" text-anchor="${L.a}">${d.home?'🐝 '+d.name:d.name}</text></g>`; }).join('');
   return `<div class="split">
-    <div class="main-vis"><div class="vis-title">${s.title}<span class="vs">${s.desc||''}</span></div>
-      <div id="globeHost"><div id="globePins"></div></div>
-      <div class="globe-ctrl"><button id="spinBtn" class="btn btn-ghost">⏸ Stop spin</button></div></div>
+    <div class="main-vis chart-host"><div class="vis-title bottom">${s.title}<span class="vs">${s.desc||''}</span></div>
+      <svg id="voyageChart" viewBox="0 0 ${CHART.W} ${CHART.H}" preserveAspectRatio="xMidYMid meet">
+        <defs><radialGradient id="seaG" cx="50%" cy="55%" r="75%"><stop offset="0" stop-color="#0f2266"/><stop offset="1" stop-color="#040a33"/></radialGradient></defs>
+        <rect width="${CHART.W}" height="${CHART.H}" fill="url(#seaG)" rx="18"/>
+        <g class="grid">${grid}</g>
+        ${routes}${pins}
+        <text class="chart-note" x="24" y="${CHART.H-20}">NEXUS@BTY · VOYAGE CHART · ${Object.keys(destinations).length-1} EXCHANGES A YEAR</text>
+      </svg></div>
     <div class="side"><div id="nexusStats"><p style="color:var(--ink-dim)">Waiting for choices…</p></div></div>
   </div>`;
 }
-const destinations={
-  Korea:{lat:37.56,lon:126.97,name:'A.I. · Korea'}, NZ:{lat:-41.28,lon:174.77,name:'Sustainability · NZ'},
-  MiharaJapan:{lat:34.40,lon:133.08,name:'Soc. Sci · Japan'}, MutsuzawaJapan:{lat:35.43,lon:140.32,name:'STEM · Japan'},
-  GeoBali:{lat:-8.67,lon:115.22,name:'Geography · Bali'}, Estonia:{lat:59.43,lon:24.75,name:'Cyber · Estonia'},
-  Singapore:{lat:1.29,lon:103.85,name:'Beatty · Singapore', home:true, noClick:true}
-};
-function latLon(lat,lon,r){ const phi=(90-lat)*Math.PI/180, th=(lon+180)*Math.PI/180;
-  return new THREE.Vector3(-(r*Math.sin(phi)*Math.cos(th)), r*Math.cos(phi), r*Math.sin(phi)*Math.sin(th)); }
-function initGlobe(){
-  const host=document.getElementById('globeHost'); if(!host) return;
-  if(!window.__THREE_OK || typeof THREE==='undefined'){ globeFallback(host); return; }
-  if(animId) cancelAnimationFrame(animId);
-  const pins=document.getElementById('globePins'); pins.innerHTML='';
-  // Some locked-down AV PCs / remote desktops load Three.js but can't create a
-  // WebGL context — guard so we fall back gracefully instead of a blank stage.
-  try{
-    scene=new THREE.Scene();
-    cam=new THREE.PerspectiveCamera(45, host.clientWidth/host.clientHeight, 0.1, 1000); cam.position.z=3.4;
-    renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
-  }catch(err){ console.warn("WebGL unavailable — globe fallback:",err); globeFallback(host); return; }
-  renderer.setSize(host.clientWidth,host.clientHeight); renderer.setPixelRatio(Math.min(2,window.devicePixelRatio));
-  host.insertBefore(renderer.domElement, pins);
-  spinning = !matchMedia('(prefers-reduced-motion:reduce)').matches;  // respect reduced motion
-  const R=1.5;
-  // Gold wireframe sphere
-  const wire=new THREE.Mesh(new THREE.SphereGeometry(R,36,28), new THREE.MeshBasicMaterial({color:0xFFE200, wireframe:true, transparent:true, opacity:0.28}));
-  // Inner navy solid for depth
-  const solid=new THREE.Mesh(new THREE.SphereGeometry(R*0.985,48,36), new THREE.MeshBasicMaterial({color:0x070f3a}));
-  globe=new THREE.Group(); globe.add(solid); globe.add(wire); scene.add(globe);
-  // Atmosphere glow
-  const glow=new THREE.Mesh(new THREE.SphereGeometry(R,48,36), new THREE.ShaderMaterial({
-    vertexShader:`varying vec3 vN; void main(){ vN=normalize(normalMatrix*normal); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
-    fragmentShader:`varying vec3 vN; void main(){ float i=pow(0.62-dot(vN,vec3(0,0,1.0)),3.0); gl_FragColor=vec4(1.0,0.886,0.0,1.0)*i;}`,
-    side:THREE.BackSide, blending:THREE.AdditiveBlending, transparent:true }));
-  glow.scale.set(1.18,1.18,1.18); scene.add(glow);
-  // Home + destination markers and arcs
-  const home=latLon(destinations.Singapore.lat,destinations.Singapore.lon,R);
-  gpins.length=0;
-  Object.entries(destinations).forEach(([id,d])=>{
-    const el=document.createElement('div'); el.className='gpin';
-    el.innerHTML=`<div class="lbl" style="${d.home?'background:var(--gold);color:var(--navy);border-color:#fff':''}">${d.name}</div><div class="stem"></div><div class="dot" style="${d.home?'width:18px;height:18px':''}"></div>`;
-    if(!d.noClick && modalData[id]) el.onclick=()=>showNexusModal(id);
-    document.getElementById('globePins').appendChild(el);
-    gpins.push({el, v:latLon(d.lat,d.lon,R)});
-    if(!d.home){ // arc from home
-      const to=latLon(d.lat,d.lon,R); const mid=home.clone().add(to).multiplyScalar(0.5).setLength(R*1.5);
-      const pts=[]; for(let t=0;t<=1;t+=0.04){ const p=home.clone().multiplyScalar((1-t)*(1-t)).add(mid.clone().multiplyScalar(2*(1-t)*t)).add(to.clone().multiplyScalar(t*t)); pts.push(p); }
-      const g=new THREE.BufferGeometry().setFromPoints(pts);
-      globe.add(new THREE.Line(g, new THREE.LineBasicMaterial({color:0xFFE200, transparent:true, opacity:0.5})));
-    }
-  });
-  // interaction (globeDragging + pm live at module scope so the window listeners
-  // below can be attached once and removed/re-added without stacking on repeat visits)
-  renderer.domElement.addEventListener('pointerdown',e=>{globeDragging=true;spinning=false;globePM={x:e.clientX,y:e.clientY};});
-  renderer.domElement.addEventListener('pointermove',e=>{ if(!globeDragging)return; globe.rotation.y+=(e.clientX-globePM.x)*0.005; globe.rotation.x+=(e.clientY-globePM.y)*0.005; globePM={x:e.clientX,y:e.clientY}; });
-  renderer.domElement.addEventListener('wheel',e=>{e.preventDefault(); cam.position.z=Math.max(2.4,Math.min(6,cam.position.z+e.deltaY*0.005));},{passive:false});
-  window.removeEventListener('pointerup', globeOnPointerUp); window.addEventListener('pointerup', globeOnPointerUp);
-  window.removeEventListener('resize', globeOnResize); window.addEventListener('resize', globeOnResize);
-  const sb=document.getElementById('spinBtn'); if(sb){ sb.textContent= spinning?'⏸ Stop spin':'▶ Start spin'; sb.onclick=()=>{ spinning=!spinning; sb.textContent= spinning?'⏸ Stop spin':'▶ Start spin'; }; }
-  globe.rotation.y=-1.2;
-  (function loop(){ animId=requestAnimationFrame(loop); if(spinning) globe.rotation.y+=0.0011;
-    gpins.forEach(p=>{ const pos=p.v.clone().applyEuler(globe.rotation); const sp=pos.clone().project(cam);
-      if(pos.z>-0.25){ const x=sp.x*host.clientWidth/2+host.clientWidth/2, y=-sp.y*host.clientHeight/2+host.clientHeight/2;
-        p.el.style.transform=`translate(${x}px,${y}px) translate(-50%,-100%)`; p.el.style.opacity='1'; p.el.style.display='flex'; }
-      else { p.el.style.opacity='0'; p.el.style.display='none'; } });
-    renderer.render(scene,cam); })();
-  paintNexusStats();
-}
-function globeFallback(host){
-  // No WebGL/Three: elegant radial "Beatty to the world" hub
-  const opts=journeySteps[currentStep].nexusData.options;
-  host.innerHTML=`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative">
-    <div style="text-align:center;position:relative;z-index:2"><div style="font-size:clamp(4rem,10vw,7rem)">🐝🌍</div>
-    <p style="font-family:var(--serif);color:var(--gold);font-size:clamp(1.2rem,2.4vw,2rem);margin-top:10px">Beatty reaches the world</p></div></div>`;
-  paintNexusStats();
-}
+function initGlobe(){}   // kept for older callers; the chart needs no init
 function paintNexusStats(){
   const box=document.getElementById('nexusStats'); if(!box) return;
   const step=journeySteps[currentStep]; const opts=step.nexusData?.options||[]; const bd=live.nexus.breakdown||{}; const total=live.nexus.total||0;
+  document.querySelectorAll('#voyageChart .cpin:not(.home), .map-inner .mpin:not(.home)').forEach(el=>{ const c=bd[el.dataset.id]||0; const cnt=el.querySelector('.cnt,.mcnt'); if(cnt) cnt.textContent= c>0?c:''; const halo=el.querySelector('.halo'); if(halo) halo.setAttribute('r', 18+Math.min(34, c*2.2)); el.classList.toggle('chosen', c>0); });
   box.innerHTML=`<h3 class="side-h">Live choices · ${total}</h3>`+opts.map(o=>{ const c=bd[o.id]||0, pct= total>0?(c/total*100):0;
     return `<div class="side-row"><div class="lab"><span>${o.text}</span><span>${c}</span></div><div class="side-track"><div class="side-fill" style="width:${pct}%"></div></div></div>`; }).join('');
 }
 
 /* Industry map */
+const LOCAL_COL={Rockwell:'#FFE200',PIL:'#F5F0E8',Journalism:'#EC3237',TamilMurasu:'#A77BEA',Makita:'#2BB3A8',ASTAR:'#7FD3F7'};
 function renderMap(localData){
-  const pins=localData.map(m=>`<div class="mpin" style="left:${m.pos.x}%; top:${m.pos.y}%" onclick="showNexusModal('${m.id}')">
-      <div class="lbl" style="${m.off?m.off+';position:relative':''}">${m.name}</div><div class="dot" style="background:var(--gold)"></div></div>`).join('');
+  const pins=localData.map(m=>`<div class="mpin" data-id="${m.id}" style="left:${m.pos.x}%; top:${m.pos.y}%" onclick="showNexusModal('${m.id}')">
+      <div class="lbl" style="${m.off?m.off+';position:relative':''}">${m.name}<span class="mcnt"></span></div><div class="stem"></div><div class="dot" style="background:${LOCAL_COL[m.id]||'var(--gold)'}"></div></div>`).join('');
   const s=journeySteps[currentStep];
-  return `<div class="split"><div class="map-host"><div class="vis-title">${s.title}<span class="vs">${s.desc||''}</span></div><div class="map-inner">
-      <img class="map-img" src="sgmap.png" alt="Singapore" onerror="this.style.display='none'">${pins}</div></div>
+  return `<div class="split"><div class="map-host"><div class="vis-title bottom">${s.title}<span class="vs">${s.desc||''}</span></div><div class="map-inner">
+      <div class="map-grid"></div>
+      <img class="map-img" src="sgmap-land.png" alt="Singapore" onerror="this.onerror=null;this.src='sgmap.png';this.classList.add('raw')">
+      <div class="mpin home" style="left:44%; top:34%"><div class="lbl">🐝 Beatty Secondary</div><div class="stem"></div><div class="dot"></div></div>${pins}</div></div>
     <div class="side"><div id="nexusStats"><p style="color:var(--ink-dim)">Waiting for choices…</p></div></div></div>`;
 }
 
