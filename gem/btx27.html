@@ -131,6 +131,7 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .eyebrow{font-size:clamp(.7rem,1.1vw,.95rem); letter-spacing:.34em; text-transform:uppercase;
   color:var(--gold); font-weight:700; margin-bottom:14px}
 .stage-title{font-size:clamp(2.2rem,5vw,4.6rem); color:#fff; line-height:1.02; letter-spacing:-.01em}
+.stage-title.poll-title{font-size:clamp(1.9rem,3.8vw,3.6rem); margin-bottom:clamp(6px,1.4vh,16px)}
 .stage-sub{font-size:clamp(1.05rem,2vw,1.7rem); color:var(--ink-dim); margin-top:16px; max-width:60ch; line-height:1.5}
 
 /* --- Buttons --- */
@@ -172,7 +173,13 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 @keyframes leadPulse{0%,100%{box-shadow:0 0 0 2px rgba(255,226,0,.3),0 12px 30px rgba(255,226,0,.14)}50%{box-shadow:0 0 0 3px rgba(255,226,0,.6),0 18px 46px rgba(255,226,0,.3)}}
 
 /* --- Poll --- */
-.poll-q{font-family:var(--serif); font-size:clamp(1.6rem,3.4vw,3.4rem); color:#fff; line-height:1.08; max-width:22ch}
+.poll-head{position:relative; text-align:center; margin-bottom:clamp(14px,2.6vh,30px); padding:0 clamp(150px,13vw,240px)}
+.poll-q{font-family:var(--serif); font-size:clamp(1.5rem,3vw,3rem); color:#fff; line-height:1.12; margin:0 auto; max-width:34ch; text-wrap:balance}
+.poll-q.long{font-size:clamp(1.3rem,2.5vw,2.5rem)}
+.poll-head .votes-chip{position:absolute; right:0; top:50%; transform:translateY(-50%); white-space:nowrap}
+.poll-wrap .poll-opt{margin-bottom:clamp(8px,1.2vh,14px)}
+.poll-wrap .poll-track{height:clamp(32px,4.6vh,52px)}
+.poll-wrap .poll-row{margin-bottom:5px}
 .poll-opt{margin-bottom:clamp(10px,1.5vh,20px)}
 .poll-row{display:flex; justify-content:space-between; align-items:end; margin-bottom:8px}
 .poll-label{font-family:var(--serif); font-size:clamp(1.05rem,2vw,1.9rem); color:#fff}
@@ -259,10 +266,10 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 /* Art is a hero banner on the top ~60%; it fades into a branded panel that
    carries the gold letter + word. The source art is pre-cropped (see dream/)
    to remove its baked-in word, so nothing gets sliced by the portrait frame. */
-.dfront .bg{position:absolute; top:0; left:0; right:0; height:60%; background-size:cover; background-position:center; transition:filter var(--t) var(--ease)}
-.dfront .bg:after{content:""; position:absolute; inset:0; background:linear-gradient(180deg, transparent 50%, rgba(4,8,26,.72) 74%, var(--navy-900) 86%)}
+.dfront .bg{position:absolute; top:0; left:0; right:0; height:64%; background-size:cover; background-position:center top; transition:filter var(--t) var(--ease)}
+.dfront .bg:after{content:""; position:absolute; inset:0; background:linear-gradient(180deg, transparent 62%, rgba(4,8,26,.72) 84%, var(--navy-900) 96%)}
 .dcard:hover .dfront .bg{filter:brightness(1.12) saturate(1.05)}
-.dfront .txt{position:absolute; left:0; right:0; top:56%; bottom:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:clamp(10px,1.5vw,20px); text-align:center; z-index:2}
+.dfront .txt{position:absolute; left:0; right:0; top:62%; bottom:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:clamp(10px,1.5vw,20px); text-align:center; z-index:2}
 .dfront .letter{font-family:var(--serif); font-weight:700; color:var(--gold); font-size:clamp(2.8rem,5.2vw,5rem); line-height:.9; text-shadow:0 4px 24px rgba(255,226,0,.25)}
 .dfront .word{font-family:var(--serif); color:#fff; font-size:clamp(1.05rem,1.7vw,1.75rem); letter-spacing:.02em}
 .dfront .hint{margin-top:8px; font-family:var(--sans); font-size:clamp(.58rem,.82vw,.78rem); letter-spacing:.16em; text-transform:uppercase; color:var(--ink-dim)}
@@ -376,7 +383,7 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
   transition:opacity 1s var(--ease), transform 1s var(--ease), background 1s var(--ease); overflow:hidden; word-break:break-word}
 .hive-cell.on{opacity:1; transform:scale(1); background:linear-gradient(160deg, rgba(255,226,0,.85), var(--gold-deep)); color:var(--navy);
   box-shadow:0 0 30px rgba(255,226,0,.4)}
-.hive-empty{color:var(--ink-dim); font-size:clamp(1.4rem,3vw,2.4rem); font-family:var(--serif)}
+.hive-empty{position:absolute; top:30%; left:50%; transform:translateX(-50%); color:var(--ink-dim); font-size:clamp(1.2rem,2.4vw,2rem); font-family:var(--serif); background:rgba(0,6,31,.72); padding:10px 26px; border-radius:16px; border:1px solid var(--card-line); white-space:nowrap}
 
 /* --- Modal --- */
 .overlay{position:fixed; inset:0; background:rgba(0,4,20,.9); backdrop-filter:blur(10px); z-index:150; display:flex; align-items:center; justify-content:center; padding:20px}
@@ -647,11 +654,11 @@ let heartbeat=null, animId=null;
 
 /* ---------- CONTENT ---------- */
 const dreamValues=[
-  { name:'Discipline',   img:'dream/Discipline.png',   pos:'center',    points:["Shaping character through daily routines","Turning good habits into quiet strength","Building a community you can rely on"] },
-  { name:'Resilience',   img:'dream/Resilience.png',   pos:'center',    points:["Learning through every challenge","Knowing your strengths under pressure","Growing forward through change"] },
-  { name:'Empathy',      img:'dream/Empathy.png',      pos:'center',    points:["Connecting with genuine care","Understanding before being understood","Contributing with compassion"] },
-  { name:'Adaptability', img:'dream/Adaptability.png', pos:'center',    points:["Inquiring with an open mind","Responding with intention","Balancing calm with intensity"] },
-  { name:'Mindfulness',  img:'dream/Mindfulness.png',  pos:'72% center',points:["Respecting self","Respecting others","Respecting the environment"] },
+  { name:'Discipline',   img:'dream/Discipline-card.jpg',   tint:'#2438c9', points:["Shaping character through daily routines","Turning good habits into quiet strength","Building a community you can rely on"] },
+  { name:'Resilience',   img:'dream/Resilience-card.jpg',   tint:'#c2410c', points:["Learning through every challenge","Knowing your strengths under pressure","Growing forward through change"] },
+  { name:'Empathy',      img:'dream/Empathy-card.jpg',      tint:'#c81e1e', points:["Connecting with genuine care","Understanding before being understood","Contributing with compassion"] },
+  { name:'Adaptability', img:'dream/Adaptability-card.jpg', tint:'#1f7a2e', points:["Inquiring with an open mind","Responding with intention","Balancing calm with intensity"] },
+  { name:'Mindfulness',  img:'dream/Mindfulness-card.jpg',  tint:'#d99a12', points:["Respecting self","Respecting others","Respecting the environment"] },
 ];
 
 let boatMod=null; import('./x/boat.js').then(m=>{ boatMod=m; }).catch(()=>{});   // the same origami the phones fold
@@ -1055,9 +1062,9 @@ function paintCompass(){
 /* Poll */
 function renderPoll(p){
   const d=live.polls[p.id]||{total:0,breakdown:{}}, total=d.total||0, revealed=!!journeySteps[currentStep].revealed;
-  return `<div class="wrap" data-poll="${p.id}">
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:24px; margin-bottom:clamp(20px,4vh,44px)">
-      <h2 class="poll-q">${p.question}</h2>
+  return `<div class="wrap poll-wrap" data-poll="${p.id}">
+    <div class="poll-head">
+      <h2 class="poll-q${p.question.length>58?' long':''}">${p.question}</h2>
       <div class="votes-chip">🐝 <span class="pv">${total}</span><span class="pvm">${live.compass.total>0?` of ${live.compass.total}`:''}</span> voted</div>
     </div>
     <div>${p.options.map((o,i)=>{
@@ -1091,7 +1098,7 @@ function renderValues(){
     <div class="dcard" role="button" tabindex="0" aria-label="${v.name} — flip for detail">
       <div class="dcard-inner">
         <div class="dface dfront">
-          <div class="bg" style="background-image:url('${v.img}'); background-position:${v.pos||'center'}"></div>
+          <div class="bg" style="background-image:url('${v.img}'); background-color:${v.tint||'#0a1650'}"></div>
           <div class="txt"><div class="letter">${v.name[0]}</div><div class="word">${v.name}</div><div class="hint">🐝 Tap to explore</div></div>
         </div>
         <div class="dface dback"><h4>${v.name}</h4><ul>${v.points.map(p=>`<li>${p}</li>`).join('')}</ul></div>
@@ -1260,14 +1267,44 @@ function renderGlobe(){
     <div class="side"><div id="nexusStats"><p style="color:var(--ink-dim)">Waiting for choices…</p></div></div>
   </div>`;
 }
+/* Land as a 2048×1024 equirectangular mask (built once). Painting the sphere by
+   sampling it is exact for any rotation — no polygon clipping at the horizon, so
+   land and sea can never swap. Coastlines are marked so they can glow. */
+let landTex=null;
+function buildLandTexture(){
+  const W=2048, H=1024, c=document.createElement('canvas'); c.width=W; c.height=H; const x=c.getContext('2d');
+  x.fillStyle='#000'; x.fillRect(0,0,W,H); x.fillStyle='#fff'; x.beginPath();
+  window.WORLD_LAND.forEach(r=>{ for(let i=0;i<r.length;i+=2){ const px=(r[i]+180)/360*W, py=(90-r[i+1])/180*H; if(i===0) x.moveTo(px,py); else x.lineTo(px,py); } x.closePath(); });
+  x.fill('evenodd');
+  const img=x.getImageData(0,0,W,H).data, land=new Uint8Array(W*H), coast=new Uint8Array(W*H);
+  for(let i=0,j=0;i<land.length;i++,j+=4) land[i]= img[j]>127?1:0;
+  for(let yy=2;yy<H-2;yy++) for(let xx=2;xx<W-2;xx++){ const k=yy*W+xx; if(land[k] && (!land[k-1]||!land[k+1]||!land[k-W]||!land[k+W]||!land[k-2]||!land[k+2]||!land[k-2*W]||!land[k+2*W])) coast[k]=1; }
+  landTex={W,H,land,coast};
+}
+function paintSphere(sl,cl,sp,cp){
+  const R=gl.R, scale=(gl.drag||gl.spin)?0.5:0.72, S=Math.max(64,Math.round(2*R*scale));
+  if(!gl.sph||gl.sph.S!==S){ const cv2=document.createElement('canvas'); cv2.width=S; cv2.height=S; const cx2=cv2.getContext('2d'); gl.sph={S,cv:cv2,ctx:cx2,img:cx2.createImageData(S,S)}; }
+  const d=gl.sph.img.data, half=S/2, inv=1/half, {land,coast,W:TW,H:TH}=landTex, TWf=TW/(2*Math.PI), THf=TH/Math.PI;
+  let p=0;
+  for(let j=0;j<S;j++){ const y2=-(j+0.5-half)*inv, yy=y2*y2;
+    for(let i=0;i<S;i++,p+=4){ const x1=(i+0.5-half)*inv, rr=x1*x1+yy;
+      if(rr>1){ d[p+3]=0; continue; }
+      const z2=Math.sqrt(1-rr);
+      const y=y2*cp+z2*sp, z1=-y2*sp+z2*cp, x=x1*cl+z1*sl, z=-x1*sl+z1*cl;      // undo tilt, then longitude
+      const tx=((Math.atan2(x,z)+Math.PI)*TWf)|0, ty=((Math.PI/2-Math.asin(y))*THf)|0;
+      const k=ty*TW+(tx<TW?tx:TW-1), light=(0.62+0.38*Math.max(0,-x1*0.45+y2*0.45+z2*0.77))*Math.pow(z2,0.3);
+      let r,g,b; if(coast[k]){ r=255;g=241;b=150; } else if(land[k]){ r=218;g=184;b=46; } else { r=16;g=38;b=118; }
+      d[p]=r*light; d[p+1]=g*light; d[p+2]=b*light; d[p+3]=255; } }
+  gl.sph.ctx.putImageData(gl.sph.img,0,0);
+  return gl.sph.cv;
+}
 function initGlobe(){
   const host=document.getElementById('globeHost'), cv=document.getElementById('globeCanvas'), pinsEl=document.getElementById('globePins'); if(!host||!cv) return;
   if(animId) cancelAnimationFrame(animId);
   const ctx=cv.getContext('2d'); const D2R=Math.PI/180;
   const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
   gl={ lon:GLOBE_HOME_VIEW.lon, lat:GLOBE_HOME_VIEW.lat, spin:false, drift:!reduce, drag:null, t0:performance.now(), W:0,H:0,R:0,cx:0,cy:0 };
-  // land rings → unit vectors once
-  const land=window.WORLD_LAND.map(r=>{ const v=new Float32Array(r.length/2*3); for(let i=0,j=0;i<r.length;i+=2,j+=3){ const lo=r[i]*D2R, la=r[i+1]*D2R, c=Math.cos(la); v[j]=c*Math.sin(lo); v[j+1]=Math.sin(la); v[j+2]=c*Math.cos(lo); } return v; });
+  if(!landTex) buildLandTexture();
   const unit=(lat,lon)=>{ const la=lat*D2R, lo=lon*D2R, c=Math.cos(la); return [c*Math.sin(lo), Math.sin(la), c*Math.cos(lo)]; };
   const homeV=unit(destinations.Singapore.lat,destinations.Singapore.lon);
   // great-circle routes (slerp), 48 points each
@@ -1287,11 +1324,6 @@ function initGlobe(){
   function view(){ const lo=gl.lon*D2R, la=gl.lat*D2R; sl=Math.sin(lo); cl=Math.cos(lo); sp=Math.sin(la); cp=Math.cos(la); }
   function proj(x,y,z){ const x1=x*cl-z*sl, z1=x*sl+z*cl; const y2=y*cp-z1*sp, z2=y*sp+z1*cp;   // rotate lon, then tilt lat
     return [gl.cx+x1*gl.R, gl.cy-y2*gl.R, z2]; }                                                 // z2>0 faces us
-  function drawRing(v, clampBack){ let started=false;
-    for(let j=0;j<v.length;j+=3){ let [x,y,z]=proj(v[j],v[j+1],v[j+2]);
-      if(z<0){ if(!clampBack){ started=false; continue; } const dx=x-gl.cx, dy=y-gl.cy, d=Math.hypot(dx,dy)||1; x=gl.cx+dx/d*gl.R; y=gl.cy+dy/d*gl.R; }   // behind → clamp to the limb
-      if(!started){ ctx.moveTo(x,y); started=true; } else ctx.lineTo(x,y); }
-    if(clampBack) ctx.closePath(); }
   function frame(now){
     animId=requestAnimationFrame(frame);
     const dt=(now-(gl.last||now))/1000; gl.last=now;
@@ -1300,22 +1332,17 @@ function initGlobe(){
     const {W,H,R,cx,cy}=gl; ctx.clearRect(0,0,W,H);
     // atmosphere
     let g=ctx.createRadialGradient(cx,cy,R*0.92,cx,cy,R*1.28); g.addColorStop(0,'rgba(255,226,0,.22)'); g.addColorStop(.45,'rgba(255,226,0,.06)'); g.addColorStop(1,'rgba(255,226,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,R*1.28,0,Math.PI*2); ctx.fill();
-    // sea
-    g=ctx.createRadialGradient(cx-R*0.35,cy-R*0.4,R*0.1,cx,cy,R); g.addColorStop(0,'#1c3a9a'); g.addColorStop(.55,'#0b1a5c'); g.addColorStop(1,'#050b30'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fill();
+    // the painted sphere: sea, land, coast, light — sampled from the texture
+    ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
+    ctx.drawImage(paintSphere(sl,cl,sp,cp), cx-R, cy-R, 2*R, 2*R);
     ctx.save(); ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.clip();
     // graticule
-    ctx.strokeStyle='rgba(255,255,255,.07)'; ctx.lineWidth=1; ctx.beginPath();
+    ctx.strokeStyle='rgba(255,255,255,.10)'; ctx.lineWidth=1; ctx.beginPath();
     for(let lo=-180;lo<180;lo+=20){ let st=false; for(let la=-90;la<=90;la+=3){ const u=unit(la,lo); const [x,y,z]=proj(u[0],u[1],u[2]); if(z<0){st=false;continue;} if(!st){ctx.moveTo(x,y);st=true;} else ctx.lineTo(x,y);} }
     for(let la=-60;la<=60;la+=20){ let st=false; for(let lo=-180;lo<=180;lo+=3){ const u=unit(la,lo); const [x,y,z]=proj(u[0],u[1],u[2]); if(z<0){st=false;continue;} if(!st){ctx.moveTo(x,y);st=true;} else ctx.lineTo(x,y);} }
     ctx.stroke();
     // equator, a touch of gold
     ctx.strokeStyle='rgba(255,226,0,.28)'; ctx.setLineDash([6,8]); ctx.beginPath(); { let st=false; for(let lo=-180;lo<=180;lo+=2){ const u=unit(0,lo); const [x,y,z]=proj(u[0],u[1],u[2]); if(z<0){st=false;continue;} if(!st){ctx.moveTo(x,y);st=true;} else ctx.lineTo(x,y);} } ctx.stroke(); ctx.setLineDash([]);
-    // land
-    ctx.beginPath(); land.forEach(v=>drawRing(v,true));
-    ctx.fillStyle='rgba(255,226,0,.36)'; ctx.fill('evenodd');
-    ctx.strokeStyle='rgba(255,236,120,.75)'; ctx.lineWidth=1.1; ctx.lineJoin='round'; ctx.beginPath(); land.forEach(v=>drawRing(v,false)); ctx.stroke();
-    // shading: a lit upper-left, a dark limb
-    g=ctx.createRadialGradient(cx-R*0.45,cy-R*0.45,R*0.2,cx,cy,R*1.02); g.addColorStop(0,'rgba(255,255,255,.06)'); g.addColorStop(.6,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,.62)'); ctx.fillStyle=g; ctx.fillRect(cx-R,cy-R,2*R,2*R);
     // routes + sails
     const dash=(now/40)%20;
     routes.forEach(rt=>{ ctx.strokeStyle=rt.col; ctx.lineWidth=2; ctx.setLineDash([7,9]); ctx.lineDashOffset=-dash; ctx.globalAlpha=.85; ctx.beginPath(); let st=false;
@@ -1332,7 +1359,7 @@ function initGlobe(){
   }
   // interaction
   const pd=e=>{ gl.drag={x:e.clientX,y:e.clientY,lon:gl.lon,lat:gl.lat}; gl.drift=false; };
-  const pm=e=>{ if(!gl.drag) return; gl.lon=gl.drag.lon+(e.clientX-gl.drag.x)*0.35; gl.lat=Math.max(-80,Math.min(80,gl.drag.lat+(e.clientY-gl.drag.y)*0.35)); };
+  const pm=e=>{ if(!gl.drag) return; const k=57.3/gl.R; gl.lon=gl.drag.lon-(e.clientX-gl.drag.x)*k; gl.lat=Math.max(-80,Math.min(80,gl.drag.lat+(e.clientY-gl.drag.y)*k)); };
   const pu=()=>{ gl.drag=null; };
   cv.addEventListener('pointerdown',pd); window.removeEventListener('pointermove',globeOnPointerMove); window.addEventListener('pointermove',globeOnPointerMove=pm);
   window.removeEventListener('pointerup',globeOnPointerUp); window.addEventListener('pointerup',globeOnPointerUp=pu);
@@ -1391,7 +1418,8 @@ function renderStep(){
   journeyContent.classList.toggle('respond', RESPOND_TYPES.includes(step.type));   // gold frame = "phones, it's your turn"
 
   const immersive = ['slide','video','globe','industry_map','funfact','finale','fleet','bloom','fold'].includes(step.type);
-  const titleHTML = (!immersive && step.title)?`<p class="eyebrow">${step.id.includes('poll')?'Live Poll':'Beatty'}</p><h2 class="stage-title">${step.title}</h2>`:'';
+  const shownTitle = step.type==='poll' ? String(step.title||'').replace(/^Live Poll\s*·\s*/,'') : step.title;
+  const titleHTML = (!immersive && step.title)?`<p class="eyebrow">${step.id.includes('poll')?'Live Poll':'Beatty'}</p><h2 class="stage-title${step.type==='poll'?' poll-title':''}">${shownTitle}</h2>`:'';
   const descHTML  = (!immersive && step.desc)?`<p class="stage-sub" style="margin:0 auto 26px">${step.desc}</p>`:'';
   const inner = renderContent(step);
 
