@@ -6,7 +6,8 @@
 <title>The Beatty Experience · The Hive</title>
 <meta name="description" content="Beatty Secondary Open House — Harmonising Hearts, Thriving Together.">
 
-<!-- The NEXUS voyage chart is an inline SVG (no CDN, no WebGL): identical on every laptop and projector. -->
+<!-- Coastlines for the globe (Natural Earth, local file — no CDN). If it fails to load the flat SVG chart is used. -->
+<script src="land.js"></script>
 
 <style>
 /* ============================================================
@@ -318,6 +319,18 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .mpin.chosen .dot{transform:scale(1.25)}
 .vis-title.bottom{top:auto; bottom:22px}
 .chart-host{background:#061027}
+.globe-vis{background:radial-gradient(ellipse at 50% 60%, #0a1650 0%, #040a33 70%)}
+#globeHost{width:100%; height:100%; position:relative; cursor:grab}
+#globeHost:active{cursor:grabbing}
+#globeCanvas{position:absolute; inset:0; display:block}
+#globePins{position:absolute; inset:0; pointer-events:none; overflow:hidden}
+.gpin .lbl{position:relative}
+.gpin .gcnt{margin-left:8px; font-family:var(--serif); color:var(--gold)}
+.globe-vis .globe-ctrl{left:auto; right:26px; transform:none}
+.gpin.home .gcnt{display:none}
+.gpin .gcnt:empty{display:none}
+.gpin.chosen .dot{transform:scale(1.35)}
+.globe-ctrl{display:flex; gap:10px}
 #voyageChart{position:absolute; inset:0; width:100%; height:100%}
 #voyageChart .grid line{stroke:rgba(255,255,255,.07); stroke-width:1}
 #voyageChart .grid line.eq{stroke:rgba(255,226,0,.25); stroke-dasharray:6 8}
@@ -1182,18 +1195,16 @@ function hexSpiral(n, cw, ch){
 }
 
 /* Globe (procedural gold wireframe, Three.js with fallback) */
-let globe,scene,cam,renderer,spinning=true; const gpins=[];
+let globeOnPointerUp=null, globeOnResize=null;
 let globeDragging=false, globePM={x:0,y:0};
-function globeOnPointerUp(){ globeDragging=false; }
-function globeOnResize(){ const host=document.getElementById('globeHost'); if(!renderer||!cam||!host) return; cam.aspect=host.clientWidth/host.clientHeight; cam.updateProjectionMatrix(); renderer.setSize(host.clientWidth,host.clientHeight); }
 /* NEXUS voyage chart — an inline SVG: Beatty at the centre, a route to every
    exchange, a little sail travelling each route, a pin that grows with the
    room's choices. No CDN, no WebGL, so it looks the same everywhere. */
 const destinations={
-  Hanoi:{lat:21.03,lon:105.85,name:'Vietnam · Hanoi',col:'#8E7CFF',lab:'left'},
-  Korea:{lat:37.56,lon:126.97,name:'A.I. · South Korea',col:'#D64FA0',lab:'left'},
-  MiharaJapan:{lat:34.40,lon:133.08,name:'Social Sciences · Mihara',col:'#EC5A5F',lab:'above'},
-  MutsuzawaJapan:{lat:35.43,lon:140.32,name:'STEM · Mutsuzawa',col:'#B5D334',lab:'below'},
+  Hanoi:{lat:21.03,lon:105.85,name:'Vietnam · Hanoi',col:'#8E7CFF',lab:'left',lx:-30,stem:30},
+  Korea:{lat:37.56,lon:126.97,name:'A.I. · South Korea',col:'#D64FA0',lab:'left',lx:-88,stem:52},
+  MiharaJapan:{lat:34.40,lon:133.08,name:'Social Sciences · Mihara',col:'#EC5A5F',lab:'above',lx:-84,stem:20},
+  MutsuzawaJapan:{lat:35.43,lon:140.32,name:'STEM · Mutsuzawa',col:'#B5D334',lab:'below',lx:104,stem:8},
   GeoBali:{lat:-8.67,lon:115.22,name:'Geography · Bali',col:'#F28C28',lab:'below'},
   NZ:{lat:-41.28,lon:174.77,name:'Sustainability · New Zealand',col:'#2BB3A8',lab:'left'},
   Estonia:{lat:59.43,lon:24.75,name:'Cyber · Estonia',col:'#7FD3F7',lab:'right'},
@@ -1201,7 +1212,7 @@ const destinations={
 };
 const CHART={W:1000,H:600,lon0:12,lon1:195,lat0:78,lat1:-56};
 function chartXY(lat,lon){ return { x:(lon-CHART.lon0)/(CHART.lon1-CHART.lon0)*CHART.W, y:(CHART.lat0-lat)/(CHART.lat0-CHART.lat1)*CHART.H }; }
-function renderGlobe(){
+function renderChart(){
   const s=journeySteps[currentStep];
   const home=chartXY(destinations.Singapore.lat,destinations.Singapore.lon);
   let grid='';
@@ -1232,11 +1243,111 @@ function renderGlobe(){
     <div class="side"><div id="nexusStats"><p style="color:var(--ink-dim)">Waiting for choices…</p></div></div>
   </div>`;
 }
-function initGlobe(){}   // kept for older callers; the chart needs no init
+/* THE GLOBE — drawn on a 2D canvas from Natural Earth coastlines (land.js, no
+   CDN, no WebGL): a navy world with gold land, graticule and atmosphere; a
+   great-circle route from Beatty to every exchange with a sail travelling it;
+   pins that grow with the room's choices. Drag to turn it; it drifts on its own. */
+const GLOBE_HOME_VIEW={lon:110,lat:6};
+let gl=null;    // live globe state
+function renderGlobe(){
+  const s=journeySteps[currentStep];
+  if(!window.WORLD_LAND) return renderChart();          // coastlines missing → the flat chart
+  setTimeout(initGlobe,40);
+  return `<div class="split">
+    <div class="main-vis globe-vis"><div class="vis-title bottom">${s.title}<span class="vs">${s.desc||''}</span></div>
+      <div id="globeHost"><canvas id="globeCanvas"></canvas><div id="globePins"></div></div>
+      <div class="globe-ctrl"><button id="spinBtn" class="btn btn-ghost">▶ Spin</button><button id="homeBtn" class="btn btn-ghost">◎ Show all</button></div></div>
+    <div class="side"><div id="nexusStats"><p style="color:var(--ink-dim)">Waiting for choices…</p></div></div>
+  </div>`;
+}
+function initGlobe(){
+  const host=document.getElementById('globeHost'), cv=document.getElementById('globeCanvas'), pinsEl=document.getElementById('globePins'); if(!host||!cv) return;
+  if(animId) cancelAnimationFrame(animId);
+  const ctx=cv.getContext('2d'); const D2R=Math.PI/180;
+  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  gl={ lon:GLOBE_HOME_VIEW.lon, lat:GLOBE_HOME_VIEW.lat, spin:false, drift:!reduce, drag:null, t0:performance.now(), W:0,H:0,R:0,cx:0,cy:0 };
+  // land rings → unit vectors once
+  const land=window.WORLD_LAND.map(r=>{ const v=new Float32Array(r.length/2*3); for(let i=0,j=0;i<r.length;i+=2,j+=3){ const lo=r[i]*D2R, la=r[i+1]*D2R, c=Math.cos(la); v[j]=c*Math.sin(lo); v[j+1]=Math.sin(la); v[j+2]=c*Math.cos(lo); } return v; });
+  const unit=(lat,lon)=>{ const la=lat*D2R, lo=lon*D2R, c=Math.cos(la); return [c*Math.sin(lo), Math.sin(la), c*Math.cos(lo)]; };
+  const homeV=unit(destinations.Singapore.lat,destinations.Singapore.lon);
+  // great-circle routes (slerp), 48 points each
+  const routes=Object.entries(destinations).filter(([,d])=>!d.home).map(([id,d])=>{ const b=unit(d.lat,d.lon); const dot=Math.max(-1,Math.min(1,homeV[0]*b[0]+homeV[1]*b[1]+homeV[2]*b[2])); const om=Math.acos(dot), so=Math.sin(om); const pts=[];
+    for(let i=0;i<=48;i++){ const t=i/48, a=Math.sin((1-t)*om)/so, c=Math.sin(t*om)/so; pts.push([homeV[0]*a+b[0]*c, homeV[1]*a+b[1]*c, homeV[2]*a+b[2]*c]); } return {id,col:d.col,pts,phase:Math.random()}; });
+  // pins (HTML, so they stay crisp and clickable)
+  pinsEl.innerHTML='';
+  const pins=Object.entries(destinations).map(([id,d])=>{ const el=document.createElement('div'); el.className='gpin'+(d.home?' home':''); el.dataset.id=id;
+    el.innerHTML=`<div class="lbl" style="${d.home?'background:var(--gold);color:var(--navy);border-color:#fff':`border-color:${d.col}`}">${d.home?'🐝 ':''}${d.name}<span class="gcnt"></span></div><div class="stem"></div><div class="dot" style="${d.home?'width:18px;height:18px':`background:${d.col};box-shadow:0 0 14px ${d.col}`}"></div>`;
+    if(d.lx) el.querySelector('.lbl').style.left=d.lx+'px'; if(d.stem) el.querySelector('.stem').style.height=d.stem+'px';
+    if(!d.home && modalData[id]) el.onclick=()=>showNexusModal(id); pinsEl.appendChild(el); return {el, v:unit(d.lat,d.lon), home:!!d.home}; });
+  gl.pins=pins;
+  function size(){ const r=host.getBoundingClientRect(); const dpr=Math.min(2,window.devicePixelRatio||1); gl.W=r.width; gl.H=r.height; cv.width=r.width*dpr; cv.height=r.height*dpr; cv.style.width=r.width+'px'; cv.style.height=r.height+'px'; ctx.setTransform(dpr,0,0,dpr,0,0); gl.R=Math.min(r.width,r.height)*0.42; gl.cx=r.width/2; gl.cy=r.height/2+gl.R*0.02; }
+  size();
+  // orthographic projection of a unit vector for the current view
+  let sl,cl,sp,cp;
+  function view(){ const lo=gl.lon*D2R, la=gl.lat*D2R; sl=Math.sin(lo); cl=Math.cos(lo); sp=Math.sin(la); cp=Math.cos(la); }
+  function proj(x,y,z){ const x1=x*cl-z*sl, z1=x*sl+z*cl; const y2=y*cp-z1*sp, z2=y*sp+z1*cp;   // rotate lon, then tilt lat
+    return [gl.cx+x1*gl.R, gl.cy-y2*gl.R, z2]; }                                                 // z2>0 faces us
+  function drawRing(v, clampBack){ let started=false;
+    for(let j=0;j<v.length;j+=3){ let [x,y,z]=proj(v[j],v[j+1],v[j+2]);
+      if(z<0){ if(!clampBack){ started=false; continue; } const dx=x-gl.cx, dy=y-gl.cy, d=Math.hypot(dx,dy)||1; x=gl.cx+dx/d*gl.R; y=gl.cy+dy/d*gl.R; }   // behind → clamp to the limb
+      if(!started){ ctx.moveTo(x,y); started=true; } else ctx.lineTo(x,y); }
+    if(clampBack) ctx.closePath(); }
+  function frame(now){
+    animId=requestAnimationFrame(frame);
+    const dt=(now-(gl.last||now))/1000; gl.last=now;
+    if(!gl.drag){ if(gl.spin) gl.lon+=dt*9; else if(gl.drift){ gl.lon=GLOBE_HOME_VIEW.lon+Math.sin((now-gl.t0)/22000*Math.PI*2)*18; gl.lat=GLOBE_HOME_VIEW.lat+Math.sin((now-gl.t0)/31000*Math.PI*2)*5; } }
+    view();
+    const {W,H,R,cx,cy}=gl; ctx.clearRect(0,0,W,H);
+    // atmosphere
+    let g=ctx.createRadialGradient(cx,cy,R*0.92,cx,cy,R*1.28); g.addColorStop(0,'rgba(255,226,0,.22)'); g.addColorStop(.45,'rgba(255,226,0,.06)'); g.addColorStop(1,'rgba(255,226,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,R*1.28,0,Math.PI*2); ctx.fill();
+    // sea
+    g=ctx.createRadialGradient(cx-R*0.35,cy-R*0.4,R*0.1,cx,cy,R); g.addColorStop(0,'#1c3a9a'); g.addColorStop(.55,'#0b1a5c'); g.addColorStop(1,'#050b30'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fill();
+    ctx.save(); ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.clip();
+    // graticule
+    ctx.strokeStyle='rgba(255,255,255,.07)'; ctx.lineWidth=1; ctx.beginPath();
+    for(let lo=-180;lo<180;lo+=20){ let st=false; for(let la=-90;la<=90;la+=3){ const u=unit(la,lo); const [x,y,z]=proj(u[0],u[1],u[2]); if(z<0){st=false;continue;} if(!st){ctx.moveTo(x,y);st=true;} else ctx.lineTo(x,y);} }
+    for(let la=-60;la<=60;la+=20){ let st=false; for(let lo=-180;lo<=180;lo+=3){ const u=unit(la,lo); const [x,y,z]=proj(u[0],u[1],u[2]); if(z<0){st=false;continue;} if(!st){ctx.moveTo(x,y);st=true;} else ctx.lineTo(x,y);} }
+    ctx.stroke();
+    // equator, a touch of gold
+    ctx.strokeStyle='rgba(255,226,0,.28)'; ctx.setLineDash([6,8]); ctx.beginPath(); { let st=false; for(let lo=-180;lo<=180;lo+=2){ const u=unit(0,lo); const [x,y,z]=proj(u[0],u[1],u[2]); if(z<0){st=false;continue;} if(!st){ctx.moveTo(x,y);st=true;} else ctx.lineTo(x,y);} } ctx.stroke(); ctx.setLineDash([]);
+    // land
+    ctx.beginPath(); land.forEach(v=>drawRing(v,true));
+    ctx.fillStyle='rgba(255,226,0,.36)'; ctx.fill('evenodd');
+    ctx.strokeStyle='rgba(255,236,120,.75)'; ctx.lineWidth=1.1; ctx.lineJoin='round'; ctx.beginPath(); land.forEach(v=>drawRing(v,false)); ctx.stroke();
+    // shading: a lit upper-left, a dark limb
+    g=ctx.createRadialGradient(cx-R*0.45,cy-R*0.45,R*0.2,cx,cy,R*1.02); g.addColorStop(0,'rgba(255,255,255,.06)'); g.addColorStop(.6,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,.62)'); ctx.fillStyle=g; ctx.fillRect(cx-R,cy-R,2*R,2*R);
+    // routes + sails
+    const dash=(now/40)%20;
+    routes.forEach(rt=>{ ctx.strokeStyle=rt.col; ctx.lineWidth=2; ctx.setLineDash([7,9]); ctx.lineDashOffset=-dash; ctx.globalAlpha=.85; ctx.beginPath(); let st=false;
+      rt.pts.forEach(p=>{ const [x,y,z]=proj(p[0],p[1],p[2]); if(z<0.02){st=false;return;} if(!st){ctx.moveTo(x,y);st=true;} else ctx.lineTo(x,y); }); ctx.stroke(); ctx.setLineDash([]);
+      const t=((now/1000/9)+rt.phase)%1, i=Math.min(47,Math.floor(t*48)), p=rt.pts[i], q=rt.pts[Math.min(48,i+1)];
+      const [x,y,z]=proj(p[0],p[1],p[2]), [x2,y2]=proj(q[0],q[1],q[2]);
+      if(z>0.05){ const a=Math.atan2(y2-y,x2-x); ctx.save(); ctx.translate(x,y); ctx.rotate(a); ctx.fillStyle=rt.col; ctx.shadowColor=rt.col; ctx.shadowBlur=8; ctx.beginPath(); ctx.moveTo(9,0); ctx.lineTo(-6,-5); ctx.lineTo(-6,5); ctx.closePath(); ctx.fill(); ctx.restore(); }
+      ctx.globalAlpha=1; });
+    ctx.restore();
+    // rim
+    ctx.strokeStyle='rgba(255,226,0,.35)'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.stroke();
+    // pins follow the surface; hide on the far side
+    pins.forEach(p=>{ const [x,y,z]=proj(p.v[0],p.v[1],p.v[2]); if(z>0.06){ p.el.style.transform=`translate(${x.toFixed(1)}px,${y.toFixed(1)}px) translate(-50%,-100%)`; p.el.style.opacity=String(Math.min(1,(z-0.06)*4+0.35)); p.el.style.display='flex'; } else p.el.style.display='none'; });
+  }
+  // interaction
+  const pd=e=>{ gl.drag={x:e.clientX,y:e.clientY,lon:gl.lon,lat:gl.lat}; gl.drift=false; };
+  const pm=e=>{ if(!gl.drag) return; gl.lon=gl.drag.lon+(e.clientX-gl.drag.x)*0.35; gl.lat=Math.max(-80,Math.min(80,gl.drag.lat+(e.clientY-gl.drag.y)*0.35)); };
+  const pu=()=>{ gl.drag=null; };
+  cv.addEventListener('pointerdown',pd); window.removeEventListener('pointermove',globeOnPointerMove); window.addEventListener('pointermove',globeOnPointerMove=pm);
+  window.removeEventListener('pointerup',globeOnPointerUp); window.addEventListener('pointerup',globeOnPointerUp=pu);
+  window.removeEventListener('resize',globeOnResize); window.addEventListener('resize',globeOnResize=size);
+  const sb=document.getElementById('spinBtn'), hb=document.getElementById('homeBtn');
+  if(sb) sb.onclick=()=>{ gl.spin=!gl.spin; gl.drift=false; sb.textContent= gl.spin?'⏸ Stop spin':'▶ Spin'; };
+  if(hb) hb.onclick=()=>{ gl.spin=false; gl.drift=!reduce; gl.t0=performance.now(); gl.lon=GLOBE_HOME_VIEW.lon; gl.lat=GLOBE_HOME_VIEW.lat; if(sb) sb.textContent='▶ Spin'; };
+  animId=requestAnimationFrame(frame);
+  paintNexusStats();
+}
+let globeOnPointerMove=null;
 function paintNexusStats(){
   const box=document.getElementById('nexusStats'); if(!box) return;
   const step=journeySteps[currentStep]; const opts=step.nexusData?.options||[]; const bd=live.nexus.breakdown||{}; const total=live.nexus.total||0;
-  document.querySelectorAll('#voyageChart .cpin:not(.home), .map-inner .mpin:not(.home)').forEach(el=>{ const c=bd[el.dataset.id]||0; const cnt=el.querySelector('.cnt,.mcnt'); if(cnt) cnt.textContent= c>0?c:''; const halo=el.querySelector('.halo'); if(halo) halo.setAttribute('r', 18+Math.min(34, c*2.2)); el.classList.toggle('chosen', c>0); });
+  document.querySelectorAll('#voyageChart .cpin:not(.home), .map-inner .mpin:not(.home), #globePins .gpin:not(.home)').forEach(el=>{ const c=bd[el.dataset.id]||0; const cnt=el.querySelector('.cnt,.mcnt,.gcnt'); if(cnt) cnt.textContent= c>0?c:''; const halo=el.querySelector('.halo'); if(halo) halo.setAttribute('r', 18+Math.min(34, c*2.2)); el.classList.toggle('chosen', c>0); });
   box.innerHTML=`<h3 class="side-h">Live choices · ${total}</h3>`+opts.map(o=>{ const c=bd[o.id]||0, pct= total>0?(c/total*100):0;
     return `<div class="side-row"><div class="lab"><span>${o.text}</span><span>${c}</span></div><div class="side-track"><div class="side-fill" style="width:${pct}%"></div></div></div>`; }).join('');
 }
