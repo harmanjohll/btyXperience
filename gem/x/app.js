@@ -470,6 +470,7 @@ function startSessionListener() {
 // === STATE ===
 const $app = document.getElementById('app');
 const SK = 'btySail_v7';
+const BUILD = '18 Sep 2026 · v3';   // shown on the boarding screen so a phone can tell which build it has
 let D = JSON.parse(localStorage.getItem(SK)) || {};
 D.marks = D.marks || [];
 let step = 0;
@@ -2554,6 +2555,7 @@ function renderBoard() {
             <p class="q-hint" style="margin:8px 0 18px;">Five quick picks find your bee. Then your phone follows the big screen — polls, folds, and setting sail together.</p>
             <button class="nav-btn primary w-full" id="boardBtn" style="font-size:1.05rem;padding:16px;">Tap to board 🐝</button>
             <p class="q-hint" style="margin-top:14px;">One tap turns on sound and keeps your screen awake${/iP(hone|ad|od)/.test(navigator.userAgent) ? '' : ' — and buzzes, if your phone allows it'}.</p>
+            <p class="q-hint" style="margin-top:18px;opacity:.55;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;">build ${BUILD}</p>
         </div>
     </div>`;
     document.getElementById('boardBtn').addEventListener('click', board);

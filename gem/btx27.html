@@ -415,6 +415,7 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 #liveBadge.warn{color:#ffb4b6; border-color:rgba(236,50,55,.5)}
 .mode-note{margin-top:14px; font-size:clamp(.85rem,1.15vw,1rem); color:var(--ink-dim); display:flex; align-items:center; gap:12px; flex-wrap:wrap}
 .mode-note.live{color:#9BE7C4}
+.mode-note .build{margin-left:auto; font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-dim); opacity:.7}
 .mode-note button{background:rgba(255,226,0,.12); border:1px solid var(--gold); color:var(--gold); border-radius:8px; padding:.45rem .9rem; font-weight:700; cursor:pointer}
 .pp-toggle{display:block; margin-left:auto; margin-bottom:8px; background:rgba(0,6,31,.9); border:1px solid var(--card-line); color:var(--ink-dim); border-radius:999px; padding:6px 12px; font-size:.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; opacity:.55; transition:opacity var(--t-fast)}
 .pp-toggle:hover{opacity:1}
@@ -615,6 +616,7 @@ const ARCH_KEYS = ARCHETYPES.map(a=>a.key);
 const firebaseConfig = { apiKey:"AIzaSyBjHO57QKoMW-u4oLGGdgDSqw5gttqX6Fg", authDomain:"btyx-61dc6.firebaseapp.com", projectId:"btyx-61dc6", storageBucket:"btyx-61dc6.appspot.com", messagingSenderId:"851137405745", appId:"1:851137405745:web:c95b86b6f0462a9bc20610" };
 
 let app, db, auth, dbReady=false;
+const BUILD='18 Sep 2026 · v3';   // shown on the start screen so you can tell which build is live
 const isPresenter = new URLSearchParams(location.search).get('presenter')==='true';
 
 // Load Firebase, init, and sign in — all off the critical path. The UI is
@@ -627,8 +629,8 @@ loadFirebase()
 function broadcastIfActive(){ if(started && isPresenter) renderStep(); }
 // Say plainly which screen this is. Only ?presenter=true drives the phones; a plain copy is a mirror.
 (function(){ const b=document.getElementById('liveBadge'), n=document.getElementById('modeNote');
-  if(isPresenter){ b.textContent='● LIVE'; b.classList.add('live'); n.className='mode-note live'; n.innerHTML='● This screen is <b>live</b> — every phone on the audience link follows it.'; }
-  else { b.textContent='VIEW ONLY'; n.innerHTML='<span>View-only copy — phones are <b>not</b> following this screen.</span><button id="goLive">Present live ➜</button>';
+  if(isPresenter){ b.textContent='● LIVE'; b.classList.add('live'); n.className='mode-note live'; n.innerHTML='● This screen is <b>live</b> — every phone on the audience link follows it. <span class="build">build '+BUILD+'</span>'; }
+  else { b.textContent='VIEW ONLY'; n.innerHTML='<span>View-only copy — phones are <b>not</b> following this screen.</span><button id="goLive">Present live ➜</button><span class="build">build '+BUILD+'</span>';
     document.getElementById('goLive').onclick=()=>{ location.search='?presenter=true'; }; }
 })();
 let lastSyncToast=0;
