@@ -256,7 +256,24 @@ function playPencil(sec) {         // a pencil writing on paper, for as long as 
 
 /* The haptic map. Android: real ticks. iOS has no web vibration, so the paper
    itself shakes 2–3 px instead of the phone. */
-const HAPTIC = { tick: 12, lock: 35, chapter: [20, 40, 20], reveal: [50, 30, 100, 30, 80], depart: [15, 30, 15, 30, 120] };
+const HAPTIC = { tick: 18, lock: 45, chapter: [25, 40, 25], reveal: [50, 30, 100, 30, 80], depart: [15, 30, 15, 30, 120], test: [45, 60, 45] };
+// What this phone can do, said once and plainly. Only the vibration API exists on the web:
+// Android browsers have it (and honour the phone's vibration setting); iPhones do not.
+function hapticsProbe(buzz) {
+    const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (ios) return { kind: 'ios', text: 'iPhones can’t vibrate from a web page — your paper shakes instead.' };
+    if (!navigator.vibrate) return { kind: 'none', text: 'This browser has no vibration — your paper shakes instead.' };
+    let ok = true; if (buzz) { try { ok = navigator.vibrate(HAPTIC.test) !== false; } catch (e) { ok = false; } }
+    return ok ? { kind: 'ok', text: 'Haptics on — you should have felt a double buzz.' } : { kind: 'blocked', text: 'Vibration is off on this phone. Settings → Sound & vibration → Vibration / haptics.' };
+}
+function hapticsLineHTML() {
+    const h = hapticsProbe(false);
+    return `<div class="hap-line" data-kind="${h.kind}"><span id="hapText">${h.kind === 'ok' ? 'Haptics: tap to test' : h.text}</span>${h.kind === 'ok' ? '<button id="hapTest" class="hap-btn">Test buzz</button>' : ''}</div>`;
+}
+function wireHapticsLine() {
+    const b = document.getElementById('hapTest'); if (!b) return;
+    b.onclick = () => { const h = hapticsProbe(true); const t = document.getElementById('hapText'); if (t) t.textContent = h.text; b.closest('.hap-line').dataset.kind = h.kind; };
+}
 function feel(kind, el) {
     const v = HAPTIC[kind];
     if (navigator.vibrate) { try { navigator.vibrate(v); } catch (e) {} return; }
@@ -2536,7 +2553,7 @@ function renderBoard() {
             <h2 class="q-question" style="text-align:center;">Beatty Open House</h2>
             <p class="q-hint" style="margin:8px 0 18px;">Five quick picks find your bee. Then your phone follows the big screen — polls, folds, and setting sail together.</p>
             <button class="nav-btn primary w-full" id="boardBtn" style="font-size:1.05rem;padding:16px;">Tap to board 🐝</button>
-            <p class="q-hint" style="margin-top:14px;">One tap turns on sound and keeps your screen awake.</p>
+            <p class="q-hint" style="margin-top:14px;">One tap turns on sound and keeps your screen awake${/iP(hone|ad|od)/.test(navigator.userAgent) ? '' : ' — and buzzes, if your phone allows it'}.</p>
         </div>
     </div>`;
     document.getElementById('boardBtn').addEventListener('click', board);
@@ -2613,8 +2630,10 @@ function renderAboard() {
             <h1 class="font-serif text-2xl mb-1" style="color:var(--text-primary);">${D.beeTag || 'Beattyian'}</h1>
             <p class="text-sm mb-5 max-w-xs" style="color:var(--text-secondary);">Find yourself on the big screen. You'll fold a boat, chart a course and set sail with the whole hall. 🌊</p>
             <div class="follow-boat">${buildOrigamiSVG(c, Math.min(D.nextFold || 0, 8), 170, extras())}</div>
+            ${hapticsLineHTML()}
         </div>
     </div>`;
+    wireHapticsLine();
     armSoloFallback();
 }
 function renderLookUp(msg) {

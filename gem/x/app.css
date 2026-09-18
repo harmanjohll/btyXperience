@@ -1044,3 +1044,7 @@ body[data-mode="watch"] .mode-band { background: rgba(0,12,83,.9); }
 #linkPill[data-state="live"] { color: #9BE7C4; border-color: rgba(155,231,196,.45); }
 #linkPill[data-state="waiting"] { color: var(--accent-gold); border-color: rgba(255,226,0,.35); }
 #linkPill[data-state="offline"] { color: #ffb4b6; border-color: rgba(236,50,55,.5); }
+.hap-line { margin-top: 18px; display: inline-flex; align-items: center; gap: 10px; padding: 6px 10px 6px 12px; border-radius: 999px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12); font-size: .68rem; color: var(--text-secondary); }
+.hap-line[data-kind="ok"] { border-color: rgba(155,231,196,.4); }
+.hap-line[data-kind="blocked"] { border-color: rgba(236,50,55,.45); color: #ffb4b6; }
+.hap-btn { padding: 5px 10px; border-radius: 999px; background: var(--accent-gold); color: #04081a; font-weight: 800; font-size: .62rem; letter-spacing: .08em; text-transform: uppercase; }
