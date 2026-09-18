@@ -69,9 +69,13 @@ button{font-family:var(--sans)}
 #pollenCanvas{position:fixed; inset:0; z-index:1; pointer-events:none}
 
 /* --- Overlays --- */
-#reactionOverlay{position:fixed; bottom:120px; right:36px; width:120px; height:60vh; z-index:60; pointer-events:none; overflow:visible}
+#reactionOverlay{position:fixed; bottom:110px; right:30px; width:clamp(160px,16vw,300px); height:64vh; z-index:60; pointer-events:none; overflow:visible}
 .floating-reaction{position:absolute; bottom:0; font-size:2.6rem; opacity:0; will-change:transform,opacity;
-  animation:floatUp 3.2s var(--ease) forwards; filter:drop-shadow(0 4px 10px rgba(0,0,0,.5))}
+  animation:floatUp var(--dur,3.2s) var(--ease) forwards; filter:drop-shadow(0 4px 10px rgba(0,0,0,.5))}
+/* a bee lands on the opening chart each time a phone finishes its compass */
+.bee-fly{position:fixed; left:0; top:0; z-index:70; font-size:1.9rem; line-height:1; pointer-events:none; filter:drop-shadow(0 4px 8px rgba(0,0,0,.55))}
+.arch-cell.landed{animation:cellLand .7s var(--ease)}
+@keyframes cellLand{0%{transform:scale(1)} 30%{transform:scale(1.045); box-shadow:0 0 0 3px rgba(255,226,0,.6), 0 18px 44px rgba(255,226,0,.22)} 100%{transform:scale(1)}}
 @keyframes floatUp{
   0%{opacity:0; transform:translateY(0) scale(.6)}
   12%{opacity:1}
@@ -174,8 +178,8 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 
 /* --- Poll --- */
 .poll-head{position:relative; text-align:center; margin-bottom:clamp(14px,2.6vh,30px); padding:0 clamp(150px,13vw,240px)}
-.poll-q{font-family:var(--serif); font-size:clamp(1.5rem,3vw,3rem); color:#fff; line-height:1.12; margin:0 auto; max-width:34ch; text-wrap:balance}
-.poll-q.long{font-size:clamp(1.3rem,2.5vw,2.5rem)}
+.poll-q{font-family:var(--serif); font-size:clamp(1.5rem,3vw,3rem); color:#fff; line-height:1.12; margin:0 auto; max-width:40ch; text-wrap:balance}
+.poll-q.long{font-size:clamp(1.25rem,2.35vw,2.35rem); max-width:50ch}
 .poll-head .votes-chip{position:absolute; right:0; top:50%; transform:translateY(-50%); white-space:nowrap}
 .poll-wrap .poll-opt{margin-bottom:clamp(8px,1.2vh,14px)}
 .poll-wrap .poll-track{height:clamp(32px,4.6vh,52px)}
@@ -327,8 +331,13 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .vis-title.bottom{top:auto; bottom:22px}
 .chart-host{background:#061027}
 .globe-vis{background:radial-gradient(ellipse at 50% 60%, #0a1650 0%, #040a33 70%)}
-#globeHost{width:100%; height:100%; position:relative; cursor:grab}
+#globeHost{width:100%; height:100%; position:relative; cursor:grab; touch-action:none; overflow:hidden}
 #globeHost:active{cursor:grabbing}
+.globe-zoom{position:absolute; right:26px; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; gap:8px; z-index:30}
+.globe-zoom .zbtn{width:48px; min-width:0; padding:0; height:48px; font-size:1.5rem; line-height:1; font-family:var(--sans)}
+.globe-zoom .zbtn:disabled{opacity:.35; cursor:default}
+.globe-hint{position:absolute; top:20px; left:24px; z-index:12; font-size:.72rem; letter-spacing:.08em; color:var(--ink-dim); background:rgba(0,6,31,.55); padding:7px 13px; border-radius:9px; border:1px solid var(--card-line); backdrop-filter:var(--glass); white-space:nowrap}
+.globe-hint b{color:var(--gold)}
 #globeCanvas{position:absolute; inset:0; display:block}
 #globePins{position:absolute; inset:0; pointer-events:none; overflow:hidden}
 .gpin .lbl{position:relative}
@@ -616,7 +625,7 @@ const ARCH_KEYS = ARCHETYPES.map(a=>a.key);
 const firebaseConfig = { apiKey:"AIzaSyBjHO57QKoMW-u4oLGGdgDSqw5gttqX6Fg", authDomain:"btyx-61dc6.firebaseapp.com", projectId:"btyx-61dc6", storageBucket:"btyx-61dc6.appspot.com", messagingSenderId:"851137405745", appId:"1:851137405745:web:c95b86b6f0462a9bc20610" };
 
 let app, db, auth, dbReady=false;
-const BUILD='18 Sep 2026 · v3';   // shown on the start screen so you can tell which build is live
+const BUILD = '18 Sep 2026 · v4';   // shown on the start screen so you can tell which build is live
 const isPresenter = new URLSearchParams(location.search).get('presenter')==='true';
 
 // Load Firebase, init, and sign in — all off the critical path. The UI is
@@ -758,12 +767,15 @@ function initListeners(){
   // Fold progress: each phone writes its boat's nextFold as it folds → "137 / 212 folded".
   onSnapshot(collection(db,"x_boats"), snap=>{ const m={}; snap.forEach(d=>{ m[d.id]=d.data().nextFold||0; }); live.folds=m;
     if(journeySteps[currentStep]?.type==='fold') paintFoldCount(); }, err=>console.warn(err));
+  let compassPrimed=false, compassSeen={};
   onSnapshot(collection(db,"compassQuiz"), snap=>{
     // Every phone writes a doc on the join tap (joined); the archetype becomes real when its compass quiz is done.
-    const r={total:0,joined:0,breakdown:{}}; snap.forEach(d=>{ const x=d.data(); r.joined++; const v=x.archetype; if(v && ARCH_KEYS.includes(v)){ r.total++; r.breakdown[v]=(r.breakdown[v]||0)+1; } });
+    const r={total:0,joined:0,breakdown:{}}, landed=[], seen={};
+    snap.forEach(d=>{ const x=d.data(); r.joined++; const v=x.archetype; if(v && ARCH_KEYS.includes(v)){ r.total++; r.breakdown[v]=(r.breakdown[v]||0)+1; if(compassPrimed && compassSeen[d.id]!==v) landed.push(v); } seen[d.id]=v||null; });
+    compassSeen=seen; compassPrimed=true;
     live.compass=r;
     updateParticipant(r.joined, r.total);
-    if(journeySteps[currentStep]?.type==='chart') paintCompass();
+    if(journeySteps[currentStep]?.type==='chart'){ paintCompass(); landed.slice(0,14).forEach((v,i)=>setTimeout(()=>landBee(v), i*170)); }
   }, err=>console.warn(err));
 
   onSnapshot(collection(db,"polls"), snap=>{
@@ -1044,6 +1056,21 @@ function renderCompass(){
   <p id="compassWait" style="text-align:center; color:var(--ink-dim); margin-top:22px; font-size:clamp(1rem,1.6vw,1.4rem)">Waiting for the first bees to arrive… scan to join.</p>
   <div id="compassDone" class="compass-done" hidden><div class="cd-bar"><div class="cd-fill"></div></div><span class="cd-text"></span></div></div>`;
 }
+/* A bee flies from the join pill to the archetype cell that just gained a member. */
+function landBee(key){
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches || document.hidden) return;
+  const cell=document.querySelector(`.arch-cell[data-arch="${CSS.escape(key)}"]`); if(!cell) return;
+  const from=['qrPill','participantPill','hivePulse'].map(id=>document.getElementById(id)).find(el=>el && el.offsetParent!==null); if(!from) return;
+  const a=from.getBoundingClientRect(), b=cell.getBoundingClientRect();
+  const bee=document.createElement('div'); bee.className='bee-fly'; bee.textContent='🐝'; document.body.appendChild(bee);
+  const x0=a.left+a.width/2, y0=a.top+a.height/2, x1=b.left+b.width*(0.25+Math.random()*0.5), y1=b.top+b.height*0.58, mx=(x0+x1)/2+(Math.random()*200-100), my=Math.min(y0,y1)-90-Math.random()*80;
+  const anim=bee.animate([
+    {transform:`translate(${x0}px,${y0}px) scale(.5)`, opacity:0},
+    {transform:`translate(${mx}px,${my}px) scale(1.15) rotate(${Math.random()*40-20}deg)`, opacity:1, offset:.55},
+    {transform:`translate(${x1}px,${y1}px) scale(.85)`, opacity:1}
+  ],{duration:1100+Math.random()*500, easing:'cubic-bezier(.4,0,.2,1)'});
+  anim.onfinish=()=>{ bee.remove(); cell.classList.remove('landed'); void cell.offsetWidth; cell.classList.add('landed'); };
+}
 function paintCompass(){
   const grid=document.getElementById('compassGrid'); if(!grid) return;
   const total=live.compass.total||0, bd=live.compass.breakdown||{}, joined=live.compass.joined||0;
@@ -1265,6 +1292,8 @@ function renderGlobe(){
   return `<div class="split">
     <div class="main-vis globe-vis"><div class="vis-title bottom">${s.title}<span class="vs">${s.desc||''}</span></div>
       <div id="globeHost"><canvas id="globeCanvas"></canvas><div id="globePins"></div></div>
+      <div class="globe-zoom"><button id="zoomIn" class="btn btn-ghost zbtn" title="Zoom in (+)">+</button><button id="zoomOut" class="btn btn-ghost zbtn" title="Zoom out (−)">−</button></div>
+      <div class="globe-hint">Drag to turn · scroll or pinch to zoom · double-click to fly there · <b>0</b> resets</div>
       <div class="globe-ctrl"><button id="spinBtn" class="btn btn-ghost">▶ Spin</button><button id="homeBtn" class="btn btn-ghost">◎ Show all</button></div></div>
     <div class="side"><div id="nexusStats"><p style="color:var(--ink-dim)">Waiting for choices…</p></div></div>
   </div>`;
@@ -1284,8 +1313,11 @@ function buildLandTexture(){
   landTex={W,H,land,coast};
 }
 function paintSphere(sl,cl,sp,cp){
-  const R=gl.R, scale=(gl.drag||gl.spin)?0.5:0.72, S=Math.max(64,Math.round(2*R*scale));
-  if(!gl.sph||gl.sph.S!==S){ const cv2=document.createElement('canvas'); cv2.width=S; cv2.height=S; const cx2=cv2.getContext('2d'); gl.sph={S,cv:cv2,ctx:cx2,img:cx2.createImageData(S,S)}; }
+  const R=gl.R, busy=!!(gl.drag||gl.spin||gl.pinch||gl.fly||Math.abs(gl.zt-gl.zoom)>0.001), scale=busy?0.5:0.72, S=Math.max(64,Math.min(busy?720:1100,Math.round(2*R*scale)));
+  if(!gl.sph||gl.sph.S!==S){ const cv2=document.createElement('canvas'); cv2.width=S; cv2.height=S; const cx2=cv2.getContext('2d'); gl.sph={S,cv:cv2,ctx:cx2,img:cx2.createImageData(S,S),key:null}; }
+  const key=sl.toFixed(5)+'|'+cl.toFixed(5)+'|'+sp.toFixed(5)+'|'+cp.toFixed(5);   // same view → same picture, no work
+  if(gl.sph.key===key) return gl.sph.cv;
+  gl.sph.key=key;
   const d=gl.sph.img.data, half=S/2, inv=1/half, {land,coast,W:TW,H:TH}=landTex, TWf=TW/(2*Math.PI), THf=TH/Math.PI;
   let p=0;
   for(let j=0;j<S;j++){ const y2=-(j+0.5-half)*inv, yy=y2*y2;
@@ -1305,7 +1337,9 @@ function initGlobe(){
   if(animId) cancelAnimationFrame(animId);
   const ctx=cv.getContext('2d'); const D2R=Math.PI/180;
   const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  gl={ lon:GLOBE_HOME_VIEW.lon, lat:GLOBE_HOME_VIEW.lat, spin:false, drift:!reduce, drag:null, t0:performance.now(), W:0,H:0,R:0,cx:0,cy:0 };
+  gl={ lon:GLOBE_HOME_VIEW.lon, lat:GLOBE_HOME_VIEW.lat, spin:false, drift:!reduce, drag:null, t0:performance.now(), W:0,H:0,R:0,R0:0,cx:0,cy:0,
+       zoom:1, zt:1, anchor:null, ptrs:new Map(), pinch:null, fly:null };
+  window.__globe=gl;   // a handle for DevTools and the headless checks
   if(!landTex) buildLandTexture();
   const unit=(lat,lon)=>{ const la=lat*D2R, lo=lon*D2R, c=Math.cos(la); return [c*Math.sin(lo), Math.sin(la), c*Math.cos(lo)]; };
   const homeV=unit(destinations.Singapore.lat,destinations.Singapore.lon);
@@ -1319,7 +1353,7 @@ function initGlobe(){
     if(d.lx) el.querySelector('.lbl').style.left=d.lx+'px'; if(d.stem) el.querySelector('.stem').style.height=d.stem+'px';
     if(!d.home && modalData[id]) el.onclick=()=>showNexusModal(id); pinsEl.appendChild(el); return {el, v:unit(d.lat,d.lon), home:!!d.home}; });
   gl.pins=pins;
-  function size(){ const r=host.getBoundingClientRect(); const dpr=Math.min(2,window.devicePixelRatio||1); gl.W=r.width; gl.H=r.height; cv.width=r.width*dpr; cv.height=r.height*dpr; cv.style.width=r.width+'px'; cv.style.height=r.height+'px'; ctx.setTransform(dpr,0,0,dpr,0,0); gl.R=Math.min(r.width,r.height)*0.42; gl.cx=r.width/2; gl.cy=r.height/2+gl.R*0.02; }
+  function size(){ const r=host.getBoundingClientRect(); const dpr=Math.min(2,window.devicePixelRatio||1); gl.W=r.width; gl.H=r.height; cv.width=r.width*dpr; cv.height=r.height*dpr; cv.style.width=r.width+'px'; cv.style.height=r.height+'px'; ctx.setTransform(dpr,0,0,dpr,0,0); gl.R0=Math.min(r.width,r.height)*0.42; gl.R=gl.R0*gl.zoom; gl.cx=r.width/2; gl.cy=r.height/2+gl.R0*0.02; }
   size();
   // orthographic projection of a unit vector for the current view
   let sl,cl,sp,cp;
@@ -1328,8 +1362,16 @@ function initGlobe(){
     return [gl.cx+x1*gl.R, gl.cy-y2*gl.R, z2]; }                                                 // z2>0 faces us
   function frame(now){
     animId=requestAnimationFrame(frame);
-    const dt=(now-(gl.last||now))/1000; gl.last=now;
-    if(!gl.drag){ if(gl.spin) gl.lon+=dt*9; else if(gl.drift){ gl.lon=GLOBE_HOME_VIEW.lon+Math.sin((now-gl.t0)/22000*Math.PI*2)*18; gl.lat=GLOBE_HOME_VIEW.lat+Math.sin((now-gl.t0)/31000*Math.PI*2)*5; } }
+    const dt=Math.min(0.1,(now-(gl.last||now))/1000); gl.last=now;
+    if(!gl.drag && !gl.pinch){
+      if(gl.spin) gl.lon+=dt*9;
+      else if(gl.fly){ const dl=((gl.fly.lon-gl.lon+540)%360)-180, a=Math.min(1,dt*5); gl.lon+=dl*a; gl.lat+=(gl.fly.lat-gl.lat)*a; if(Math.abs(dl)<0.08 && Math.abs(gl.fly.lat-gl.lat)<0.08) gl.fly=null; }
+      else if(gl.drift){ gl.lon=GLOBE_HOME_VIEW.lon+Math.sin((now-gl.t0)/22000*Math.PI*2)*18; gl.lat=GLOBE_HOME_VIEW.lat+Math.sin((now-gl.t0)/31000*Math.PI*2)*5; } }
+    // zoom eases toward its target; a wheel/pinch anchor keeps the place under the pointer where it was
+    if(Math.abs(gl.zt-gl.zoom)>0.0005){
+      gl.zoom+=(gl.zt-gl.zoom)*Math.min(1,dt*10); if(Math.abs(gl.zt-gl.zoom)<0.0005) gl.zoom=gl.zt; gl.R=gl.R0*gl.zoom;
+      if(gl.anchor && !gl.spin){ for(let it=0;it<2;it++){ view(); const u=unit(gl.anchor.lat,gl.anchor.lon); const [x,y]=proj(u[0],u[1],u[2]); const k=57.3/gl.R; gl.lon+=(x-gl.anchor.px)*k; gl.lat=Math.max(-80,Math.min(80,gl.lat+(gl.anchor.py-y)*k)); } }
+    } else if(gl.anchor) gl.anchor=null;
     view();
     const {W,H,R,cx,cy}=gl; ctx.clearRect(0,0,W,H);
     // atmosphere
@@ -1359,20 +1401,41 @@ function initGlobe(){
     // pins follow the surface; hide on the far side
     pins.forEach(p=>{ const [x,y,z]=proj(p.v[0],p.v[1],p.v[2]); if(z>0.06){ p.el.style.transform=`translate(${x.toFixed(1)}px,${y.toFixed(1)}px) translate(-50%,-100%)`; p.el.style.opacity=String(Math.min(1,(z-0.06)*4+0.35)); p.el.style.display='flex'; } else p.el.style.display='none'; });
   }
-  // interaction
-  const pd=e=>{ gl.drag={x:e.clientX,y:e.clientY,lon:gl.lon,lat:gl.lat}; gl.drift=false; };
-  const pm=e=>{ if(!gl.drag) return; const k=57.3/gl.R; gl.lon=gl.drag.lon-(e.clientX-gl.drag.x)*k; gl.lat=Math.max(-80,Math.min(80,gl.drag.lat+(e.clientY-gl.drag.y)*k)); };
-  const pu=()=>{ gl.drag=null; };
-  cv.addEventListener('pointerdown',pd); window.removeEventListener('pointermove',globeOnPointerMove); window.addEventListener('pointermove',globeOnPointerMove=pm);
-  window.removeEventListener('pointerup',globeOnPointerUp); window.addEventListener('pointerup',globeOnPointerUp=pu);
+  // interaction — drag to turn; wheel or pinch to zoom about the pointer; double-click to fly there; +/− buttons and keys; 0 / Show all resets
+  const sb=document.getElementById('spinBtn'), hb=document.getElementById('homeBtn'), zi=document.getElementById('zoomIn'), zo=document.getElementById('zoomOut');
+  const ZMIN=0.6, ZMAX=3.2;
+  function unproj(px,py){ const x1=(px-gl.cx)/gl.R, y2=(gl.cy-py)/gl.R, d=x1*x1+y2*y2; if(d>0.985) return null; const z2=Math.sqrt(1-d); view();
+    const y=y2*cp+z2*sp, z1=-y2*sp+z2*cp, x=x1*cl+z1*sl, z=-x1*sl+z1*cl; return {lat:Math.asin(y)/D2R, lon:Math.atan2(x,z)/D2R}; }
+  function zoomUI(){ if(zi) zi.disabled= gl.zt>=ZMAX-0.01; if(zo) zo.disabled= gl.zt<=ZMIN+0.01; }
+  function setZoom(z,px,py){ gl.zt=Math.max(ZMIN,Math.min(ZMAX,z)); const ll=(px!=null)?unproj(px,py):null; gl.anchor= ll?{px,py,lat:ll.lat,lon:ll.lon}:null; if(ll){ gl.drift=false; gl.fly=null; } zoomUI(); }
+  gl.zoomBy=f=>setZoom(gl.zt*f); gl.proj=proj; gl.unproj=unproj; gl.unit=unit;
+  gl.home=()=>{ gl.spin=false; gl.fly=null; gl.anchor=null; gl.zt=1; gl.drift=!reduce; gl.t0=performance.now(); gl.lon=GLOBE_HOME_VIEW.lon; gl.lat=GLOBE_HOME_VIEW.lat; if(sb) sb.textContent='▶ Spin'; zoomUI(); };
+  const local=e=>{ const r=host.getBoundingClientRect(); return [e.clientX-r.left, e.clientY-r.top]; };
+  const pd=e=>{ if(e.button!=null && e.button!==0) return; gl.ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});   // no pointer capture: the pins must keep their clicks
+    if(gl.ptrs.size>=2){ const [a,b]=[...gl.ptrs.values()]; gl.pinch={d:Math.hypot(a.x-b.x,a.y-b.y)||1, z:gl.zt}; gl.drag=null; return; }
+    gl.drag={x:e.clientX,y:e.clientY,lon:gl.lon,lat:gl.lat}; gl.drift=false; gl.fly=null; };
+  const pm=e=>{ if(gl.ptrs.has(e.pointerId)) gl.ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(gl.pinch && gl.ptrs.size>=2){ const [a,b]=[...gl.ptrs.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y), r=host.getBoundingClientRect(); setZoom(gl.pinch.z*d/gl.pinch.d, (a.x+b.x)/2-r.left, (a.y+b.y)/2-r.top); return; }
+    if(!gl.drag) return; const k=57.3/gl.R; gl.lon=gl.drag.lon-(e.clientX-gl.drag.x)*k; gl.lat=Math.max(-80,Math.min(80,gl.drag.lat+(e.clientY-gl.drag.y)*k)); };
+  const pu=e=>{ gl.ptrs.delete(e.pointerId); if(gl.ptrs.size<2) gl.pinch=null; if(gl.ptrs.size===0) gl.drag=null; };
+  host.addEventListener('pointerdown',pd); window.removeEventListener('pointermove',globeOnPointerMove); window.addEventListener('pointermove',globeOnPointerMove=pm);
+  if(globeOnPointerUp){ window.removeEventListener('pointerup',globeOnPointerUp); window.removeEventListener('pointercancel',globeOnPointerUp); }
+  globeOnPointerUp=pu; window.addEventListener('pointerup',pu); window.addEventListener('pointercancel',pu);
+  host.addEventListener('wheel',e=>{ e.preventDefault(); const [px,py]=local(e); const dy= e.deltaMode===1 ? e.deltaY*16 : e.deltaMode===2 ? e.deltaY*400 : e.deltaY; setZoom(gl.zt*Math.exp(-dy*0.0022),px,py); },{passive:false});
+  host.addEventListener('dblclick',e=>{ if(e.target.closest && e.target.closest('.gpin')) return; const [px,py]=local(e); const ll=unproj(px,py); if(!ll) return;
+    gl.drag=null; gl.drift=false; gl.spin=false; if(sb) sb.textContent='▶ Spin'; gl.anchor=null; gl.fly={lat:Math.max(-80,Math.min(80,ll.lat)), lon:ll.lon}; gl.zt=Math.max(gl.zt,2.2); zoomUI(); });
   window.removeEventListener('resize',globeOnResize); window.addEventListener('resize',globeOnResize=size);
-  const sb=document.getElementById('spinBtn'), hb=document.getElementById('homeBtn');
-  if(sb) sb.onclick=()=>{ gl.spin=!gl.spin; gl.drift=false; sb.textContent= gl.spin?'⏸ Stop spin':'▶ Spin'; };
-  if(hb) hb.onclick=()=>{ gl.spin=false; gl.drift=!reduce; gl.t0=performance.now(); gl.lon=GLOBE_HOME_VIEW.lon; gl.lat=GLOBE_HOME_VIEW.lat; if(sb) sb.textContent='▶ Spin'; };
+  if(sb) sb.onclick=()=>{ gl.spin=!gl.spin; gl.drift=false; gl.fly=null; gl.anchor=null; sb.textContent= gl.spin?'⏸ Stop spin':'▶ Spin'; };
+  if(hb) hb.onclick=gl.home;
+  if(zi) zi.onclick=()=>gl.zoomBy(1.4); if(zo) zo.onclick=()=>gl.zoomBy(1/1.4);
+  zoomUI();
   animId=requestAnimationFrame(frame);
   paintNexusStats();
 }
 let globeOnPointerMove=null;
+// + / − zoom the globe, 0 brings it home — only while the globe is on screen and no field has focus
+document.addEventListener('keydown',e=>{ if(!gl || !document.getElementById('globeCanvas') || (e.target.closest && e.target.closest('input,textarea'))) return;
+  if(e.key==='+'||e.key==='=') gl.zoomBy(1.4); else if(e.key==='-'||e.key==='_') gl.zoomBy(1/1.4); else if(e.key==='0') gl.home(); });
 function paintNexusStats(){
   const box=document.getElementById('nexusStats'); if(!box) return;
   const step=journeySteps[currentStep]; const opts=step.nexusData?.options||[]; const bd=live.nexus.breakdown||{}; const total=live.nexus.total||0;
@@ -1569,8 +1632,10 @@ let reactTimes=[];
 function spawnReaction(emoji){
   reactTimes.push(Date.now());
   if(matchMedia('(prefers-reduced-motion:reduce)').matches) return;
-  const ov=document.getElementById('reactionOverlay'); const el=document.createElement('span'); el.className='floating-reaction';
-  el.textContent=emoji; el.style.left=(Math.random()*80)+'px'; ov.appendChild(el); setTimeout(()=>el.remove(),3300);
+  const ov=document.getElementById('reactionOverlay'); if(!ov) return; while(ov.childElementCount>=48) ov.firstElementChild.remove();   // a full hall tapping at once stays smooth
+  const el=document.createElement('span'); el.className='floating-reaction'; const dur=2.8+Math.random()*1.4;
+  el.textContent=emoji; el.style.left=(Math.random()*(ov.clientWidth-40))+'px'; el.style.fontSize=(2+Math.random()*1.5)+'rem'; el.style.setProperty('--dur',dur.toFixed(2)+'s');
+  ov.appendChild(el); setTimeout(()=>el.remove(),dur*1000+100);
 }
 setInterval(()=>{ const now=Date.now(); reactTimes=reactTimes.filter(t=>now-t<10000); const level=Math.min(reactTimes.length,5);
   document.querySelectorAll('#hivePulse .pulse-bar').forEach((b,i)=>{ if(i<level){ b.classList.add('active'); b.style.height=(10+(level-i)*4)+'px'; } else { b.classList.remove('active'); b.style.height='9px'; } });

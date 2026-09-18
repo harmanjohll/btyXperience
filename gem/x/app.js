@@ -470,7 +470,7 @@ function startSessionListener() {
 // === STATE ===
 const $app = document.getElementById('app');
 const SK = 'btySail_v7';
-const BUILD = '18 Sep 2026 · v3';   // shown on the boarding screen so a phone can tell which build it has
+const BUILD = '18 Sep 2026 · v4';   // shown on the boarding screen so a phone can tell which build it has
 let D = JSON.parse(localStorage.getItem(SK)) || {};
 D.marks = D.marks || [];
 let step = 0;
@@ -1912,7 +1912,7 @@ function renderReadyToSail() {
             <h1 class="font-serif text-2xl mb-1" style="color:var(--text-primary);">${(D.aspiration || 'Set sail').toUpperCase()}</h1>
             <div class="ready-wait mt-4 mb-2">
                 <span class="ready-dot"></span>
-                <span class="text-sm" style="color:var(--text-secondary);">Hold it — waiting for the captain's cue…</span>
+                <span class="text-sm" style="color:var(--text-secondary); text-wrap:balance;">Hold it — waiting for the captain's cue…</span>
             </div>
             <p class="text-[11px] max-w-xs" style="color:var(--text-muted);">When the whole hall sets sail together, your boat joins the fleet on the big screen. Look up. 🌊</p>
             <button id="sailNowBtn" class="nav-btn secondary mt-8" style="opacity:0;transition:opacity .5s;">Set sail now</button>
@@ -2120,7 +2120,9 @@ function showPollResult(p) {
                 </div>`).join('')}</div>
             <div class="q-insight">${p.insight || ''}</div>`}
         </div>
+        ${reactBarHTML()}
     </div>`;
+    wireReactBar();
     showCornerBoat();
     if (revealed) hapticPattern(mine?.correct ? [30, 40, 90] : [40]);
     if (db && collection && onSnapshot) {
@@ -2395,7 +2397,9 @@ function renderHiveCell() {
             <div class="hive-hex"><span>${w}</span></div>
             <p class="text-sm mt-5 max-w-xs" style="color:var(--text-secondary);">Look up — it's rising off your hull and into the Hive. Every cell up there is a Beattyian's dream. 🐝</p>
         </div>
+        ${reactBarHTML()}
     </div>`;
+    wireReactBar();
 }
 
 // ============================================================
@@ -2463,6 +2467,26 @@ function chapterStrip() {
     const idx = CHAPTERS.indexOf(chapterNow);
     return `<div class="ch-strip">${CHAPTERS.map((c, i) => `<span class="ch-dot${i < idx ? ' done' : ''}${i === idx ? ' now' : ''}"></span>`).join('')}<span class="ch-name">${chapterNow || ''}</span></div>`;
 }
+/* --- Reactions: a tap here floats up the big screen (and the phone shows it leaving) --- */
+const REACTIONS = ['👏', '🔥', '❤️', '🐝'];
+let lastReactAt = 0, reactWindow = [];
+function reactBarHTML() {
+    return `<div class="react-bar" id="reactBar" aria-label="React on the big screen">${REACTIONS.map(e => `<button class="react-btn" type="button" data-e="${e}" aria-label="Send ${e}">${e}</button>`).join('')}<span class="react-hint">tap one · it floats up the big screen</span></div>`;
+}
+function wireReactBar() {
+    const bar = document.getElementById('reactBar'); if (!bar) return;
+    bar.querySelectorAll('.react-btn').forEach(b => b.addEventListener('pointerdown', ev => { ev.preventDefault(); sendReaction(b.dataset.e, b); }));
+}
+function sendReaction(emoji, btn) {
+    const now = Date.now();
+    if (now - lastReactAt < 450) return;                                          // no machine-gunning
+    reactWindow = reactWindow.filter(t => now - t < 10000); if (reactWindow.length >= 12) return;
+    lastReactAt = now; reactWindow.push(now);
+    feel('tick');
+    try { const r = btn.getBoundingClientRect(); const f = document.createElement('span'); f.className = 'react-float'; f.textContent = emoji; f.style.left = (r.left + r.width / 2) + 'px'; f.style.top = (r.top + r.height / 2) + 'px'; document.body.appendChild(f); setTimeout(() => f.remove(), 1500); } catch (e) {}
+    btn.classList.remove('sent'); void btn.offsetWidth; btn.classList.add('sent');
+    if (db && auth?.currentUser && collection) { try { setDoc(doc(collection(db, 'reactions')), { emoji, uid: auth.currentUser.uid, timestamp: serverNow() }).catch(() => {}); } catch (e) {} }
+}
 function renderWatch(state) {
     hideCornerBoat();
     $app.innerHTML = `
@@ -2473,7 +2497,9 @@ function renderWatch(state) {
             <p class="text-[10px] mt-3 tracking-[0.3em] uppercase" style="color:var(--text-muted);">Eyes on the screen</p>
             ${state && state.title ? `<h1 class="font-serif text-lg mt-2" style="color:var(--text-secondary);">${state.title}</h1>` : ''}
         </div>
+        ${reactBarHTML()}
     </div>`;
+    wireReactBar();
     cornerCatchUp();
 }
 function renderGlance(state, kind) {
@@ -2496,7 +2522,9 @@ function renderGlance(state, kind) {
     <div class="sail-screen follow-screen glance-screen fade-up">
         ${chapterStrip()}
         <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">${body}</div>
+        ${reactBarHTML()}
     </div>`;
+    wireReactBar();
     cornerCatchUp();
 }
 
@@ -2666,7 +2694,9 @@ function renderRest(title, sub) {
             <div class="follow-boat" id="restBoat">${buildOrigamiSVG(c, stage, 190, extras())}</div>
             ${stage >= 8 ? `<p class="text-[10px] mt-3 tracking-[0.2em] uppercase" style="color:var(--text-muted);">${NEEDS_TILT_TAP ? 'Tap the boat, then tilt your phone' : 'Tilt your phone'} 🌊</p>` : ''}
         </div>
+        ${soloMode ? '' : reactBarHTML()}
     </div>`;
+    wireReactBar();
     if (stage >= 8) { const b = document.getElementById('restBoat'); enableTilt(b); b.onclick = () => { requestTiltPermission(); feel('tick'); }; }
     if (soloMode) addSoloNext();
 }
