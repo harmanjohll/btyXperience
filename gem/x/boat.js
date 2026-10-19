@@ -21,9 +21,11 @@ const WASHI_FILTER_ID = 'washiTex';
 function washiDefs() {
     return `<defs>
         <filter id="${WASHI_FILTER_ID}" x="0%" y="0%" width="100%" height="100%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="4" seed="3" result="n"/>
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="n"/>
             <feColorMatrix type="saturate" values="0" in="n" result="g"/>
-            <feBlend mode="soft-light" in="SourceGraphic" in2="g"/>
+            <feComponentTransfer in="g" result="soft"><feFuncR type="linear" slope="0.32" intercept="0.34"/><feFuncG type="linear" slope="0.32" intercept="0.34"/><feFuncB type="linear" slope="0.32" intercept="0.34"/></feComponentTransfer>
+            <feBlend mode="soft-light" in="SourceGraphic" in2="soft" result="b"/>
+            <feComposite in="b" in2="SourceGraphic" operator="in"/>
         </filter>
     </defs>`;
 }
@@ -535,5 +537,22 @@ const BLOCKLIST = ['fuck','shit','bitch','cunt','dick','pussy','asshole','bastar
 export function cleanWord(w) { return String(w || '').replace(/[^\p{L}\p{N} '-]/gu, '').trim().slice(0, 18); }
 export function wordOK(w) { const s = String(w || '').toLowerCase().replace(/[^a-z]/g, ''); return !!s && !BLOCKLIST.some(b => s.includes(b)); }
 
-export function haptic(duration = 30) { if (navigator.vibrate) navigator.vibrate(duration); }
-export function hapticPattern(pattern) { if (navigator.vibrate) navigator.vibrate(pattern); }
+/* Haptics. Android: the Vibration API. iPhone (iOS 18+): Safari gives a system tap when a
+   switch-style checkbox is toggled — we keep a hidden one and toggle it. It works inside a
+   tap or drag; outside a gesture iOS stays silent, and the paper's shake carries the moment. */
+export const IS_IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+let iosSwitch = null;
+export function iosTap() {
+    try {
+        if (!iosSwitch) { const l = document.createElement('label'); l.setAttribute('aria-hidden', 'true'); l.style.cssText = 'position:fixed;left:-200px;top:0;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none'; l.innerHTML = '<input type="checkbox" switch tabindex="-1">'; document.body.appendChild(l); iosSwitch = l; }
+        iosSwitch.click();
+    } catch (e) {}
+}
+export function buzz(pattern) {
+    if (navigator.vibrate) { try { navigator.vibrate(pattern); } catch (e) {} return; }
+    if (!IS_IOS) return;
+    const p = Array.isArray(pattern) ? pattern : [pattern]; let t = 0;
+    p.forEach((ms, i) => { if (i % 2 === 0) { if (t === 0) iosTap(); else setTimeout(iosTap, t); } t += ms; });
+}
+export function haptic(duration = 30) { buzz(duration); }
+export function hapticPattern(pattern) { buzz(pattern); }

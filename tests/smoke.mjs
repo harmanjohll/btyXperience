@@ -1,0 +1,20 @@
+// Quick boot check: the presenter and one phone load against the stand-in database.
+import { startServer } from './lib/server.mjs';
+import { loadPlaywright, checker, presenter, phone, board, sleep, until, appHTML } from './lib/harness.mjs';
+const { chromium } = await loadPlaywright();
+const srv = await startServer();
+const browser = await chromium.launch({ headless: true });
+const c = checker('smoke');
+const pr = await presenter(browser, srv.url);
+c.ok(await pr.$('#journeyContent'), 'presenter boots');
+const ph = await phone(browser, srv.url, 'phone1');
+c.ok(await ph.$('#boardBtn'), 'phone boots to boarding');
+await board(ph);
+c.ok(/You're in the Hive/.test(await appHTML(ph)), 'phone boards and finds its bee');
+const doc = await until(() => srv.api.col('compassQuiz').length ? srv.api.col('compassQuiz')[0] : null);
+c.ok(doc && doc.data.done === true && /The /.test(doc.data.archetype), 'phone saved state written: ' + JSON.stringify(doc && doc.data).slice(0, 120));
+const pill = await until(async () => { const t = await pr.$eval('#pCount', e => e.textContent); return /1 in the Hive · 1 ready/.test(t) ? t : null; });
+c.ok(pill, 'presenter counts it: ' + pill);
+c.ok(pr.errs.length === 0 && ph.errs.length === 0, 'no page errors ' + JSON.stringify([...pr.errs, ...ph.errs]));
+await browser.close(); await srv.close();
+console.log(c.fails.length ? `FAILED ${c.fails.length}` : 'ALL PASS'); process.exit(c.fails.length ? 1 : 0);

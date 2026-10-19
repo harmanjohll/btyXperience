@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "app/server.js",
   "scripts": {
-    "start": "node app/server.js"
+    "start": "node app/server.js",
+    "test": "node tests/run.mjs"
   }
 }

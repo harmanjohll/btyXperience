@@ -11,6 +11,7 @@ import {
     SAIL_DATA, BOAT_DEFAULTS, ARCHETYPES, FOLD_GUIDES, FOLD_FLAPS, FOLD_LABELS, CREASE_LINES, LABELS,
     STAMP_MARKS, MARK_SLOTS,
     FIREBASE_CONFIG, LOGO_URL, HAND_FONT, cleanWord, wordOK,
+    IS_IOS, iosTap, buzz,
 } from './boat.js';
 
 // === PAPER CREASE SOUND (Web Audio API) ===
@@ -68,7 +69,7 @@ function syncClock() {
     try {
         const ref = doc(db, "compassQuiz", auth.currentUser.uid);
         const lt = Date.now();
-        setDoc(ref, { archetype: D.bee || 'Beattyian', timestamp: serverTimestamp(), lt }).catch(() => {});
+        setDoc(ref, { archetype: D.bee || 'Beattyian', e: D.epoch || null, timestamp: serverTimestamp(), lt }, { merge: true }).catch(() => {});
         let unsub = null;
         unsub = onSnapshot(ref, (snap) => {
             try {
@@ -261,14 +262,15 @@ const HAPTIC = { tick: 18, lock: 45, chapter: [25, 40, 25], reveal: [50, 30, 100
 // Android browsers have it (and honour the phone's vibration setting); iPhones do not.
 function hapticsProbe(buzz) {
     const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    if (ios) return { kind: 'ios', text: 'iPhones can’t vibrate from a web page — your paper shakes instead.' };
+    if (ios) { if (buzz) iosTap(); return { kind: 'ios', text: 'iPhone: you’ll feel a tap on folds and taps (iOS 18 and later); the paper shakes too.' }; }
     if (!navigator.vibrate) return { kind: 'none', text: 'This browser has no vibration — your paper shakes instead.' };
     let ok = true; if (buzz) { try { ok = navigator.vibrate(HAPTIC.test) !== false; } catch (e) { ok = false; } }
     return ok ? { kind: 'ok', text: 'Haptics on — you should have felt a double buzz.' } : { kind: 'blocked', text: 'Vibration is off on this phone. Settings → Sound & vibration → Vibration / haptics.' };
 }
 function hapticsLineHTML() {
     const h = hapticsProbe(false);
-    return `<div class="hap-line" data-kind="${h.kind}"><span id="hapText">${h.kind === 'ok' ? 'Haptics: tap to test' : h.text}</span>${h.kind === 'ok' ? '<button id="hapTest" class="hap-btn">Test buzz</button>' : ''}</div>`;
+    const canTest = h.kind === 'ok' || h.kind === 'ios';
+    return `<div class="hap-line" data-kind="${h.kind}"><span id="hapText">${canTest ? 'Haptics: tap to test' : h.text}</span>${canTest ? '<button id="hapTest" class="hap-btn">Test buzz</button>' : ''}</div>`;
 }
 function wireHapticsLine() {
     const b = document.getElementById('hapTest'); if (!b) return;
@@ -277,6 +279,7 @@ function wireHapticsLine() {
 function feel(kind, el) {
     const v = HAPTIC[kind];
     if (navigator.vibrate) { try { navigator.vibrate(v); } catch (e) {} return; }
+    if (IS_IOS) buzz(v);                       // iOS 18+: a real tap inside a gesture
     if (kind === 'tick') return;
     const t = el || document.getElementById('origamiStage') || document.querySelector('.follow-boat');
     if (!t) return;
@@ -460,6 +463,7 @@ function startSessionListener() {
                 return;
             }
             setLink('live', data.step);
+            if (adoptEpoch(data.epoch)) return;                      // a new show began: this phone starts fresh
             if (quizActive) { lastSessionState = data; return; }   // finish finding your bee first; the show is waiting
             if (data.cue) handleCue(data.cue);
             applyView(data);
@@ -470,7 +474,7 @@ function startSessionListener() {
 // === STATE ===
 const $app = document.getElementById('app');
 const SK = 'btySail_v7';
-const BUILD = '18 Sep 2026 · v4';   // shown on the boarding screen so a phone can tell which build it has
+const BUILD = '19 Oct 2026 · v5';   // shown on the boarding screen so a phone can tell which build it has
 let D = JSON.parse(localStorage.getItem(SK)) || {};
 D.marks = D.marks || [];
 let step = 0;
@@ -500,11 +504,33 @@ let step = 0;
 const TOTAL_QUESTIONS = 6;
 
 function save() { localStorage.setItem(SK, JSON.stringify(D)); }
-async function saveToFirebase() {
-    if (!auth?.currentUser) return;
-    try { await setDoc(doc(db, "x_boats", auth.currentUser.uid), { ...D, timestamp: serverTimestamp() }); }
-    catch (e) { console.error("FB:", e); }
+/* The show's id. First sight: adopt it (and re-stamp this phone's saved state so the big screen counts it).
+   A different id later means the presenter started a new show: wipe the rehearsal and board again. */
+function adoptEpoch(ep) {
+    if (!ep || D.epoch === ep) return false;
+    if (!D.epoch) { D.epoch = ep; save(); if (D.boarded) pushMine(D.bee ? { done: true, f: D.nextFold || 0, ...(D.aspiration ? { boat: boatPayload(), w: D.aspiration } : {}) } : {}); return false; }
+    localStorage.removeItem(SK);
+    D = { marks: [], epoch: ep }; save();
+    followMode = false; soloMode = false; currentView = null; cardFile = null; quizActive = false;
+    if (sailSeq) { cancelAnimationFrame(sailSeq); sailSeq = null; }
+    renderBoard();
+    return true;
 }
+/* This phone's saved state in the cloud: ONE document, compassQuiz/{uid}, merged as the
+   show goes (last year's collection). Its bee, votes, picks, mood, dream word, folds,
+   boat and last reaction all live here; the big screen counts everything. Every write
+   carries `archetype` so it always has the shape the database expects. */
+function pushMine(partial) {
+    if (!db || !auth?.currentUser) return Promise.resolve();
+    try {
+        return setDoc(doc(db, "compassQuiz", auth.currentUser.uid), { ...partial, archetype: D.bee || 'Beattyian', e: D.epoch || null, t: serverTimestamp() }, { merge: true })
+            .catch(e => console.warn("sync:", e));
+    } catch (e) { return Promise.resolve(); }
+}
+const BOAT_KEYS = ['hullColor','keelColor','sailColor','sailGradient','flagColor','flagIcon','aspiration','marks','nextFold','launched','launchedAt','bee','beeTag','beeIcon','global','local','pulse',
+    'S','A','I','L','R','stewardshipPick','stewardshipChoice','appliedPick','appliedChoice','internationalPick','internationalChoice','learningPick','learningChoice','industryPick','subjectPick'];
+function boatPayload() { const b = {}; BOAT_KEYS.forEach(k => { if (D[k] !== undefined) b[k] = D[k]; }); return JSON.parse(JSON.stringify(b)); }
+async function saveToFirebase() { return pushMine({ boat: boatPayload(), f: D.nextFold || 0 }); }
 
 // === HELPERS ===
 function colors() {
@@ -1558,12 +1584,19 @@ function renderArchetypeReveal() {
    compass rose, the school QR, the booth if-then, the vision line.
    Share-first; press-and-hold fallback; the PNG is drawn in-house.
    ============================================================ */
-const EVENT_LINE = 'Set sail from the Hive · Beatty Open House 2026';
+const EVENT_LINE = 'Beatty Open House 2026';
 const BOOTH_LINE = 'Show this card at the Hive booth.';
 const VISION_LINE = 'Harmonising Hearts · Thriving Together';
 const FOLDED_LINE = 'You folded it. You named it. You set it sailing.';
-const QR_URL = '../joinbtyqr.png';
+/* The ask, and where the card's QR goes. SCHOOL_CODE: Beatty's S1 Posting school code — shown on the card once filled in. */
+const ASK_LINE = 'Make Beatty your 1st choice';
+const SCHOOL_CODE = '';
+const CARD_URL = 'https://go.gov.sg/probeatty';
+const CARD_URL_LABEL = 'beattysec.moe.edu.sg';
+const WHY_BEATTY = [['8', 'international exchanges'], ['6', 'industry attachments'], ['17', 'CCAs to belong to']];
 const CREST_BIG = 'crest-640.png';
+const ico = (n, c) => (window.BTY ? window.BTY.icon(n, c) : '');
+const beeIco = name => ico((window.BTY && window.BTY.ARCH[name]) || 'bee');
 // Rough bearings from Singapore, for the rose.
 const DEST_BEARING = { Hanoi: 5, GeoBali: 150, NZ: 140, Korea: 28, MiharaJapan: 42, MutsuzawaJapan: 42, Estonia: 330 };
 let cardFile = null, cardRendering = null;
@@ -1600,16 +1633,16 @@ function shortDest(t) { return String(t || '').replace(/\s*\(.*?\)\s*/g, '').tri
 function pollOf(id) { return (D.polls || {})[id]; }
 function insightOf(id) { const p = pollOf(id); return p && p.insight ? String(p.insight).replace(/^(Correct!|Good guess!|A trick!)\s*/, '') : ''; }
 
-/* The four S·A·I·L rows — what was chosen and discovered in each chapter. */
+/* The four S·A·I·L tiles — the programme, and what this visitor chose in it tonight. */
 function sailRows() {
     const prof = beeProfile();
     const g = D.global ? shortDest(D.global.text) : null, l = D.local ? shortDest(D.local.text) : null;
-    const dream = pollOf('dream_poll'), cca = pollOf('cca'), count = pollOf('nexus_count_v2'), ind = pollOf('industry');
+    const dream = pollOf('dream_poll');
     return [
-        { k: 'S', title: 'Stewardship', main: `${prof.s ? LABELS.stewardship[prof.s] + ' · ' : ''}Leaders for Life`, sub: dream ? `${dream.correct ? '✓ ' : ''}${insightOf('dream_poll')}` : 'D.R.E.A.M. — the values every Beattyian sails under.' },
-        { k: 'A', title: 'Applied Learning', main: prof.a ? `Drawn to ${LABELS.applied[prof.a]}${cca && cca.choiceText ? ' · you said ' + cca.choiceText + ' find a CCA they love' : ''}` : (cca && cca.choiceText ? `You said ${cca.choiceText} of Beattyians find a CCA they love` : 'Think.Create.Innovate — STEM & Machine Learning'), sub: cca ? insightOf('cca') : 'Every passion has a home here.' },
-        { k: 'I', title: 'International & Industry', main: g || l ? `${g ? 'Exchange · ' + g : ''}${g && l ? '  ·  ' : ''}${l ? 'Attachment · ' + l : ''}` : 'Six exchanges and six attachments to choose from', sub: count ? insightOf('nexus_count_v2') : 'NEXUS@BTY takes learning beyond the classroom.' },
-        { k: 'L', title: 'Learning to Live, Learn & Love', main: `${D.pulse ? 'Tonight: ' + D.pulse + '  ·  ' : ''}Sailing toward ${D.aspiration || 'your aspiration'}`, sub: ind ? insightOf('industry') : 'Non Vi Sed Arte — not by force, but by skill.' },
+        { k: 'S', title: 'Stewardship', main: 'Leaders for Life', sub: prof.s ? LABELS.stewardship[prof.s] : (dream && dream.correct ? 'You knew D.R.E.A.M. ✓' : 'Living D.R.E.A.M.') },
+        { k: 'A', title: 'Applied Learning', main: 'Think · Create · Innovate', sub: prof.a ? 'Drawn to ' + LABELS.applied[prof.a] : 'STEM & Machine Learning' },
+        { k: 'I', title: 'International & Industry', main: g || 'NEXUS@BTY', sub: l ? 'Attachment · ' + l : (g ? 'Your exchange pick' : '8 exchanges · 6 attachments') },
+        { k: 'L', title: 'Learning to Live, Learn & Love', main: D.pulse ? 'Tonight: ' + D.pulse : 'Non Vi Sed Arte', sub: 'Sailing toward ' + (D.aspiration || 'your dream') },
     ];
 }
 
@@ -1617,26 +1650,20 @@ function sailRows() {
 function whenDb(ms = 10000) {          // Firebase loads after the first paint; a returning phone renders its card before that
     return new Promise(res => { const t0 = Date.now(); (function tick() { if (db && getDocs && auth?.currentUser) return res(true); if (Date.now() - t0 > ms) return res(false); setTimeout(tick, 200); })(); });
 }
+/* How big was the fleet? The presenter counts it and puts it in the show's saved state. */
 async function loadFleetRank() {
-    if (!(await whenDb())) return null;
-    try {
-        const snap = await getDocs(collection(db, 'x_boats'));
-        const boats = [];
-        snap.forEach(d => { const b = d.data() || {}; if (b.launched) boats.push({ uid: d.id, at: b.launchedAt || (b.timestamp && b.timestamp.toMillis ? b.timestamp.toMillis() : 0), sail: b.sailColor || '#F5F0E8' }); });
-        boats.sort((a, b) => a.at - b.at);
-        const me = boats.findIndex(b => b.uid === auth.currentUser.uid);
-        if (me < 0) return null;
-        const W = 20, lo = Math.max(0, me - W), hi = Math.min(boats.length, me + W + 1);
-        D.boatNo = me + 1; D.fleetTotal = boats.length;
-        D.fleetStrip = boats.slice(lo, hi).map(b => b.sail); D.stripMe = me - lo; save();
-        return { n: D.boatNo, total: D.fleetTotal };
-    } catch (e) { return null; }
+    const n = lastSessionState && typeof lastSessionState.fleet === 'number' ? lastSessionState.fleet : 0;
+    if (!n || !D.launched) return null;
+    D.fleetTotal = Math.max(n, 1); delete D.boatNo;
+    const shown = Math.min(21, D.fleetTotal), me = Math.floor((shown - 1) / 2), pal = ['#F5F0E8', '#FFE200', '#9FC3FF', '#F5F0E8', '#FFD27A', '#E9EEF7'];
+    D.fleetStrip = Array.from({ length: shown }, (_, i) => i === me ? (D.sailColor || '#F5F0E8') : pal[i % pal.length]); D.stripMe = me; save();
+    return { total: D.fleetTotal };
 }
 function fleetStripHTML() {
     const strip = D.fleetStrip || [D.sailColor || '#F5F0E8']; const me = D.stripMe ?? 0;
     return strip.map((col, i) => `<i class="cc-sail${i === me ? ' me' : ''}" style="--c:${col}"></i>`).join('');
 }
-function fleetLabel() { return D.boatNo && D.fleetTotal ? `Boat ${D.boatNo} of ${D.fleetTotal}` : (D.launched ? 'In the fleet' : 'Ready to sail'); }
+function fleetLabel() { return D.fleetTotal > 1 ? `One of ${D.fleetTotal} boats` : (D.launched ? 'In the fleet' : 'Ready to sail'); }
 
 function compassRoseSVG(size, bearing, gold = '#FFE200') {
     const pts = [];
@@ -1653,60 +1680,45 @@ function compassRoseSVG(size, bearing, gold = '#FFE200') {
 
 function renderMemento() {
     stopAmbient(); hideCornerBoat(); stampBoat();
-    const c = colors(); const gold = '#FFE200';
-    const sail = D.sailColor || gold;
-    const prof = beeProfile();
-    const word = D.aspiration || 'Beattyian';
-    const g = D.global ? shortDest(D.global.text) : null, l = D.local ? shortDest(D.local.text) : null;
-    const rows = sailRows();
+    const c = colors(), sail = D.sailColor || '#FFE200', prof = beeProfile(), word = D.aspiration || 'Beattyian', rows = sailRows();
     $app.innerHTML = `
-    <div class="sail-screen fade-up">
-        <div class="content-zone pt-4" style="max-width:400px;">
-            <div class="compass-card" id="memento-card" style="--sail:${sail};--bee:${prof.color}">
-                <div class="cc-paper"></div>
-                <div class="cc-tape"></div>
+    <div class="sail-screen card-screen fade-up">
+        <div class="content-zone" style="max-width:400px;">
+            <article class="compass-card" id="memento-card" style="--sail:${sail};--bee:${prof.color}">
                 <header class="cc-head">
                     <img src="${LOGO_URL}" alt="" onerror="this.style.display='none'">
-                    <div><b>Beatty Secondary</b><small>Compass Card · Open House 2026</small></div>
-                    <span class="cc-bee">${D.beeIcon || '🐝'}</span>
+                    <div><b>Beatty Secondary School</b><small>Compass Card · Open House 2026</small></div>
                 </header>
-                <div class="cc-boat" id="ccBoat">
-                    <div class="cc-boat-tilt">${buildOrigamiSVG(c, 9, 300, { ...extras(), aspiration: '' })}<div class="hand-word cc-hand" style="font-size:${Math.max(15, Math.min(24, 190 / Math.max(6, word.length)))}px">${word}</div></div>
-                    <div class="cc-water"></div>
+                <div class="cc-hero">
+                    <div class="cc-boat" id="ccBoat"><div class="cc-boat-tilt">${buildOrigamiSVG(c, 9, 300, { ...extras(), aspiration: '' })}<div class="hand-word cc-hand" style="font-size:${Math.max(15, Math.min(24, 190 / Math.max(6, word.length)))}px">${word}</div></div><div class="cc-water"></div></div>
+                    <small class="cc-eyebrow">Sailing toward</small>
+                    <h1 class="cc-word">${word}</h1>
+                    <p class="cc-fleetline" id="ccFleetN">${fleetLine()}</p>
                 </div>
-                <div class="cc-word"><small>I'm sailing toward</small><h1>${word}</h1><p>${FOLDED_LINE}</p></div>
-                <div class="cc-id">
-                    <div class="cc-id-name"><span>${D.beeTag || 'A Beattyian'}</span><b style="color:var(--bee)">${D.bee || 'In the Hive'}</b></div>
-                    <p class="cc-quote">“${prof.quote}”</p>
-                    <p class="cc-persona">${prof.persona}</p>
+                <div class="cc-bee">
+                    <span class="cc-bee-ic">${beeIco(D.bee)}</span>
+                    <div><small>${D.beeTag || 'A Beattyian'}</small><b>${(D.bee || 'In the Hive').replace(/^The /, '')}</b></div>
                 </div>
-                <div class="cc-rows">
-                    ${rows.map(r => `<div class="cc-sail-row"><i>${r.k}</i><div><b>${r.title}</b><span>${r.main}</span><small>${r.sub}</small></div></div>`).join('')}
-                </div>
-                <p class="cc-rec"><b>Recommended for you</b>${prof.recommended.map(r => `<span>${r}</span>`).join('')}</p>
-                <div class="cc-row">
-                    <div class="cc-stamp">${g || l ? `<b>${g || l}</b>${g && l ? `<i>${l}</i>` : ''}` : '<b>Beatty</b><i>every pathway</i>'}<em>port of call</em></div>
-                    <div class="cc-fleet">
-                        <div class="cc-fleet-lab"><span id="ccFleetN">${fleetLabel()}</span></div>
-                        <div class="cc-strip" id="ccStrip">${fleetStripHTML()}</div>
-                    </div>
-                    <div class="cc-rose">${compassRoseSVG(74, destBearing(), gold)}</div>
-                </div>
+                <p class="cc-quote">“${prof.quote}”</p>
+                <div class="cc-tiles">${rows.map(r => `<div class="cc-tile"><i>${r.k}</i><small>${r.title}</small><b>${r.main}</b><span>${r.sub}</span></div>`).join('')}</div>
+                <div class="cc-why"><small>Why Beatty</small><div>${WHY_BEATTY.map(([n, t]) => `<p><b>${n}</b><span>${t}</span></p>`).join('')}</div></div>
+                <div class="cc-ask"><b>${ASK_LINE}</b><span>in S1 Posting${SCHOOL_CODE ? ' · school code ' + SCHOOL_CODE : ''}</span></div>
                 <footer class="cc-foot">
-                    <img class="cc-qr" src="${QR_URL}" alt="" onerror="this.style.display='none'">
-                    <div><b>${EVENT_LINE}</b><span>${BOOTH_LINE}</span><small>${VISION_LINE}</small></div>
+                    <span class="cc-qr">${window.BTY ? window.BTY.qrSVG(CARD_URL, { label: 'Explore Beatty' }) : ''}</span>
+                    <div><b>Explore Beatty</b><span>${CARD_URL_LABEL}</span><small>Non Vi Sed Arte · ${VISION_LINE}</small></div>
                 </footer>
-            </div>
+            </article>
             <button id="shareCardBtn" class="nav-btn primary w-full mt-4 text-base uppercase tracking-wide">${navigator.share ? 'Share my card' : 'Save my card'}</button>
             ${navigator.share ? '<button id="downloadCardBtn" class="nav-btn secondary w-full mt-2 text-sm uppercase tracking-wide">Save image</button>' : ''}
-            <p class="text-[11px] mt-3 text-center" style="color:var(--text-secondary);">${BOOTH_LINE} ⛵</p>
-            <button id="resetBtn" class="mt-3 w-full text-sm underline pb-4" style="color:var(--text-muted);">Start over</button>
+            <p class="cc-after">${BOOTH_LINE}</p>
+            <button id="resetBtn" class="mt-2 w-full text-sm underline pb-6" style="color:var(--text-muted);">Start over</button>
         </div>
     </div>`;
-    // Rank in the fleet (once online), then pre-render the PNG so a share can fire inside the tap.
-    loadFleetRank().then(r => { const n = document.getElementById('ccFleetN'), s = document.getElementById('ccStrip'); if (r && n) n.textContent = fleetLabel(); if (r && s) s.innerHTML = fleetStripHTML(); }).finally(() => { cardFile = null; cardRendering = renderCardPNG().then(f => { cardFile = f; return f; }).catch(() => null); });
+    // The fleet's size (from the show's saved state), then pre-render the PNG so a share can fire inside the tap.
+    loadFleetRank().then(r => { const n = document.getElementById('ccFleetN'); if (r && n) n.textContent = fleetLine(); }).finally(() => { cardFile = null; cardRendering = renderCardPNG().then(f => { cardFile = f; return f; }).catch(() => null); });
     const boat = document.querySelector('.cc-boat-tilt'); if (boat) enableTilt(boat);
 }
+function fleetLine() { return D.fleetTotal > 1 ? `One of ${D.fleetTotal} boats that set sail together` : (D.launched ? 'Set sail with the Hive' : FOLDED_LINE); }
 
 /* ---------- Draw the card as a 1080×2160 PNG, in-house (no html2canvas) ---------- */
 function loadImg(src) { return new Promise((res) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; }); }
@@ -1721,78 +1733,70 @@ function wrapText(ctx, text, x, y, maxW, lineH, maxLines = 2) {   // returns the
     return y + lines.length * lineH;
 }
 async function renderCardPNG() {
-    const W = 1080, H = 2160, gold = '#FFE200', sail = D.sailColor || gold, word = D.aspiration || 'Beattyian';
-    const prof = beeProfile(); const rows = sailRows();
+    // 1080×1920 (a phone story): the same card as on screen, drawn in-house.
+    const W = 1080, H = 1920, X = 84, CW = W - 2 * X, gold = '#FFE200', navy = '#000C53', word = D.aspiration || 'Beattyian';
+    const prof = beeProfile(), rows = sailRows();
     const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const ctx = cv.getContext('2d');
-    const c = colors();
-    const [boatImg, crest, qr, rose] = await Promise.all([
-        svgToImg(buildOrigamiSVG(c, 9, 720, { ...extras(), aspiration: '', gradientId: 'cardSail' })), loadImg(CREST_BIG), loadImg(QR_URL),
-        svgToImg(compassRoseSVG(210, destBearing(), gold))]);
-    const SANS = 'Calibri, "Segoe UI", system-ui, sans-serif';
-    // Navy ground with a warm glow behind the boat
-    const bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#040a33'); bg.addColorStop(0.45, '#0a1650'); bg.addColorStop(1, '#061027'); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-    const glow = ctx.createRadialGradient(W / 2, 560, 40, W / 2, 560, 500); glow.addColorStop(0, 'rgba(255,226,0,.20)'); glow.addColorStop(1, 'rgba(255,226,0,0)'); ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
-    // Washi grain + a crease
-    ctx.fillStyle = 'rgba(255,255,255,.045)'; for (let i = 0; i < 10000; i++) { ctx.fillRect(Math.random() * W, Math.random() * H, 2, 2); }
-    ctx.strokeStyle = 'rgba(255,255,255,.08)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, 1076); ctx.lineTo(W, 1050); ctx.stroke();
-    ctx.strokeStyle = 'rgba(255,226,0,.35)'; ctx.lineWidth = 3; roundRect(ctx, 22, 22, W - 44, H - 44, 44); ctx.stroke();
-    // Washi tape (navy + yellow), top right
-    ctx.save(); ctx.translate(W - 130, 92); ctx.rotate(0.14); ctx.globalAlpha = .92;
-    for (let i = 0; i < 12; i++) { ctx.fillStyle = i % 2 ? '#000C53' : gold; ctx.fillRect(-150 + i * 25, -20, 25, 40); } ctx.restore();
-    // Head
-    if (crest) ctx.drawImage(crest, 78, 118, 96, 118);
-    ctx.fillStyle = '#fff'; ctx.font = '700 44px Georgia, serif'; ctx.textBaseline = 'alphabetic'; ctx.fillText('Beatty Secondary', 196, 176);
-    ctx.fillStyle = 'rgba(255,226,0,.9)'; ctx.font = `600 22px ${SANS}`; ctx.fillText('COMPASS CARD  ·  OPEN HOUSE 2026', 198, 214);
-    // The boat, at the ¾ angle, on water, wearing its stamps
-    const bw = 640, by = 232;
-    const water = ctx.createRadialGradient(W / 2, by + 610, 20, W / 2, by + 610, 340); water.addColorStop(0, 'rgba(127,211,247,.45)'); water.addColorStop(.6, 'rgba(18,41,156,.25)'); water.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = water; ctx.beginPath(); ctx.ellipse(W / 2, by + 610, 350, 52, 0, 0, Math.PI * 2); ctx.fill();
-    if (boatImg) { ctx.save(); ctx.translate(W / 2, by + bw / 2); ctx.transform(0.95, -0.05, 0.03, 1, 0, 0); ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 24; ctx.drawImage(boatImg, -bw / 2, -bw / 2, bw, bw); ctx.restore(); }
-    // The word in handwriting on the hull (right of the stamps)
-    ctx.save(); ctx.translate(W / 2 + 28, by + 528); ctx.rotate(-0.035); ctx.fillStyle = '#fff6c8'; ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 6;
-    ctx.font = `600 ${Math.max(36, Math.min(54, 430 / Math.max(6, word.length)))}px ${HAND_FONT}`; ctx.textAlign = 'center'; ctx.fillText(word, 0, 0); ctx.restore();
-    // "I'm sailing toward" + the word + the folded line
-    ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255,255,255,.62)'; ctx.font = `600 22px ${SANS}`; ctx.fillText("I ' M   S A I L I N G   T O W A R D", W / 2, 906);
-    ctx.fillStyle = gold; ctx.font = `700 ${Math.max(56, Math.min(92, 960 / Math.max(6, word.length)))}px Georgia, serif`; ctx.fillText(word, W / 2, 994);
-    ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font = `italic 24px Georgia, serif`; ctx.fillText(FOLDED_LINE, W / 2, 1038);
-    // Who you are in the Hive (fixed slots: a two-line quote, a one-line persona)
-    ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(255,255,255,.62)'; ctx.font = `700 20px ${SANS}`; ctx.fillText((D.beeTag || 'A BEATTYIAN').toUpperCase(), 90, 1098);
-    ctx.fillStyle = prof.color; ctx.font = '700 40px Georgia, serif'; ctx.fillText(D.bee || 'In the Hive', 90, 1140);
-    ctx.fillStyle = '#fff'; ctx.font = 'italic 26px Georgia, serif'; wrapText(ctx, '“' + prof.quote + '”', 90, 1182, W - 180, 33, 2);
-    ctx.fillStyle = 'rgba(255,255,255,.72)'; ctx.font = `22px ${SANS}`; wrapText(ctx, prof.persona, 90, 1262, W - 180, 28, 1);
-    // The four S·A·I·L rows
-    let ry = 1330;
-    rows.forEach(r => {
-        ctx.fillStyle = 'rgba(255,255,255,.05)'; roundRect(ctx, 76, ry - 34, W - 152, 90, 16); ctx.fill();
-        ctx.fillStyle = 'rgba(255,226,0,.14)'; ctx.beginPath(); ctx.arc(120, ry + 11, 25, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = gold; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(120, ry + 11, 25, 0, Math.PI * 2); ctx.stroke();
-        ctx.fillStyle = gold; ctx.font = '900 28px Georgia, serif'; ctx.textAlign = 'center'; ctx.fillText(r.k, 120, ry + 21); ctx.textAlign = 'left';
-        ctx.fillStyle = 'rgba(255,226,0,.85)'; ctx.font = `700 16px ${SANS}`; ctx.fillText(r.title.toUpperCase(), 168, ry - 8);
-        ctx.fillStyle = '#fff'; ctx.font = `600 24px ${SANS}`; wrapText(ctx, r.main, 168, ry + 19, W - 268, 28, 1);
-        ctx.fillStyle = 'rgba(255,255,255,.62)'; ctx.font = `19px ${SANS}`; wrapText(ctx, r.sub, 168, ry + 45, W - 268, 24, 1);
-        ry += 100;
+    const SANS = 'Calibri, "Segoe UI", system-ui, sans-serif', SERIF = 'Georgia, "Iowan Old Style", serif';
+    const [boatImg, crest, beeImg] = await Promise.all([
+        svgToImg(buildOrigamiSVG(colors(), 9, 720, { ...extras(), aspiration: '', gradientId: 'cardSail' })), loadImg(CREST_BIG),
+        window.BTY ? window.BTY.iconImage((window.BTY.ARCH[D.bee] || 'bee'), prof.color, 128) : null]);
+    // ground
+    const bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#040a33'); bg.addColorStop(0.5, '#0a1650'); bg.addColorStop(1, '#050d2b'); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    const glow = ctx.createRadialGradient(W / 2, 470, 30, W / 2, 470, 460); glow.addColorStop(0, 'rgba(255,226,0,.18)'); glow.addColorStop(1, 'rgba(255,226,0,0)'); ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(255,226,0,.38)'; ctx.lineWidth = 3; roundRect(ctx, 24, 24, W - 48, H - 48, 40); ctx.stroke();
+    // head
+    ctx.textBaseline = 'alphabetic';
+    if (crest) ctx.drawImage(crest, X, 70, 76, 94);
+    ctx.fillStyle = '#fff'; ctx.font = `700 40px ${SERIF}`; ctx.fillText('Beatty Secondary School', X + 100, 116);
+    ctx.fillStyle = gold; ctx.font = `700 21px ${SANS}`; ctx.fillText('COMPASS CARD  ·  OPEN HOUSE 2026', X + 102, 152);
+    // the boat on the water, wearing its stamps; the word in handwriting on the hull
+    const bw = 560, by = 176;
+    const water = ctx.createRadialGradient(W / 2, by + 530, 10, W / 2, by + 530, 300); water.addColorStop(0, 'rgba(127,211,247,.42)'); water.addColorStop(.6, 'rgba(18,41,156,.22)'); water.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = water; ctx.beginPath(); ctx.ellipse(W / 2, by + 530, 300, 44, 0, 0, Math.PI * 2); ctx.fill();
+    if (boatImg) { ctx.save(); ctx.translate(W / 2, by + bw / 2); ctx.transform(0.95, -0.05, 0.03, 1, 0, 0); ctx.shadowColor = 'rgba(0,0,0,.5)'; ctx.shadowBlur = 36; ctx.shadowOffsetY = 22; ctx.drawImage(boatImg, -bw / 2, -bw / 2, bw, bw); ctx.restore(); }
+    ctx.save(); ctx.translate(W / 2 + 24, by + 462); ctx.rotate(-0.035); ctx.fillStyle = '#fff6c8'; ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 6;
+    ctx.font = `600 ${Math.max(32, Math.min(48, 380 / Math.max(6, word.length)))}px ${HAND_FONT}`; ctx.textAlign = 'center'; ctx.fillText(word, 0, 0); ctx.restore();
+    // sailing toward
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font = `700 21px ${SANS}`; ctx.fillText('S A I L I N G   T O W A R D', W / 2, 800);
+    ctx.fillStyle = gold; ctx.font = `700 ${Math.max(58, Math.min(96, 980 / Math.max(6, word.length)))}px ${SERIF}`; ctx.fillText(word, W / 2, 888);
+    ctx.fillStyle = 'rgba(255,255,255,.72)'; ctx.font = `italic 26px ${SERIF}`; ctx.fillText(fleetLine(), W / 2, 934, CW);
+    // the bee
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(255,255,255,.07)'; ctx.beginPath(); ctx.arc(X + 38, 1010, 38, 0, Math.PI * 2); ctx.fill();
+    if (beeImg) ctx.drawImage(beeImg, X + 10, 982, 56, 56);
+    ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font = `700 19px ${SANS}`; ctx.fillText((D.beeTag || 'A Beattyian').toUpperCase(), X + 96, 996);
+    ctx.fillStyle = prof.color; ctx.font = `700 40px ${SERIF}`; ctx.fillText((D.bee || 'In the Hive').replace(/^The /, ''), X + 96, 1038, CW - 96);
+    ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.font = `italic 27px ${SERIF}`; wrapText(ctx, '“' + prof.quote + '”', X, 1104, CW, 36, 2);
+    // the four S·A·I·L tiles
+    const tw = (CW - 22) / 2, th = 150, ty0 = 1166;
+    rows.forEach((r, i) => {
+        const x = X + (i % 2) * (tw + 22), y = ty0 + Math.floor(i / 2) * (th + 20);
+        ctx.fillStyle = 'rgba(255,255,255,.06)'; roundRect(ctx, x, y, tw, th, 22); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,226,0,.16)'; ctx.lineWidth = 1.5; roundRect(ctx, x, y, tw, th, 22); ctx.stroke();
+        ctx.fillStyle = gold; ctx.beginPath(); ctx.arc(x + 40, y + 40, 20, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = navy; ctx.font = `700 24px ${SERIF}`; ctx.textAlign = 'center'; ctx.fillText(r.k, x + 40, y + 48); ctx.textAlign = 'left';
+        ctx.fillStyle = 'rgba(255,226,0,.85)'; ctx.font = `700 15px ${SANS}`; wrapText(ctx, r.title.toUpperCase(), x + 72, y + 46, tw - 90, 18, 1);
+        ctx.fillStyle = '#fff'; ctx.font = `700 27px ${SANS}`; wrapText(ctx, r.main, x + 24, y + 98, tw - 44, 30, 1);
+        ctx.fillStyle = 'rgba(255,255,255,.64)'; ctx.font = `20px ${SANS}`; wrapText(ctx, r.sub, x + 24, y + 130, tw - 44, 24, 1);
     });
-    // Recommended for you (two lines at most)
-    ctx.fillStyle = 'rgba(255,226,0,.85)'; ctx.font = `700 16px ${SANS}`; ctx.fillText('RECOMMENDED FOR YOU', 90, 1756);
-    ctx.fillStyle = '#fff'; ctx.font = `600 22px ${SANS}`; wrapText(ctx, prof.recommended.join('   ·   '), 90, 1786, W - 180, 27, 2);
-    // Port stamp · Boat N of M + strip · compass rose
-    const rowY = 1908;
-    const g = D.global ? shortDest(D.global.text) : null, l = D.local ? shortDest(D.local.text) : null;
-    ctx.save(); ctx.translate(200, rowY); ctx.rotate(-0.2); ctx.strokeStyle = sail; ctx.lineWidth = 5; ctx.setLineDash([12, 9]); ctx.beginPath(); ctx.arc(0, 0, 92, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
-    ctx.beginPath(); ctx.arc(0, 0, 76, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 2; ctx.stroke();
-    ctx.fillStyle = sail; ctx.textAlign = 'center'; ctx.font = '700 25px Georgia, serif'; ctx.fillText(g || l || 'Beatty', 0, g && l ? -6 : 7, 140);
-    ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.font = 'italic 17px Georgia, serif'; if (g && l) ctx.fillText(l, 0, 22, 140);
-    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = `600 12px ${SANS}`; ctx.fillText('P O R T   O F   C A L L', 0, 54); ctx.restore();
-    ctx.textAlign = 'center'; ctx.fillStyle = '#fff'; ctx.font = '700 34px Georgia, serif'; ctx.fillText(fleetLabel(), W / 2, rowY - 16);
-    const strip = D.fleetStrip || [sail], me = D.stripMe ?? 0, sw = Math.min(28, 360 / strip.length), sx0 = W / 2 - sw * strip.length / 2;
-    strip.forEach((col, i) => { const x = sx0 + i * sw + sw / 2, y = rowY + 36; ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(x, y - 15); ctx.lineTo(x + 9, y + 5); ctx.lineTo(x - 9, y + 5); ctx.closePath(); ctx.fill(); ctx.fillStyle = '#4a3728'; ctx.fillRect(x - 11, y + 7, 22, 4);
-        if (i === me) { ctx.strokeStyle = gold; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y - 2, 19, 0, Math.PI * 2); ctx.stroke(); } });
-    if (rose) ctx.drawImage(rose, W - 300, rowY - 92, 184, 184);
-    // Footer: QR + lines
-    if (qr) { ctx.fillStyle = '#fff'; roundRect(ctx, W - 262, 2004, 172, 172, 16); ctx.fill(); ctx.drawImage(qr, W - 252, 2014, 152, 152); }
-    ctx.textAlign = 'left'; ctx.fillStyle = gold; ctx.font = '700 25px Georgia, serif'; ctx.fillText(EVENT_LINE, 90, 2046, 690);
-    ctx.fillStyle = '#fff'; ctx.font = `600 25px ${SANS}`; ctx.fillText(BOOTH_LINE, 90, 2090, 690);
-    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = 'italic 21px Georgia, serif'; ctx.fillText(VISION_LINE, 90, 2128, 690);
+    // why Beatty
+    const wy = 1520;
+    ctx.fillStyle = 'rgba(255,226,0,.85)'; ctx.font = `700 17px ${SANS}`; ctx.fillText('W H Y   B E A T T Y', X, wy);
+    WHY_BEATTY.forEach(([n, t], i) => { const x = X + i * (CW / 3); ctx.fillStyle = gold; ctx.font = `700 66px ${SERIF}`; ctx.fillText(n, x, wy + 70); ctx.fillStyle = 'rgba(255,255,255,.78)'; ctx.font = `21px ${SANS}`; ctx.fillText(t, x, wy + 102, CW / 3 - 16); });
+    // the ask
+    const ay = 1636;
+    ctx.fillStyle = gold; roundRect(ctx, X, ay, CW, 104, 22); ctx.fill();
+    ctx.fillStyle = navy; ctx.font = `700 40px ${SERIF}`; ctx.fillText(ASK_LINE, X + 30, ay + 52, CW - 60);
+    ctx.font = `700 21px ${SANS}`; ctx.fillText(('in S1 Posting' + (SCHOOL_CODE ? '  ·  school code ' + SCHOOL_CODE : '')).toUpperCase(), X + 32, ay + 84, CW - 60);
+    // footer: QR + where to find out more
+    const qs = 112, qx = W - X - qs, qy = 1764;
+    ctx.fillStyle = '#fff'; roundRect(ctx, qx - 6, qy - 6, qs + 12, qs + 12, 14); ctx.fill();
+    if (window.BTY) window.BTY.qrDraw(ctx, CARD_URL, qx, qy, qs, { margin: 1 });
+    ctx.fillStyle = gold; ctx.font = `700 30px ${SERIF}`; ctx.fillText('Explore Beatty', X, 1800);
+    ctx.fillStyle = '#fff'; ctx.font = `600 23px ${SANS}`; ctx.fillText(CARD_URL_LABEL, X, 1836);
+    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = `italic 20px ${SERIF}`; ctx.fillText('Non Vi Sed Arte  ·  ' + VISION_LINE, X, 1868, qx - X - 20);
     const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
     return new File([blob], 'Beatty-Compass-Card.png', { type: 'image/png' });
 }
@@ -1914,7 +1918,7 @@ function renderReadyToSail() {
                 <span class="ready-dot"></span>
                 <span class="text-sm" style="color:var(--text-secondary); text-wrap:balance;">Hold it — waiting for the captain's cue…</span>
             </div>
-            <p class="text-[11px] max-w-xs" style="color:var(--text-muted);">When the whole hall sets sail together, your boat joins the fleet on the big screen. Look up. 🌊</p>
+            <p class="text-[11px] max-w-xs" style="color:var(--text-muted);">When the whole hall sets sail together, your boat joins the fleet on the big screen. Look up.</p>
             <button id="sailNowBtn" class="nav-btn secondary mt-8" style="opacity:0;transition:opacity .5s;">Set sail now</button>
         </div>
     </div>`;
@@ -2044,7 +2048,7 @@ let lastSessionState = null;
 /* --- Folds on the passive slides --- */
 function advanceFold() {
     const fi = (D.nextFold == null) ? 0 : D.nextFold;
-    if (fi > 7) { renderLookUp('Your boat is folded — eyes on the screen 🌊'); return; }
+    if (fi > 7) { renderLookUp('Your boat is folded — eyes on the screen'); return; }
     foldFollowActive = true;
     step = FOLD_STEP_FOR_INDEX[fi];
     route();
@@ -2053,11 +2057,11 @@ function onFoldBeatDone(foldIndex) {
     D.nextFold = foldIndex + 1; save();
     clearTimeout(foldAssistTimer);
     chapterFlash(D.nextFold);                            // 🎩 at 5, 💎 at 6 — the boat has its own reveal
-    saveToFirebase();                                   // progress → the presenter's "N folded" count
-    if (soloMode) { foldFollowActive = false; soloIdx++; renderRest('Beautiful fold.', 'Eyes back on the big screen ✨'); return; }
+    if (soloMode || (D.nextFold || 0) >= (D.foldTarget || 0)) saveToFirebase();   // once per beat → the presenter's "N folded" count
+    if (soloMode) { foldFollowActive = false; soloIdx++; renderRest('Beautiful fold.', 'Eyes back on the big screen'); return; }
     if ((D.nextFold || 0) < (D.foldTarget || 0)) { setTimeout(continueFolding, 380); return; }   // one more in this beat
     foldFollowActive = false;
-    renderRest(D.nextFold >= 8 ? 'Your boat is complete! ⛵' : 'Beautiful fold.', 'Eyes back on the big screen ✨');
+    renderRest(D.nextFold >= 8 ? 'Your boat is complete' : 'Beautiful fold.', 'Eyes back on the big screen');
 }
 
 /* ============================================================
@@ -2073,7 +2077,7 @@ function showPoll(p, revealed) {
     $app.innerHTML = `
     <div class="sail-screen fade-up">
         <div class="content-zone" style="padding-top:20px;">
-            <p class="q-eyebrow">🐝 Live Poll · vote now</p>
+            <p class="q-eyebrow">${ico('poll')}Live poll · vote now</p>
             <h2 class="q-question">${p.question}</h2>
             <div class="q-opts mt-4">
                 ${p.options.map((o, i) => `<button class="answer-opt" data-poll="${i}">${o}</button>`).join('')}
@@ -2094,7 +2098,7 @@ async function votePoll(p, i) {
     if (!D.polls) D.polls = {};
     D.polls[p.id] = { choice: idx, choiceText: p.options[idx], correct, insight }; save();
     haptic(40);
-    if (db && auth?.currentUser) { try { await setDoc(doc(db, "polls", `${p.id}_${auth.currentUser.uid}`), { pollId: p.id, vote: idx, timestamp: serverTimestamp() }); } catch (e) {} }
+    await pushMine({ v: { [p.id]: idx } });
     showPollResult(p);
 }
 function showPollResult(p) {
@@ -2111,11 +2115,11 @@ function showPollResult(p) {
             ${!revealed ? `
             <div class="q-locked mt-4">
                 <div class="q-locked-pick">${mine ? `You chose <b>${mine.choiceText}</b>` : 'Eyes on the big screen'}</div>
-                <div class="q-locked-count"><span id="pollCount">…</span> answered · the answer is coming</div>
+                <div class="q-locked-count">The answer appears on the big screen</div>
             </div>` : `
             <div class="mt-4" id="liveBars">${p.options.map((o, i) => `
                 <div class="pbar ${mine && mine.choice === i ? 'me' : ''} ${i === p.correctAnswer ? 'correct' : ''}" data-i="${i}">
-                    <div class="pbar-lab"><span>${o} ${i === p.correctAnswer ? '🏆' : ''}${mine && mine.choice === i ? ' · you' : ''}</span><span class="pbar-pc">0%</span></div>
+                    <div class="pbar-lab"><span>${o}${i === p.correctAnswer ? ' <em class="ans-tag">Answer</em>' : ''}${mine && mine.choice === i ? ' · you' : ''}</span><span class="pbar-pc">0%</span></div>
                     <div class="pbar-track"><div class="pbar-fill"></div></div>
                 </div>`).join('')}</div>
             <div class="q-insight">${p.insight || ''}</div>`}
@@ -2125,21 +2129,16 @@ function showPollResult(p) {
     wireReactBar();
     showCornerBoat();
     if (revealed) hapticPattern(mine?.correct ? [30, 40, 90] : [40]);
-    if (db && collection && onSnapshot) {
-        if (window.__pollUnsub) window.__pollUnsub();
-        try {
-            window.__pollUnsub = onSnapshot(collection(db, "polls"), (snap) => {
-                const bd = {}; let total = 0;
-                snap.forEach(d => { const x = d.data(); if (x.pollId === p.id) { total++; if (x.vote != null) bd[x.vote] = (bd[x.vote] || 0) + 1; } });
-                const cnt = document.getElementById('pollCount'); if (cnt) cnt.textContent = total;
-                p.options.forEach((o, i) => {
-                    const row = document.querySelector(`#liveBars .pbar[data-i="${i}"]`); if (!row) return;
-                    const c = bd[i] || 0, pct = total > 0 ? (c / total * 100) : 0;
-                    row.querySelector('.pbar-fill').style.width = pct + '%';
-                    row.querySelector('.pbar-pc').textContent = Math.round(pct) + '%';
-                });
-            }, () => {});
-        } catch (e) {}
+    // The result bars come from the tally the presenter puts in the show's saved state at the reveal.
+    const tl = lastSessionState && lastSessionState.tally;
+    if (revealed && tl && tl.id === p.id) {
+        const total = tl.total || 0;
+        requestAnimationFrame(() => setTimeout(() => p.options.forEach((o, i) => {
+            const row = document.querySelector(`#liveBars .pbar[data-i="${i}"]`); if (!row) return;
+            const c = (tl.counts && tl.counts[i]) || 0, pct = total > 0 ? (c / total * 100) : 0;
+            row.querySelector('.pbar-fill').style.width = pct + '%';
+            row.querySelector('.pbar-pc').textContent = Math.round(pct) + '%';
+        }), 120));
     }
 }
 
@@ -2152,12 +2151,12 @@ function showNexus(nd) {
     $app.innerHTML = `
     <div class="sail-screen fade-up">
         <div class="content-zone" style="padding-top:20px;">
-            <p class="q-eyebrow">🧭 Chart your course · ${isGlobe ? 'a destination' : 'an industry'}</p>
+            <p class="q-eyebrow">${ico(isGlobe ? 'globe' : 'pin')}Chart your course · ${isGlobe ? 'a destination' : 'an industry'}</p>
             <h2 class="q-question">${isGlobe ? 'Where would the wind take you?' : 'Which world would you step into?'}</h2>
             <div class="q-opts mt-4">
                 ${nd.options.map(o => `<button class="answer-opt" data-nx="${o.id}" data-nt="${key}" data-ntxt="${o.text.replace(/"/g, '&quot;')}">${o.text}</button>`).join('')}
             </div>
-            <p class="q-hint">Your bee lands on the big screen — and colours your sail. 🗺️</p>
+            <p class="q-hint">Your bee lands on the big screen — and colours your sail.</p>
         </div>
     </div>`;
     document.querySelectorAll('[data-nx]').forEach(b => b.addEventListener('click', () => {
@@ -2172,7 +2171,7 @@ async function chooseNexus(id, type, text) {
     if (col) { if (type === 'global') D.sailColor = col; else D.flagColor = col; }
     save(); stampBoat();
     haptic(30);
-    if (db && auth?.currentUser) { try { await setDoc(doc(db, "nexusVotes", `${type}_${auth.currentUser.uid}`), { nexusId: id, type, timestamp: serverTimestamp() }); } catch (e) {} }
+    await pushMine({ n: { [type === 'local' ? 'local' : 'global']: id } });
     renderChosenNexus(type);
 }
 function renderChosenNexus(type) {
@@ -2184,7 +2183,7 @@ function renderChosenNexus(type) {
         <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
             <div class="follow-check mb-2">✓</div>
             <h1 class="font-serif text-xl mb-1" style="color:var(--accent-gold);">Your bee has landed</h1>
-            <p class="text-sm mb-4" style="color:var(--text-secondary);">${pick?.text || ''} — watch the big screen 🗺️</p>
+            <p class="text-sm mb-4" style="color:var(--text-secondary);">${pick?.text || ''} — watch the big screen</p>
             <div class="follow-boat">${buildOrigamiSVG(c, stage, 190, extras())}</div>
         </div>
     </div>`;
@@ -2197,10 +2196,10 @@ function showPulse() {
     $app.innerHTML = `
     <div class="sail-screen fade-up">
         <div class="content-zone" style="padding-top:20px;">
-            <p class="q-eyebrow">💛 Pulse check · tap your mood</p>
+            <p class="q-eyebrow">${ico('heart')}Pulse check · tap your mood</p>
             <h2 class="q-question">How's it feeling so far?</h2>
             <div class="mood-grid mt-4">
-                ${moods.map(m => `<button class="mood-btn" data-mood="${m.k}"><span class="mood-e">${m.e}</span><span class="mood-l">${m.k}</span></button>`).join('')}
+                ${moods.map(m => `<button class="mood-btn" data-mood="${m.k}"><span class="mood-e">${window.BTY ? window.BTY.moodIcon(m.k) : m.e}</span><span class="mood-l">${m.k}</span></button>`).join('')}
             </div>
         </div>
     </div>`;
@@ -2209,7 +2208,7 @@ function showPulse() {
 }
 async function choosePulse(k) {
     D.pulse = k; save(); stampBoat(); haptic(30);
-    if (db && auth?.currentUser) { try { await setDoc(doc(db, "pulseCheck", auth.currentUser.uid), { choice: k, timestamp: Date.now() }); } catch (e) {} }
+    await pushMine({ p: k });
     // Straight on to naming the boat — it must carry its dream before it sails.
     if (D.dreamSent) renderReadyToSail(); else showName();
 }
@@ -2222,11 +2221,11 @@ function showName() {
     $app.innerHTML = `
     <div class="sail-screen fade-up">
         <div class="content-zone" style="padding-top:18px;">
-            <p class="q-eyebrow">⛵ Name your boat</p>
+            <p class="q-eyebrow">${ico('sail')}Name your boat</p>
             <h2 class="q-question">One word — what do you aspire to become?</h2>
             <div class="origami-stage medium mx-auto my-3" id="dreamBoat" style="max-width:220px;">${buildOrigamiSVG(c, 9, 220, extras())}</div>
             <input type="text" id="dreamInput" maxlength="16" class="dream-field" placeholder="e.g. Innovator" autocomplete="off" autocapitalize="characters">
-            <button class="nav-btn primary w-full mt-3 text-base uppercase tracking-wide" id="dreamBtn">Write it on the hull ⛵</button>
+            <button class="nav-btn primary w-full mt-3 text-base uppercase tracking-wide" id="dreamBtn">Write it on the hull</button>
             <p class="q-hint">It sails with you — and joins the Hive of aspirations.</p>
         </div>
     </div>`;
@@ -2246,9 +2245,8 @@ async function submitName() {
     if (!(await submitNameGuard(w, f))) return;
     D.aspiration = w; D.dreamSent = true; save();
     hapticPattern([40, 30, 80]);
-    saveToFirebase();                   // into the harbour now (launched:false) — or, at sea already, repaint the hull
-    if (db && auth?.currentUser) { try { await setDoc(doc(db, "aspirations", auth.currentUser.uid), { word: w, timestamp: serverTimestamp() }); } catch (e) {} }
-    if (soloMode) { soloIdx++; renderRest('Your dream is aboard ⛵', 'Ready to set sail'); return; }
+    pushMine({ boat: boatPayload(), f: D.nextFold || 0, w });   // one write: into the harbour (launched:false), and the word joins the Hive
+    if (soloMode) { soloIdx++; renderRest('Your dream is aboard', 'Ready to set sail'); return; }
     renderNameWriting(w, () => { if (D.launched) renderHiveCell(); else renderReadyToSail(); });
 }
 async function submitNameGuard(w, f) {
@@ -2363,7 +2361,7 @@ function renderAtSea() {
             <p class="text-[10px] mb-2 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">You've set sail</p>
             <h1 class="font-serif text-2xl mb-2" style="color:var(--text-primary);">Look up — you're in the fleet</h1>
             <div class="atsea-swatch" style="background:${col};color:${col}"></div>
-            <p class="text-sm mt-3 max-w-xs" style="color:var(--text-secondary);">Find the <b style="color:${col}">${name}</b> sail${dest && dest.text ? ` bound for <b style="color:var(--text-primary)">${dest.text}</b>` : ''}. Every boat on the big screen is a Beattyian setting sail from our Hive. 🌊</p>
+            <p class="text-sm mt-3 max-w-xs" style="color:var(--text-secondary);">Find the <b style="color:${col}">${name}</b> sail${dest && dest.text ? ` bound for <b style="color:var(--text-primary)">${dest.text}</b>` : ''}. Every boat on the big screen is a Beattyian setting sail from our Hive.</p>
             <div class="follow-boat mt-4">${buildOrigamiSVG(c, 9, 150, extras())}</div>
             <div class="rollcall" id="rollCall" hidden><span class="rc-word">Wave! 👋</span><span class="rc-sub" id="rcSub"></span></div>
         </div>
@@ -2395,7 +2393,7 @@ function renderHiveCell() {
         <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
             <p class="text-[10px] mb-4 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">Your cell in the Hive</p>
             <div class="hive-hex"><span>${w}</span></div>
-            <p class="text-sm mt-5 max-w-xs" style="color:var(--text-secondary);">Look up — it's rising off your hull and into the Hive. Every cell up there is a Beattyian's dream. 🐝</p>
+            <p class="text-sm mt-5 max-w-xs" style="color:var(--text-secondary);">Look up — it's rising off your hull and into the Hive. Every cell up there is a Beattyian's dream.</p>
         </div>
         ${reactBarHTML()}
     </div>`;
@@ -2413,7 +2411,7 @@ function renderPhonesUp() {
     $app.innerHTML = `
     <div class="sail-screen follow-screen fade-up">
         <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
-            <div class="follow-eye mb-2">🐝</div>
+            <div class="follow-eye mb-2">${ico('bee')}</div>
             <p class="text-[10px] mb-2 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">The Hive wakes</p>
             <h1 class="font-serif text-2xl mb-3" style="color:var(--text-primary);">Phones up. Screen facing out.</h1>
             <p class="text-sm max-w-xs" style="color:var(--text-secondary);">Hold it high. On zero, we light the hall together.</p>
@@ -2454,6 +2452,17 @@ function startBloomSequence(localAt) {
 //   RESPOND (the phone is primary — a gold band says "your turn")
 // ============================================================
 const CHAPTERS = ['Into the Hive', 'Who we are', 'Our values', 'Passions', 'NEXUS@BTY', 'Your pathway', 'Set sail', 'Your journey'];
+// While a deck is on the big screen and no phone card was written for it, the phone shows its chapter's line.
+const CHAPTER_LINES = {
+    'Into the Hive': ['bee', 'A living portrait of everyone in the room.'],
+    'Who we are': ['school', 'Non Vi Sed Arte — not with force, but with skill.'],
+    'Our values': ['heart', 'D.R.E.A.M. — Discipline, Resilience, Empathy, Adaptability, Mindfulness.'],
+    'Passions': ['spark', '17 CCAs — a place for every kind of bee.'],
+    'NEXUS@BTY': ['globe', '8 international exchanges · 6 industry attachments.'],
+    'Your pathway': ['explorer', 'Every Beattyian A Purpose Driven Steward.'],
+    'Set sail': ['sail', 'Your boat sails with the whole hall.'],
+    'Your journey': ['wave', 'Nurturing Adaptive Thinkers, Agile Learners and Active Contributors.'],
+};
 const RESPOND_VIEWS = ['chart', 'poll', 'globe', 'industry_map', 'pulse_check', 'finale', 'fold', 'memento', 'end'];
 const WATCH_VIEWS = ['video', 'fleet', 'bloom'];
 let chapterNow = '';
@@ -2469,7 +2478,8 @@ function chapterStrip() {
 }
 /* --- Reactions: a tap here floats up the big screen (and the phone shows it leaving) --- */
 const REACTIONS = ['👏', '🔥', '❤️', '🐝'];
-let lastReactAt = 0, reactWindow = [];
+let lastReactAt = 0, reactWindow = [], rxSeq = 0, rxTotal = 0;
+const RX_GAP = 1500, RX_MAX = 15;          // one every 1.5 s, fifteen a show: a full hall still stays well inside the free database limits
 function reactBarHTML() {
     return `<div class="react-bar" id="reactBar" aria-label="React on the big screen">${REACTIONS.map(e => `<button class="react-btn" type="button" data-e="${e}" aria-label="Send ${e}">${e}</button>`).join('')}<span class="react-hint">tap one · it floats up the big screen</span></div>`;
 }
@@ -2479,13 +2489,12 @@ function wireReactBar() {
 }
 function sendReaction(emoji, btn) {
     const now = Date.now();
-    if (now - lastReactAt < 450) return;                                          // no machine-gunning
-    reactWindow = reactWindow.filter(t => now - t < 10000); if (reactWindow.length >= 12) return;
-    lastReactAt = now; reactWindow.push(now);
+    if (now - lastReactAt < RX_GAP || rxTotal >= RX_MAX) { btn.classList.add('rest'); setTimeout(() => btn.classList.remove('rest'), 300); return; }
+    lastReactAt = now; rxTotal++;
     feel('tick');
     try { const r = btn.getBoundingClientRect(); const f = document.createElement('span'); f.className = 'react-float'; f.textContent = emoji; f.style.left = (r.left + r.width / 2) + 'px'; f.style.top = (r.top + r.height / 2) + 'px'; document.body.appendChild(f); setTimeout(() => f.remove(), 1500); } catch (e) {}
     btn.classList.remove('sent'); void btn.offsetWidth; btn.classList.add('sent');
-    if (db && auth?.currentUser && collection) { try { setDoc(doc(collection(db, 'reactions')), { emoji, uid: auth.currentUser.uid, timestamp: serverNow() }).catch(() => {}); } catch (e) {} }
+    rxSeq = Math.max(rxSeq + 1, Date.now()); pushMine({ rx: { s: rxSeq, e: emoji } });   // unique even across a reload
 }
 function renderWatch(state) {
     hideCornerBoat();
@@ -2516,7 +2525,8 @@ function renderGlance(state, kind) {
         const c = state.card; const hasCard = !!(c && (c.title || (c.keys && c.keys.length)));
         body = hasCard
             ? `<div class="glance-title">${c.title || state.chapter || ''}</div>${c.keys && c.keys.length ? `<ul class="glance-keys">${c.keys.map(k => `<li>${k}</li>`).join('')}</ul>` : ''}`
-            : `<div class="watch-glyph" style="color:var(--accent-gold)">▲</div><div class="glance-title" style="margin-top:12px">${state.chapter || 'On screen now'}</div><p class="glance-sub">Eyes on the screen.</p>`;
+            : (() => { const ch = state.chapter || '', L = CHAPTER_LINES[ch] || ['eye', 'Eyes on the big screen.'];
+                return `<div class="glance-ic">${ico(L[0])}</div><div class="glance-title" style="margin-top:14px">${ch || 'On screen now'}</div><p class="glance-line">${L[1]}</p><p class="glance-sub">Eyes on the big screen</p>`; })();
     }
     $app.innerHTML = `
     <div class="sail-screen follow-screen glance-screen fade-up">
@@ -2537,7 +2547,7 @@ function startFoldBeat(f) {
 }
 function continueFolding() {
     const target = D.foldTarget || 0;
-    if ((D.nextFold || 0) >= target) { renderRest(target >= 8 ? 'Your boat is complete! ⛵' : 'Your boat is ahead ✨', 'Eyes on the screen'); return; }
+    if ((D.nextFold || 0) >= target) { renderRest(target >= 8 ? 'Your boat is complete' : 'Your boat is ahead', 'Eyes on the screen'); return; }
     foldFollowActive = true;
     step = FOLD_STEP_FOR_INDEX[D.nextFold || 0];
     route();
@@ -2578,10 +2588,10 @@ function renderBoard() {
     <div class="sail-screen fade-up">
         <div class="content-zone" style="padding-top:22px;">
             <img src="${LOGO_URL}" alt="Beatty" style="width:52px;height:64px;object-fit:contain;margin:0 auto 12px;display:block" onerror="this.style.display='none'">
-            <p class="q-eyebrow" style="text-align:center;">🐝 Come into the Hive</p>
+            <p class="q-eyebrow" style="text-align:center;">${ico('bee')}Come into the Hive</p>
             <h2 class="q-question" style="text-align:center;">Beatty Open House</h2>
             <p class="q-hint" style="margin:8px 0 18px;">Five quick picks find your bee. Then your phone follows the big screen — polls, folds, and setting sail together.</p>
-            <button class="nav-btn primary w-full" id="boardBtn" style="font-size:1.05rem;padding:16px;">Tap to board 🐝</button>
+            <button class="nav-btn primary w-full" id="boardBtn" style="font-size:1.05rem;padding:16px;">Tap to board</button>
             <p class="q-hint" style="margin-top:14px;">One tap turns on sound and keeps your screen awake${/iP(hone|ad|od)/.test(navigator.userAgent) ? '' : ' — and buzzes, if your phone allows it'}.</p>
             <p class="q-hint" style="margin-top:18px;opacity:.55;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;">build ${BUILD}</p>
         </div>
@@ -2631,7 +2641,7 @@ function finishQuiz() {
 }
 function writeCompass() {
     if (!db || !auth?.currentUser) return;
-    try { setDoc(doc(db, "compassQuiz", auth.currentUser.uid), { archetype: D.bee, done: true, timestamp: serverTimestamp() }).catch(() => {}); } catch (e) {}
+    pushMine({ done: true });
 }
 function renderBeeReveal(bee) {
     const prof = BEE_PROFILES[bee.name] || {};
@@ -2639,7 +2649,7 @@ function renderBeeReveal(bee) {
     <div class="sail-screen follow-screen fade-up">
         <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
             <p class="text-[10px] mb-3 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">Your compass points to</p>
-            <div class="bee-reveal-ic">${bee.icon}</div>
+            <div class="bee-reveal-ic">${beeIco(bee.name)}</div>
             <h1 class="font-serif text-2xl mt-2" style="color:var(--accent-gold);">${bee.name}</h1>
             <p class="text-[11px] tracking-[0.2em] uppercase mt-1" style="color:var(--text-secondary);">${bee.tag} · you've joined the Hive</p>
             <p class="font-serif italic text-sm mt-4 max-w-xs" style="color:var(--text-primary);">“${prof.quote || 'Non Vi Sed Arte'}”</p>
@@ -2655,10 +2665,10 @@ function renderAboard() {
     $app.innerHTML = `
     <div class="sail-screen follow-screen fade-up">
         <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
-            <div style="font-size:2.6rem;line-height:1" class="mb-2">${D.beeIcon || '🐝'}</div>
+            <div class="aboard-ic mb-2">${beeIco(D.bee)}</div>
             <p class="text-[10px] mb-1 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">You're in the Hive</p>
             <h1 class="font-serif text-2xl mb-1" style="color:var(--text-primary);">${D.beeTag || 'Beattyian'}</h1>
-            <p class="text-sm mb-5 max-w-xs" style="color:var(--text-secondary);">Find yourself on the big screen. You'll fold a boat, chart a course and set sail with the whole hall. 🌊</p>
+            <p class="text-sm mb-5 max-w-xs" style="color:var(--text-secondary);">Find yourself on the big screen. You'll fold a boat, chart a course and set sail with the whole hall.</p>
             <div class="follow-boat">${buildOrigamiSVG(c, Math.min(D.nextFold || 0, 8), 170, extras())}</div>
             ${hapticsLineHTML()}
         </div>
@@ -2673,7 +2683,7 @@ function renderLookUp(msg) {
     $app.innerHTML = `
     <div class="sail-screen follow-screen fade-up">
         <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
-            <div class="follow-eye mb-2">👀</div>
+            <div class="follow-eye mb-2">${ico('eye')}</div>
             <h1 class="font-serif text-xl mb-4" style="color:var(--accent-gold);">Look up at the screen</h1>
             <div class="follow-boat">${buildOrigamiSVG(c, stage, 200, extras())}</div>
             <p class="text-[11px] mt-4" style="color:var(--text-muted);">${msg || 'Your boat so far'}</p>
@@ -2692,7 +2702,7 @@ function renderRest(title, sub) {
             <h1 class="font-serif text-xl mb-1" style="color:var(--accent-gold);">${title}</h1>
             <p class="text-sm mb-4" style="color:var(--text-secondary);">${sub}</p>
             <div class="follow-boat" id="restBoat">${buildOrigamiSVG(c, stage, 190, extras())}</div>
-            ${stage >= 8 ? `<p class="text-[10px] mt-3 tracking-[0.2em] uppercase" style="color:var(--text-muted);">${NEEDS_TILT_TAP ? 'Tap the boat, then tilt your phone' : 'Tilt your phone'} 🌊</p>` : ''}
+            ${stage >= 8 ? `<p class="text-[10px] mt-3 tracking-[0.2em] uppercase" style="color:var(--text-muted);">${NEEDS_TILT_TAP ? 'Tap the boat, then tilt your phone' : 'Tilt your phone'}</p>` : ''}
         </div>
         ${soloMode ? '' : reactBarHTML()}
     </div>`;

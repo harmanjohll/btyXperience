@@ -388,14 +388,22 @@ function showSpotlight(data) {
 }
 
 // === LISTEN TO FIREBASE (invoked from the dynamic-import block once ready) ===
+const boatSig = new Map();
+let fleetEpoch = null;
 function startFleetListener() {
     if (!db || !onSnapshot) return;
     startSessionListener();
-    onSnapshot(collection(db, "x_boats"), (snapshot) => {
+    // Each phone's saved state (compassQuiz/{uid}) carries its boat once it is folded and named.
+    onSnapshot(collection(db, "compassQuiz"), (snapshot) => {
         snapshot.docChanges().forEach(change => {
-            if (change.type === 'added' || change.type === 'modified') {
-                onBoatDoc({ uid: change.doc.id, ...change.doc.data() });
-            }
+            if (change.type !== 'added' && change.type !== 'modified') return;
+            const d = change.doc.data() || {};
+            if (fleetEpoch && d.e !== fleetEpoch) return;                         // a boat from a rehearsal
+            if (!d.boat || !(d.boat.aspiration || d.boat.launched)) return;      // no boat yet → nothing to sail
+            const sig = JSON.stringify(d.boat);
+            if (boatSig.get(change.doc.id) === sig) return;                       // a vote or a reaction, not a boat change
+            boatSig.set(change.doc.id, sig);
+            onBoatDoc({ uid: change.doc.id, ...d.boat, _e: d.e || null });
         });
     }, (err) => console.warn("Fleet listener error:", err));
     showWaitingHint();
@@ -423,6 +431,11 @@ function startSessionListener() {
     try {
         onSnapshot(doc(db, "session", "state"), (snap) => {
             const d = (snap && snap.data) ? snap.data() : null; if (!d) return;
+            if (d.epoch && d.epoch !== fleetEpoch) {                       // learnt the show's id: drop any rehearsal boat that slipped in first
+                fleetEpoch = d.epoch;
+                [...harbour.keys()].forEach(k => { if ((harbour.get(k) || {})._e !== fleetEpoch) harbour.delete(k); });
+                if (!released) updateReadyCount();
+            }
             // Clock: the presenter stamps every write with a server timestamp; on the
             // presenter's own machine it lands fast — assume ~120 ms in flight.
             const sts = typeof d.sts === 'number' ? d.sts : (d.sts && typeof d.sts.toMillis === 'function' ? d.sts.toMillis() : null);
