@@ -68,7 +68,7 @@ function syncClock() {
     try {
         const ref = doc(db, "compassQuiz", auth.currentUser.uid);
         const lt = Date.now();
-        setDoc(ref, { archetype: D.bee || 'Beattyian', timestamp: serverTimestamp(), lt }).catch(() => {});
+        setDoc(ref, { archetype: D.bee || 'Beattyian', timestamp: serverTimestamp(), lt }, { merge: true }).catch(() => {});
         let unsub = null;
         unsub = onSnapshot(ref, (snap) => {
             try {
@@ -500,11 +500,21 @@ let step = 0;
 const TOTAL_QUESTIONS = 6;
 
 function save() { localStorage.setItem(SK, JSON.stringify(D)); }
-async function saveToFirebase() {
-    if (!auth?.currentUser) return;
-    try { await setDoc(doc(db, "x_boats", auth.currentUser.uid), { ...D, timestamp: serverTimestamp() }); }
-    catch (e) { console.error("FB:", e); }
+/* This phone's saved state in the cloud: ONE document, compassQuiz/{uid}, merged as the
+   show goes (last year's collection). Its bee, votes, picks, mood, dream word, folds,
+   boat and last reaction all live here; the big screen counts everything. Every write
+   carries `archetype` so it always has the shape the database expects. */
+function pushMine(partial) {
+    if (!db || !auth?.currentUser) return Promise.resolve();
+    try {
+        return setDoc(doc(db, "compassQuiz", auth.currentUser.uid), { ...partial, archetype: D.bee || 'Beattyian', t: serverTimestamp() }, { merge: true })
+            .catch(e => console.warn("sync:", e));
+    } catch (e) { return Promise.resolve(); }
 }
+const BOAT_KEYS = ['hullColor','keelColor','sailColor','sailGradient','flagColor','flagIcon','aspiration','marks','nextFold','launched','launchedAt','bee','beeTag','beeIcon','global','local','pulse',
+    'S','A','I','L','R','stewardshipPick','stewardshipChoice','appliedPick','appliedChoice','internationalPick','internationalChoice','learningPick','learningChoice','industryPick','subjectPick'];
+function boatPayload() { const b = {}; BOAT_KEYS.forEach(k => { if (D[k] !== undefined) b[k] = D[k]; }); return JSON.parse(JSON.stringify(b)); }
+async function saveToFirebase() { return pushMine({ boat: boatPayload(), f: D.nextFold || 0 }); }
 
 // === HELPERS ===
 function colors() {
@@ -1617,26 +1627,20 @@ function sailRows() {
 function whenDb(ms = 10000) {          // Firebase loads after the first paint; a returning phone renders its card before that
     return new Promise(res => { const t0 = Date.now(); (function tick() { if (db && getDocs && auth?.currentUser) return res(true); if (Date.now() - t0 > ms) return res(false); setTimeout(tick, 200); })(); });
 }
+/* How big was the fleet? The presenter counts it and puts it in the show's saved state. */
 async function loadFleetRank() {
-    if (!(await whenDb())) return null;
-    try {
-        const snap = await getDocs(collection(db, 'x_boats'));
-        const boats = [];
-        snap.forEach(d => { const b = d.data() || {}; if (b.launched) boats.push({ uid: d.id, at: b.launchedAt || (b.timestamp && b.timestamp.toMillis ? b.timestamp.toMillis() : 0), sail: b.sailColor || '#F5F0E8' }); });
-        boats.sort((a, b) => a.at - b.at);
-        const me = boats.findIndex(b => b.uid === auth.currentUser.uid);
-        if (me < 0) return null;
-        const W = 20, lo = Math.max(0, me - W), hi = Math.min(boats.length, me + W + 1);
-        D.boatNo = me + 1; D.fleetTotal = boats.length;
-        D.fleetStrip = boats.slice(lo, hi).map(b => b.sail); D.stripMe = me - lo; save();
-        return { n: D.boatNo, total: D.fleetTotal };
-    } catch (e) { return null; }
+    const n = lastSessionState && typeof lastSessionState.fleet === 'number' ? lastSessionState.fleet : 0;
+    if (!n || !D.launched) return null;
+    D.fleetTotal = Math.max(n, 1); delete D.boatNo;
+    const shown = Math.min(21, D.fleetTotal), me = Math.floor((shown - 1) / 2), pal = ['#F5F0E8', '#FFE200', '#9FC3FF', '#F5F0E8', '#FFD27A', '#E9EEF7'];
+    D.fleetStrip = Array.from({ length: shown }, (_, i) => i === me ? (D.sailColor || '#F5F0E8') : pal[i % pal.length]); D.stripMe = me; save();
+    return { total: D.fleetTotal };
 }
 function fleetStripHTML() {
     const strip = D.fleetStrip || [D.sailColor || '#F5F0E8']; const me = D.stripMe ?? 0;
     return strip.map((col, i) => `<i class="cc-sail${i === me ? ' me' : ''}" style="--c:${col}"></i>`).join('');
 }
-function fleetLabel() { return D.boatNo && D.fleetTotal ? `Boat ${D.boatNo} of ${D.fleetTotal}` : (D.launched ? 'In the fleet' : 'Ready to sail'); }
+function fleetLabel() { return D.fleetTotal > 1 ? `One of ${D.fleetTotal} boats` : (D.launched ? 'In the fleet' : 'Ready to sail'); }
 
 function compassRoseSVG(size, bearing, gold = '#FFE200') {
     const pts = [];
@@ -2053,7 +2057,7 @@ function onFoldBeatDone(foldIndex) {
     D.nextFold = foldIndex + 1; save();
     clearTimeout(foldAssistTimer);
     chapterFlash(D.nextFold);                            // 🎩 at 5, 💎 at 6 — the boat has its own reveal
-    saveToFirebase();                                   // progress → the presenter's "N folded" count
+    if (soloMode || (D.nextFold || 0) >= (D.foldTarget || 0)) saveToFirebase();   // once per beat → the presenter's "N folded" count
     if (soloMode) { foldFollowActive = false; soloIdx++; renderRest('Beautiful fold.', 'Eyes back on the big screen ✨'); return; }
     if ((D.nextFold || 0) < (D.foldTarget || 0)) { setTimeout(continueFolding, 380); return; }   // one more in this beat
     foldFollowActive = false;
@@ -2094,7 +2098,7 @@ async function votePoll(p, i) {
     if (!D.polls) D.polls = {};
     D.polls[p.id] = { choice: idx, choiceText: p.options[idx], correct, insight }; save();
     haptic(40);
-    if (db && auth?.currentUser) { try { await setDoc(doc(db, "polls", `${p.id}_${auth.currentUser.uid}`), { pollId: p.id, vote: idx, timestamp: serverTimestamp() }); } catch (e) {} }
+    await pushMine({ v: { [p.id]: idx } });
     showPollResult(p);
 }
 function showPollResult(p) {
@@ -2111,7 +2115,7 @@ function showPollResult(p) {
             ${!revealed ? `
             <div class="q-locked mt-4">
                 <div class="q-locked-pick">${mine ? `You chose <b>${mine.choiceText}</b>` : 'Eyes on the big screen'}</div>
-                <div class="q-locked-count"><span id="pollCount">…</span> answered · the answer is coming</div>
+                <div class="q-locked-count">The answer appears on the big screen</div>
             </div>` : `
             <div class="mt-4" id="liveBars">${p.options.map((o, i) => `
                 <div class="pbar ${mine && mine.choice === i ? 'me' : ''} ${i === p.correctAnswer ? 'correct' : ''}" data-i="${i}">
@@ -2125,21 +2129,16 @@ function showPollResult(p) {
     wireReactBar();
     showCornerBoat();
     if (revealed) hapticPattern(mine?.correct ? [30, 40, 90] : [40]);
-    if (db && collection && onSnapshot) {
-        if (window.__pollUnsub) window.__pollUnsub();
-        try {
-            window.__pollUnsub = onSnapshot(collection(db, "polls"), (snap) => {
-                const bd = {}; let total = 0;
-                snap.forEach(d => { const x = d.data(); if (x.pollId === p.id) { total++; if (x.vote != null) bd[x.vote] = (bd[x.vote] || 0) + 1; } });
-                const cnt = document.getElementById('pollCount'); if (cnt) cnt.textContent = total;
-                p.options.forEach((o, i) => {
-                    const row = document.querySelector(`#liveBars .pbar[data-i="${i}"]`); if (!row) return;
-                    const c = bd[i] || 0, pct = total > 0 ? (c / total * 100) : 0;
-                    row.querySelector('.pbar-fill').style.width = pct + '%';
-                    row.querySelector('.pbar-pc').textContent = Math.round(pct) + '%';
-                });
-            }, () => {});
-        } catch (e) {}
+    // The result bars come from the tally the presenter puts in the show's saved state at the reveal.
+    const tl = lastSessionState && lastSessionState.tally;
+    if (revealed && tl && tl.id === p.id) {
+        const total = tl.total || 0;
+        requestAnimationFrame(() => setTimeout(() => p.options.forEach((o, i) => {
+            const row = document.querySelector(`#liveBars .pbar[data-i="${i}"]`); if (!row) return;
+            const c = (tl.counts && tl.counts[i]) || 0, pct = total > 0 ? (c / total * 100) : 0;
+            row.querySelector('.pbar-fill').style.width = pct + '%';
+            row.querySelector('.pbar-pc').textContent = Math.round(pct) + '%';
+        }), 120));
     }
 }
 
@@ -2172,7 +2171,7 @@ async function chooseNexus(id, type, text) {
     if (col) { if (type === 'global') D.sailColor = col; else D.flagColor = col; }
     save(); stampBoat();
     haptic(30);
-    if (db && auth?.currentUser) { try { await setDoc(doc(db, "nexusVotes", `${type}_${auth.currentUser.uid}`), { nexusId: id, type, timestamp: serverTimestamp() }); } catch (e) {} }
+    await pushMine({ n: { [type === 'local' ? 'local' : 'global']: id } });
     renderChosenNexus(type);
 }
 function renderChosenNexus(type) {
@@ -2209,7 +2208,7 @@ function showPulse() {
 }
 async function choosePulse(k) {
     D.pulse = k; save(); stampBoat(); haptic(30);
-    if (db && auth?.currentUser) { try { await setDoc(doc(db, "pulseCheck", auth.currentUser.uid), { choice: k, timestamp: Date.now() }); } catch (e) {} }
+    await pushMine({ p: k });
     // Straight on to naming the boat — it must carry its dream before it sails.
     if (D.dreamSent) renderReadyToSail(); else showName();
 }
@@ -2246,8 +2245,7 @@ async function submitName() {
     if (!(await submitNameGuard(w, f))) return;
     D.aspiration = w; D.dreamSent = true; save();
     hapticPattern([40, 30, 80]);
-    saveToFirebase();                   // into the harbour now (launched:false) — or, at sea already, repaint the hull
-    if (db && auth?.currentUser) { try { await setDoc(doc(db, "aspirations", auth.currentUser.uid), { word: w, timestamp: serverTimestamp() }); } catch (e) {} }
+    pushMine({ boat: boatPayload(), f: D.nextFold || 0, w });   // one write: into the harbour (launched:false), and the word joins the Hive
     if (soloMode) { soloIdx++; renderRest('Your dream is aboard ⛵', 'Ready to set sail'); return; }
     renderNameWriting(w, () => { if (D.launched) renderHiveCell(); else renderReadyToSail(); });
 }
@@ -2469,7 +2467,8 @@ function chapterStrip() {
 }
 /* --- Reactions: a tap here floats up the big screen (and the phone shows it leaving) --- */
 const REACTIONS = ['👏', '🔥', '❤️', '🐝'];
-let lastReactAt = 0, reactWindow = [];
+let lastReactAt = 0, reactWindow = [], rxSeq = 0, rxTotal = 0;
+const RX_GAP = 1500, RX_MAX = 15;          // one every 1.5 s, fifteen a show: a full hall still stays well inside the free database limits
 function reactBarHTML() {
     return `<div class="react-bar" id="reactBar" aria-label="React on the big screen">${REACTIONS.map(e => `<button class="react-btn" type="button" data-e="${e}" aria-label="Send ${e}">${e}</button>`).join('')}<span class="react-hint">tap one · it floats up the big screen</span></div>`;
 }
@@ -2479,13 +2478,12 @@ function wireReactBar() {
 }
 function sendReaction(emoji, btn) {
     const now = Date.now();
-    if (now - lastReactAt < 450) return;                                          // no machine-gunning
-    reactWindow = reactWindow.filter(t => now - t < 10000); if (reactWindow.length >= 12) return;
-    lastReactAt = now; reactWindow.push(now);
+    if (now - lastReactAt < RX_GAP || rxTotal >= RX_MAX) { btn.classList.add('rest'); setTimeout(() => btn.classList.remove('rest'), 300); return; }
+    lastReactAt = now; rxTotal++;
     feel('tick');
     try { const r = btn.getBoundingClientRect(); const f = document.createElement('span'); f.className = 'react-float'; f.textContent = emoji; f.style.left = (r.left + r.width / 2) + 'px'; f.style.top = (r.top + r.height / 2) + 'px'; document.body.appendChild(f); setTimeout(() => f.remove(), 1500); } catch (e) {}
     btn.classList.remove('sent'); void btn.offsetWidth; btn.classList.add('sent');
-    if (db && auth?.currentUser && collection) { try { setDoc(doc(collection(db, 'reactions')), { emoji, uid: auth.currentUser.uid, timestamp: serverNow() }).catch(() => {}); } catch (e) {} }
+    rxSeq++; pushMine({ rx: { s: rxSeq, e: emoji } });
 }
 function renderWatch(state) {
     hideCornerBoat();
@@ -2631,7 +2629,7 @@ function finishQuiz() {
 }
 function writeCompass() {
     if (!db || !auth?.currentUser) return;
-    try { setDoc(doc(db, "compassQuiz", auth.currentUser.uid), { archetype: D.bee, done: true, timestamp: serverTimestamp() }).catch(() => {}); } catch (e) {}
+    pushMine({ done: true });
 }
 function renderBeeReveal(bee) {
     const prof = BEE_PROFILES[bee.name] || {};

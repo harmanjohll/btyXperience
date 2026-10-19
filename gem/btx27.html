@@ -660,7 +660,7 @@ const nexusModalBody=document.getElementById('nexusModalBody');
 let currentStep=0;
 let started=false;   // journey only advances/broadcasts after "Begin" is pressed
 let hiddenCells=new Set();  // presenter-hidden aspiration cells (moderation)
-let live={ compass:{total:0,breakdown:{}}, polls:{}, nexus:{total:0,breakdown:{}}, aspirations:[], pulse:{} };
+let live={ compass:{total:0,breakdown:{}}, polls:{}, nexus:{total:0,breakdown:{}}, nexusByType:{global:{total:0,breakdown:{}},local:{total:0,breakdown:{}}}, aspirations:[], pulse:{}, folds:{}, fleet:0 };
 let heartbeat=null, animId=null;
 
 /* ---------- CONTENT ---------- */
@@ -761,48 +761,42 @@ const modalData={
   Makita:{ title:"Mechatronics @ ITE West & Makita", students:16, duration:"7–8 months", desc:"A deep dive into modern mechatronics and manufacturing with industry leader Makita." },
 };
 
-/* ---------- Firebase listeners ---------- */
+/* ---------- Firebase listeners ----------
+   Two saved states, nothing else — the same channel last year's show used.
+   · session/state      — the show's saved state (this screen writes it; phones follow it)
+   · compassQuiz/{uid}  — each phone's saved state, merged as it goes: its bee, its votes,
+                          its globe/map picks, its mood, its dream word, its folds, its boat,
+                          its last reaction. One collection to listen to; every tally is
+                          counted here, on the big screen, never on the phones. */
+let mineSeen={}, minePrimed=false;
 function initListeners(){
   startClockListener();
-  // Fold progress: each phone writes its boat's nextFold as it folds → "137 / 212 folded".
-  onSnapshot(collection(db,"x_boats"), snap=>{ const m={}; snap.forEach(d=>{ m[d.id]=d.data().nextFold||0; }); live.folds=m;
-    if(journeySteps[currentStep]?.type==='fold') paintFoldCount(); }, err=>console.warn(err));
-  let compassPrimed=false, compassSeen={};
   onSnapshot(collection(db,"compassQuiz"), snap=>{
-    // Every phone writes a doc on the join tap (joined); the archetype becomes real when its compass quiz is done.
-    const r={total:0,joined:0,breakdown:{}}, landed=[], seen={};
-    snap.forEach(d=>{ const x=d.data(); r.joined++; const v=x.archetype; if(v && ARCH_KEYS.includes(v)){ r.total++; r.breakdown[v]=(r.breakdown[v]||0)+1; if(compassPrimed && compassSeen[d.id]!==v) landed.push(v); } seen[d.id]=v||null; });
-    compassSeen=seen; compassPrimed=true;
-    live.compass=r;
+    const r={total:0,joined:0,breakdown:{}}, polls={}, nexus={global:{total:0,breakdown:{}},local:{total:0,breakdown:{}}}, pulse={}, words=[], folds={}, landed=[], seen={};
+    let fleet=0;
+    snap.forEach(d=>{ const x=d.data()||{}; const id=d.id, prev=mineSeen[id]||{};
+      r.joined++; const v=x.archetype;
+      if(v && ARCH_KEYS.includes(v)){ r.total++; r.breakdown[v]=(r.breakdown[v]||0)+1; if(minePrimed && prev.a!==v) landed.push(v); }
+      if(x.v) for(const pid in x.v){ const k=x.v[pid]; if(typeof k!=='number') continue; const t=(polls[pid]=polls[pid]||{total:0,breakdown:{}}); t.total++; t.breakdown[k]=(t.breakdown[k]||0)+1; }
+      if(x.n) for(const ty of ['global','local']){ const k=x.n[ty]; if(!k) continue; const t=nexus[ty]; t.total++; t.breakdown[k]=(t.breakdown[k]||0)+1; }
+      if(x.p) pulse[x.p]=(pulse[x.p]||0)+1;
+      if(x.w) words.push(x.w);
+      folds[id]=x.f||0;
+      if(x.boat && (x.boat.launched || (x.f||0)>=8)) fleet++;
+      const rx=x.rx; if(minePrimed && rx && rx.s && rx.s!==prev.s && rx.e) spawnReaction(String(rx.e).slice(0,8));
+      seen[id]={a:v||null, s:rx?rx.s:null};
+    });
+    mineSeen=seen; minePrimed=true;
+    live.compass=r; live.polls=polls; live.nexusByType=nexus; live.pulse=pulse; live.aspirations=words; live.folds=folds; live.fleet=fleet;
     updateParticipant(r.joined, r.total);
-    if(journeySteps[currentStep]?.type==='chart'){ paintCompass(); landed.slice(0,14).forEach((v,i)=>setTimeout(()=>landBee(v), i*170)); }
-  }, err=>console.warn(err));
-
-  onSnapshot(collection(db,"polls"), snap=>{
-    const byPoll={};
-    snap.forEach(d=>{ const x=d.data(); const k=x.pollId||'default'; (byPoll[k]=byPoll[k]||{total:0,breakdown:{}}); byPoll[k].total++; if(x.vote!=null) byPoll[k].breakdown[x.vote]=(byPoll[k].breakdown[x.vote]||0)+1; });
-    live.polls=byPoll;
-    const s=journeySteps[currentStep]; if(s?.type==='poll') paintPoll(s.pollData.id);
-  }, err=>console.warn(err));
-
-  onSnapshot(collection(db,"nexusVotes"), snap=>{
-    live.nexus=aggregate(snap,'nexusId');
-    const s=journeySteps[currentStep]; if(s?.type==='globe'||s?.type==='industry_map') paintNexusStats();
-  }, err=>console.warn(err));
-
-  onSnapshot(collection(db,"aspirations"), snap=>{
-    live.aspirations=snap.docs.map(d=>d.data().word).filter(Boolean);
-    if(journeySteps[currentStep]?.type==='finale') paintHive();
-  }, err=>console.warn(err));
-
-  onSnapshot(collection(db,"pulseCheck"), snap=>{
-    const c={}; snap.forEach(d=>{ const ch=d.data().choice; if(ch) c[ch]=(c[ch]||0)+1; });
-    live.pulse=c; if(journeySteps[currentStep]?.type==='pulse_check') paintPulse();
-  }, err=>console.warn(err));
-
-  onSnapshot(collection(db,"reactions"), snap=>{
-    snap.docChanges().forEach(ch=>{ if(ch.type==='added'){ const d=ch.doc.data(); if(d.emoji && Date.now()-(d.timestamp||0)<9000) spawnReaction(d.emoji); } });
-  }, err=>console.warn(err));
+    const t=journeySteps[currentStep]?.type, s=journeySteps[currentStep];
+    if(t==='chart'){ paintCompass(); landed.slice(0,14).forEach((k,i)=>setTimeout(()=>landBee(k), i*170)); }
+    else if(t==='poll') paintPoll(s.pollData.id);
+    else if(t==='globe'||t==='industry_map') paintNexusStats();
+    else if(t==='finale') paintHive();
+    else if(t==='pulse_check') paintPulse();
+    else if(t==='fold') paintFoldCount();
+  }, err=>{ console.warn(err); syncFail(err); });
 
   if(!isPresenter){
     onSnapshot(doc(db,"config","pace"), snap=>{
@@ -813,6 +807,7 @@ function initListeners(){
     }, err=>console.warn(err));
   }
 }
+function pollTally(p){ const d=live.polls[p.id]||{total:0,breakdown:{}}; return { id:p.id, total:d.total||0, counts:p.options.map((_,i)=>d.breakdown?.[i]||0) }; }
 function aggregate(snap,prop){ const r={total:0,breakdown:{}}; snap.forEach(d=>{ const x=d.data(); r.total++; const v=x[prop]; if(v!=null) r.breakdown[v]=(r.breakdown[v]||0)+1; }); return r; }
 
 /* ---------- Session broadcast (the one channel every phone follows) ---------- */
@@ -829,6 +824,8 @@ function broadcastSession(){
     revealed: !!step.revealed, step: currentStep,
     chapter: step.ch||'', funfact: step.funfactData||null, card: PHONE_CARD[step.id]||null, fold: step.fold||null,
     staticContent: step.type==='values'?true:null,
+    tally: (step.type==='poll' && step.revealed) ? pollTally(step.pollData) : null,   // phones draw the result bars from this — they never read the votes
+    fleet: live.fleet||0,
     ts:lastWriteTs, sts:serverTimestamp(), cue
   }).catch(syncFail);
 }
@@ -1438,7 +1435,7 @@ document.addEventListener('keydown',e=>{ if(!gl || !document.getElementById('glo
   if(e.key==='+'||e.key==='=') gl.zoomBy(1.4); else if(e.key==='-'||e.key==='_') gl.zoomBy(1/1.4); else if(e.key==='0') gl.home(); });
 function paintNexusStats(){
   const box=document.getElementById('nexusStats'); if(!box) return;
-  const step=journeySteps[currentStep]; const opts=step.nexusData?.options||[]; const bd=live.nexus.breakdown||{}; const total=live.nexus.total||0;
+  const step=journeySteps[currentStep]; const opts=step.nexusData?.options||[]; live.nexus=live.nexusByType[step.nexusData?.type==='local'?'local':'global']||{total:0,breakdown:{}}; const bd=live.nexus.breakdown||{}; const total=live.nexus.total||0;
   document.querySelectorAll('#voyageChart .cpin:not(.home), .map-inner .mpin:not(.home), #globePins .gpin:not(.home)').forEach(el=>{ const c=bd[el.dataset.id]||0; const cnt=el.querySelector('.cnt,.mcnt,.gcnt'); if(cnt) cnt.textContent= c>0?c:''; const halo=el.querySelector('.halo'); if(halo) halo.setAttribute('r', 18+Math.min(34, c*2.2)); el.classList.toggle('chosen', c>0); });
   box.innerHTML=`<h3 class="side-h">Live choices · ${total}</h3>`+opts.map(o=>{ const c=bd[o.id]||0, pct= total>0?(c/total*100):0;
     return `<div class="side-row"><div class="lab"><span>${o.text}</span><span>${c}</span></div><div class="side-track"><div class="side-fill" style="width:${pct}%"></div></div></div>`; }).join('');
@@ -1601,13 +1598,16 @@ document.getElementById('resetCancel').onclick=()=>document.getElementById('rese
 document.getElementById('resetConfirm').onclick=async()=>{
   if(document.getElementById('resetInput').value.trim().toUpperCase()!=='RESET'){ showToast('Type RESET to confirm'); return; }
   if(!dbReady){ showToast('No live session to reset'); return; }
-  const cols=['compassQuiz','polls','nexusVotes','aspirations','session','pulseCheck','reactions','config','x_boats','x_session'];
-  try{ for(const c of cols){ const s=await getDocs(collection(db,c)); if(s.empty) continue;
-      // Firestore caps a writeBatch at 500 ops; chunk so a busy event (thousands of reactions) still resets.
-      for(let i=0;i<s.docs.length;i+=450){ const b=writeBatch(db); s.docs.slice(i,i+450).forEach(d=>b.delete(d.ref)); await b.commit(); }
-    }
-    document.getElementById('resetModal').classList.add('hidden'); showToast('Session reset — reloading…'); setTimeout(()=>location.reload(),1400);
-  }catch(e){ console.error(e); showToast('Reset failed — check console'); }
+  // The two saved states first; then last year's / older collections, each on its own so one locked collection can't stop the reset.
+  const cols=['compassQuiz','session','polls','nexusVotes','aspirations','pulseCheck','config','x_boats','x_session','reactions'];
+  let core=true;
+  for(const c of cols){
+    try{ const s=await getDocs(collection(db,c)); if(s.empty) continue;
+      for(let i=0;i<s.docs.length;i+=450){ const b=writeBatch(db); s.docs.slice(i,i+450).forEach(d=>b.delete(d.ref)); await b.commit(); }   // a batch holds 500 ops at most
+    }catch(e){ console.warn('reset '+c+':',e); if(c==='compassQuiz'||c==='session') core=false; }
+  }
+  if(!core){ showToast('Reset failed — check the connection'); return; }
+  document.getElementById('resetModal').classList.add('hidden'); showToast('Session reset — reloading…'); setTimeout(()=>location.reload(),1400);
 };
 
 /* =====================================================================

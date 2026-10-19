@@ -388,14 +388,20 @@ function showSpotlight(data) {
 }
 
 // === LISTEN TO FIREBASE (invoked from the dynamic-import block once ready) ===
+const boatSig = new Map();
 function startFleetListener() {
     if (!db || !onSnapshot) return;
     startSessionListener();
-    onSnapshot(collection(db, "x_boats"), (snapshot) => {
+    // Each phone's saved state (compassQuiz/{uid}) carries its boat once it is folded and named.
+    onSnapshot(collection(db, "compassQuiz"), (snapshot) => {
         snapshot.docChanges().forEach(change => {
-            if (change.type === 'added' || change.type === 'modified') {
-                onBoatDoc({ uid: change.doc.id, ...change.doc.data() });
-            }
+            if (change.type !== 'added' && change.type !== 'modified') return;
+            const d = change.doc.data() || {};
+            if (!d.boat || !(d.boat.aspiration || d.boat.launched)) return;      // no boat yet → nothing to sail
+            const sig = JSON.stringify(d.boat);
+            if (boatSig.get(change.doc.id) === sig) return;                       // a vote or a reaction, not a boat change
+            boatSig.set(change.doc.id, sig);
+            onBoatDoc({ uid: change.doc.id, ...d.boat });
         });
     }, (err) => console.warn("Fleet listener error:", err));
     showWaitingHint();
