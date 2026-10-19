@@ -1,7 +1,7 @@
 // The big screen on its own: all 26 steps render without errors (screenshot each),
 // plus the globe's controls, poll layout and the bee landing on the opening chart.
 import { startServer } from './lib/server.mjs';
-import { loadPlaywright, checker, presenter, goStep, stepNum, sleep, until, shot } from './lib/harness.mjs';
+import { loadPlaywright, checker, presenter, goStep, stepNum, sleep, until, shot, decodeQR } from './lib/harness.mjs';
 
 const { chromium } = await loadPlaywright();
 const srv = await startServer();
@@ -20,6 +20,10 @@ c.ok(flew, 'a phone finds its bee → a bee flies to its cell');
 c.ok(await until(async () => /2 in the Hive · 1 ready/.test(await pr.$eval('#pCount', e => e.textContent)), 4000), 'pill: "2 in the Hive · 1 ready"');
 await sleep(1800);
 await shot(pr, 'p-01');
+const joinTxt = await decodeQR(pr, '.jq-card');
+c.ok(joinTxt === srv.url + '/x/', `the big join QR scans to the audience page (${joinTxt})`);
+const pillTxt = await decodeQR(pr, '#qrPill .qr-svg');
+c.ok(pillTxt === srv.url + '/x/', 'the header QR scans to the same page');
 
 for (let n = 2; n <= 26; n++) {
   await goStep(pr, n);

@@ -1568,12 +1568,19 @@ function renderArchetypeReveal() {
    compass rose, the school QR, the booth if-then, the vision line.
    Share-first; press-and-hold fallback; the PNG is drawn in-house.
    ============================================================ */
-const EVENT_LINE = 'Set sail from the Hive · Beatty Open House 2026';
+const EVENT_LINE = 'Beatty Open House 2026';
 const BOOTH_LINE = 'Show this card at the Hive booth.';
 const VISION_LINE = 'Harmonising Hearts · Thriving Together';
 const FOLDED_LINE = 'You folded it. You named it. You set it sailing.';
-const QR_URL = '../joinbtyqr.png';
+/* The ask, and where the card's QR goes. SCHOOL_CODE: Beatty's S1 Posting school code — shown on the card once filled in. */
+const ASK_LINE = 'Make Beatty your 1st choice';
+const SCHOOL_CODE = '';
+const CARD_URL = 'https://go.gov.sg/probeatty';
+const CARD_URL_LABEL = 'beattysec.moe.edu.sg';
+const WHY_BEATTY = [['8', 'international exchanges'], ['6', 'industry attachments'], ['17', 'CCAs to belong to']];
 const CREST_BIG = 'crest-640.png';
+const ico = (n, c) => (window.BTY ? window.BTY.icon(n, c) : '');
+const beeIco = name => ico((window.BTY && window.BTY.ARCH[name]) || 'bee');
 // Rough bearings from Singapore, for the rose.
 const DEST_BEARING = { Hanoi: 5, GeoBali: 150, NZ: 140, Korea: 28, MiharaJapan: 42, MutsuzawaJapan: 42, Estonia: 330 };
 let cardFile = null, cardRendering = null;
@@ -1610,16 +1617,16 @@ function shortDest(t) { return String(t || '').replace(/\s*\(.*?\)\s*/g, '').tri
 function pollOf(id) { return (D.polls || {})[id]; }
 function insightOf(id) { const p = pollOf(id); return p && p.insight ? String(p.insight).replace(/^(Correct!|Good guess!|A trick!)\s*/, '') : ''; }
 
-/* The four S·A·I·L rows — what was chosen and discovered in each chapter. */
+/* The four S·A·I·L tiles — the programme, and what this visitor chose in it tonight. */
 function sailRows() {
     const prof = beeProfile();
     const g = D.global ? shortDest(D.global.text) : null, l = D.local ? shortDest(D.local.text) : null;
-    const dream = pollOf('dream_poll'), cca = pollOf('cca'), count = pollOf('nexus_count_v2'), ind = pollOf('industry');
+    const dream = pollOf('dream_poll');
     return [
-        { k: 'S', title: 'Stewardship', main: `${prof.s ? LABELS.stewardship[prof.s] + ' · ' : ''}Leaders for Life`, sub: dream ? `${dream.correct ? '✓ ' : ''}${insightOf('dream_poll')}` : 'D.R.E.A.M. — the values every Beattyian sails under.' },
-        { k: 'A', title: 'Applied Learning', main: prof.a ? `Drawn to ${LABELS.applied[prof.a]}${cca && cca.choiceText ? ' · you said ' + cca.choiceText + ' find a CCA they love' : ''}` : (cca && cca.choiceText ? `You said ${cca.choiceText} of Beattyians find a CCA they love` : 'Think.Create.Innovate — STEM & Machine Learning'), sub: cca ? insightOf('cca') : 'Every passion has a home here.' },
-        { k: 'I', title: 'International & Industry', main: g || l ? `${g ? 'Exchange · ' + g : ''}${g && l ? '  ·  ' : ''}${l ? 'Attachment · ' + l : ''}` : 'Six exchanges and six attachments to choose from', sub: count ? insightOf('nexus_count_v2') : 'NEXUS@BTY takes learning beyond the classroom.' },
-        { k: 'L', title: 'Learning to Live, Learn & Love', main: `${D.pulse ? 'Tonight: ' + D.pulse + '  ·  ' : ''}Sailing toward ${D.aspiration || 'your aspiration'}`, sub: ind ? insightOf('industry') : 'Non Vi Sed Arte — not by force, but by skill.' },
+        { k: 'S', title: 'Stewardship', main: 'Leaders for Life', sub: prof.s ? LABELS.stewardship[prof.s] : (dream && dream.correct ? 'You knew D.R.E.A.M. ✓' : 'Living D.R.E.A.M.') },
+        { k: 'A', title: 'Applied Learning', main: 'Think · Create · Innovate', sub: prof.a ? 'Drawn to ' + LABELS.applied[prof.a] : 'STEM & Machine Learning' },
+        { k: 'I', title: 'International & Industry', main: g || 'NEXUS@BTY', sub: l ? 'Attachment · ' + l : (g ? 'Your exchange pick' : '8 exchanges · 6 attachments') },
+        { k: 'L', title: 'Learning to Live, Learn & Love', main: D.pulse ? 'Tonight: ' + D.pulse : 'Non Vi Sed Arte', sub: 'Sailing toward ' + (D.aspiration || 'your dream') },
     ];
 }
 
@@ -1657,60 +1664,45 @@ function compassRoseSVG(size, bearing, gold = '#FFE200') {
 
 function renderMemento() {
     stopAmbient(); hideCornerBoat(); stampBoat();
-    const c = colors(); const gold = '#FFE200';
-    const sail = D.sailColor || gold;
-    const prof = beeProfile();
-    const word = D.aspiration || 'Beattyian';
-    const g = D.global ? shortDest(D.global.text) : null, l = D.local ? shortDest(D.local.text) : null;
-    const rows = sailRows();
+    const c = colors(), sail = D.sailColor || '#FFE200', prof = beeProfile(), word = D.aspiration || 'Beattyian', rows = sailRows();
     $app.innerHTML = `
-    <div class="sail-screen fade-up">
-        <div class="content-zone pt-4" style="max-width:400px;">
-            <div class="compass-card" id="memento-card" style="--sail:${sail};--bee:${prof.color}">
-                <div class="cc-paper"></div>
-                <div class="cc-tape"></div>
+    <div class="sail-screen card-screen fade-up">
+        <div class="content-zone" style="max-width:400px;">
+            <article class="compass-card" id="memento-card" style="--sail:${sail};--bee:${prof.color}">
                 <header class="cc-head">
                     <img src="${LOGO_URL}" alt="" onerror="this.style.display='none'">
-                    <div><b>Beatty Secondary</b><small>Compass Card · Open House 2026</small></div>
-                    <span class="cc-bee">${D.beeIcon || '🐝'}</span>
+                    <div><b>Beatty Secondary School</b><small>Compass Card · Open House 2026</small></div>
                 </header>
-                <div class="cc-boat" id="ccBoat">
-                    <div class="cc-boat-tilt">${buildOrigamiSVG(c, 9, 300, { ...extras(), aspiration: '' })}<div class="hand-word cc-hand" style="font-size:${Math.max(15, Math.min(24, 190 / Math.max(6, word.length)))}px">${word}</div></div>
-                    <div class="cc-water"></div>
+                <div class="cc-hero">
+                    <div class="cc-boat" id="ccBoat"><div class="cc-boat-tilt">${buildOrigamiSVG(c, 9, 300, { ...extras(), aspiration: '' })}<div class="hand-word cc-hand" style="font-size:${Math.max(15, Math.min(24, 190 / Math.max(6, word.length)))}px">${word}</div></div><div class="cc-water"></div></div>
+                    <small class="cc-eyebrow">Sailing toward</small>
+                    <h1 class="cc-word">${word}</h1>
+                    <p class="cc-fleetline" id="ccFleetN">${fleetLine()}</p>
                 </div>
-                <div class="cc-word"><small>I'm sailing toward</small><h1>${word}</h1><p>${FOLDED_LINE}</p></div>
-                <div class="cc-id">
-                    <div class="cc-id-name"><span>${D.beeTag || 'A Beattyian'}</span><b style="color:var(--bee)">${D.bee || 'In the Hive'}</b></div>
-                    <p class="cc-quote">“${prof.quote}”</p>
-                    <p class="cc-persona">${prof.persona}</p>
+                <div class="cc-bee">
+                    <span class="cc-bee-ic">${beeIco(D.bee)}</span>
+                    <div><small>${D.beeTag || 'A Beattyian'}</small><b>${(D.bee || 'In the Hive').replace(/^The /, '')}</b></div>
                 </div>
-                <div class="cc-rows">
-                    ${rows.map(r => `<div class="cc-sail-row"><i>${r.k}</i><div><b>${r.title}</b><span>${r.main}</span><small>${r.sub}</small></div></div>`).join('')}
-                </div>
-                <p class="cc-rec"><b>Recommended for you</b>${prof.recommended.map(r => `<span>${r}</span>`).join('')}</p>
-                <div class="cc-row">
-                    <div class="cc-stamp">${g || l ? `<b>${g || l}</b>${g && l ? `<i>${l}</i>` : ''}` : '<b>Beatty</b><i>every pathway</i>'}<em>port of call</em></div>
-                    <div class="cc-fleet">
-                        <div class="cc-fleet-lab"><span id="ccFleetN">${fleetLabel()}</span></div>
-                        <div class="cc-strip" id="ccStrip">${fleetStripHTML()}</div>
-                    </div>
-                    <div class="cc-rose">${compassRoseSVG(74, destBearing(), gold)}</div>
-                </div>
+                <p class="cc-quote">“${prof.quote}”</p>
+                <div class="cc-tiles">${rows.map(r => `<div class="cc-tile"><i>${r.k}</i><small>${r.title}</small><b>${r.main}</b><span>${r.sub}</span></div>`).join('')}</div>
+                <div class="cc-why"><small>Why Beatty</small><div>${WHY_BEATTY.map(([n, t]) => `<p><b>${n}</b><span>${t}</span></p>`).join('')}</div></div>
+                <div class="cc-ask"><b>${ASK_LINE}</b><span>in S1 Posting${SCHOOL_CODE ? ' · school code ' + SCHOOL_CODE : ''}</span></div>
                 <footer class="cc-foot">
-                    <img class="cc-qr" src="${QR_URL}" alt="" onerror="this.style.display='none'">
-                    <div><b>${EVENT_LINE}</b><span>${BOOTH_LINE}</span><small>${VISION_LINE}</small></div>
+                    <span class="cc-qr">${window.BTY ? window.BTY.qrSVG(CARD_URL, { label: 'Explore Beatty' }) : ''}</span>
+                    <div><b>Explore Beatty</b><span>${CARD_URL_LABEL}</span><small>Non Vi Sed Arte · ${VISION_LINE}</small></div>
                 </footer>
-            </div>
+            </article>
             <button id="shareCardBtn" class="nav-btn primary w-full mt-4 text-base uppercase tracking-wide">${navigator.share ? 'Share my card' : 'Save my card'}</button>
             ${navigator.share ? '<button id="downloadCardBtn" class="nav-btn secondary w-full mt-2 text-sm uppercase tracking-wide">Save image</button>' : ''}
-            <p class="text-[11px] mt-3 text-center" style="color:var(--text-secondary);">${BOOTH_LINE} ⛵</p>
-            <button id="resetBtn" class="mt-3 w-full text-sm underline pb-4" style="color:var(--text-muted);">Start over</button>
+            <p class="cc-after">${BOOTH_LINE}</p>
+            <button id="resetBtn" class="mt-2 w-full text-sm underline pb-6" style="color:var(--text-muted);">Start over</button>
         </div>
     </div>`;
-    // Rank in the fleet (once online), then pre-render the PNG so a share can fire inside the tap.
-    loadFleetRank().then(r => { const n = document.getElementById('ccFleetN'), s = document.getElementById('ccStrip'); if (r && n) n.textContent = fleetLabel(); if (r && s) s.innerHTML = fleetStripHTML(); }).finally(() => { cardFile = null; cardRendering = renderCardPNG().then(f => { cardFile = f; return f; }).catch(() => null); });
+    // The fleet's size (from the show's saved state), then pre-render the PNG so a share can fire inside the tap.
+    loadFleetRank().then(r => { const n = document.getElementById('ccFleetN'); if (r && n) n.textContent = fleetLine(); }).finally(() => { cardFile = null; cardRendering = renderCardPNG().then(f => { cardFile = f; return f; }).catch(() => null); });
     const boat = document.querySelector('.cc-boat-tilt'); if (boat) enableTilt(boat);
 }
+function fleetLine() { return D.fleetTotal > 1 ? `One of ${D.fleetTotal} boats that set sail together` : (D.launched ? 'Set sail with the Hive' : FOLDED_LINE); }
 
 /* ---------- Draw the card as a 1080×2160 PNG, in-house (no html2canvas) ---------- */
 function loadImg(src) { return new Promise((res) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; }); }
@@ -1725,78 +1717,70 @@ function wrapText(ctx, text, x, y, maxW, lineH, maxLines = 2) {   // returns the
     return y + lines.length * lineH;
 }
 async function renderCardPNG() {
-    const W = 1080, H = 2160, gold = '#FFE200', sail = D.sailColor || gold, word = D.aspiration || 'Beattyian';
-    const prof = beeProfile(); const rows = sailRows();
+    // 1080×1920 (a phone story): the same card as on screen, drawn in-house.
+    const W = 1080, H = 1920, X = 84, CW = W - 2 * X, gold = '#FFE200', navy = '#000C53', word = D.aspiration || 'Beattyian';
+    const prof = beeProfile(), rows = sailRows();
     const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const ctx = cv.getContext('2d');
-    const c = colors();
-    const [boatImg, crest, qr, rose] = await Promise.all([
-        svgToImg(buildOrigamiSVG(c, 9, 720, { ...extras(), aspiration: '', gradientId: 'cardSail' })), loadImg(CREST_BIG), loadImg(QR_URL),
-        svgToImg(compassRoseSVG(210, destBearing(), gold))]);
-    const SANS = 'Calibri, "Segoe UI", system-ui, sans-serif';
-    // Navy ground with a warm glow behind the boat
-    const bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#040a33'); bg.addColorStop(0.45, '#0a1650'); bg.addColorStop(1, '#061027'); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-    const glow = ctx.createRadialGradient(W / 2, 560, 40, W / 2, 560, 500); glow.addColorStop(0, 'rgba(255,226,0,.20)'); glow.addColorStop(1, 'rgba(255,226,0,0)'); ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
-    // Washi grain + a crease
-    ctx.fillStyle = 'rgba(255,255,255,.045)'; for (let i = 0; i < 10000; i++) { ctx.fillRect(Math.random() * W, Math.random() * H, 2, 2); }
-    ctx.strokeStyle = 'rgba(255,255,255,.08)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, 1076); ctx.lineTo(W, 1050); ctx.stroke();
-    ctx.strokeStyle = 'rgba(255,226,0,.35)'; ctx.lineWidth = 3; roundRect(ctx, 22, 22, W - 44, H - 44, 44); ctx.stroke();
-    // Washi tape (navy + yellow), top right
-    ctx.save(); ctx.translate(W - 130, 92); ctx.rotate(0.14); ctx.globalAlpha = .92;
-    for (let i = 0; i < 12; i++) { ctx.fillStyle = i % 2 ? '#000C53' : gold; ctx.fillRect(-150 + i * 25, -20, 25, 40); } ctx.restore();
-    // Head
-    if (crest) ctx.drawImage(crest, 78, 118, 96, 118);
-    ctx.fillStyle = '#fff'; ctx.font = '700 44px Georgia, serif'; ctx.textBaseline = 'alphabetic'; ctx.fillText('Beatty Secondary', 196, 176);
-    ctx.fillStyle = 'rgba(255,226,0,.9)'; ctx.font = `600 22px ${SANS}`; ctx.fillText('COMPASS CARD  ·  OPEN HOUSE 2026', 198, 214);
-    // The boat, at the ¾ angle, on water, wearing its stamps
-    const bw = 640, by = 232;
-    const water = ctx.createRadialGradient(W / 2, by + 610, 20, W / 2, by + 610, 340); water.addColorStop(0, 'rgba(127,211,247,.45)'); water.addColorStop(.6, 'rgba(18,41,156,.25)'); water.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = water; ctx.beginPath(); ctx.ellipse(W / 2, by + 610, 350, 52, 0, 0, Math.PI * 2); ctx.fill();
-    if (boatImg) { ctx.save(); ctx.translate(W / 2, by + bw / 2); ctx.transform(0.95, -0.05, 0.03, 1, 0, 0); ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 24; ctx.drawImage(boatImg, -bw / 2, -bw / 2, bw, bw); ctx.restore(); }
-    // The word in handwriting on the hull (right of the stamps)
-    ctx.save(); ctx.translate(W / 2 + 28, by + 528); ctx.rotate(-0.035); ctx.fillStyle = '#fff6c8'; ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 6;
-    ctx.font = `600 ${Math.max(36, Math.min(54, 430 / Math.max(6, word.length)))}px ${HAND_FONT}`; ctx.textAlign = 'center'; ctx.fillText(word, 0, 0); ctx.restore();
-    // "I'm sailing toward" + the word + the folded line
-    ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255,255,255,.62)'; ctx.font = `600 22px ${SANS}`; ctx.fillText("I ' M   S A I L I N G   T O W A R D", W / 2, 906);
-    ctx.fillStyle = gold; ctx.font = `700 ${Math.max(56, Math.min(92, 960 / Math.max(6, word.length)))}px Georgia, serif`; ctx.fillText(word, W / 2, 994);
-    ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font = `italic 24px Georgia, serif`; ctx.fillText(FOLDED_LINE, W / 2, 1038);
-    // Who you are in the Hive (fixed slots: a two-line quote, a one-line persona)
-    ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(255,255,255,.62)'; ctx.font = `700 20px ${SANS}`; ctx.fillText((D.beeTag || 'A BEATTYIAN').toUpperCase(), 90, 1098);
-    ctx.fillStyle = prof.color; ctx.font = '700 40px Georgia, serif'; ctx.fillText(D.bee || 'In the Hive', 90, 1140);
-    ctx.fillStyle = '#fff'; ctx.font = 'italic 26px Georgia, serif'; wrapText(ctx, '“' + prof.quote + '”', 90, 1182, W - 180, 33, 2);
-    ctx.fillStyle = 'rgba(255,255,255,.72)'; ctx.font = `22px ${SANS}`; wrapText(ctx, prof.persona, 90, 1262, W - 180, 28, 1);
-    // The four S·A·I·L rows
-    let ry = 1330;
-    rows.forEach(r => {
-        ctx.fillStyle = 'rgba(255,255,255,.05)'; roundRect(ctx, 76, ry - 34, W - 152, 90, 16); ctx.fill();
-        ctx.fillStyle = 'rgba(255,226,0,.14)'; ctx.beginPath(); ctx.arc(120, ry + 11, 25, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = gold; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(120, ry + 11, 25, 0, Math.PI * 2); ctx.stroke();
-        ctx.fillStyle = gold; ctx.font = '900 28px Georgia, serif'; ctx.textAlign = 'center'; ctx.fillText(r.k, 120, ry + 21); ctx.textAlign = 'left';
-        ctx.fillStyle = 'rgba(255,226,0,.85)'; ctx.font = `700 16px ${SANS}`; ctx.fillText(r.title.toUpperCase(), 168, ry - 8);
-        ctx.fillStyle = '#fff'; ctx.font = `600 24px ${SANS}`; wrapText(ctx, r.main, 168, ry + 19, W - 268, 28, 1);
-        ctx.fillStyle = 'rgba(255,255,255,.62)'; ctx.font = `19px ${SANS}`; wrapText(ctx, r.sub, 168, ry + 45, W - 268, 24, 1);
-        ry += 100;
+    const SANS = 'Calibri, "Segoe UI", system-ui, sans-serif', SERIF = 'Georgia, "Iowan Old Style", serif';
+    const [boatImg, crest, beeImg] = await Promise.all([
+        svgToImg(buildOrigamiSVG(colors(), 9, 720, { ...extras(), aspiration: '', gradientId: 'cardSail' })), loadImg(CREST_BIG),
+        window.BTY ? window.BTY.iconImage((window.BTY.ARCH[D.bee] || 'bee'), prof.color, 128) : null]);
+    // ground
+    const bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#040a33'); bg.addColorStop(0.5, '#0a1650'); bg.addColorStop(1, '#050d2b'); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    const glow = ctx.createRadialGradient(W / 2, 470, 30, W / 2, 470, 460); glow.addColorStop(0, 'rgba(255,226,0,.18)'); glow.addColorStop(1, 'rgba(255,226,0,0)'); ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(255,226,0,.38)'; ctx.lineWidth = 3; roundRect(ctx, 24, 24, W - 48, H - 48, 40); ctx.stroke();
+    // head
+    ctx.textBaseline = 'alphabetic';
+    if (crest) ctx.drawImage(crest, X, 70, 76, 94);
+    ctx.fillStyle = '#fff'; ctx.font = `700 40px ${SERIF}`; ctx.fillText('Beatty Secondary School', X + 100, 116);
+    ctx.fillStyle = gold; ctx.font = `700 21px ${SANS}`; ctx.fillText('COMPASS CARD  ·  OPEN HOUSE 2026', X + 102, 152);
+    // the boat on the water, wearing its stamps; the word in handwriting on the hull
+    const bw = 560, by = 176;
+    const water = ctx.createRadialGradient(W / 2, by + 530, 10, W / 2, by + 530, 300); water.addColorStop(0, 'rgba(127,211,247,.42)'); water.addColorStop(.6, 'rgba(18,41,156,.22)'); water.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = water; ctx.beginPath(); ctx.ellipse(W / 2, by + 530, 300, 44, 0, 0, Math.PI * 2); ctx.fill();
+    if (boatImg) { ctx.save(); ctx.translate(W / 2, by + bw / 2); ctx.transform(0.95, -0.05, 0.03, 1, 0, 0); ctx.shadowColor = 'rgba(0,0,0,.5)'; ctx.shadowBlur = 36; ctx.shadowOffsetY = 22; ctx.drawImage(boatImg, -bw / 2, -bw / 2, bw, bw); ctx.restore(); }
+    ctx.save(); ctx.translate(W / 2 + 24, by + 462); ctx.rotate(-0.035); ctx.fillStyle = '#fff6c8'; ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 6;
+    ctx.font = `600 ${Math.max(32, Math.min(48, 380 / Math.max(6, word.length)))}px ${HAND_FONT}`; ctx.textAlign = 'center'; ctx.fillText(word, 0, 0); ctx.restore();
+    // sailing toward
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font = `700 21px ${SANS}`; ctx.fillText('S A I L I N G   T O W A R D', W / 2, 800);
+    ctx.fillStyle = gold; ctx.font = `700 ${Math.max(58, Math.min(96, 980 / Math.max(6, word.length)))}px ${SERIF}`; ctx.fillText(word, W / 2, 888);
+    ctx.fillStyle = 'rgba(255,255,255,.72)'; ctx.font = `italic 26px ${SERIF}`; ctx.fillText(fleetLine(), W / 2, 934, CW);
+    // the bee
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(255,255,255,.07)'; ctx.beginPath(); ctx.arc(X + 38, 1010, 38, 0, Math.PI * 2); ctx.fill();
+    if (beeImg) ctx.drawImage(beeImg, X + 10, 982, 56, 56);
+    ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font = `700 19px ${SANS}`; ctx.fillText((D.beeTag || 'A Beattyian').toUpperCase(), X + 96, 996);
+    ctx.fillStyle = prof.color; ctx.font = `700 40px ${SERIF}`; ctx.fillText((D.bee || 'In the Hive').replace(/^The /, ''), X + 96, 1038, CW - 96);
+    ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.font = `italic 27px ${SERIF}`; wrapText(ctx, '“' + prof.quote + '”', X, 1104, CW, 36, 2);
+    // the four S·A·I·L tiles
+    const tw = (CW - 22) / 2, th = 150, ty0 = 1166;
+    rows.forEach((r, i) => {
+        const x = X + (i % 2) * (tw + 22), y = ty0 + Math.floor(i / 2) * (th + 20);
+        ctx.fillStyle = 'rgba(255,255,255,.06)'; roundRect(ctx, x, y, tw, th, 22); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,226,0,.16)'; ctx.lineWidth = 1.5; roundRect(ctx, x, y, tw, th, 22); ctx.stroke();
+        ctx.fillStyle = gold; ctx.beginPath(); ctx.arc(x + 40, y + 40, 20, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = navy; ctx.font = `700 24px ${SERIF}`; ctx.textAlign = 'center'; ctx.fillText(r.k, x + 40, y + 48); ctx.textAlign = 'left';
+        ctx.fillStyle = 'rgba(255,226,0,.85)'; ctx.font = `700 15px ${SANS}`; wrapText(ctx, r.title.toUpperCase(), x + 72, y + 46, tw - 90, 18, 1);
+        ctx.fillStyle = '#fff'; ctx.font = `700 27px ${SANS}`; wrapText(ctx, r.main, x + 24, y + 98, tw - 44, 30, 1);
+        ctx.fillStyle = 'rgba(255,255,255,.64)'; ctx.font = `20px ${SANS}`; wrapText(ctx, r.sub, x + 24, y + 130, tw - 44, 24, 1);
     });
-    // Recommended for you (two lines at most)
-    ctx.fillStyle = 'rgba(255,226,0,.85)'; ctx.font = `700 16px ${SANS}`; ctx.fillText('RECOMMENDED FOR YOU', 90, 1756);
-    ctx.fillStyle = '#fff'; ctx.font = `600 22px ${SANS}`; wrapText(ctx, prof.recommended.join('   ·   '), 90, 1786, W - 180, 27, 2);
-    // Port stamp · Boat N of M + strip · compass rose
-    const rowY = 1908;
-    const g = D.global ? shortDest(D.global.text) : null, l = D.local ? shortDest(D.local.text) : null;
-    ctx.save(); ctx.translate(200, rowY); ctx.rotate(-0.2); ctx.strokeStyle = sail; ctx.lineWidth = 5; ctx.setLineDash([12, 9]); ctx.beginPath(); ctx.arc(0, 0, 92, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
-    ctx.beginPath(); ctx.arc(0, 0, 76, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 2; ctx.stroke();
-    ctx.fillStyle = sail; ctx.textAlign = 'center'; ctx.font = '700 25px Georgia, serif'; ctx.fillText(g || l || 'Beatty', 0, g && l ? -6 : 7, 140);
-    ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.font = 'italic 17px Georgia, serif'; if (g && l) ctx.fillText(l, 0, 22, 140);
-    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = `600 12px ${SANS}`; ctx.fillText('P O R T   O F   C A L L', 0, 54); ctx.restore();
-    ctx.textAlign = 'center'; ctx.fillStyle = '#fff'; ctx.font = '700 34px Georgia, serif'; ctx.fillText(fleetLabel(), W / 2, rowY - 16);
-    const strip = D.fleetStrip || [sail], me = D.stripMe ?? 0, sw = Math.min(28, 360 / strip.length), sx0 = W / 2 - sw * strip.length / 2;
-    strip.forEach((col, i) => { const x = sx0 + i * sw + sw / 2, y = rowY + 36; ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(x, y - 15); ctx.lineTo(x + 9, y + 5); ctx.lineTo(x - 9, y + 5); ctx.closePath(); ctx.fill(); ctx.fillStyle = '#4a3728'; ctx.fillRect(x - 11, y + 7, 22, 4);
-        if (i === me) { ctx.strokeStyle = gold; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y - 2, 19, 0, Math.PI * 2); ctx.stroke(); } });
-    if (rose) ctx.drawImage(rose, W - 300, rowY - 92, 184, 184);
-    // Footer: QR + lines
-    if (qr) { ctx.fillStyle = '#fff'; roundRect(ctx, W - 262, 2004, 172, 172, 16); ctx.fill(); ctx.drawImage(qr, W - 252, 2014, 152, 152); }
-    ctx.textAlign = 'left'; ctx.fillStyle = gold; ctx.font = '700 25px Georgia, serif'; ctx.fillText(EVENT_LINE, 90, 2046, 690);
-    ctx.fillStyle = '#fff'; ctx.font = `600 25px ${SANS}`; ctx.fillText(BOOTH_LINE, 90, 2090, 690);
-    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = 'italic 21px Georgia, serif'; ctx.fillText(VISION_LINE, 90, 2128, 690);
+    // why Beatty
+    const wy = 1520;
+    ctx.fillStyle = 'rgba(255,226,0,.85)'; ctx.font = `700 17px ${SANS}`; ctx.fillText('W H Y   B E A T T Y', X, wy);
+    WHY_BEATTY.forEach(([n, t], i) => { const x = X + i * (CW / 3); ctx.fillStyle = gold; ctx.font = `700 66px ${SERIF}`; ctx.fillText(n, x, wy + 70); ctx.fillStyle = 'rgba(255,255,255,.78)'; ctx.font = `21px ${SANS}`; ctx.fillText(t, x, wy + 102, CW / 3 - 16); });
+    // the ask
+    const ay = 1636;
+    ctx.fillStyle = gold; roundRect(ctx, X, ay, CW, 104, 22); ctx.fill();
+    ctx.fillStyle = navy; ctx.font = `700 40px ${SERIF}`; ctx.fillText(ASK_LINE, X + 30, ay + 52, CW - 60);
+    ctx.font = `700 21px ${SANS}`; ctx.fillText(('in S1 Posting' + (SCHOOL_CODE ? '  ·  school code ' + SCHOOL_CODE : '')).toUpperCase(), X + 32, ay + 84, CW - 60);
+    // footer: QR + where to find out more
+    const qs = 112, qx = W - X - qs, qy = 1764;
+    ctx.fillStyle = '#fff'; roundRect(ctx, qx - 6, qy - 6, qs + 12, qs + 12, 14); ctx.fill();
+    if (window.BTY) window.BTY.qrDraw(ctx, CARD_URL, qx, qy, qs, { margin: 1 });
+    ctx.fillStyle = gold; ctx.font = `700 30px ${SERIF}`; ctx.fillText('Explore Beatty', X, 1800);
+    ctx.fillStyle = '#fff'; ctx.font = `600 23px ${SANS}`; ctx.fillText(CARD_URL_LABEL, X, 1836);
+    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = `italic 20px ${SERIF}`; ctx.fillText('Non Vi Sed Arte  ·  ' + VISION_LINE, X, 1868, qx - X - 20);
     const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
     return new File([blob], 'Beatty-Compass-Card.png', { type: 'image/png' });
 }

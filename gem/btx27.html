@@ -8,6 +8,8 @@
 
 <!-- Coastlines for the globe (Natural Earth, local file — no CDN). If it fails to load the flat SVG chart is used. -->
 <script src="land.js"></script>
+<script src="qrcode.js"></script>
+<script src="bty-ui.js"></script>
 
 <style>
 /* ============================================================
@@ -157,6 +159,49 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
   border:1px solid var(--card-line); border-radius:26px; padding:clamp(20px,3vw,42px);
   backdrop-filter:var(--glass); box-shadow:0 30px 80px rgba(0,0,0,.5)}
 .qr-frame{background:#fff; padding:16px; border-radius:18px; box-shadow:inset 0 0 0 3px rgba(0,12,83,.1)}
+.qr-svg{display:block} .qr-svg svg{display:block; width:100%; height:100%}
+.qr-frame .qr-svg{width:clamp(150px,17vw,240px); height:clamp(150px,17vw,240px)}
+.qr-pill .qr-svg{width:clamp(38px,5vh,52px); height:clamp(38px,5vh,52px); background:#fff; border-radius:7px; padding:3px}
+.qr-big .qr-svg{width:min(62vh,620px); height:min(62vh,620px)}
+.qr-url{color:var(--gold); font-weight:700; letter-spacing:.03em; margin-top:8px; font-size:clamp(1rem,1.6vw,1.5rem)}
+/* Step 1 — the join screen: a giant QR on the left, the Hive filling on the right */
+/* The close — a phone holding their card, beside the ask */
+.closing{display:grid; grid-template-columns:auto 1fr; gap:clamp(36px,6vw,120px); align-items:center; width:100%; max-width:1500px; margin:0 auto; text-align:left}
+.cl-phone{position:relative; display:flex; flex-direction:column; align-items:center}
+.cl-screen{width:min(30vh,300px,22vw); aspect-ratio:9/16; border-radius:34px; padding:10px; background:linear-gradient(160deg,#1b2350,#060a24); box-shadow:0 0 0 2px rgba(255,255,255,.12), 0 40px 80px rgba(0,0,0,.6), 0 0 120px rgba(255,226,0,.14); transform:rotate(-3deg)}
+.cl-screen img{width:100%; height:100%; object-fit:cover; border-radius:26px; display:block}
+@media (min-height:900px){ .cl-screen{width:min(40vh,360px,24vw)} }
+.cl-tag{display:inline-flex; align-items:center; gap:8px; margin-top:22px; color:var(--ink-dim); font-size:clamp(.75rem,1vw,.95rem); letter-spacing:.18em; text-transform:uppercase}
+.cl-tag .ico{width:18px; height:18px; color:var(--gold)}
+.cl-side .stage-title{font-size:clamp(2.4rem,5vw,5rem); line-height:1.02}
+.cl-side .stage-sub{margin:18px 0 0}
+.cl-why{display:flex; gap:clamp(24px,3.4vw,60px); margin-top:clamp(20px,3.4vh,40px)}
+.cl-why b{display:block; font-family:var(--serif); color:var(--gold); font-size:clamp(2.4rem,4.4vw,4.4rem); line-height:1}
+.cl-why span{display:block; color:var(--ink); font-size:clamp(.85rem,1.2vw,1.15rem); margin-top:6px}
+.cl-cta{display:flex; align-items:center; gap:22px; margin-top:clamp(22px,3.6vh,44px); padding:16px 26px 16px 16px; border-radius:22px; background:rgba(255,255,255,.05); border:1px solid var(--card-line); width:fit-content}
+.cl-qr{width:clamp(96px,8vw,138px); aspect-ratio:1; background:#fff; border-radius:14px; padding:8px; flex:none}
+.cl-qr svg{width:100%; height:100%; display:block}
+.cl-cta b{display:block; font-family:var(--serif); color:var(--gold); font-size:clamp(1.3rem,2vw,2rem)}
+.cl-cta span{display:block; color:#fff; font-weight:700; font-size:clamp(.95rem,1.3vw,1.25rem); margin-top:4px}
+.cl-cta small{display:block; color:var(--ink-dim); margin-top:6px; font-size:clamp(.8rem,1vw,1rem)} .cl-cta small i{font-family:var(--serif); color:var(--gold)}
+.cl-links{display:flex; gap:14px; margin-top:22px} .cl-links .btn{text-decoration:none; display:inline-flex; align-items:center; gap:10px} .cl-links .ico{width:20px; height:20px}
+.join{display:grid; grid-template-columns:minmax(300px,34%) 1fr; gap:clamp(28px,4.4vw,84px); align-items:center; width:100%}
+.join-qr{display:flex; flex-direction:column; align-items:center; text-align:center}
+.jq-card{background:#fff; padding:clamp(12px,1.3vw,22px); border-radius:28px; width:min(30vw,48vh,440px); aspect-ratio:1; box-shadow:0 30px 70px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.4), 0 0 0 10px rgba(255,226,0,.14)}
+.jq-card .qr-svg{width:100%; height:100%}
+.jq-cta{font-family:var(--serif); color:#fff; font-size:clamp(1.6rem,2.7vw,2.7rem); margin-top:clamp(16px,2.4vh,26px); line-height:1.1}
+.jq-url{color:var(--gold); font-weight:700; letter-spacing:.02em; font-size:clamp(.85rem,1.15vw,1.15rem); margin-top:8px; overflow-wrap:anywhere}
+.jq-live{margin-top:clamp(16px,2.6vh,30px); display:flex; gap:clamp(24px,3vw,48px); justify-content:center}
+.jq-live div{display:flex; flex-direction:column; align-items:center}
+.jq-live b{font-family:var(--serif); font-size:clamp(2.4rem,4.4vw,4.4rem); color:#fff; line-height:1; font-variant-numeric:tabular-nums}
+.jq-live b.ready{color:var(--gold)}
+.jq-live span{font-size:clamp(.62rem,.85vw,.82rem); letter-spacing:.22em; text-transform:uppercase; color:var(--ink-dim); margin-top:6px}
+.join-hive .eyebrow{text-align:left} .join-hive .stage-title{text-align:left; font-size:clamp(2.2rem,4.4vw,4.2rem)}
+.join-hive .stage-sub{margin:10px 0 clamp(18px,3vh,34px); text-align:left}
+.join-hive .compass-grid{gap:clamp(10px,1.2vw,20px)}
+.join-hive .compass-done{justify-content:flex-start}
+.arch-cell .ico svg,.arch-cell svg.ico{width:clamp(30px,2.8vw,48px); height:clamp(30px,2.8vw,48px); color:var(--gold); display:block}
+.arch-cell .ico{line-height:0}
 .qr-frame img{width:clamp(150px,17vw,240px); height:clamp(150px,17vw,240px); display:block}
 
 /* --- Honeycomb / archetype cells --- */
@@ -164,7 +209,9 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .compass-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:clamp(12px,1.6vw,26px); width:100%}
 .arch-cell{position:relative; background:linear-gradient(160deg, var(--navy-700), var(--navy-850));
   border:1px solid rgba(255,226,0,.16); border-radius:20px; padding:clamp(12px,1.5vw,22px);
-  overflow:hidden; min-height:clamp(120px,17vh,190px); display:flex; flex-direction:column; justify-content:flex-end}
+  overflow:hidden; min-height:clamp(120px,17vh,190px); display:flex; flex-direction:column; justify-content:flex-end; align-items:center; text-align:center}
+.join-hive .arch-cell{min-height:clamp(118px,16vh,172px)}
+.arch-cell .ico{margin-bottom:8px}
 .arch-cell .fill{position:absolute; left:0; right:0; bottom:0; background:linear-gradient(180deg, rgba(255,226,0,.14), rgba(255,226,0,.42));
   transition:height 1s var(--ease); z-index:0}
 .arch-cell .ico{font-size:clamp(1.8rem,3vw,2.8rem); position:relative; z-index:1; line-height:1}
@@ -231,20 +278,42 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .bloom-ov{justify-content:center; padding-top:0}
 .bloom-ov .sail-ov-word{font-size:clamp(6rem,22vw,22rem)}
 #journeyContent.respond, .journey-content.respond{box-shadow:inset 0 0 0 4px rgba(255,226,0,.85); border-radius:14px}
-.fold-stage{position:absolute; inset:0; display:grid; grid-template-columns:1.25fr 1fr; align-items:center; gap:clamp(20px,4vw,60px); padding:clamp(20px,4vh,50px) clamp(30px,5vw,90px)}
-.fold-demo{display:flex; align-items:center; justify-content:center; min-height:300px}
-.fd-pair{display:flex; align-items:center; gap:clamp(10px,2vw,30px); animation:fadeUp .5s var(--ease) both}
-.fd-from,.fd-to{width:clamp(200px,24vw,340px); height:clamp(200px,24vw,340px); filter:drop-shadow(0 20px 40px rgba(0,0,0,.55))}
-.fd-from{opacity:.62}
-.fd-arrow{font-size:clamp(2rem,4vw,4rem); color:var(--gold)}
-.fold-wait{font-size:6rem}
-.fold-side .stage-title{font-size:clamp(1.8rem,3.4vw,3.4rem); display:flex; align-items:center; gap:14px}
-.fold-letter{display:inline-flex; align-items:center; justify-content:center; width:1.35em; height:1.35em; border-radius:14px; background:var(--gold); color:var(--navy); font-weight:800}
-.fold-cap{font-family:var(--serif); color:#fff; font-size:clamp(1.1rem,1.9vw,1.7rem); min-height:2.4em}
-.fold-count{margin-top:18px; display:inline-flex; align-items:baseline; gap:12px; background:rgba(255,226,0,.08); border:1px solid rgba(255,226,0,.3); border-radius:14px; padding:10px 18px}
-.fold-count .fc-n{font-family:var(--serif); font-weight:800; font-size:clamp(2rem,4vw,3.6rem); color:var(--gold); font-variant-numeric:tabular-nums}
-.fold-count .fc-l{font-size:clamp(.8rem,1.3vw,1.1rem); letter-spacing:.12em; text-transform:uppercase; color:var(--ink-dim)}
-.fold-count.most{box-shadow:0 0 30px rgba(255,226,0,.35)}
+/* Fold with us — one big sheet folding on a lit table, the beat's progress and a harbour of the hall's boats */
+.fold-stage{position:absolute; inset:0; display:grid; grid-template-columns:1.2fr 1fr; align-items:center; gap:clamp(24px,4vw,72px); padding:clamp(20px,4vh,50px) clamp(30px,5vw,96px)}
+.fold-demo{position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center}
+.fd-table{position:relative; width:min(60vh,44vw,640px); aspect-ratio:1; border-radius:50%;
+  background:radial-gradient(closest-side, rgba(255,236,140,.13), rgba(255,226,0,.04) 62%, transparent 72%)}
+.fd-layer{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; transition:opacity .7s var(--ease), transform .9s var(--ease); transform-origin:50% 28%}
+.fd-layer svg{width:100%; height:100%; filter:drop-shadow(0 26px 40px rgba(0,0,0,.5))}
+.fd-layer.next{opacity:0; transform:perspective(1100px) rotateX(-58deg) translateY(-2%)}
+.fd-table.turn .fd-layer.cur{opacity:0; transform:scale(.97)}
+.fd-table.turn .fd-layer.next{opacity:1; transform:none}
+.fd-hint{position:absolute; inset:0; pointer-events:none}
+.fd-hint .dot{position:absolute; width:22px; height:22px; margin:-11px 0 0 -11px; border-radius:50%; background:var(--gold); box-shadow:0 0 0 6px rgba(255,226,0,.25), 0 0 24px rgba(255,226,0,.8); opacity:0}
+.fd-table.hint .fd-hint .dot{animation:fdDot 1.3s var(--ease) forwards}
+@keyframes fdDot{0%{opacity:0; left:var(--x0); top:var(--y0)} 18%{opacity:1; left:var(--x0); top:var(--y0)} 85%{opacity:1; left:var(--x1); top:var(--y1)} 100%{opacity:0; left:var(--x1); top:var(--y1)}}
+.fd-steps{display:flex; gap:10px; margin-top:clamp(12px,2vh,22px)}
+.fd-steps i{width:clamp(26px,2.4vw,40px); height:5px; border-radius:3px; background:rgba(255,255,255,.12)}
+.fd-steps i.done{background:rgba(255,226,0,.45)} .fd-steps i.beat{background:rgba(255,255,255,.3)} .fd-steps i.now{background:var(--gold); box-shadow:0 0 12px rgba(255,226,0,.6)}
+.fd-stepcap{margin-top:10px; font-size:clamp(.7rem,.95vw,.9rem); letter-spacing:.24em; text-transform:uppercase; color:var(--ink-dim)}
+.fold-side .stage-title{font-size:clamp(1.8rem,3.4vw,3.4rem); display:flex; align-items:center; gap:16px; line-height:1.05}
+.fold-letter{flex:none; display:inline-flex; align-items:center; justify-content:center; width:1.4em; height:1.4em; border-radius:16px; background:var(--gold); color:var(--navy); font-weight:800}
+.fold-cap{font-family:var(--serif); color:#fff; font-size:clamp(1.2rem,2.1vw,2rem); line-height:1.3; min-height:2.6em; margin-top:clamp(10px,2vh,22px)}
+.fold-cap b{color:var(--gold); font-weight:700; display:block; font-family:var(--sans); font-size:.5em; letter-spacing:.24em; text-transform:uppercase; margin-bottom:6px}
+.fold-live{display:flex; align-items:center; gap:clamp(18px,2vw,30px); margin-top:clamp(18px,3.4vh,40px)}
+.fold-ring{position:relative; width:clamp(110px,9vw,150px); aspect-ratio:1; flex:none}
+.fold-ring svg{width:100%; height:100%; transform:rotate(-90deg)}
+.fold-ring circle{fill:none; stroke-width:9}
+.fold-ring .bg{stroke:rgba(255,255,255,.1)} .fold-ring .fg{stroke:var(--gold); stroke-linecap:round; transition:stroke-dashoffset .8s var(--ease)}
+.fold-ring .fc-n{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--serif); font-weight:700; color:#fff; font-size:clamp(1.9rem,3vw,3rem); font-variant-numeric:tabular-nums}
+.fold-live .fc-l{font-size:clamp(.8rem,1.1vw,1.05rem); letter-spacing:.16em; text-transform:uppercase; color:var(--ink-dim); line-height:1.5}
+.fold-live .fc-l b{display:block; color:#fff; font-family:var(--serif); letter-spacing:0; text-transform:none; font-size:1.5em; font-weight:400}
+.fold-count.most .fold-ring .fg{filter:drop-shadow(0 0 8px rgba(255,226,0,.7))}
+.fold-harbour{display:flex; flex-wrap:wrap; gap:6px 8px; margin-top:clamp(14px,2.4vh,26px); max-width:34vw; min-height:28px; color:var(--gold)}
+.fold-harbour .ico{width:28px; height:28px; animation:boatIn .6s var(--ease) both}
+.fold-harbour .more{font-family:var(--serif); color:var(--gold); font-size:1.1rem; align-self:center; margin-left:4px}
+@keyframes boatIn{from{opacity:0; transform:translateY(10px) scale(.6)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .fd-layer,.fold-harbour .ico{transition:none; animation:none} .fd-table.hint .fd-hint .dot{animation:none} }
 .votes-chip{font-family:var(--serif); font-weight:700; color:var(--navy); background:var(--gold); border-radius:12px; padding:.5rem 1.2rem; font-size:clamp(1rem,1.7vw,1.5rem)}
 
 /* --- Fun fact --- */
@@ -438,6 +507,7 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 #qrOverlay{position:fixed; inset:0; z-index:160; background:rgba(0,4,20,.94); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; cursor:pointer}
 #qrOverlay .qr-big{background:#fff; padding:26px; border-radius:28px; box-shadow:0 30px 80px rgba(0,0,0,.6)}
 #qrOverlay .qr-big img{width:min(52vh,520px); height:min(52vh,520px); display:block}
+#qrOverlay .qr-big{padding:22px}
 
 /* --- Footer nav (BTY CSS footer ribbon integrated) --- */
 footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(180deg, rgba(0,6,31,.35), rgba(0,6,31,.82));
@@ -502,6 +572,7 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
   <div style="text-align:center">
     <div class="qr-big" style="display:inline-block"><img id="qrBigImg" src="joinbtyqr.png" alt="Scan to join" onerror="this.outerHTML='&lt;div style=&quot;width:min(52vh,520px);height:min(52vh,520px);display:flex;align-items:center;justify-content:center;color:#000;font-weight:700;text-align:center;padding:20px&quot;&gt;Join at<br>go.gov.sg/joinbtx&lt;/div&gt;'"></div>
     <p style="color:#fff; font-family:var(--serif); font-size:clamp(1.6rem,3vw,2.6rem); margin-top:22px">Scan to join the Hive</p>
+    <p class="qr-url" id="qrUrl"></p>
     <p style="color:var(--ink-dim); margin-top:6px">Tap anywhere to dismiss</p>
   </div>
 </div>
@@ -625,7 +696,20 @@ const ARCH_KEYS = ARCHETYPES.map(a=>a.key);
 const firebaseConfig = { apiKey:"AIzaSyBjHO57QKoMW-u4oLGGdgDSqw5gttqX6Fg", authDomain:"btyx-61dc6.firebaseapp.com", projectId:"btyx-61dc6", storageBucket:"btyx-61dc6.appspot.com", messagingSenderId:"851137405745", appId:"1:851137405745:web:c95b86b6f0462a9bc20610" };
 
 let app, db, auth, dbReady=false;
-const BUILD = '18 Sep 2026 · v4';   // shown on the start screen so you can tell which build is live
+const BUILD = '19 Oct 2026 · v5';   // shown on the start screen so you can tell which build is live
+/* Where phones join. Worked out from this page's own address, so it is right wherever the show is hosted.
+   If you have a short link (e.g. 'go.gov.sg/joinbtx') that points at the audience page, put it in JOIN_SHORT:
+   the QR codes and the text on screen will use it instead. */
+const JOIN_SHORT = '';
+const JOIN_URL = new URL('x/', location.href).href.split('?')[0];
+const JOIN_LINK = JOIN_SHORT ? 'https://' + JOIN_SHORT.replace(/^https?:\/\//,'') : JOIN_URL;
+const JOIN_LABEL = JOIN_LINK.replace(/^https?:\/\//,'').replace(/\/$/,'');
+// Every join QR on this screen is drawn here from JOIN_LINK (no image file to keep in step).
+(function drawJoinQRs(){
+  if(!window.BTY) return;
+  document.querySelectorAll('img[src="joinbtyqr.png"]').forEach(img=>{ const w=document.createElement('span'); w.className='qr-svg'; w.innerHTML=BTY.qrSVG(JOIN_LINK,{label:'Scan to join'}); img.replaceWith(w); });
+  const u=document.getElementById('qrUrl'); if(u) u.textContent=JOIN_LABEL;
+})();
 const isPresenter = new URLSearchParams(location.search).get('presenter')==='true';
 
 // Load Firebase, init, and sign in — all off the critical path. The UI is
@@ -925,34 +1009,63 @@ function renderBloom(){
 let foldDemoTimer=null;
 function renderFold(step){
   const f=step.fold; setTimeout(()=>{ runFoldDemo(f); paintFoldCount(); },50);
+  const C=2*Math.PI*52;
   return `<div class="fold-stage">
-    <div class="fold-demo" id="foldDemo"></div>
+    <div class="fold-demo"><div class="fd-table" id="foldDemo"><div class="fd-layer cur"></div><div class="fd-layer next"></div><div class="fd-hint"><span class="dot"></span></div></div>
+      <div class="fd-steps" id="fdSteps">${Array.from({length:8},(_,i)=>`<i class="${i<f.from?'done':(i<f.to?'beat':'')}"></i>`).join('')}</div>
+      <div class="fd-stepcap" id="fdStepCap">Fold ${f.from+1} of 8</div></div>
     <div class="fold-side">
-      <p class="eyebrow">Fold with us</p>
+      <p class="eyebrow">Fold with us · on your phone</p>
       <h2 class="stage-title"><span class="fold-letter">${f.letter}</span>${f.name}</h2>
-      <p class="stage-sub" style="margin:6px 0 18px">${f.sub} · folds ${f.from+1}–${f.to}</p>
+      <p class="stage-sub" style="margin:8px 0 0">${f.sub} · folds ${f.from+1}–${f.to}</p>
       <p class="fold-cap" id="foldCap"></p>
-      <div class="fold-count" id="foldCount"><span class="fc-n">0</span><span class="fc-l">boats folded</span></div>
+      <div class="fold-count fold-live" id="foldCount">
+        <div class="fold-ring"><svg viewBox="0 0 120 120"><circle class="bg" cx="60" cy="60" r="52"/><circle class="fg" cx="60" cy="60" r="52" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${C.toFixed(1)}"/></svg><span class="fc-n">0</span></div>
+        <div class="fc-l"><b id="fcTotal">Fold along</b><span id="fcSub">boats folded</span></div>
+      </div>
+      <div class="fold-harbour" id="foldHarbour"></div>
     </div></div>`;
 }
 function runFoldDemo(f){
   if(foldDemoTimer){ clearInterval(foldDemoTimer); foldDemoTimer=null; }
   const host=document.getElementById('foldDemo'), cap=document.getElementById('foldCap'); if(!host) return;
-  let i=f.from;
-  const draw=()=>{ if(!document.getElementById('foldDemo')){ clearInterval(foldDemoTimer); foldDemoTimer=null; return; }
-    if(!boatMod){ host.innerHTML='<div class="fold-wait">⛵</div>'; return; }
-    const st=boatMod.STAGE_FOR_FOLD?boatMod.STAGE_FOR_FOLD[i]:i; const nxt=Math.min(8,(boatMod.STAGE_FOR_FOLD?boatMod.STAGE_FOR_FOLD[i]:i)+1);
-    host.innerHTML=`<div class="fd-pair"><div class="fd-from">${boatMod.buildOrigamiSVG(boatMod.BOAT_DEFAULTS, st, 300)}</div><div class="fd-arrow">→</div><div class="fd-to">${boatMod.buildOrigamiSVG(boatMod.BOAT_DEFAULTS, nxt, 300)}</div></div>`;
-    if(cap) cap.textContent=`Fold ${i+1} · ${(boatMod.FOLD_LABELS&&boatMod.FOLD_LABELS[i])||''}`;
+  // Each fold plays as: the sheet as it is → a gold dot shows the move → the next shape folds down into place → hold.
+  const HINT={0:[[50,14],[50,86]],1:[[13,31],[38,61]],2:[[87,31],[62,61]],3:[[50,82],[50,52]],4:[[50,82],[50,52]],5:[[18,50],[50,50]],6:[[50,84],[50,20]],7:[[16,50],[4,50]]};
+  const cur=host.querySelector('.fd-layer.cur'), nxtL=host.querySelector('.fd-layer.next'), dot=host.querySelector('.fd-hint .dot');
+  const steps=document.getElementById('fdSteps'), stepCap=document.getElementById('fdStepCap');
+  let i=f.from, timers=[];
+  const later=(fn,ms)=>timers.push(setTimeout(()=>{ if(document.getElementById('foldDemo')===host) fn(); },ms));
+  const play=()=>{
+    if(!document.getElementById('foldDemo')){ clearInterval(foldDemoTimer); foldDemoTimer=null; timers.forEach(clearTimeout); return; }
+    if(!boatMod){ cur.innerHTML=BTY.icon('fold'); return; }
+    const st=boatMod.STAGE_FOR_FOLD?boatMod.STAGE_FOR_FOLD[i]:i, nx=Math.min(9,st+1);
+    host.classList.remove('turn','hint');
+    cur.innerHTML=boatMod.buildOrigamiSVG(boatMod.BOAT_DEFAULTS, st, 640);
+    nxtL.innerHTML=boatMod.buildOrigamiSVG(boatMod.BOAT_DEFAULTS, nx, 640);
+    const h=HINT[i]||[[50,20],[50,80]]; dot.style.setProperty('--x0',h[0][0]+'%'); dot.style.setProperty('--y0',h[0][1]+'%'); dot.style.setProperty('--x1',h[1][0]+'%'); dot.style.setProperty('--y1',h[1][1]+'%');
+    if(cap) cap.innerHTML=`<b>Fold ${i+1}</b>${(boatMod.FOLD_LABELS&&boatMod.FOLD_LABELS[i])||''}`;
+    if(steps) steps.querySelectorAll('i').forEach((el,k)=>el.className= k<i?'done':(k===i?'now':(k<f.to?'beat':'')));
+    if(stepCap) stepCap.textContent=`Fold ${i+1} of 8`;
+    later(()=>{ void host.offsetWidth; host.classList.add('hint'); }, 700);
+    later(()=>host.classList.add('turn'), 2000);
     i++; if(i>=f.to) i=f.from; };
-  draw(); foldDemoTimer=setInterval(draw,2600);
+  play(); foldDemoTimer=setInterval(play,4600);
 }
 function paintFoldCount(){
   const s=journeySteps[currentStep]; if(!s||s.type!=='fold') return;
   const el=document.getElementById('foldCount'); if(!el) return;
   const folds=live.folds||{}; const n=Object.values(folds).filter(v=>v>=s.fold.to).length; const total=Math.max(live.compass?.total||0, Object.keys(folds).length);
-  el.querySelector('.fc-n').textContent=n; el.querySelector('.fc-l').textContent= total>0 ? `of ${total} boats folded` : 'boats folded';
+  el.querySelector('.fc-n').textContent=n;
+  const tot=document.getElementById('fcTotal'), sub=document.getElementById('fcSub');
+  if(tot) tot.textContent= total>0 ? `of ${total}` : 'Fold along';
+  if(sub) sub.textContent= s.fold.to>=8 ? 'boats complete' : `past fold ${s.fold.to}`;
+  const C=2*Math.PI*52, fg=el.querySelector('.fold-ring .fg'); if(fg) fg.style.strokeDashoffset=(C*(1-(total>0?Math.min(1,n/total):0))).toFixed(1);
   el.classList.toggle('most', total>0 && n/total>=0.8);
+  const hb=document.getElementById('foldHarbour');
+  if(hb){ const shown=Math.min(n,48), have=hb.querySelectorAll('.ico').length;
+    if(have>shown) hb.innerHTML='';
+    for(let k=hb.querySelectorAll('.ico').length;k<shown;k++){ const w=document.createElement('span'); w.innerHTML=BTY.icon('sail'); const ic=w.firstChild; ic.style.animationDelay=(Math.min(k-have,12)*60)+'ms'; hb.insertBefore(ic, hb.querySelector('.more')); }
+    let more=hb.querySelector('.more'); if(n>48){ if(!more){ more=document.createElement('span'); more.className='more'; hb.appendChild(more); } more.textContent='+'+(n-48); } else if(more) more.remove(); }
 }
 
 function fireBloom(){
@@ -1031,27 +1144,60 @@ function renderContent(step){
     case 'bloom': return renderBloom();
     case 'fold': return renderFold(step);
     case 'fleet': return `<div style="width:100%; height:100%; position:relative; background:#00061f">${iframeLoading()}<iframe src="x/fleet.html?embed=1" title="The Fleet Sets Sail" style="width:100%; height:100%; border:0; display:block; position:relative; z-index:1" allow="autoplay"></iframe></div>`;
-    case 'memento': return `<div style="text-align:center"><div style="font-size:clamp(5rem,12vw,9rem)">📱</div><h2 class="stage-title" style="font-size:clamp(2rem,4vw,3.6rem); margin-top:10px">Check your phone</h2><p class="stage-sub" style="margin:14px auto 0">Your personal Beatty Compass Card is waiting.</p></div>`;
+    case 'memento': return renderClosing(false);
     case 'video': return `<div style="width:100%; height:100%; background:#000; position:relative; display:flex; align-items:center; justify-content:center">${iframeLoading()}<iframe src="${step.url}" style="width:100%; height:100%; border:0; position:relative; z-index:1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`;
     case 'slide': return `<div style="width:100%; height:100%; background:#000; position:relative">${iframeLoading()}<iframe src="${step.url}" style="width:100%; height:100%; border:0; position:relative; z-index:1" allowfullscreen></iframe></div>`;
     default: return '';
   }
 }
 
+/* The close: their card (on every phone now) beside the ask. */
+const CARD_URL='https://go.gov.sg/probeatty', CARD_URL_LABEL='beattysec.moe.edu.sg', SCHOOL_CODE='';
+const WHY_BEATTY=[['8','international exchanges'],['6','industry attachments'],['17','CCAs to belong to']];
+function renderClosing(thanks){
+  return `<div class="closing">
+    <div class="cl-phone"><div class="cl-screen"><img src="card-sample.jpg" alt="A Beatty Compass Card"></div><span class="cl-tag">${BTY.icon('phone')} On every phone now</span></div>
+    <div class="cl-side">
+      <p class="eyebrow">${thanks?'Thank you for sailing with us':'Your journey begins'}</p>
+      <h2 class="stage-title">Make Beatty your<br><span class="gold">1st choice</span></h2>
+      <p class="stage-sub">Your Compass Card is on your phone — your boat, your bee, your course. Save it, share it, and bring it to the Hive booth.</p>
+      <div class="cl-why">${WHY_BEATTY.map(([n,t])=>`<p><b>${n}</b><span>${t}</span></p>`).join('')}</div>
+      <div class="cl-cta">
+        <span class="cl-qr">${BTY.qrSVG(CARD_URL,{label:'Explore Beatty'})}</span>
+        <div><b>Explore Beatty</b><span>${CARD_URL_LABEL}</span><small>${SCHOOL_CODE?'S1 Posting school code '+SCHOOL_CODE+' · ':''}<i>Non Vi Sed Arte</i></small></div>
+      </div>
+      ${thanks?`<div class="cl-links"><a href="${CARD_URL}" target="_blank" rel="noopener" class="btn btn-primary">Explore Beatty ${BTY.icon('arrow')}</a><a href="https://www.beattysec.moe.edu.sg/" target="_blank" rel="noopener" class="btn btn-ghost">Our website</a></div>`:''}
+    </div></div>`;
+}
+
 /* Compass — the Hive of archetypes (FIXED: uses canonical ARCH_KEYS) */
 function renderCompass(){
-  return `<div class="wrap"><div class="compass-grid" id="compassGrid">${
-    ARCHETYPES.map((a,i)=>`
-      <div class="arch-cell" data-arch="${a.key}">
-        <div class="fill" style="height:0%"></div>
-        <div class="pc">0%</div>
-        <div class="ico">${a.icon}</div>
-        <div class="nm">${a.key.replace('The ','')}</div>
-        <div class="tag">${a.tag}</div>
-      </div>`).join('')
-  }</div>
-  <p id="compassWait" style="text-align:center; color:var(--ink-dim); margin-top:22px; font-size:clamp(1rem,1.6vw,1.4rem)">Waiting for the first bees to arrive… scan to join.</p>
-  <div id="compassDone" class="compass-done" hidden><div class="cd-bar"><div class="cd-fill"></div></div><span class="cd-text"></span></div></div>`;
+  const s=journeySteps[currentStep];
+  return `<div class="wrap"><div class="join">
+    <div class="join-qr">
+      <div class="jq-card"><span class="qr-svg">${BTY.qrSVG(JOIN_LINK,{label:'Scan to join'})}</span></div>
+      <div class="jq-cta">Scan to join the Hive</div>
+      <div class="jq-url">${JOIN_LABEL}</div>
+      <div class="jq-live"><div><b id="jqIn">${live.compass.joined||0}</b><span>in the Hive</span></div><div><b class="ready" id="jqReady">${live.compass.total||0}</b><span>found their bee</span></div></div>
+    </div>
+    <div class="join-hive">
+      <p class="eyebrow">Beatty</p>
+      <h2 class="stage-title">${s.title}</h2>
+      <p class="stage-sub">${s.desc||''}</p>
+      <div class="compass-grid" id="compassGrid">${
+        ARCHETYPES.map(a=>`
+        <div class="arch-cell" data-arch="${a.key}">
+          <div class="fill" style="height:0%"></div>
+          <div class="pc">0%</div>
+          <div class="ico">${BTY.archIcon(a.key)}</div>
+          <div class="nm">${a.key.replace('The ','')}</div>
+          <div class="tag">${a.tag}</div>
+        </div>`).join('')
+      }</div>
+      <p id="compassWait" style="color:var(--ink-dim); margin-top:18px; font-size:clamp(.95rem,1.4vw,1.25rem)">Scan, then pick your answers — your bee lands here.</p>
+      <div id="compassDone" class="compass-done" hidden><div class="cd-bar"><div class="cd-fill"></div></div><span class="cd-text"></span></div>
+    </div>
+  </div></div>`;
 }
 /* A bee flies from the join pill to the archetype cell that just gained a member. */
 function landBee(key){
@@ -1071,6 +1217,7 @@ function landBee(key){
 function paintCompass(){
   const grid=document.getElementById('compassGrid'); if(!grid) return;
   const total=live.compass.total||0, bd=live.compass.breakdown||{}, joined=live.compass.joined||0;
+  const ji=document.getElementById('jqIn'), jr=document.getElementById('jqReady'); if(ji) ji.textContent=joined; if(jr) jr.textContent=total;
   const wait=document.getElementById('compassWait'); if(wait) wait.style.display= joined>0?'none':'block';
   const done=document.getElementById('compassDone');
   if(done){ done.hidden= joined===0; const all= joined>0 && total>=joined;
@@ -1481,8 +1628,9 @@ function renderStep(){
 
   const immersive = ['slide','video','globe','industry_map','funfact','finale','fleet','bloom','fold'].includes(step.type);
   const shownTitle = step.type==='poll' ? String(step.title||'').replace(/^Live Poll\s*·\s*/,'') : step.title;
-  const titleHTML = (!immersive && step.title)?`<p class="eyebrow">${step.id.includes('poll')?'Live Poll':'Beatty'}</p><h2 class="stage-title${step.type==='poll'?' poll-title':''}">${shownTitle}</h2>`:'';
-  const descHTML  = (!immersive && step.desc)?`<p class="stage-sub" style="margin:0 auto 26px">${step.desc}</p>`:'';
+  const selfTitled = ['chart','memento'].includes(step.type);          // these screens lay out their own titles
+  const titleHTML = (!immersive && !selfTitled && step.title)?`<p class="eyebrow">${step.id.includes('poll')?'Live Poll':'Beatty'}</p><h2 class="stage-title${step.type==='poll'?' poll-title':''}">${shownTitle}</h2>`:'';
+  const descHTML  = (!immersive && !selfTitled && step.desc)?`<p class="stage-sub" style="margin:0 auto 26px">${step.desc}</p>`:'';
   const inner = renderContent(step);
 
   if(immersive){ journeyContent.innerHTML=`<div style="width:100%;height:100%">${inner}</div>`; }
@@ -1537,18 +1685,7 @@ nextBtn.addEventListener('click',(e)=>{
 prevBtn.addEventListener('click',(e)=>{ if(!started) return; ripple(e,prevBtn); if(currentStep>0){ journeySteps[currentStep].revealed=false; currentStep--; goRender(); } });
 
 function finishJourney(){
-  journeyContent.innerHTML=`<div class="wrap" style="text-align:center">
-    <div style="font-size:clamp(3rem,7vw,5rem)">🐝</div>
-    <h2 class="stage-title" style="font-size:clamp(2.2rem,5vw,4.2rem); margin-top:8px">Your Journey Begins Now</h2>
-    <p class="stage-sub" style="margin:18px auto 0">Thank you for stepping into the Hive. We can't wait to help your aspirations take flight.</p>
-    <p style="font-family:var(--serif); color:var(--gold); font-style:italic; font-size:clamp(1.2rem,2vw,1.8rem); margin-top:22px">Non Vi Sed Arte</p>
-    <p style="color:#fff; margin-top:18px; font-size:clamp(1.05rem,1.7vw,1.5rem)">Save your <b style="color:var(--gold)">Compass Card</b> · show it at the <b style="color:var(--gold)">Hive booth</b> ⛵</p>
-    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:26px">
-      <a href="https://go.gov.sg/probeatty" target="_blank" rel="noopener" class="btn btn-primary" style="text-decoration:none">Explore Beatty ➜</a>
-      <a href="https://www.beattysec.moe.edu.sg/" target="_blank" rel="noopener" class="btn btn-ghost" style="text-decoration:none">Our Website</a>
-    </div>
-    <p style="color:var(--ink-dim); margin-top:20px; font-size:1rem">Follow us · go.gov.sg/beattyig · go.gov.sg/beattyfb · go.gov.sg/beattyin</p>
-  </div>`;
+  journeyContent.innerHTML=`<div class="wrap" style="width:100%">${renderClosing(true)}</div>`;
   if(dbReady && isPresenter) setDoc(doc(db,"session","state"),{currentView:'end',ts:Date.now()}).catch(()=>{});
   prevBtn.style.display='none'; nextBtn.style.display='none'; progFill.style.width='100%';
   launchConfetti();

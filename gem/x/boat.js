@@ -21,9 +21,11 @@ const WASHI_FILTER_ID = 'washiTex';
 function washiDefs() {
     return `<defs>
         <filter id="${WASHI_FILTER_ID}" x="0%" y="0%" width="100%" height="100%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="4" seed="3" result="n"/>
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="n"/>
             <feColorMatrix type="saturate" values="0" in="n" result="g"/>
-            <feBlend mode="soft-light" in="SourceGraphic" in2="g"/>
+            <feComponentTransfer in="g" result="soft"><feFuncR type="linear" slope="0.32" intercept="0.34"/><feFuncG type="linear" slope="0.32" intercept="0.34"/><feFuncB type="linear" slope="0.32" intercept="0.34"/></feComponentTransfer>
+            <feBlend mode="soft-light" in="SourceGraphic" in2="soft" result="b"/>
+            <feComposite in="b" in2="SourceGraphic" operator="in"/>
         </filter>
     </defs>`;
 }
