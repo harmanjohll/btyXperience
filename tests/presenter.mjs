@@ -12,9 +12,12 @@ const pr = await presenter(browser, srv.url);
 
 // A bee lands when a phone finds its archetype (written straight into the stand-in database).
 const put = (path, data, merge = true) => fetch(srv.url + '/__fs/write', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ op: 'set', path, data, merge }) });
-await put('compassQuiz/a', { archetype: 'Beattyian' }); await put('compassQuiz/b', { archetype: 'Beattyian' });
+const e = (await until(() => srv.api.get('session/state')?.epoch, 4000));
+c.ok(/^show-/.test(e || ''), 'the show\'s saved state carries a show id');
+await put('compassQuiz/old', { archetype: 'The Innovator', done: true, e: 'show-rehearsal' });   // a rehearsal phone: must not count
+await put('compassQuiz/a', { archetype: 'Beattyian', e }); await put('compassQuiz/b', { archetype: 'Beattyian', e });
 await until(async () => /2 in the Hive · 0 ready/.test(await pr.$eval('#pCount', e => e.textContent)), 4000);
-await put('compassQuiz/a', { archetype: 'The Innovator', done: true });
+await put('compassQuiz/a', { archetype: 'The Innovator', done: true, e });
 const flew = await until(() => pr.$('.bee-fly'), 3000);
 c.ok(flew, 'a phone finds its bee → a bee flies to its cell');
 c.ok(await until(async () => /2 in the Hive · 1 ready/.test(await pr.$eval('#pCount', e => e.textContent)), 4000), 'pill: "2 in the Hive · 1 ready"');

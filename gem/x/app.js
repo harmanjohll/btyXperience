@@ -69,7 +69,7 @@ function syncClock() {
     try {
         const ref = doc(db, "compassQuiz", auth.currentUser.uid);
         const lt = Date.now();
-        setDoc(ref, { archetype: D.bee || 'Beattyian', timestamp: serverTimestamp(), lt }, { merge: true }).catch(() => {});
+        setDoc(ref, { archetype: D.bee || 'Beattyian', e: D.epoch || null, timestamp: serverTimestamp(), lt }, { merge: true }).catch(() => {});
         let unsub = null;
         unsub = onSnapshot(ref, (snap) => {
             try {
@@ -463,6 +463,7 @@ function startSessionListener() {
                 return;
             }
             setLink('live', data.step);
+            if (adoptEpoch(data.epoch)) return;                      // a new show began: this phone starts fresh
             if (quizActive) { lastSessionState = data; return; }   // finish finding your bee first; the show is waiting
             if (data.cue) handleCue(data.cue);
             applyView(data);
@@ -503,6 +504,18 @@ let step = 0;
 const TOTAL_QUESTIONS = 6;
 
 function save() { localStorage.setItem(SK, JSON.stringify(D)); }
+/* The show's id. First sight: adopt it (and re-stamp this phone's saved state so the big screen counts it).
+   A different id later means the presenter started a new show: wipe the rehearsal and board again. */
+function adoptEpoch(ep) {
+    if (!ep || D.epoch === ep) return false;
+    if (!D.epoch) { D.epoch = ep; save(); if (D.boarded) pushMine(D.bee ? { done: true, f: D.nextFold || 0, ...(D.aspiration ? { boat: boatPayload(), w: D.aspiration } : {}) } : {}); return false; }
+    localStorage.removeItem(SK);
+    D = { marks: [], epoch: ep }; save();
+    followMode = false; soloMode = false; currentView = null; cardFile = null; quizActive = false;
+    if (sailSeq) { cancelAnimationFrame(sailSeq); sailSeq = null; }
+    renderBoard();
+    return true;
+}
 /* This phone's saved state in the cloud: ONE document, compassQuiz/{uid}, merged as the
    show goes (last year's collection). Its bee, votes, picks, mood, dream word, folds,
    boat and last reaction all live here; the big screen counts everything. Every write
@@ -510,7 +523,7 @@ function save() { localStorage.setItem(SK, JSON.stringify(D)); }
 function pushMine(partial) {
     if (!db || !auth?.currentUser) return Promise.resolve();
     try {
-        return setDoc(doc(db, "compassQuiz", auth.currentUser.uid), { ...partial, archetype: D.bee || 'Beattyian', t: serverTimestamp() }, { merge: true })
+        return setDoc(doc(db, "compassQuiz", auth.currentUser.uid), { ...partial, archetype: D.bee || 'Beattyian', e: D.epoch || null, t: serverTimestamp() }, { merge: true })
             .catch(e => console.warn("sync:", e));
     } catch (e) { return Promise.resolve(); }
 }

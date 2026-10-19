@@ -128,6 +128,22 @@ const lbl = await until(async () => /One of 3 boats/.test(await appHTML(phones[0
 c.ok(lbl, 'card: "One of 3 boats"');
 await shot(phones[0], 'sync-26-card');
 
+// --- Reset = a new show: phones start fresh, counts go back to zero (no deletes needed) ---
+const e1 = state().epoch;
+await pr.evaluate(() => { document.getElementById('presenterPanel')?.classList.remove('collapsed'); });
+await pr.click('#ppReset'); await pr.fill('#resetInput', 'RESET'); await pr.click('#resetConfirm');
+const e2 = await until(() => state().epoch !== e1 ? state().epoch : null, 6000);
+c.ok(e2 && e2 !== e1, 'Reset writes a new show id');
+const fresh = await until(async () => (await Promise.all(phones.map(p => p.$('#boardBtn')))).every(Boolean), 8000);
+c.ok(fresh, 'every phone drops its rehearsal boat and is back at "Tap to board"');
+await sleep(2500);   // the presenter reloads itself
+await until(() => pr.$('#beginBtn'), 8000); await pr.click('#beginBtn').catch(() => {});
+const zero = await until(async () => /Warming up/.test(await pr.$eval('#pCount', e => e.textContent).catch(() => '')), 6000);
+c.ok(zero, 'the big screen counts zero phones for the new show');
+await board(phones[0]);
+const one = await until(async () => /1 in the Hive · 1 ready/.test(await pr.$eval('#pCount', e => e.textContent).catch(() => '')), 8000);
+c.ok(one, 'a phone boarding the new show is counted');
+
 // --- What the database saw --------------------------------------------------------------
 const cols = new Set(srv.api.log.filter(l => l.op === 'set').map(l => l.path.split('/')[0]));
 c.ok([...cols].every(x => x === 'compassQuiz' || x === 'session'), 'only two saved states were written: ' + [...cols].join(', '));

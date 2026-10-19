@@ -671,7 +671,7 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 // unreachable on venue wifi, the module STILL runs — the presentation boots
 // in offline/demo mode instead of the whole page going dead. (A static
 // `import` resolves before any code runs, so a CDN failure would kill everything.)
-let initializeApp, getFirestore, collection, getDocs, writeBatch, onSnapshot, doc, setDoc, serverTimestamp, getAuth, signInAnonymously;
+let initializeApp, getFirestore, collection, getDocs, getDoc, writeBatch, onSnapshot, doc, setDoc, serverTimestamp, getAuth, signInAnonymously;
 async function loadFirebase(){
   const [appM, fsM, authM] = await Promise.all([
     import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
@@ -679,7 +679,7 @@ async function loadFirebase(){
     import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"),
   ]);
   initializeApp = appM.initializeApp;
-  ({ getFirestore, collection, getDocs, writeBatch, onSnapshot, doc, setDoc, serverTimestamp } = fsM);
+  ({ getFirestore, collection, getDocs, getDoc, writeBatch, onSnapshot, doc, setDoc, serverTimestamp } = fsM);
   ({ getAuth, signInAnonymously } = authM);
 }
 
@@ -725,6 +725,7 @@ const isPresenter = new URLSearchParams(location.search).get('presenter')==='tru
 // interactive immediately (below); live sync attaches only if/when this resolves.
 loadFirebase()
   .then(()=>{ app=initializeApp(firebaseConfig); db=getFirestore(app); auth=getAuth(app); return signInAnonymously(auth); })
+  .then(()=>loadEpoch())
   .then(()=>{ dbReady=true; initListeners(); broadcastIfActive(); })
   .catch(e=>{ console.warn("Live sync unavailable — presenting in demo mode:",e); showToast("Live sync offline — presenting in demo mode"); const b=document.getElementById('liveBadge'); if(b){ b.textContent='OFFLINE'; b.className='pill warn'; } });
 // Re-broadcast current state once auth is ready, in case the presenter started early.
@@ -854,6 +855,21 @@ const modalData={
   Makita:{ title:"Mechatronics @ ITE West & Makita", students:16, duration:"7–8 months", desc:"A deep dive into modern mechatronics and manufacturing with industry leader Makita." },
 };
 
+/* ---------- The show's id ----------
+   Every phone stamps its saved state with the show's id (`e`), and the big screen
+   counts only this show's phones. "Reset" simply starts a new show id: no deletes
+   needed (the database may not allow them), rehearsal phones drop out of the
+   counts, and any phone still holding a rehearsal boat starts fresh. */
+let EPOCH=null;
+async function loadEpoch(){
+  let fromState=null;
+  try{ const s=await getDoc(doc(db,'session','state')); const d=s.exists()?s.data():null; if(d && d.epoch) fromState=d.epoch; }catch(e){}
+  let local=null; try{ local=localStorage.getItem('btx_epoch'); }catch(e){}
+  EPOCH = fromState || local || newEpoch();
+  try{ localStorage.setItem('btx_epoch', EPOCH); }catch(e){}
+}
+function newEpoch(){ return 'show-'+Date.now().toString(36); }
+
 /* ---------- Firebase listeners ----------
    Two saved states, nothing else — the same channel last year's show used.
    · session/state      — the show's saved state (this screen writes it; phones follow it)
@@ -868,6 +884,7 @@ function initListeners(){
     const r={total:0,joined:0,breakdown:{}}, polls={}, nexus={global:{total:0,breakdown:{}},local:{total:0,breakdown:{}}}, pulse={}, words=[], folds={}, landed=[], seen={};
     let fleet=0;
     snap.forEach(d=>{ const x=d.data()||{}; const id=d.id, prev=mineSeen[id]||{};
+      if(EPOCH && x.e!==EPOCH) return;                       // a phone from a rehearsal (or an earlier show)
       r.joined++; const v=x.archetype;
       if(v && ARCH_KEYS.includes(v)){ r.total++; r.breakdown[v]=(r.breakdown[v]||0)+1; if(minePrimed && prev.a!==v) landed.push(v); }
       if(x.v) for(const pid in x.v){ const k=x.v[pid]; if(typeof k!=='number') continue; const t=(polls[pid]=polls[pid]||{total:0,breakdown:{}}); t.total++; t.breakdown[k]=(t.breakdown[k]||0)+1; }
@@ -918,7 +935,7 @@ function broadcastSession(){
     chapter: step.ch||'', funfact: step.funfactData||null, card: PHONE_CARD[step.id]||null, fold: step.fold||null,
     staticContent: step.type==='values'?true:null,
     tally: (step.type==='poll' && step.revealed) ? pollTally(step.pollData) : null,   // phones draw the result bars from this — they never read the votes
-    fleet: live.fleet||0,
+    fleet: live.fleet||0, epoch: EPOCH,
     ts:lastWriteTs, sts:serverTimestamp(), cue
   }).catch(syncFail);
 }
@@ -1744,16 +1761,16 @@ document.getElementById('resetCancel').onclick=()=>document.getElementById('rese
 document.getElementById('resetConfirm').onclick=async()=>{
   if(document.getElementById('resetInput').value.trim().toUpperCase()!=='RESET'){ showToast('Type RESET to confirm'); return; }
   if(!dbReady){ showToast('No live session to reset'); return; }
-  // The two saved states first; then last year's / older collections, each on its own so one locked collection can't stop the reset.
-  const cols=['compassQuiz','session','polls','nexusVotes','aspirations','pulseCheck','config','x_boats','x_session','reactions'];
-  let core=true;
-  for(const c of cols){
-    try{ const s=await getDocs(collection(db,c)); if(s.empty) continue;
-      for(let i=0;i<s.docs.length;i+=450){ const b=writeBatch(db); s.docs.slice(i,i+450).forEach(d=>b.delete(d.ref)); await b.commit(); }   // a batch holds 500 ops at most
-    }catch(e){ console.warn('reset '+c+':',e); if(c==='compassQuiz'||c==='session') core=false; }
+  // 1. A new show id, written to the show's saved state: every phone and count starts from zero.
+  EPOCH=newEpoch(); try{ localStorage.setItem('btx_epoch', EPOCH); }catch(e){}
+  try{ await setDoc(doc(db,'session','state'),{ currentView:'chart', step:0, epoch:EPOCH, ts:Date.now(), sts:serverTimestamp(), cue:null }); }
+  catch(e){ console.warn('reset:',e); showToast('Reset failed — check the connection'); return; }
+  // 2. Tidy up old documents where the database allows it (each collection on its own; failures are fine).
+  for(const c of ['compassQuiz','polls','nexusVotes','aspirations','pulseCheck','config','x_boats','x_session','reactions']){
+    try{ const s=await getDocs(collection(db,c)); for(let i=0;i<s.docs.length;i+=450){ const b=writeBatch(db); s.docs.slice(i,i+450).forEach(d=>b.delete(d.ref)); await b.commit(); } }   // a batch holds 500 ops at most
+    catch(e){ console.warn('tidy '+c+' skipped:',e && e.code); }
   }
-  if(!core){ showToast('Reset failed — check the connection'); return; }
-  document.getElementById('resetModal').classList.add('hidden'); showToast('Session reset — reloading…'); setTimeout(()=>location.reload(),1400);
+  document.getElementById('resetModal').classList.add('hidden'); showToast('New show started — reloading…'); setTimeout(()=>location.reload(),1400);
 };
 
 /* =====================================================================
