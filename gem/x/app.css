@@ -1048,3 +1048,16 @@ body[data-mode="watch"] .mode-band { background: rgba(0,12,83,.9); }
 .hap-line[data-kind="ok"] { border-color: rgba(155,231,196,.4); }
 .hap-line[data-kind="blocked"] { border-color: rgba(236,50,55,.45); color: #ffb4b6; }
 .hap-btn { padding: 5px 10px; border-radius: 999px; background: var(--accent-gold); color: #04081a; font-weight: 800; font-size: .62rem; letter-spacing: .08em; text-transform: uppercase; }
+
+/* --- Reactions: tap → it floats up the big screen; the phone shows it leaving --- */
+.react-bar { margin-top: auto; padding: 8px 14px 22px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; }
+body:has(#cornerBoat:not([hidden])) .react-bar { padding-right: 100px; gap: 8px; }   /* leave the corner boat its corner: four buttons still fit on one row at 390px */
+body:has(#cornerBoat:not([hidden])) .react-btn { width: 44px; height: 44px; font-size: 1.3rem; }
+.react-btn { width: 52px; height: 52px; border-radius: 50%; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); color: inherit; font-size: 1.5rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; transition: transform .12s ease, background .2s ease; }
+.react-btn:active { transform: scale(.88); background: rgba(255,226,0,.18); }
+.react-btn.sent { animation: reactPop .45s ease; }
+@keyframes reactPop { 0% { transform: scale(1); } 40% { transform: scale(1.22); } 100% { transform: scale(1); } }
+.react-hint { flex-basis: 100%; text-align: center; font-size: .58rem; letter-spacing: .18em; text-transform: uppercase; color: var(--text-muted); }
+.react-float { position: fixed; z-index: 80; pointer-events: none; font-size: 1.8rem; line-height: 1; transform: translate(-50%, -50%); animation: reactFloat 1.4s cubic-bezier(.2,.7,.3,1) forwards; }
+@keyframes reactFloat { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.6); } 15% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, calc(-50% - 46vh)) scale(1.3); } }
+@media (prefers-reduced-motion: reduce) { .react-float, .react-btn.sent { animation: none; } }
