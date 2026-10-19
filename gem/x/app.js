@@ -2494,7 +2494,7 @@ function sendReaction(emoji, btn) {
     feel('tick');
     try { const r = btn.getBoundingClientRect(); const f = document.createElement('span'); f.className = 'react-float'; f.textContent = emoji; f.style.left = (r.left + r.width / 2) + 'px'; f.style.top = (r.top + r.height / 2) + 'px'; document.body.appendChild(f); setTimeout(() => f.remove(), 1500); } catch (e) {}
     btn.classList.remove('sent'); void btn.offsetWidth; btn.classList.add('sent');
-    rxSeq++; pushMine({ rx: { s: rxSeq, e: emoji } });
+    rxSeq = Math.max(rxSeq + 1, Date.now()); pushMine({ rx: { s: rxSeq, e: emoji } });   // unique even across a reload
 }
 function renderWatch(state) {
     hideCornerBoat();
