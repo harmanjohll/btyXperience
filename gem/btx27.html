@@ -346,10 +346,13 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .dfront .letter{font-family:var(--serif); font-weight:700; color:var(--gold); font-size:clamp(2.8rem,5.2vw,5rem); line-height:.9; text-shadow:0 4px 24px rgba(255,226,0,.25)}
 .dfront .word{font-family:var(--serif); color:#fff; font-size:clamp(1.05rem,1.7vw,1.75rem); letter-spacing:.02em}
 .dfront .hint{margin-top:8px; font-family:var(--sans); font-size:clamp(.58rem,.82vw,.78rem); letter-spacing:.16em; text-transform:uppercase; color:var(--ink-dim)}
-.dback{background:linear-gradient(160deg,var(--navy-700),var(--navy-850)); transform:rotateY(180deg); padding:clamp(16px,2vw,30px); display:flex; flex-direction:column; justify-content:center}
-.dback h4{color:var(--gold); font-size:clamp(1.2rem,2vw,2rem); margin-bottom:16px}
-.dback li{color:var(--ink); font-size:clamp(.82rem,1.15vw,1.2rem); margin-bottom:12px; line-height:1.35; list-style:none; padding-left:22px; position:relative}
-.dback li:before{content:""; position:absolute; left:2px; top:.45em; width:9px; height:10px; background:var(--gold); clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.dback{background:linear-gradient(160deg,var(--navy-700),var(--navy-850)); transform:rotateY(180deg); padding:clamp(24px,4vh,46px) clamp(18px,1.7vw,30px) clamp(18px,3vh,30px); display:flex; flex-direction:column; justify-content:flex-start; text-align:left}
+.dback .dl{font-family:var(--serif); font-weight:700; color:var(--gold); font-size:clamp(2.6rem,4.4vw,4.6rem); line-height:.9}
+.dback h4{color:#fff; font-family:var(--serif); font-size:clamp(1.35rem,2.1vw,2.3rem); line-height:1.1; margin:6px 0 0}
+.dback .rule{display:block; width:46px; height:3px; border-radius:2px; background:var(--gold); margin:clamp(12px,2vh,20px) 0 clamp(14px,2.4vh,24px)}
+.dback ul{margin:0; padding:0}
+.dback li{color:var(--ink); font-size:clamp(1rem,1.42vw,1.5rem); line-height:1.38; margin-bottom:clamp(12px,2vh,20px); list-style:none; padding-left:26px; position:relative; text-wrap:pretty}
+.dback li:before{content:""; position:absolute; left:2px; top:.42em; width:11px; height:12px; background:var(--gold); clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
 /* Exceptional touches: the five cards cascade in (reinforcing D-R-E-A-M), a
    gold glow answers the cursor, and the value's points rise in sequence when
    the card is flipped. */
@@ -387,6 +390,23 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 
 .map-host{flex:2; position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; border-right:1px solid rgba(255,226,0,.14)}
 .map-inner{position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center}
+.map-inner{container-type:size}
+.map-frame{position:relative; width:min(94cqw, calc(86cqh * 1.3575)); aspect-ratio:1086/800}
+.map-frame .map-img{position:absolute; inset:0; width:100%; height:100%}
+.sg-leaders{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible}
+.sg-leaders line{stroke:rgba(255,255,255,.75); stroke-width:2; vector-effect:non-scaling-stroke}
+.sg-leaders line.home{stroke:var(--gold)}
+.sgdot{position:absolute; width:18px; height:18px; margin:-9px 0 0 -9px; border-radius:50%; border:3px solid #fff; box-shadow:0 3px 10px rgba(0,0,0,.55); z-index:4}
+.sgdot.home{width:22px; height:22px; margin:-11px 0 0 -11px; background:var(--navy); border-color:var(--gold); box-shadow:0 0 0 4px rgba(255,226,0,.25), 0 0 20px rgba(255,226,0,.7)}
+.sglbl{position:absolute; z-index:6; cursor:pointer}
+.sglbl .lbl{font-family:var(--serif); font-weight:700; color:var(--navy); background:var(--gold); padding:6px 13px; border-radius:9px; font-size:clamp(.78rem,1.1vw,1.2rem); white-space:nowrap; box-shadow:0 6px 14px rgba(0,0,0,.45)}
+.sglbl .mcnt{margin-left:8px; font-family:var(--serif); color:var(--navy); opacity:.75} .sglbl .mcnt:empty{display:none}
+.sglbl.side-r{transform:translate(0,-50%)} .sglbl.side-l{transform:translate(-100%,-50%)}
+.sglbl.side-u{transform:translate(-50%,-100%)} .sglbl.side-d{transform:translate(-50%,0)}
+.sglbl.home{cursor:default}
+.sglbl.home .lbl{background:rgba(0,6,31,.94); color:var(--gold); border:1.5px solid var(--gold)}
+.sglbl:hover{z-index:50} .sglbl:not(.home):hover .lbl{filter:brightness(1.08)}
+.sglbl.chosen .lbl{box-shadow:0 0 0 3px #fff, 0 6px 14px rgba(0,0,0,.5)}
 .map-img{position:absolute; inset:0; width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 0 22px rgba(255,226,0,.28)) drop-shadow(0 18px 30px rgba(0,0,0,.5))}
 .map-img.raw{filter:brightness(0) invert(1) sepia(1) saturate(6) hue-rotate(1deg) drop-shadow(0 0 12px rgba(255,226,0,.5)); opacity:.85}
 .map-grid{position:absolute; inset:0; background-image:linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px); background-size:8% 8%; pointer-events:none}
@@ -411,6 +431,7 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 #globePins{position:absolute; inset:0; pointer-events:none; overflow:hidden}
 .gpin .lbl{position:relative}
 .gpin .gcnt{margin-left:8px; font-family:var(--serif); color:var(--gold)}
+.gpin.below{flex-direction:column-reverse} .gpin.below .dot{margin-top:0; margin-bottom:-6px}
 .globe-vis .globe-ctrl{left:auto; right:26px; transform:none}
 .gpin.home .gcnt{display:none}
 .gpin .gcnt:empty{display:none}
@@ -796,19 +817,19 @@ const journeySteps=[
   { id:'funfact_nexus', type:'funfact', funfactData:{ number:"8", label:"International exchanges every year", subtitle:"From Hanoi to New Zealand, Estonia to Bali — Beattyians explore the world." } },
   { id:'fold_i', type:'fold', title:"Fold with us · I", desc:"International & Industry — the sail.", fold:{letter:'I', name:'International & Industry', sub:'The Sail', from:4, to:6} },
   { id:'nexus_global', type:'globe', title:"Exploring New Skies, Building Ties", desc:"NEXUS@BTY international exchanges. Choose the one that calls to you — your bee lands on the globe.",
-     nexusData:{ type:'global', options:[ {id:'GeoBali',text:'Bali (Geography)'},{id:'NZ',text:'New Zealand'},{id:'Korea',text:'South Korea (A.I.)'},{id:'MiharaJapan',text:'Japan (Social Sciences)'},{id:'MutsuzawaJapan',text:'Japan (STEM)'},{id:'Estonia',text:'Estonia (Cyber)'},{id:'Hanoi',text:'Vietnam (Hanoi)'} ] } },
+     nexusData:{ type:'global', options:[ {id:'GeoBali',text:'Bali (Geography)'},{id:'LitBali',text:'Bali (Literature)'},{id:'NZ',text:'New Zealand'},{id:'Korea',text:'South Korea (A.I.)'},{id:'MiharaJapan',text:'Japan (Social Sciences)'},{id:'MutsuzawaJapan',text:'Japan (STEM)'},{id:'Estonia',text:'Estonia (Cyber)'},{id:'Hanoi',text:'Vietnam (Hanoi)'} ] } },
   { id:'nexus_local', type:'industry_map', title:"Dive into the Wonders of Work", desc:"NEXUS@BTY industry attachments across Singapore. Where would you thrive?",
+     // Real places (lat, lon). Each label sits at (ax, ay) on the 1086×800 map image, joined to its dot by a leader line.
      localData:[
-       {id:"Rockwell", name:"Rockwell", pos:{x:18,y:47}},
-       {id:"PIL", name:"PIL", pos:{x:50,y:55}},
-       {id:"Journalism", name:"Berita Harian", pos:{x:50,y:42}, off:"bottom:34px"},
-       {id:"TamilMurasu", name:"Tamil Murasu", pos:{x:56,y:44}, off:"top:34px"},
-       {id:"Makita", name:"Makita × ITE", pos:{x:28,y:42}},
-       {id:"ASTAR", name:"A*STAR", pos:{x:43,y:57}} ],
+       {id:"Rockwell",    name:"Rockwell Automation", lat:1.3430, lon:103.7180, ax:150, ay:300, side:'l'},
+       {id:"Makita",      name:"Makita × ITE West",   lat:1.3801, lon:103.7432, ax:300, ay:196, side:'u'},
+       {id:"ASTAR",       name:"A*STAR",              lat:1.2991, lon:103.7877, ax:372, ay:560, side:'d'},
+       {id:"PIL",         name:"PIL",                 lat:1.2790, lon:103.8478, ax:650, ay:575, side:'r'},
+       {id:"Journalism",  name:"Berita Harian",       lat:1.3393, lon:103.8525, ax:700, ay:282, side:'r', dx:9, dy:-7},
+       {id:"TamilMurasu", name:"Tamil Murasu",        lat:1.3393, lon:103.8525, ax:705, ay:420, side:'r', dx:9, dy:9} ],
      nexusData:{ type:'local', options:[ {id:'Rockwell',text:'Rockwell Automation'},{id:'PIL',text:'PIL (Maritime)'},{id:'Journalism',text:'Berita Harian'},{id:'TamilMurasu',text:'Tamil Murasu'},{id:'Makita',text:'Makita (Mechatronics)'},{id:'ASTAR',text:'A*STAR Research'} ] } },
   { id:'deck_d', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRIJppB8CD0rLo6qLaE4eiXeJHcYviqju1Gf3QChKnv7XsJY2cfYQ0eU8M7pSf5Bos2DcyuIxl6ZCPX/pubembed?start=false&loop=false&delayms=60000" },
   { id:'deck_e', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRxw0Yj77fW9I87q0-XgXfqwGPwdi6RPDXBHb7CMGmEJTdBhELve0N5rAg5WbtS2vivKyV5WZO9gB_m/pubembed?start=false&loop=false&delayms=60000" },
-  { id:'hive_wakes', type:'bloom', title:"The Hive Wakes", desc:"Phones up, screens facing out. On zero, we light the hall together." },
   { id:'fold_l', type:'fold', title:"Fold with us · L", desc:"Learning to Live, Learn & Love — the flag. Pull it open: a boat.", fold:{letter:'L', name:'Learning to Live, Learn & Love', sub:'The Flag', from:6, to:8} },
   { id:'pulse_check', type:'pulse_check', title:"How's the Hive Feeling?", desc:"Tap on your phone — let's read the room." },
   { id:'set_sail', type:'fleet', title:"Set Sail, Beatty!", desc:"Every boat is a Beattyian setting sail from our Hive. Look up — here comes the fleet." },
@@ -826,7 +847,7 @@ const CHAPTER_OF={ compass:'Into the Hive', video_intro:'Who we are', deck_a:'Wh
   poll_dream:'Our values', values:'Our values', deck_b:'Our values',
   funfact_cca:'Passions', fold_a:'Passions', poll_cca:'Passions', deck_c:'Passions',
   poll_nexus_count:'NEXUS@BTY', poll_industry:'NEXUS@BTY', funfact_nexus:'NEXUS@BTY', fold_i:'NEXUS@BTY', nexus_global:'NEXUS@BTY', nexus_local:'NEXUS@BTY', deck_d:'NEXUS@BTY',
-  deck_e:'Your pathway', hive_wakes:'Set sail', fold_l:'Set sail', pulse_check:'Set sail', set_sail:'Set sail', finale:'Set sail',
+  deck_e:'Your pathway', fold_l:'Set sail', pulse_check:'Set sail', set_sail:'Set sail', finale:'Set sail',
   deck_f:'Your journey', card:'Your journey' };
 const PHONE_CARD={
   deck_a:{ title:'', keys:[] },   // e.g. title:'Welcome to Beatty', keys:['Est. 1953 · named after Admiral Beatty', '…', '…']
@@ -840,7 +861,8 @@ journeySteps.forEach(st=>{ if(!st.ch) st.ch=CHAPTER_OF[st.id]||''; });
 const RESPOND_TYPES=['chart','poll','globe','industry_map','pulse_check','finale','fold'];
 
 const modalData={
-  GeoBali:{ title:"Geography & Literature @ Bali", students:30, duration:"1 Week", desc:"An immersive study of Bali's living landscape — its volcanic geography and the communities who adapt to it.", highlights:["Read a real volcanic landscape","See how communities adapt to their environment","Learn on-site, beyond the classroom"] },
+  GeoBali:{ title:"Geography @ Bali", students:30, duration:"1 Week", desc:"An immersive study of Bali's living landscape — its volcanic geography and the communities who adapt to it.", highlights:["Read a real volcanic landscape","See how communities adapt to their environment","Learn on-site, beyond the classroom"] },
+  LitBali:{ title:"Literature @ Bali", duration:"1 Week", desc:"Literature on location — reading and writing about Bali's stories, culture and people, where they come from.", highlights:["Read texts in the place they describe","Write from first-hand experience","Learn on-site, beyond the classroom"] },
   NZ:{ title:"Leadership & Sustainability @ Aorere College, New Zealand", students:10, duration:"1 Week", desc:"Co-designed with Aorere College — leadership grown through service and sustainability.", highlights:["Sharpen critical & creative thinking","Develop real leadership qualities","See language's role in leading others"] },
   Korea:{ title:"Artificial Intelligence @ South Korea", students:12, duration:"1 Week", desc:"Step into the future of technology in one of the world's most innovative societies.", highlights:["Hands-on with applied A.I.","Learn from a leading tech culture","Bring the future home to Beatty"] },
   MiharaJapan:{ title:"Social Sciences @ Mihara, Japan", students:14, duration:"1 Week", desc:"A transformative exchange with Hiroshima University High School.", highlights:["Deepen global & cultural literacy","Grow social-emotional competencies","Live rich Japanese culture"] },
@@ -969,7 +991,7 @@ function startClockListener(){
 let pendingCue=null;
 const SAIL_LEAD=8000;
 const SAIL_WORDS=[[6000,'NON VI',false],[5000,'SED ARTE',true],[4000,'NON VI',false],[3000,'SED ARTE',true],[2000,'NON VI',false],[1000,'SED ARTE!',true]]   // ms remaining before the release;
-const DEST_ROLL=[{id:'Hanoi',name:'Hanoi',col:'#8E7CFF'},{id:'GeoBali',name:'Bali',col:'#F28C28'},{id:'NZ',name:'New Zealand',col:'#2BB3A8'},{id:'Korea',name:'South Korea',col:'#D64FA0'},{id:'MiharaJapan',name:'Mihara, Japan',col:'#EC5A5F'},{id:'MutsuzawaJapan',name:'Mutsuzawa, Japan',col:'#B5D334'},{id:'Estonia',name:'Estonia',col:'#7FD3F7'}];
+const DEST_ROLL=[{id:'Hanoi',name:'Hanoi',col:'#8E7CFF'},{id:'GeoBali',name:'Bali · Geography',col:'#F28C28'},{id:'LitBali',name:'Bali · Literature',col:'#FFB36B'},{id:'NZ',name:'New Zealand',col:'#2BB3A8'},{id:'Korea',name:'South Korea',col:'#D64FA0'},{id:'MiharaJapan',name:'Mihara, Japan',col:'#EC5A5F'},{id:'MutsuzawaJapan',name:'Mutsuzawa, Japan',col:'#B5D334'},{id:'Estonia',name:'Estonia',col:'#7FD3F7'}];
 function fireSetSail(){
   if(!isPresenter) return;
   if(pendingCue && pendingCue.at > serverNow()) { showToast('Already counting…'); return; }
@@ -1300,7 +1322,7 @@ function renderValues(){
           <div class="bg" style="background-image:url('${v.img}'); background-color:${v.tint||'#0a1650'}"></div>
           <div class="txt"><div class="letter">${v.name[0]}</div><div class="word">${v.name}</div><div class="hint">Tap to explore</div></div>
         </div>
-        <div class="dface dback"><h4>${v.name}</h4><ul>${v.points.map(p=>`<li>${p}</li>`).join('')}</ul></div>
+        <div class="dface dback"><div class="dl">${v.name[0]}</div><h4>${v.name}</h4><span class="rule"></span><ul>${v.points.map(p=>`<li>${p}</li>`).join('')}</ul></div>
       </div>
     </div>`).join('')}</div></div>`;
 }
@@ -1411,7 +1433,8 @@ const destinations={
   Korea:{lat:37.56,lon:126.97,name:'A.I. · South Korea',col:'#D64FA0',lab:'left',lx:-88,stem:52},
   MiharaJapan:{lat:34.40,lon:133.08,name:'Social Sciences · Mihara',col:'#EC5A5F',lab:'above',lx:-84,stem:20},
   MutsuzawaJapan:{lat:35.43,lon:140.32,name:'STEM · Mutsuzawa',col:'#B5D334',lab:'below',lx:104,stem:8},
-  GeoBali:{lat:-8.67,lon:115.22,name:'Geography · Bali',col:'#F28C28',lab:'below'},
+  GeoBali:{lat:-8.67,lon:115.22,name:'Geography · Bali',col:'#F28C28',lab:'right',lx:84,stem:14},
+  LitBali:{lat:-8.51,lon:115.26,name:'Literature · Bali',col:'#FFB36B',lab:'below',below:true,lx:-56,stem:34},
   NZ:{lat:-41.28,lon:174.77,name:'Sustainability · New Zealand',col:'#2BB3A8',lab:'left'},
   Estonia:{lat:59.43,lon:24.75,name:'Cyber · Estonia',col:'#7FD3F7',lab:'right'},
   Singapore:{lat:1.29,lon:103.85,name:'Beatty · Singapore',home:true,lab:'left'}
@@ -1521,7 +1544,8 @@ function initGlobe(){
   const pins=Object.entries(destinations).map(([id,d])=>{ const el=document.createElement('div'); el.className='gpin'+(d.home?' home':''); el.dataset.id=id;
     el.innerHTML=`<div class="lbl" style="${d.home?'background:var(--gold);color:var(--navy);border-color:#fff':`border-color:${d.col}`}">${d.home?BTY.icon('bee','ico-inline')+' ':''}${d.name}<span class="gcnt"></span></div><div class="stem"></div><div class="dot" style="${d.home?'width:18px;height:18px':`background:${d.col};box-shadow:0 0 14px ${d.col}`}"></div>`;
     if(d.lx) el.querySelector('.lbl').style.left=d.lx+'px'; if(d.stem) el.querySelector('.stem').style.height=d.stem+'px';
-    if(!d.home && modalData[id]) el.onclick=()=>showNexusModal(id); pinsEl.appendChild(el); return {el, v:unit(d.lat,d.lon), home:!!d.home}; });
+    if(d.below) el.classList.add('below');   // label hangs under the dot (keeps two close places apart)
+    if(!d.home && modalData[id]) el.onclick=()=>showNexusModal(id); pinsEl.appendChild(el); return {el, v:unit(d.lat,d.lon), home:!!d.home, below:!!d.below}; });
   gl.pins=pins;
   function size(){ const r=host.getBoundingClientRect(); const dpr=Math.min(2,window.devicePixelRatio||1); gl.W=r.width; gl.H=r.height; cv.width=r.width*dpr; cv.height=r.height*dpr; cv.style.width=r.width+'px'; cv.style.height=r.height+'px'; ctx.setTransform(dpr,0,0,dpr,0,0); gl.R0=Math.min(r.width,r.height)*0.42; gl.R=gl.R0*gl.zoom; gl.cx=r.width/2; gl.cy=r.height/2+gl.R0*0.02; }
   size();
@@ -1569,7 +1593,7 @@ function initGlobe(){
     // rim
     ctx.strokeStyle='rgba(255,226,0,.35)'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.stroke();
     // pins follow the surface; hide on the far side
-    pins.forEach(p=>{ const [x,y,z]=proj(p.v[0],p.v[1],p.v[2]); if(z>0.06){ p.el.style.transform=`translate(${x.toFixed(1)}px,${y.toFixed(1)}px) translate(-50%,-100%)`; p.el.style.opacity=String(Math.min(1,(z-0.06)*4+0.35)); p.el.style.display='flex'; } else p.el.style.display='none'; });
+    pins.forEach(p=>{ const [x,y,z]=proj(p.v[0],p.v[1],p.v[2]); if(z>0.06){ p.el.style.transform=`translate(${x.toFixed(1)}px,${y.toFixed(1)}px) ${p.below?'translate(-50%,-7px)':'translate(-50%,-100%)'}`; p.el.style.opacity=String(Math.min(1,(z-0.06)*4+0.35)); p.el.style.display='flex'; } else p.el.style.display='none'; });
   }
   // interaction — drag to turn; wheel or pinch to zoom about the pointer; double-click to fly there; +/− buttons and keys; 0 / Show all resets
   const sb=document.getElementById('spinBtn'), hb=document.getElementById('homeBtn'), zi=document.getElementById('zoomIn'), zo=document.getElementById('zoomOut');
@@ -1609,21 +1633,34 @@ document.addEventListener('keydown',e=>{ if(!gl || !document.getElementById('glo
 function paintNexusStats(){
   const box=document.getElementById('nexusStats'); if(!box) return;
   const step=journeySteps[currentStep]; const opts=step.nexusData?.options||[]; live.nexus=live.nexusByType[step.nexusData?.type==='local'?'local':'global']||{total:0,breakdown:{}}; const bd=live.nexus.breakdown||{}; const total=live.nexus.total||0;
-  document.querySelectorAll('#voyageChart .cpin:not(.home), .map-inner .mpin:not(.home), #globePins .gpin:not(.home)').forEach(el=>{ const c=bd[el.dataset.id]||0; const cnt=el.querySelector('.cnt,.mcnt,.gcnt'); if(cnt) cnt.textContent= c>0?c:''; const halo=el.querySelector('.halo'); if(halo) halo.setAttribute('r', 18+Math.min(34, c*2.2)); el.classList.toggle('chosen', c>0); });
+  document.querySelectorAll('#voyageChart .cpin:not(.home), .map-inner .mpin:not(.home), .map-frame .sglbl:not(.home), #globePins .gpin:not(.home)').forEach(el=>{ const c=bd[el.dataset.id]||0; const cnt=el.querySelector('.cnt,.mcnt,.gcnt'); if(cnt) cnt.textContent= c>0?c:''; const halo=el.querySelector('.halo'); if(halo) halo.setAttribute('r', 18+Math.min(34, c*2.2)); el.classList.toggle('chosen', c>0); });
   box.innerHTML=`<h3 class="side-h">Live choices · ${total}</h3>`+opts.map(o=>{ const c=bd[o.id]||0, pct= total>0?(c/total*100):0;
     return `<div class="side-row"><div class="lab"><span>${o.text}</span><span>${c}</span></div><div class="side-track"><div class="side-fill" style="width:${pct}%"></div></div></div>`; }).join('');
 }
 
 /* Industry map */
 const LOCAL_COL={Rockwell:'#FFE200',PIL:'#F5F0E8',Journalism:'#EC3237',TamilMurasu:'#A77BEA',Makita:'#2BB3A8',ASTAR:'#7FD3F7'};
+/* The Singapore map image (sgmap-land.png, 1086×800) fitted to real coordinates: checked against Changi, Woodlands,
+   Sentosa, Marina Bay and Jurong Island. Beatty is in Toa Payoh, a street away from SPH (Berita Harian, Tamil Murasu). */
+const SGMAP={W:1086,H:800, x0:515,lon0:103.83,kx:2050, y0:85,lat0:1.468,ky:2078};
+const SG_HOME={id:'home', name:'Beatty Secondary', lat:1.3405, lon:103.8496, ax:470, ay:262, side:'u', dx:-14, dy:-4};
+function sgXY(lat,lon){ return { x:SGMAP.x0+(lon-SGMAP.lon0)*SGMAP.kx, y:SGMAP.y0+(SGMAP.lat0-lat)*SGMAP.ky }; }
 function renderMap(localData){
-  const pins=localData.map(m=>`<div class="mpin" data-id="${m.id}" style="left:${m.pos.x}%; top:${m.pos.y}%" onclick="showNexusModal('${m.id}')">
-      <div class="lbl" style="${m.off?m.off+';position:relative':''}">${m.name}<span class="mcnt"></span></div><div class="stem"></div><div class="dot" style="background:${LOCAL_COL[m.id]||'var(--gold)'}"></div></div>`).join('');
+  const pct=(v,t)=>(v/t*100).toFixed(2)+'%';
+  const all=[{...SG_HOME, home:true}, ...localData];
+  const pts=all.map(m=>{ const p=sgXY(m.lat,m.lon); return {...m, x:p.x+(m.dx||0), y:p.y+(m.dy||0)}; });
+  const lines=pts.map(m=>`<line x1="${m.x.toFixed(1)}" y1="${m.y.toFixed(1)}" x2="${m.ax}" y2="${m.ay}" class="${m.home?'home':''}"/>`).join('');
+  const dots=pts.map(m=>`<span class="sgdot${m.home?' home':''}" style="left:${pct(m.x,SGMAP.W)}; top:${pct(m.y,SGMAP.H)};${m.home?'':`background:${LOCAL_COL[m.id]||'var(--gold)'}`}"></span>`).join('');
+  const labels=pts.map(m=>`<div class="sglbl side-${m.side}${m.home?' home':''}" data-id="${m.id}" style="left:${pct(m.ax,SGMAP.W)}; top:${pct(m.ay,SGMAP.H)}"${m.home?'':` onclick="showNexusModal('${m.id}')"`}>
+      <div class="lbl">${m.home?BTY.icon('bee','ico-inline')+' ':''}${m.name}<span class="mcnt"></span></div></div>`).join('');
   const s=journeySteps[currentStep];
   return `<div class="split"><div class="map-host"><div class="vis-title bottom">${s.title}<span class="vs">${s.desc||''}</span></div><div class="map-inner">
       <div class="map-grid"></div>
-      <img class="map-img" src="sgmap-land.png" alt="Singapore" onerror="this.onerror=null;this.src='sgmap.png';this.classList.add('raw')">
-      <div class="mpin home" style="left:44%; top:34%"><div class="lbl">${BTY.icon('bee','ico-inline')} Beatty Secondary</div><div class="stem"></div><div class="dot"></div></div>${pins}</div></div>
+      <div class="map-frame">
+        <img class="map-img" src="sgmap-land.png" alt="Singapore" onerror="this.onerror=null;this.src='sgmap.png';this.classList.add('raw')">
+        <svg class="sg-leaders" viewBox="0 0 ${SGMAP.W} ${SGMAP.H}" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>
+        ${dots}${labels}
+      </div></div></div>
     <div class="side"><div id="nexusStats"><p style="color:var(--ink-dim)">Waiting for choices…</p></div></div></div>`;
 }
 

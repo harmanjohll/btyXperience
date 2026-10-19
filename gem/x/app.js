@@ -1598,7 +1598,7 @@ const CREST_BIG = 'crest-640.png';
 const ico = (n, c) => (window.BTY ? window.BTY.icon(n, c) : '');
 const beeIco = name => ico((window.BTY && window.BTY.ARCH[name]) || 'bee');
 // Rough bearings from Singapore, for the rose.
-const DEST_BEARING = { Hanoi: 5, GeoBali: 150, NZ: 140, Korea: 28, MiharaJapan: 42, MutsuzawaJapan: 42, Estonia: 330 };
+const DEST_BEARING = { Hanoi: 5, GeoBali: 150, LitBali: 150, NZ: 140, Korea: 28, MiharaJapan: 42, MutsuzawaJapan: 42, Estonia: 330 };
 let cardFile = null, cardRendering = null;
 
 /* Who you are in the Hive — the eight bees, in Beatty's voice. */
@@ -1615,7 +1615,7 @@ const BEE_PROFILES = {
 function beeProfile() { return BEE_PROFILES[D.bee] || { color: '#FFE200', quote: 'Non Vi Sed Arte — not by force, but by skill.', persona: 'A Beattyian: every bee has a place in the Hive, and a course of its own.', recommended: ['NEXUS@BTY exchanges', 'Industry attachments', 'Leaders for Life Programme'], s: null, a: null }; }
 
 /* The boat wears its voyage: every choice made tonight becomes a stamp. */
-const DEST_STAMP = { Hanoi: 'hanoi', GeoBali: 'bali', NZ: 'nz', Korea: 'korea', MiharaJapan: 'japan', MutsuzawaJapan: 'japan', Estonia: 'estonia' };
+const DEST_STAMP = { Hanoi: 'hanoi', GeoBali: 'bali', LitBali: 'bali', NZ: 'nz', Korea: 'korea', MiharaJapan: 'japan', MutsuzawaJapan: 'japan', Estonia: 'estonia' };
 const IND_STAMP = { Rockwell: 'rockwell', PIL: 'pil', ASTAR: 'astar', Journalism: 'press', TamilMurasu: 'press', Makita: 'makita' };
 const PULSE_STAMP = { 'On fire!': 'resilience', 'Excited!': 'adaptability', 'Enjoying it': 'empathy', 'Tell me more': 'mindfulness' };
 function stampBoat() {
@@ -1629,7 +1629,7 @@ function stampBoat() {
 }
 
 function destBearing() { return (D.global && DEST_BEARING[D.global.id]) || 0; }
-function shortDest(t) { return String(t || '').replace(/\s*\(.*?\)\s*/g, '').trim(); }
+function shortDest(t) { return String(t || '').replace(/\s*\((.*?)\)\s*/g, ' · $1').trim(); }   // "Bali (Literature)" → "Bali · Literature"
 function pollOf(id) { return (D.polls || {})[id]; }
 function insightOf(id) { const p = pollOf(id); return p && p.insight ? String(p.insight).replace(/^(Correct!|Good guess!|A trick!)\s*/, '') : ''; }
 
@@ -1988,7 +1988,7 @@ const FOLD_STEP_FOR_INDEX = [1, 2, 4, 5, 8, 9, 12, 13];
 // Sail = destination, flag = industry. Chosen to stay distinct from each other
 // AND from a navy sea on a projector from the back row: no navy, no dark blues.
 const NEXUS_COLOR = {
-    GeoBali:'#F28C28', NZ:'#2BB3A8', Korea:'#D64FA0', MiharaJapan:'#EC5A5F', MutsuzawaJapan:'#B5D334', Estonia:'#7FD3F7', Hanoi:'#8E7CFF',
+    GeoBali:'#F28C28', LitBali:'#FFB36B', NZ:'#2BB3A8', Korea:'#D64FA0', MiharaJapan:'#EC5A5F', MutsuzawaJapan:'#B5D334', Estonia:'#7FD3F7', Hanoi:'#8E7CFF',
     Rockwell:'#FFE200', PIL:'#F5F0E8', Journalism:'#EC3237', TamilMurasu:'#A77BEA', Makita:'#2BB3A8', ASTAR:'#7FD3F7',
 };
 // The eight bees of the Hive — must match btx27's compass chart keys exactly.
@@ -2293,8 +2293,8 @@ function showCard() { renderMemento(); }
 //   Network latency hides inside the 1.3 s departure.
 // ============================================================
 const SAIL_WORDS = [[6000,'NON VI',false],[5000,'SED ARTE',true],[4000,'NON VI',false],[3000,'SED ARTE',true],[2000,'NON VI',false],[1000,'SED ARTE!',true]]   // ms remaining before the release;
-const DEST_ORDER = ['Hanoi','GeoBali','NZ','Korea','MiharaJapan','MutsuzawaJapan','Estonia'];
-const COLOUR_NAME = { '#8E7CFF':'violet', '#F28C28':'orange', '#2BB3A8':'teal', '#D64FA0':'magenta', '#EC5A5F':'coral', '#B5D334':'lime', '#7FD3F7':'sky-blue', '#FFE200':'gold', '#F5F0E8':'white' };
+const DEST_ORDER = ['Hanoi','GeoBali','LitBali','NZ','Korea','MiharaJapan','MutsuzawaJapan','Estonia'];
+const COLOUR_NAME = { '#8E7CFF':'violet', '#F28C28':'orange', '#FFB36B':'peach', '#2BB3A8':'teal', '#D64FA0':'magenta', '#EC5A5F':'coral', '#B5D334':'lime', '#7FD3F7':'sky-blue', '#FFE200':'gold', '#F5F0E8':'white' };
 let handledCueId = null, sailSeq = null, sailLocalAt = 0, uncuedTimer = null;
 function handleCue(cue) {
     if (!cue || !cue.id || cue.id === handledCueId) return;

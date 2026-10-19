@@ -44,9 +44,6 @@ await go({ currentView: 'industry_map', chapter: 'NEXUS@BTY', nexusData: MAP });
 const mineDoc = srv.api.col('compassQuiz')[0]?.data || {};
 c.ok(mineDoc.n && mineDoc.n.global === 'Hanoi' && mineDoc.n.local === 'ASTAR' && mineDoc.v && mineDoc.v.dream_poll === 1, 'its saved state holds the vote and both picks');
 
-await go({ currentView: 'bloom', chapter: 'Set sail' }); await shot(p, 'ph-17-phones-up');
-await go({ currentView: 'bloom', chapter: 'Set sail', cue: { id: 'bloom-1', kind: 'bloom', at: Date.now() + 4000 } }, 1500); await shot(p, 'ph-18-bloom-count');
-await sleep(3200); await shot(p, 'ph-19-bloom'); await sleep(6500);
 
 await go({ currentView: 'fold', chapter: 'Set sail', fold: { to: 8, letter: 'L' } }, 1200);
 c.ok(await foldTo(p, 8), 'last beat: boat complete'); await sleep(2500); await shot(p, 'ph-20-boat-done');
