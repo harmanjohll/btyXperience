@@ -349,7 +349,7 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .dback{background:linear-gradient(160deg,var(--navy-700),var(--navy-850)); transform:rotateY(180deg); padding:clamp(16px,2vw,30px); display:flex; flex-direction:column; justify-content:center}
 .dback h4{color:var(--gold); font-size:clamp(1.2rem,2vw,2rem); margin-bottom:16px}
 .dback li{color:var(--ink); font-size:clamp(.82rem,1.15vw,1.2rem); margin-bottom:12px; line-height:1.35; list-style:none; padding-left:22px; position:relative}
-.dback li:before{content:"🐝"; position:absolute; left:0; font-size:.85em}
+.dback li:before{content:""; position:absolute; left:2px; top:.45em; width:9px; height:10px; background:var(--gold); clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
 /* Exceptional touches: the five cards cascade in (reinforcing D-R-E-A-M), a
    gold glow answers the cursor, and the value's points rise in sequence when
    the card is flipped. */
@@ -445,7 +445,7 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .side-fill{height:100%; width:0; background:linear-gradient(90deg,var(--gold-deep),var(--gold)); border-radius:9px; transition:width .7s var(--ease)}
 
 /* --- Pulse check --- */
-.pulse-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:clamp(14px,2vw,30px); width:100%; max-width:1300px}
+.pulse-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:clamp(14px,2vw,30px); width:100%; max-width:1300px; margin:0 auto}
 .pulse-cell{background:var(--card); border:1px solid rgba(255,255,255,.1); border-radius:22px; padding:clamp(18px,2.4vw,36px); text-align:center}
 .pulse-cell .e{font-size:clamp(3rem,6vw,5rem)}
 .pulse-cell .l{font-family:var(--serif); color:#fff; font-size:clamp(1rem,1.7vw,1.6rem); margin:10px 0 16px}
@@ -473,7 +473,15 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
   border-radius:999px; padding:7px 16px; font-weight:700; font-size:clamp(.8rem,1.1vw,1rem); margin:0 10px 12px 0}
 .modal p{font-size:clamp(1rem,1.5vw,1.4rem); line-height:1.55; color:var(--ink)}
 .modal li{font-size:clamp(.95rem,1.3vw,1.25rem); line-height:1.5; margin:10px 0 10px 4px; list-style:none; position:relative; padding-left:26px; color:var(--ink)}
-.modal li:before{content:"🐝"; position:absolute; left:0}
+.modal li:before{content:""; position:absolute; left:2px; top:.45em; width:9px; height:10px; background:var(--gold); clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.ico-inline{display:inline-block; width:1.1em; height:1.1em; vertical-align:-.18em}
+#participantPill .ico{width:1.35em; height:1.35em; color:var(--gold)}
+.votes-chip .ico{width:1em; height:1em; vertical-align:-.12em}
+.set-sail-btn .ico{width:1.2em; height:1.2em; vertical-align:-.2em; margin-right:8px}
+.pulse-cell .e{color:var(--gold); line-height:0} .pulse-cell .e .ico{width:clamp(56px,5vw,84px); height:clamp(56px,5vw,84px)}
+.bee-fly .ico{width:34px; height:34px; color:var(--gold)}
+.poll-label .win-tag{display:inline-flex; align-items:center; gap:6px; margin-left:12px; padding:2px 12px; border-radius:999px; background:var(--gold); color:var(--navy); font-family:var(--sans); font-weight:800; font-size:.55em; letter-spacing:.14em; text-transform:uppercase; vertical-align:middle}
+.poll-label .win-tag .ico{width:1.1em; height:1.1em}
 
 /* --- Presenter panel --- */
 #presenterPanel{position:fixed; top:14px; right:14px; z-index:120; width:288px}
@@ -557,11 +565,11 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
     <h3>Presenter Controls</h3>
     <div id="ppStep" class="pp-step">—</div>
     <div class="pp-row" style="margin-bottom:8px">
-      <button id="ppSound" class="pp-btn pp-grey">🔊 Sound</button>
+      <button id="ppSound" class="pp-btn pp-grey">Sound on</button>
       <button id="ppQR" class="pp-btn pp-grey">Show QR</button>
     </div>
     <div class="pp-row" style="margin-bottom:8px">
-      <button id="ppSail" class="pp-btn pp-gold">⛵ Set Sail (S)</button>
+      <button id="ppSail" class="pp-btn pp-gold">Set Sail (S)</button>
     </div>
     <button id="ppReset" class="pp-btn pp-red">Reset Session</button>
   </div>
@@ -611,7 +619,7 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
     </div>
     <div class="pill" id="liveBadge" title="Only a screen opened with ?presenter=true drives the phones">VIEW ONLY</div>
     <div class="pill qr-pill hidden" id="qrPill" title="Show the join QR large"><img src="joinbtyqr.png" alt="Scan to join" onerror="this.style.display='none'"><span>Scan<br>to join</span></div>
-    <div class="pill" id="participantPill" aria-live="polite"><span>🐝</span><span class="n" id="pCount">Warming up…</span></div>
+    <div class="pill" id="participantPill" aria-live="polite"><span class="pp-bee"></span><span class="n" id="pCount">Warming up…</span></div>
   </div>
 </header>
 
@@ -707,6 +715,7 @@ const JOIN_LABEL = JOIN_LINK.replace(/^https?:\/\//,'').replace(/\/$/,'');
 // Every join QR on this screen is drawn here from JOIN_LINK (no image file to keep in step).
 (function drawJoinQRs(){
   if(!window.BTY) return;
+  const pb=document.querySelector('#participantPill .pp-bee'); if(pb) pb.innerHTML=BTY.icon('bee');
   document.querySelectorAll('img[src="joinbtyqr.png"]').forEach(img=>{ const w=document.createElement('span'); w.className='qr-svg'; w.innerHTML=BTY.qrSVG(JOIN_LINK,{label:'Scan to join'}); img.replaceWith(w); });
   const u=document.getElementById('qrUrl'); if(u) u.textContent=JOIN_LABEL;
 })();
@@ -984,8 +993,8 @@ function runSailOverlay(localAt){
 function updateSailBtn(step){
   const b=document.getElementById('setSailBtn'); if(!b) return;
   const t=step && step.type;
-  if(isPresenter && t==='fleet'){ b.style.display='inline-flex'; b.dataset.act='sail'; b.innerHTML='⛵&nbsp; SET SAIL'; }
-  else if(isPresenter && t==='bloom'){ b.style.display='inline-flex'; b.dataset.act='bloom'; b.innerHTML='🌟&nbsp; LIGHTS OUT'; }
+  if(isPresenter && t==='fleet'){ b.style.display='inline-flex'; b.dataset.act='sail'; b.innerHTML=BTY.icon('sail')+'SET SAIL'; }
+  else if(isPresenter && t==='bloom'){ b.style.display='inline-flex'; b.dataset.act='bloom'; b.innerHTML=BTY.icon('spark')+'LIGHTS OUT'; }
   else b.style.display='none';
 }
 function fireBaton(){ const b=document.getElementById('setSailBtn'); if(b && b.dataset.act==='bloom') fireBloom(); else fireSetSail(); }
@@ -1108,7 +1117,7 @@ function revealPollInPlace(step){
   host.querySelectorAll('.poll-opt').forEach(row=>{
     if(+row.dataset.i!==p.correctAnswer) return;
     row.classList.add('win'); row.querySelector('.poll-fill')?.classList.add('correct');
-    const lab=row.querySelector('.poll-label'); if(lab && !/🏆/.test(lab.textContent)) lab.textContent+=' 🏆';
+    const lab=row.querySelector('.poll-label'); if(lab && !lab.querySelector('.win-tag')) lab.insertAdjacentHTML('beforeend', `<span class="win-tag">${BTY.icon('check')}Answer</span>`);
   });
   const wait=host.querySelector('.poll-wait'); if(wait) wait.remove();
   if(p.insight && !host.querySelector('.poll-insight')){ const ins=document.createElement('p'); ins.className='poll-insight'; ins.textContent=p.insight; host.appendChild(ins); }
@@ -1129,7 +1138,7 @@ function updateParticipant(n, done){
 // Placeholder shown behind slide/video iframes so a slow/blocked embed reads as
 // "loading" rather than a blank black rectangle. The iframe covers it once loaded.
 function iframeLoading(){ return `<div style="position:absolute; inset:0; z-index:0; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--ink-dim); gap:14px">
-  <div style="font-size:3rem">🐝</div><div style="font-family:var(--serif); font-size:1.4rem; color:var(--gold)">Loading…</div>
+  <div style="width:56px; height:56px; color:var(--gold)">${BTY.icon('bee')}</div><div style="font-family:var(--serif); font-size:1.4rem; color:var(--gold)">Loading…</div>
   <div style="font-size:.95rem">If this stays blank, check the connection.</div></div>`; }
 function renderContent(step){
   switch(step.type){
@@ -1205,7 +1214,7 @@ function landBee(key){
   const cell=document.querySelector(`.arch-cell[data-arch="${CSS.escape(key)}"]`); if(!cell) return;
   const from=['qrPill','participantPill','hivePulse'].map(id=>document.getElementById(id)).find(el=>el && el.offsetParent!==null); if(!from) return;
   const a=from.getBoundingClientRect(), b=cell.getBoundingClientRect();
-  const bee=document.createElement('div'); bee.className='bee-fly'; bee.textContent='🐝'; document.body.appendChild(bee);
+  const bee=document.createElement('div'); bee.className='bee-fly'; bee.innerHTML=BTY.icon('bee'); document.body.appendChild(bee);
   const x0=a.left+a.width/2, y0=a.top+a.height/2, x1=b.left+b.width*(0.25+Math.random()*0.5), y1=b.top+b.height*0.58, mx=(x0+x1)/2+(Math.random()*200-100), my=Math.min(y0,y1)-90-Math.random()*80;
   const anim=bee.animate([
     {transform:`translate(${x0}px,${y0}px) scale(.5)`, opacity:0},
@@ -1238,12 +1247,12 @@ function renderPoll(p){
   return `<div class="wrap poll-wrap" data-poll="${p.id}">
     <div class="poll-head">
       <h2 class="poll-q${p.question.length>58?' long':''}">${p.question}</h2>
-      <div class="votes-chip">🐝 <span class="pv">${total}</span><span class="pvm">${live.compass.total>0?` of ${live.compass.total}`:''}</span> voted</div>
+      <div class="votes-chip">${BTY.icon('bee')} <span class="pv">${total}</span><span class="pvm">${live.compass.total>0?` of ${live.compass.total}`:''}</span> voted</div>
     </div>
     <div>${p.options.map((o,i)=>{
       const c=d.breakdown?.[i]||0, pct= total>0?(c/total*100):0, correct=i===p.correctAnswer;
       return `<div class="poll-opt ${correct&&revealed?'win':''}" data-i="${i}">
-        <div class="poll-row"><span class="poll-label">${o} ${correct&&revealed?'🏆':''}</span><span class="poll-n"><span class="pn">${c}</span></span></div>
+        <div class="poll-row"><span class="poll-label">${o}${correct&&revealed?`<span class="win-tag">${BTY.icon('check')}Answer</span>`:''}</span><span class="poll-n"><span class="pn">${c}</span></span></div>
         <div class="poll-track"><div class="poll-fill ${correct&&revealed?'correct':''}" style="width:${pct}%">${Math.round(pct)}%</div></div>
       </div>`; }).join('')}
     </div>
@@ -1272,7 +1281,7 @@ function renderValues(){
       <div class="dcard-inner">
         <div class="dface dfront">
           <div class="bg" style="background-image:url('${v.img}'); background-color:${v.tint||'#0a1650'}"></div>
-          <div class="txt"><div class="letter">${v.name[0]}</div><div class="word">${v.name}</div><div class="hint">🐝 Tap to explore</div></div>
+          <div class="txt"><div class="letter">${v.name[0]}</div><div class="word">${v.name}</div><div class="hint">Tap to explore</div></div>
         </div>
         <div class="dface dback"><h4>${v.name}</h4><ul>${v.points.map(p=>`<li>${p}</li>`).join('')}</ul></div>
       </div>
@@ -1288,7 +1297,7 @@ function renderFunFact(f){
 function renderPulse(){
   const opts=pulseOptions();
   return `<div class="wrap"><div class="pulse-grid">${opts.map(o=>`
-    <div class="pulse-cell"><div class="e">${o.emoji}</div><div class="l">${o.label}</div>
+    <div class="pulse-cell"><div class="e">${BTY.moodIcon(o.label)}</div><div class="l">${o.label}</div>
       <div class="track"><div class="fill" id="pulse-${o.key}">0%</div></div></div>`).join('')}</div>
     <p id="pulseTotal" style="text-align:center; color:var(--ink-dim); margin-top:26px; font-size:1.2rem">0 responses</p></div>`;
 }
@@ -1493,7 +1502,7 @@ function initGlobe(){
   // pins (HTML, so they stay crisp and clickable)
   pinsEl.innerHTML='';
   const pins=Object.entries(destinations).map(([id,d])=>{ const el=document.createElement('div'); el.className='gpin'+(d.home?' home':''); el.dataset.id=id;
-    el.innerHTML=`<div class="lbl" style="${d.home?'background:var(--gold);color:var(--navy);border-color:#fff':`border-color:${d.col}`}">${d.home?'🐝 ':''}${d.name}<span class="gcnt"></span></div><div class="stem"></div><div class="dot" style="${d.home?'width:18px;height:18px':`background:${d.col};box-shadow:0 0 14px ${d.col}`}"></div>`;
+    el.innerHTML=`<div class="lbl" style="${d.home?'background:var(--gold);color:var(--navy);border-color:#fff':`border-color:${d.col}`}">${d.home?BTY.icon('bee','ico-inline')+' ':''}${d.name}<span class="gcnt"></span></div><div class="stem"></div><div class="dot" style="${d.home?'width:18px;height:18px':`background:${d.col};box-shadow:0 0 14px ${d.col}`}"></div>`;
     if(d.lx) el.querySelector('.lbl').style.left=d.lx+'px'; if(d.stem) el.querySelector('.stem').style.height=d.stem+'px';
     if(!d.home && modalData[id]) el.onclick=()=>showNexusModal(id); pinsEl.appendChild(el); return {el, v:unit(d.lat,d.lon), home:!!d.home}; });
   gl.pins=pins;
@@ -1597,14 +1606,14 @@ function renderMap(localData){
   return `<div class="split"><div class="map-host"><div class="vis-title bottom">${s.title}<span class="vs">${s.desc||''}</span></div><div class="map-inner">
       <div class="map-grid"></div>
       <img class="map-img" src="sgmap-land.png" alt="Singapore" onerror="this.onerror=null;this.src='sgmap.png';this.classList.add('raw')">
-      <div class="mpin home" style="left:44%; top:34%"><div class="lbl">🐝 Beatty Secondary</div><div class="stem"></div><div class="dot"></div></div>${pins}</div></div>
+      <div class="mpin home" style="left:44%; top:34%"><div class="lbl">${BTY.icon('bee','ico-inline')} Beatty Secondary</div><div class="stem"></div><div class="dot"></div></div>${pins}</div></div>
     <div class="side"><div id="nexusStats"><p style="color:var(--ink-dim)">Waiting for choices…</p></div></div></div>`;
 }
 
 /* Nexus modal */
 window.showNexusModal=(id)=>{
   const d=modalData[id]; if(!d) return;
-  const badges=(d.students?`<span class="badge">🐝 ${d.students} students</span>`:'')+(d.duration?`<span class="badge">⏳ ${d.duration}</span>`:'');
+  const badges=(d.students?`<span class="badge">${d.students} students</span>`:'')+(d.duration?`<span class="badge">${d.duration}</span>`:'');
   const hl=d.highlights?.length?`<ul style="margin-top:18px">${d.highlights.map(h=>`<li>${h}</li>`).join('')}</ul>`:'';
   nexusModalBody.innerHTML=`<h2>${d.title}</h2><div style="margin-bottom:14px">${badges}</div><p>${d.desc||''}</p>${hl}`;
   nexusModal.classList.remove('hidden'); sfx('open');
@@ -1718,11 +1727,11 @@ if(isPresenter){
   document.getElementById('ppToggle').onclick=togglePanel;
   document.addEventListener('keydown',e=>{ if((e.key==='p'||e.key==='P') && !(e.target.closest && e.target.closest('input,textarea'))) togglePanel(); });
   updatePPStep();
-  document.getElementById('ppSound').onclick=(ev)=>{ soundOn=!soundOn; ev.target.textContent= soundOn?'🔊 Sound':'🔇 Muted'; ev.target.className='pp-btn '+(soundOn?'pp-grey':'pp-red'); if(soundOn){ startAudio(); sfx('reveal'); } };
+  document.getElementById('ppSound').onclick=(ev)=>{ soundOn=!soundOn; ev.target.textContent= soundOn?'Sound on':'Muted'; ev.target.className='pp-btn '+(soundOn?'pp-grey':'pp-red'); if(soundOn){ startAudio(); sfx('reveal'); } };
   document.getElementById('ppQR').onclick=()=>document.getElementById('qrOverlay').classList.remove('hidden');
   document.getElementById('ppSail').onclick=fireSetSail;
   // The big footer button, shown only on the fleet step: the presenter's baton.
-  (function(){ const b=document.createElement('button'); b.id='setSailBtn'; b.className='btn set-sail-btn'; b.innerHTML='⛵&nbsp; SET SAIL'; b.style.display='none'; b.onclick=(e)=>{ ripple(e,b); fireBaton(); }; nextBtn.insertAdjacentElement('beforebegin', b); })();
+  (function(){ const b=document.createElement('button'); b.id='setSailBtn'; b.className='btn set-sail-btn'; b.innerHTML=BTY.icon('sail')+'SET SAIL'; b.style.display='none'; b.onclick=(e)=>{ ripple(e,b); fireBaton(); }; nextBtn.insertAdjacentElement('beforebegin', b); })();
   document.getElementById('ppReset').onclick=openReset;
 }
 document.getElementById('qrOverlay').onclick=()=>document.getElementById('qrOverlay').classList.add('hidden');

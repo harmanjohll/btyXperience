@@ -11,6 +11,7 @@ import {
     SAIL_DATA, BOAT_DEFAULTS, ARCHETYPES, FOLD_GUIDES, FOLD_FLAPS, FOLD_LABELS, CREASE_LINES, LABELS,
     STAMP_MARKS, MARK_SLOTS,
     FIREBASE_CONFIG, LOGO_URL, HAND_FONT, cleanWord, wordOK,
+    IS_IOS, iosTap, buzz,
 } from './boat.js';
 
 // === PAPER CREASE SOUND (Web Audio API) ===
@@ -261,14 +262,15 @@ const HAPTIC = { tick: 18, lock: 45, chapter: [25, 40, 25], reveal: [50, 30, 100
 // Android browsers have it (and honour the phone's vibration setting); iPhones do not.
 function hapticsProbe(buzz) {
     const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    if (ios) return { kind: 'ios', text: 'iPhones can’t vibrate from a web page — your paper shakes instead.' };
+    if (ios) { if (buzz) iosTap(); return { kind: 'ios', text: 'iPhone: you’ll feel a tap on folds and taps (iOS 18 and later); the paper shakes too.' }; }
     if (!navigator.vibrate) return { kind: 'none', text: 'This browser has no vibration — your paper shakes instead.' };
     let ok = true; if (buzz) { try { ok = navigator.vibrate(HAPTIC.test) !== false; } catch (e) { ok = false; } }
     return ok ? { kind: 'ok', text: 'Haptics on — you should have felt a double buzz.' } : { kind: 'blocked', text: 'Vibration is off on this phone. Settings → Sound & vibration → Vibration / haptics.' };
 }
 function hapticsLineHTML() {
     const h = hapticsProbe(false);
-    return `<div class="hap-line" data-kind="${h.kind}"><span id="hapText">${h.kind === 'ok' ? 'Haptics: tap to test' : h.text}</span>${h.kind === 'ok' ? '<button id="hapTest" class="hap-btn">Test buzz</button>' : ''}</div>`;
+    const canTest = h.kind === 'ok' || h.kind === 'ios';
+    return `<div class="hap-line" data-kind="${h.kind}"><span id="hapText">${canTest ? 'Haptics: tap to test' : h.text}</span>${canTest ? '<button id="hapTest" class="hap-btn">Test buzz</button>' : ''}</div>`;
 }
 function wireHapticsLine() {
     const b = document.getElementById('hapTest'); if (!b) return;
@@ -277,6 +279,7 @@ function wireHapticsLine() {
 function feel(kind, el) {
     const v = HAPTIC[kind];
     if (navigator.vibrate) { try { navigator.vibrate(v); } catch (e) {} return; }
+    if (IS_IOS) buzz(v);                       // iOS 18+: a real tap inside a gesture
     if (kind === 'tick') return;
     const t = el || document.getElementById('origamiStage') || document.querySelector('.follow-boat');
     if (!t) return;
@@ -470,7 +473,7 @@ function startSessionListener() {
 // === STATE ===
 const $app = document.getElementById('app');
 const SK = 'btySail_v7';
-const BUILD = '18 Sep 2026 · v4';   // shown on the boarding screen so a phone can tell which build it has
+const BUILD = '19 Oct 2026 · v5';   // shown on the boarding screen so a phone can tell which build it has
 let D = JSON.parse(localStorage.getItem(SK)) || {};
 D.marks = D.marks || [];
 let step = 0;
@@ -1902,7 +1905,7 @@ function renderReadyToSail() {
                 <span class="ready-dot"></span>
                 <span class="text-sm" style="color:var(--text-secondary); text-wrap:balance;">Hold it — waiting for the captain's cue…</span>
             </div>
-            <p class="text-[11px] max-w-xs" style="color:var(--text-muted);">When the whole hall sets sail together, your boat joins the fleet on the big screen. Look up. 🌊</p>
+            <p class="text-[11px] max-w-xs" style="color:var(--text-muted);">When the whole hall sets sail together, your boat joins the fleet on the big screen. Look up.</p>
             <button id="sailNowBtn" class="nav-btn secondary mt-8" style="opacity:0;transition:opacity .5s;">Set sail now</button>
         </div>
     </div>`;
@@ -2032,7 +2035,7 @@ let lastSessionState = null;
 /* --- Folds on the passive slides --- */
 function advanceFold() {
     const fi = (D.nextFold == null) ? 0 : D.nextFold;
-    if (fi > 7) { renderLookUp('Your boat is folded — eyes on the screen 🌊'); return; }
+    if (fi > 7) { renderLookUp('Your boat is folded — eyes on the screen'); return; }
     foldFollowActive = true;
     step = FOLD_STEP_FOR_INDEX[fi];
     route();
@@ -2042,10 +2045,10 @@ function onFoldBeatDone(foldIndex) {
     clearTimeout(foldAssistTimer);
     chapterFlash(D.nextFold);                            // 🎩 at 5, 💎 at 6 — the boat has its own reveal
     if (soloMode || (D.nextFold || 0) >= (D.foldTarget || 0)) saveToFirebase();   // once per beat → the presenter's "N folded" count
-    if (soloMode) { foldFollowActive = false; soloIdx++; renderRest('Beautiful fold.', 'Eyes back on the big screen ✨'); return; }
+    if (soloMode) { foldFollowActive = false; soloIdx++; renderRest('Beautiful fold.', 'Eyes back on the big screen'); return; }
     if ((D.nextFold || 0) < (D.foldTarget || 0)) { setTimeout(continueFolding, 380); return; }   // one more in this beat
     foldFollowActive = false;
-    renderRest(D.nextFold >= 8 ? 'Your boat is complete! ⛵' : 'Beautiful fold.', 'Eyes back on the big screen ✨');
+    renderRest(D.nextFold >= 8 ? 'Your boat is complete' : 'Beautiful fold.', 'Eyes back on the big screen');
 }
 
 /* ============================================================
@@ -2061,7 +2064,7 @@ function showPoll(p, revealed) {
     $app.innerHTML = `
     <div class="sail-screen fade-up">
         <div class="content-zone" style="padding-top:20px;">
-            <p class="q-eyebrow">🐝 Live Poll · vote now</p>
+            <p class="q-eyebrow">${ico('poll')}Live poll · vote now</p>
             <h2 class="q-question">${p.question}</h2>
             <div class="q-opts mt-4">
                 ${p.options.map((o, i) => `<button class="answer-opt" data-poll="${i}">${o}</button>`).join('')}
@@ -2103,7 +2106,7 @@ function showPollResult(p) {
             </div>` : `
             <div class="mt-4" id="liveBars">${p.options.map((o, i) => `
                 <div class="pbar ${mine && mine.choice === i ? 'me' : ''} ${i === p.correctAnswer ? 'correct' : ''}" data-i="${i}">
-                    <div class="pbar-lab"><span>${o} ${i === p.correctAnswer ? '🏆' : ''}${mine && mine.choice === i ? ' · you' : ''}</span><span class="pbar-pc">0%</span></div>
+                    <div class="pbar-lab"><span>${o}${i === p.correctAnswer ? ' <em class="ans-tag">Answer</em>' : ''}${mine && mine.choice === i ? ' · you' : ''}</span><span class="pbar-pc">0%</span></div>
                     <div class="pbar-track"><div class="pbar-fill"></div></div>
                 </div>`).join('')}</div>
             <div class="q-insight">${p.insight || ''}</div>`}
@@ -2135,12 +2138,12 @@ function showNexus(nd) {
     $app.innerHTML = `
     <div class="sail-screen fade-up">
         <div class="content-zone" style="padding-top:20px;">
-            <p class="q-eyebrow">🧭 Chart your course · ${isGlobe ? 'a destination' : 'an industry'}</p>
+            <p class="q-eyebrow">${ico(isGlobe ? 'globe' : 'pin')}Chart your course · ${isGlobe ? 'a destination' : 'an industry'}</p>
             <h2 class="q-question">${isGlobe ? 'Where would the wind take you?' : 'Which world would you step into?'}</h2>
             <div class="q-opts mt-4">
                 ${nd.options.map(o => `<button class="answer-opt" data-nx="${o.id}" data-nt="${key}" data-ntxt="${o.text.replace(/"/g, '&quot;')}">${o.text}</button>`).join('')}
             </div>
-            <p class="q-hint">Your bee lands on the big screen — and colours your sail. 🗺️</p>
+            <p class="q-hint">Your bee lands on the big screen — and colours your sail.</p>
         </div>
     </div>`;
     document.querySelectorAll('[data-nx]').forEach(b => b.addEventListener('click', () => {
@@ -2167,7 +2170,7 @@ function renderChosenNexus(type) {
         <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
             <div class="follow-check mb-2">✓</div>
             <h1 class="font-serif text-xl mb-1" style="color:var(--accent-gold);">Your bee has landed</h1>
-            <p class="text-sm mb-4" style="color:var(--text-secondary);">${pick?.text || ''} — watch the big screen 🗺️</p>
+            <p class="text-sm mb-4" style="color:var(--text-secondary);">${pick?.text || ''} — watch the big screen</p>
             <div class="follow-boat">${buildOrigamiSVG(c, stage, 190, extras())}</div>
         </div>
     </div>`;
@@ -2180,10 +2183,10 @@ function showPulse() {
     $app.innerHTML = `
     <div class="sail-screen fade-up">
         <div class="content-zone" style="padding-top:20px;">
-            <p class="q-eyebrow">💛 Pulse check · tap your mood</p>
+            <p class="q-eyebrow">${ico('heart')}Pulse check · tap your mood</p>
             <h2 class="q-question">How's it feeling so far?</h2>
             <div class="mood-grid mt-4">
-                ${moods.map(m => `<button class="mood-btn" data-mood="${m.k}"><span class="mood-e">${m.e}</span><span class="mood-l">${m.k}</span></button>`).join('')}
+                ${moods.map(m => `<button class="mood-btn" data-mood="${m.k}"><span class="mood-e">${window.BTY ? window.BTY.moodIcon(m.k) : m.e}</span><span class="mood-l">${m.k}</span></button>`).join('')}
             </div>
         </div>
     </div>`;
@@ -2205,11 +2208,11 @@ function showName() {
     $app.innerHTML = `
     <div class="sail-screen fade-up">
         <div class="content-zone" style="padding-top:18px;">
-            <p class="q-eyebrow">⛵ Name your boat</p>
+            <p class="q-eyebrow">${ico('sail')}Name your boat</p>
             <h2 class="q-question">One word — what do you aspire to become?</h2>
             <div class="origami-stage medium mx-auto my-3" id="dreamBoat" style="max-width:220px;">${buildOrigamiSVG(c, 9, 220, extras())}</div>
             <input type="text" id="dreamInput" maxlength="16" class="dream-field" placeholder="e.g. Innovator" autocomplete="off" autocapitalize="characters">
-            <button class="nav-btn primary w-full mt-3 text-base uppercase tracking-wide" id="dreamBtn">Write it on the hull ⛵</button>
+            <button class="nav-btn primary w-full mt-3 text-base uppercase tracking-wide" id="dreamBtn">Write it on the hull</button>
             <p class="q-hint">It sails with you — and joins the Hive of aspirations.</p>
         </div>
     </div>`;
@@ -2230,7 +2233,7 @@ async function submitName() {
     D.aspiration = w; D.dreamSent = true; save();
     hapticPattern([40, 30, 80]);
     pushMine({ boat: boatPayload(), f: D.nextFold || 0, w });   // one write: into the harbour (launched:false), and the word joins the Hive
-    if (soloMode) { soloIdx++; renderRest('Your dream is aboard ⛵', 'Ready to set sail'); return; }
+    if (soloMode) { soloIdx++; renderRest('Your dream is aboard', 'Ready to set sail'); return; }
     renderNameWriting(w, () => { if (D.launched) renderHiveCell(); else renderReadyToSail(); });
 }
 async function submitNameGuard(w, f) {
@@ -2345,7 +2348,7 @@ function renderAtSea() {
             <p class="text-[10px] mb-2 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">You've set sail</p>
             <h1 class="font-serif text-2xl mb-2" style="color:var(--text-primary);">Look up — you're in the fleet</h1>
             <div class="atsea-swatch" style="background:${col};color:${col}"></div>
-            <p class="text-sm mt-3 max-w-xs" style="color:var(--text-secondary);">Find the <b style="color:${col}">${name}</b> sail${dest && dest.text ? ` bound for <b style="color:var(--text-primary)">${dest.text}</b>` : ''}. Every boat on the big screen is a Beattyian setting sail from our Hive. 🌊</p>
+            <p class="text-sm mt-3 max-w-xs" style="color:var(--text-secondary);">Find the <b style="color:${col}">${name}</b> sail${dest && dest.text ? ` bound for <b style="color:var(--text-primary)">${dest.text}</b>` : ''}. Every boat on the big screen is a Beattyian setting sail from our Hive.</p>
             <div class="follow-boat mt-4">${buildOrigamiSVG(c, 9, 150, extras())}</div>
             <div class="rollcall" id="rollCall" hidden><span class="rc-word">Wave! 👋</span><span class="rc-sub" id="rcSub"></span></div>
         </div>
@@ -2377,7 +2380,7 @@ function renderHiveCell() {
         <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
             <p class="text-[10px] mb-4 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">Your cell in the Hive</p>
             <div class="hive-hex"><span>${w}</span></div>
-            <p class="text-sm mt-5 max-w-xs" style="color:var(--text-secondary);">Look up — it's rising off your hull and into the Hive. Every cell up there is a Beattyian's dream. 🐝</p>
+            <p class="text-sm mt-5 max-w-xs" style="color:var(--text-secondary);">Look up — it's rising off your hull and into the Hive. Every cell up there is a Beattyian's dream.</p>
         </div>
         ${reactBarHTML()}
     </div>`;
@@ -2395,7 +2398,7 @@ function renderPhonesUp() {
     $app.innerHTML = `
     <div class="sail-screen follow-screen fade-up">
         <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
-            <div class="follow-eye mb-2">🐝</div>
+            <div class="follow-eye mb-2">${ico('bee')}</div>
             <p class="text-[10px] mb-2 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">The Hive wakes</p>
             <h1 class="font-serif text-2xl mb-3" style="color:var(--text-primary);">Phones up. Screen facing out.</h1>
             <p class="text-sm max-w-xs" style="color:var(--text-secondary);">Hold it high. On zero, we light the hall together.</p>
@@ -2436,6 +2439,17 @@ function startBloomSequence(localAt) {
 //   RESPOND (the phone is primary — a gold band says "your turn")
 // ============================================================
 const CHAPTERS = ['Into the Hive', 'Who we are', 'Our values', 'Passions', 'NEXUS@BTY', 'Your pathway', 'Set sail', 'Your journey'];
+// While a deck is on the big screen and no phone card was written for it, the phone shows its chapter's line.
+const CHAPTER_LINES = {
+    'Into the Hive': ['bee', 'A living portrait of everyone in the room.'],
+    'Who we are': ['school', 'Non Vi Sed Arte — not with force, but with skill.'],
+    'Our values': ['heart', 'D.R.E.A.M. — Discipline, Resilience, Empathy, Adaptability, Mindfulness.'],
+    'Passions': ['spark', '17 CCAs — a place for every kind of bee.'],
+    'NEXUS@BTY': ['globe', '8 international exchanges · 6 industry attachments.'],
+    'Your pathway': ['explorer', 'Every Beattyian A Purpose Driven Steward.'],
+    'Set sail': ['sail', 'Your boat sails with the whole hall.'],
+    'Your journey': ['wave', 'Nurturing Adaptive Thinkers, Agile Learners and Active Contributors.'],
+};
 const RESPOND_VIEWS = ['chart', 'poll', 'globe', 'industry_map', 'pulse_check', 'finale', 'fold', 'memento', 'end'];
 const WATCH_VIEWS = ['video', 'fleet', 'bloom'];
 let chapterNow = '';
@@ -2498,7 +2512,8 @@ function renderGlance(state, kind) {
         const c = state.card; const hasCard = !!(c && (c.title || (c.keys && c.keys.length)));
         body = hasCard
             ? `<div class="glance-title">${c.title || state.chapter || ''}</div>${c.keys && c.keys.length ? `<ul class="glance-keys">${c.keys.map(k => `<li>${k}</li>`).join('')}</ul>` : ''}`
-            : `<div class="watch-glyph" style="color:var(--accent-gold)">▲</div><div class="glance-title" style="margin-top:12px">${state.chapter || 'On screen now'}</div><p class="glance-sub">Eyes on the screen.</p>`;
+            : (() => { const ch = state.chapter || '', L = CHAPTER_LINES[ch] || ['eye', 'Eyes on the big screen.'];
+                return `<div class="glance-ic">${ico(L[0])}</div><div class="glance-title" style="margin-top:14px">${ch || 'On screen now'}</div><p class="glance-line">${L[1]}</p><p class="glance-sub">Eyes on the big screen</p>`; })();
     }
     $app.innerHTML = `
     <div class="sail-screen follow-screen glance-screen fade-up">
@@ -2519,7 +2534,7 @@ function startFoldBeat(f) {
 }
 function continueFolding() {
     const target = D.foldTarget || 0;
-    if ((D.nextFold || 0) >= target) { renderRest(target >= 8 ? 'Your boat is complete! ⛵' : 'Your boat is ahead ✨', 'Eyes on the screen'); return; }
+    if ((D.nextFold || 0) >= target) { renderRest(target >= 8 ? 'Your boat is complete' : 'Your boat is ahead', 'Eyes on the screen'); return; }
     foldFollowActive = true;
     step = FOLD_STEP_FOR_INDEX[D.nextFold || 0];
     route();
@@ -2560,10 +2575,10 @@ function renderBoard() {
     <div class="sail-screen fade-up">
         <div class="content-zone" style="padding-top:22px;">
             <img src="${LOGO_URL}" alt="Beatty" style="width:52px;height:64px;object-fit:contain;margin:0 auto 12px;display:block" onerror="this.style.display='none'">
-            <p class="q-eyebrow" style="text-align:center;">🐝 Come into the Hive</p>
+            <p class="q-eyebrow" style="text-align:center;">${ico('bee')}Come into the Hive</p>
             <h2 class="q-question" style="text-align:center;">Beatty Open House</h2>
             <p class="q-hint" style="margin:8px 0 18px;">Five quick picks find your bee. Then your phone follows the big screen — polls, folds, and setting sail together.</p>
-            <button class="nav-btn primary w-full" id="boardBtn" style="font-size:1.05rem;padding:16px;">Tap to board 🐝</button>
+            <button class="nav-btn primary w-full" id="boardBtn" style="font-size:1.05rem;padding:16px;">Tap to board</button>
             <p class="q-hint" style="margin-top:14px;">One tap turns on sound and keeps your screen awake${/iP(hone|ad|od)/.test(navigator.userAgent) ? '' : ' — and buzzes, if your phone allows it'}.</p>
             <p class="q-hint" style="margin-top:18px;opacity:.55;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;">build ${BUILD}</p>
         </div>
@@ -2621,7 +2636,7 @@ function renderBeeReveal(bee) {
     <div class="sail-screen follow-screen fade-up">
         <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
             <p class="text-[10px] mb-3 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">Your compass points to</p>
-            <div class="bee-reveal-ic">${bee.icon}</div>
+            <div class="bee-reveal-ic">${beeIco(bee.name)}</div>
             <h1 class="font-serif text-2xl mt-2" style="color:var(--accent-gold);">${bee.name}</h1>
             <p class="text-[11px] tracking-[0.2em] uppercase mt-1" style="color:var(--text-secondary);">${bee.tag} · you've joined the Hive</p>
             <p class="font-serif italic text-sm mt-4 max-w-xs" style="color:var(--text-primary);">“${prof.quote || 'Non Vi Sed Arte'}”</p>
@@ -2637,10 +2652,10 @@ function renderAboard() {
     $app.innerHTML = `
     <div class="sail-screen follow-screen fade-up">
         <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
-            <div style="font-size:2.6rem;line-height:1" class="mb-2">${D.beeIcon || '🐝'}</div>
+            <div class="aboard-ic mb-2">${beeIco(D.bee)}</div>
             <p class="text-[10px] mb-1 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">You're in the Hive</p>
             <h1 class="font-serif text-2xl mb-1" style="color:var(--text-primary);">${D.beeTag || 'Beattyian'}</h1>
-            <p class="text-sm mb-5 max-w-xs" style="color:var(--text-secondary);">Find yourself on the big screen. You'll fold a boat, chart a course and set sail with the whole hall. 🌊</p>
+            <p class="text-sm mb-5 max-w-xs" style="color:var(--text-secondary);">Find yourself on the big screen. You'll fold a boat, chart a course and set sail with the whole hall.</p>
             <div class="follow-boat">${buildOrigamiSVG(c, Math.min(D.nextFold || 0, 8), 170, extras())}</div>
             ${hapticsLineHTML()}
         </div>
@@ -2655,7 +2670,7 @@ function renderLookUp(msg) {
     $app.innerHTML = `
     <div class="sail-screen follow-screen fade-up">
         <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
-            <div class="follow-eye mb-2">👀</div>
+            <div class="follow-eye mb-2">${ico('eye')}</div>
             <h1 class="font-serif text-xl mb-4" style="color:var(--accent-gold);">Look up at the screen</h1>
             <div class="follow-boat">${buildOrigamiSVG(c, stage, 200, extras())}</div>
             <p class="text-[11px] mt-4" style="color:var(--text-muted);">${msg || 'Your boat so far'}</p>
@@ -2674,7 +2689,7 @@ function renderRest(title, sub) {
             <h1 class="font-serif text-xl mb-1" style="color:var(--accent-gold);">${title}</h1>
             <p class="text-sm mb-4" style="color:var(--text-secondary);">${sub}</p>
             <div class="follow-boat" id="restBoat">${buildOrigamiSVG(c, stage, 190, extras())}</div>
-            ${stage >= 8 ? `<p class="text-[10px] mt-3 tracking-[0.2em] uppercase" style="color:var(--text-muted);">${NEEDS_TILT_TAP ? 'Tap the boat, then tilt your phone' : 'Tilt your phone'} 🌊</p>` : ''}
+            ${stage >= 8 ? `<p class="text-[10px] mt-3 tracking-[0.2em] uppercase" style="color:var(--text-muted);">${NEEDS_TILT_TAP ? 'Tap the boat, then tilt your phone' : 'Tilt your phone'}</p>` : ''}
         </div>
         ${soloMode ? '' : reactBarHTML()}
     </div>`;
