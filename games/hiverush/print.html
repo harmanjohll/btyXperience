@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hive Rush · Tickets to print</title>
+<style>
+@font-face { font-family: 'Unbounded'; src: url(fonts/unbounded.woff2) format('woff2'); font-weight: 200 900; }
+@font-face { font-family: 'Bricolage'; src: url(fonts/bricolage.woff2) format('woff2'); font-weight: 200 800; }
+:root { --navy: #000C53; --navy-3: #1C30B0; --yellow: #FFE200; --gold: #FFB800; --red: #EC3237; }
+* { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { margin: 0; background: #e9e9ee; font-family: 'Bricolage', system-ui, sans-serif; color: var(--navy); }
+.tools { position: sticky; top: 0; z-index: 5; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 14px 20px; background: var(--navy); color: #fff; }
+.tools b { font-family: 'Unbounded'; color: var(--yellow); }
+.tools button { font: 700 15px 'Bricolage'; padding: 10px 18px; border-radius: 999px; border: 0; background: var(--yellow); color: var(--navy); cursor: pointer; }
+.tools span { opacity: .8; font-size: 14px; }
+.page { width: 210mm; height: 297mm; margin: 16px auto; background: #fff; padding: 8mm; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(4, 1fr); gap: 0; box-shadow: 0 10px 30px rgba(0,0,0,.15); page-break-after: always; break-after: page; }
+.t { position: relative; margin: 2.5mm; border-radius: 5mm; overflow: hidden; display: grid; grid-template-columns: 1fr 26mm; gap: 3mm; padding: 5mm 5mm 4.5mm 6mm; outline: 0.3mm dashed #b8b8c4; outline-offset: 1.6mm; }
+.t::before, .t::after { content: ''; position: absolute; top: 50%; width: 7mm; height: 7mm; border-radius: 50%; background: #fff; transform: translateY(-50%); }
+.t::before { left: -3.5mm; } .t::after { right: -3.5mm; }
+.gold { background: radial-gradient(circle at 20% 10%, #fff7b8 0, var(--yellow) 35%, var(--gold) 100%); color: var(--navy); }
+.pass { background: radial-gradient(circle at 80% 0%, #15279a 0, var(--navy) 60%); color: #fff; }
+.hex { position: absolute; inset: 0; opacity: .12; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='48.5' viewBox='0 0 56 97'%3E%3Cpath d='M28 0l28 16v32L28 64 0 48V16zM28 64v33' fill='none' stroke='%23000C53' stroke-width='2'/%3E%3C/svg%3E"); background-size: 28px 48.5px; }
+.pass .hex { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='48.5' viewBox='0 0 56 97'%3E%3Cpath d='M28 0l28 16v32L28 64 0 48V16zM28 64v33' fill='none' stroke='%23FFE200' stroke-width='2'/%3E%3C/svg%3E"); }
+.l { position: relative; display: flex; flex-direction: column; gap: 1.2mm; min-width: 0; }
+.kick { font: 800 2.6mm 'Unbounded'; letter-spacing: .28em; text-transform: uppercase; display: flex; align-items: center; gap: 2mm; }
+.kick img { width: 6mm; }
+.title { font: 900 6.4mm/0.95 'Unbounded'; letter-spacing: -.03em; }
+.gold .title { color: var(--navy); text-shadow: 0.5mm 0.5mm 0 #fff; }
+.pass .title { color: var(--yellow); text-shadow: 0.5mm 0.5mm 0 var(--red); }
+.inv { font-size: 3mm; font-weight: 600; opacity: .9; }
+.oh { font: 900 4.4mm/1 'Unbounded'; letter-spacing: -.02em; }
+.pass .oh { color: #fff; }
+.when { font-weight: 800; font-size: 3.2mm; }
+.mission { margin-top: auto; font-size: 2.7mm; font-weight: 600; padding: 1.4mm 2.2mm; border-radius: 2mm; }
+.gold .mission { background: var(--navy); color: #fff; } .pass .mission { background: var(--yellow); color: var(--navy); }
+.r { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5mm; border-left: 0.4mm dashed currentColor; padding-left: 3mm; }
+.qr { width: 22mm; height: 22mm; background: #fff; border-radius: 2mm; padding: 1.2mm; } .qr svg { width: 100%; height: 100%; display: block; }
+.url { font: 700 1.75mm "Unbounded"; text-align: center; white-space: nowrap; }
+.scan { font-size: 2.3mm; font-weight: 700; text-align: center; opacity: .85; }
+.name { font-size: 2.6mm; font-weight: 700; } .name i { display: inline-block; width: 30mm; border-bottom: 0.3mm solid currentColor; }
+@media print { body { background: #fff; } .tools { display: none; } .page { margin: 0; box-shadow: none; } @page { size: A4; margin: 0; } }
+</style>
+</head>
+<body>
+<div class="tools">
+  <b>HIVE RUSH</b><span>Page 1: 8 Golden Tickets for champions. Page 2: 8 Hive Passes for every player. Print in colour, cut on the dashed lines.</span>
+  <button onclick="window.print()">Print</button>
+</div>
+<div id="pages"></div>
+<script src="qrcode.js"></script>
+<script src="js/content.js"></script>
+<script>
+(function () {
+  const oh = HR.CONTENT.openHouse;
+  let qr = '';
+  try { const q = qrcode(0, 'M'); q.addData(oh.url); q.make(); qr = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true }); } catch (e) {}
+  const right = `<div class="r"><div class="qr">${qr}</div><div class="url">${oh.urlLabel}</div><div class="scan">Parents: scan me</div></div>`;
+  const gold = `<div class="t gold"><div class="hex"></div><div class="l">
+      <div class="kick"><img src="crest.png" alt="">Golden Ticket</div>
+      <div class="title">HIVE RUSH<br>CHAMPION</div>
+      <div class="name">Squad: <i></i></div>
+      <div class="inv">Your VIP invitation, with your family, to</div>
+      <div class="oh">BEATTY OPEN HOUSE</div>
+      <div class="when">${oh.day} ${oh.date} · ${oh.time}</div>
+      <div class="mission">Your mission: ask a Beattyian what they love most about Beatty.</div>
+    </div>${right}</div>`;
+  const pass = `<div class="t pass"><div class="hex"></div><div class="l">
+      <div class="kick"><img src="crest.png" alt="">Hive Pass</div>
+      <div class="title">I PLAYED<br>HIVE RUSH!</div>
+      <div class="inv">Now see the real hive. Bring your parents to</div>
+      <div class="oh">BEATTY OPEN HOUSE</div>
+      <div class="when">${oh.day} ${oh.date} · ${oh.time}</div>
+      <div class="inv">${oh.place}</div>
+      <div class="mission">Your mission: ask a Beattyian what they love most about Beatty.</div>
+    </div>${right}</div>`;
+  document.getElementById('pages').innerHTML =
+    `<section class="page">${gold.repeat(8)}</section><section class="page">${pass.repeat(8)}</section>`;
+})();
+</script>
+</body>
+</html>
