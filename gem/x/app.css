@@ -1054,3 +1054,11 @@ body:has(#cornerBoat:not([hidden])) .react-btn { width: 44px; height: 44px; font
 .q-eyebrow .ico { display: inline-block; }
 .ans-tag { font-style: normal; display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: var(--accent-gold); color: #000C53; font-size: .62rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; vertical-align: 1px; }
 body:has(#cornerBoat:not([hidden])) .react-hint { display: none; }
+
+/* A native slide's companion: slide pips under the card */
+.sc-pips { display: flex; gap: 6px; justify-content: center; margin-top: 22px; }
+.sc-pips i { display: block; width: 16px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.18); transition: width .4s, background .4s; }
+.sc-pips i.done { background: rgba(255,226,0,.45); }
+.sc-pips i.on { background: var(--accent-gold); width: 30px; }
+.glance-num small { font-size: .5em; margin-left: .04em; }
+.scene-companion .glance-keys { max-width: 300px; width: 100%; }

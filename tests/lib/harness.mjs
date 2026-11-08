@@ -38,9 +38,9 @@ export async function newPage(browser, { width, height, label, mobile = false })
 export async function shot(page, name) { await page.screenshot({ path: path.join(OUT, name + '.png') }); }
 
 /* ---------- presenter ---------- */
-export async function presenter(browser, base) {
+export async function presenter(browser, base, query = '') {
   const p = await newPage(browser, { width: 1920, height: 1080, label: 'presenter' });
-  await p.goto(base + '/btx27.html?presenter=true', { waitUntil: 'domcontentloaded' });
+  await p.goto(base + '/btx27.html?presenter=true' + query, { waitUntil: 'domcontentloaded' });
   await until(() => p.evaluate(() => typeof dbReady !== 'undefined' ? dbReady : false).catch(() => false), 10000);
   await p.click('#beginBtn');
   await p.waitForTimeout(500);

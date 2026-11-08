@@ -10,6 +10,7 @@
 <script src="land.js"></script>
 <script src="qrcode.js"></script>
 <script src="bty-ui.js"></script>
+<script src="deck/content.js"></script>   <!-- the show's slides: edit the words there -->
 
 <style>
 /* ============================================================
@@ -569,6 +570,151 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
   *{animation-duration:.001s !important; animation-iteration-count:1 !important; transition-duration:.08s !important}
   #pollenCanvas{display:none}
 }
+
+/* ============================================================
+   NATIVE DECKS — the slides, drawn here (content in deck/content.js)
+   ============================================================ */
+.scene{position:relative; width:100%; height:100%; display:flex; flex-direction:column; padding:clamp(16px,2.6vh,34px) clamp(28px,4vw,84px) clamp(12px,2vh,24px)}
+.sc-top{display:flex; justify-content:space-between; align-items:center; gap:20px; font-size:clamp(.72rem,1vw,.98rem); letter-spacing:.32em; text-transform:uppercase; font-weight:700}
+.sc-ch{color:var(--gold); display:flex; align-items:center; gap:12px}
+.sc-ch .ico{width:1.5em; height:1.5em}
+.sc-num{color:var(--ink-dim); letter-spacing:.24em; font-variant-numeric:tabular-nums}
+.sc-body{flex:1 1 auto; min-height:0; display:flex; flex-direction:column; justify-content:center; align-items:center; transition:opacity .22s var(--ease-in), transform .22s var(--ease-in)}
+.sc-body.sc-leave{opacity:0; transform:translateY(-12px)}
+.sc-dots{display:flex; gap:10px; justify-content:center; padding-top:10px}
+.sc-dots i{display:block; width:30px; height:4px; border-radius:2px; background:rgba(255,255,255,.16); transition:background .45s var(--ease), width .45s var(--ease)}
+.sc-dots i.done{background:rgba(255,226,0,.42)}
+.sc-dots i.on{background:var(--gold); width:64px}
+.bi{animation:biUp .85s var(--ease) both; animation-delay:var(--d,0ms)}
+@keyframes biUp{from{opacity:0; transform:translateY(26px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){ .bi{animation:none} .sc-body{transition:none} }
+
+.sc-t{font-size:clamp(2.2rem,4.1vw,4.4rem); color:#fff; line-height:1.06; text-align:center; text-wrap:balance; margin-bottom:clamp(26px,5vh,64px); max-width:24ch}
+.sc-t.sm{font-size:clamp(1.9rem,3.3vw,3.5rem); max-width:30ch; margin-bottom:clamp(20px,4vh,48px)}
+.sc-t em{font-style:normal; color:var(--gold)}
+
+/* statement */
+.sc-stmt{text-align:center; max-width:1500px; display:flex; flex-direction:column; align-items:center}
+.sc-ic{width:clamp(76px,9vh,112px); height:clamp(76px,9vh,112px); padding:clamp(16px,2vh,24px); border-radius:50%; color:var(--gold); background:radial-gradient(circle, rgba(255,226,0,.14), rgba(255,226,0,.02) 70%); box-shadow:inset 0 0 0 1.5px rgba(255,226,0,.38); margin-bottom:clamp(18px,3vh,34px)}
+.sc-ic .ico{width:100%; height:100%}
+.sc-h{font-size:clamp(3rem,6.2vw,7rem); color:#fff; line-height:1.04; letter-spacing:-.012em; text-wrap:balance; max-width:18ch}
+.sc-h.latin{font-style:italic; color:var(--gold)}
+.sc-sub{font-family:var(--serif); font-style:italic; color:var(--gold-soft); font-size:clamp(1.4rem,2.6vw,2.7rem); margin-top:clamp(14px,2.4vh,28px); text-wrap:balance; max-width:36ch}
+.sc-rule{display:block; width:clamp(80px,7vw,140px); height:3px; border-radius:2px; background:var(--gold); margin:clamp(22px,4vh,46px) auto clamp(18px,3vh,36px)}
+.sc-text{font-size:clamp(1.15rem,1.9vw,2rem); color:var(--ink-dim); max-width:44ch; line-height:1.45; text-wrap:balance}
+
+/* duo */
+.sc-duo{display:grid; grid-template-columns:1fr 1fr; gap:clamp(24px,3vw,60px); width:min(100%,1640px); align-items:stretch}
+.sc-card{position:relative; background:var(--card); border:1px solid var(--card-line); border-radius:28px; padding:clamp(28px,4vh,60px) clamp(28px,3vw,56px); overflow:hidden; box-shadow:0 30px 70px rgba(0,0,0,.35)}
+.sc-card::before{content:""; position:absolute; left:0; top:clamp(28px,4vh,60px); width:5px; height:clamp(48px,7vh,80px); background:var(--gold); border-radius:0 4px 4px 0}
+.sc-card .eyebrow{margin-bottom:clamp(14px,2.4vh,26px)}
+.sc-card h3{font-size:clamp(2rem,3.4vw,3.7rem); color:#fff; line-height:1.12; text-wrap:balance}
+.sc-card p.b{color:var(--ink-dim); font-size:clamp(1.05rem,1.5vw,1.55rem); margin-top:clamp(14px,2.4vh,26px); line-height:1.45}
+
+/* pillars */
+.sc-pills{display:grid; gap:clamp(16px,1.8vw,34px); width:min(100%,1680px)}
+.sc-pill{background:var(--card); border:1px solid var(--card-line); border-radius:24px; padding:clamp(24px,3.4vh,46px) clamp(20px,1.8vw,36px); text-align:left; display:flex; flex-direction:column; gap:clamp(10px,1.6vh,18px)}
+.sc-pill .pi{width:clamp(44px,5.2vh,64px); height:clamp(44px,5.2vh,64px); color:var(--gold)}
+.sc-pill .pi .ico{width:100%; height:100%}
+.sc-pill h3{font-size:clamp(1.5rem,2.25vw,2.45rem); color:#fff; line-height:1.12}
+.sc-pill p{color:var(--ink-dim); font-size:clamp(1.05rem,1.5vw,1.65rem); line-height:1.45}
+.sc-pills.n5 .sc-pill h3{font-size:clamp(1.25rem,1.8vw,1.95rem)}
+
+/* stats (hero numbers) */
+.sc-stats{display:flex; justify-content:center; gap:clamp(30px,6vw,130px); width:100%}
+.sc-stat{display:flex; flex-direction:column; align-items:center; text-align:center}
+.sc-stat{flex:0 1 24rem}
+.sc-stat > .n, .sc-ring{height:clamp(200px,24vh,280px)}
+.sc-stat .n{font-family:var(--serif); font-weight:700; color:var(--gold); font-size:clamp(5rem,10.5vw,12rem); line-height:.95; font-variant-numeric:tabular-nums; letter-spacing:-.02em; display:flex; align-items:center; justify-content:center}
+.sc-stat .n small{font-size:.5em; margin-left:.04em}
+.sc-stat .l{color:#fff; font-size:clamp(1.15rem,1.8vw,1.9rem); margin-top:clamp(10px,2vh,22px); line-height:1.3; text-wrap:balance}
+.sc-ring{position:relative; aspect-ratio:1}
+.sc-ring svg{width:100%; height:100%; transform:rotate(-90deg)}
+.sc-ring circle{fill:none; stroke-width:9}
+.sc-ring .trk{stroke:rgba(255,255,255,.12)}
+.sc-ring .arc{stroke:var(--gold); stroke-linecap:round; transition:stroke-dashoffset 1.6s var(--ease)}
+.sc-ring .n{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:clamp(3.4rem,6.4vh,5.4rem)}
+
+/* steps (a journey) */
+.sc-steps{position:relative; display:grid; gap:clamp(18px,2.4vw,46px); width:min(100%,1660px)}
+.sc-steps::before{content:""; position:absolute; left:4%; right:4%; top:clamp(19px,2.3vh,25px); height:2px; background:linear-gradient(90deg, rgba(255,226,0,.7), rgba(255,226,0,.15)); transform-origin:left; animation:lineGrow 1.4s var(--ease) .2s both}
+@keyframes lineGrow{from{transform:scaleX(0)} to{transform:scaleX(1)}}
+.sc-step{position:relative; text-align:left; padding-top:clamp(62px,8vh,86px)}
+.sc-step .tag{position:absolute; top:0; left:0; background:var(--gold); color:var(--navy); font-weight:800; letter-spacing:.06em; border-radius:999px; padding:clamp(8px,1.1vh,12px) clamp(16px,1.3vw,24px); font-size:clamp(.95rem,1.25vw,1.3rem); box-shadow:0 0 0 8px var(--navy-900)}
+.sc-step h3{font-size:clamp(1.6rem,2.5vw,2.7rem); color:#fff; line-height:1.1}
+.sc-step p{color:var(--ink-dim); font-size:clamp(1.05rem,1.5vw,1.6rem); line-height:1.45; margin-top:clamp(10px,1.8vh,18px)}
+.sc-step .who{display:inline-flex; align-items:center; gap:8px; margin-top:clamp(14px,2.2vh,24px); border:1px solid rgba(255,226,0,.35); color:var(--gold-soft); border-radius:999px; padding:6px 14px; font-size:clamp(.82rem,1vw,1.05rem); letter-spacing:.12em; text-transform:uppercase; font-weight:700}
+.sc-step .who .ico{width:1.2em; height:1.2em}
+
+/* acronym */
+.sc-acro{display:grid; gap:clamp(14px,2vw,40px); width:min(100%,1640px)}
+.sc-let{text-align:center; display:flex; flex-direction:column; align-items:center}
+.sc-let .L{font-family:var(--serif); font-weight:700; color:var(--gold); font-size:clamp(5rem,10vw,11rem); line-height:1; text-shadow:0 0 60px rgba(255,226,0,.25)}
+.sc-let .w{font-family:var(--serif); color:#fff; font-size:clamp(1.4rem,2.2vw,2.4rem); margin-top:clamp(6px,1.4vh,16px)}
+.sc-let .x{color:var(--ink-dim); font-size:clamp(1.05rem,1.5vw,1.6rem); margin-top:clamp(8px,1.4vh,14px); line-height:1.35; max-width:16ch}
+
+/* quote */
+.sc-quote{max-width:1300px; text-align:center}
+.sc-quote .qm{font-family:var(--serif); color:var(--gold); font-size:clamp(6rem,12vw,13rem); line-height:.6; height:.5em}
+.sc-quote blockquote{margin:0; font-family:var(--serif); font-style:italic; color:#fff; font-size:clamp(2.2rem,4.2vw,4.6rem); line-height:1.18; text-wrap:balance}
+.sc-quote cite{display:block; margin-top:clamp(18px,3vh,36px); color:var(--gold-soft); font-style:normal; letter-spacing:.2em; text-transform:uppercase; font-size:clamp(.9rem,1.2vw,1.2rem)}
+
+/* bars — school data and live counts (one series: gold; values in ink) */
+.sc-sub2{color:var(--ink-dim); font-size:clamp(1rem,1.5vw,1.5rem); margin:calc(-1 * clamp(14px,3vh,40px)) 0 clamp(22px,4vh,48px); text-align:center}
+.sc-charts{display:grid; grid-template-columns:repeat(var(--cols,2),1fr); gap:clamp(30px,4vw,90px); width:min(100%,1660px)}
+.sc-chart h4{font-family:var(--sans); font-weight:700; color:var(--gold); letter-spacing:.22em; text-transform:uppercase; font-size:clamp(.8rem,1.1vw,1.1rem); margin-bottom:clamp(14px,2.4vh,26px); padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,.1)}
+.sc-rows{display:flex; flex-direction:column; gap:clamp(9px,1.5vh,16px); font-size:clamp(1rem,1.35vw,1.45rem)}
+.sc-row{display:grid; grid-template-columns:minmax(0,var(--lw,14ch)) 1fr 4.4ch; align-items:center; gap:clamp(12px,1.2vw,22px)}
+.sc-row .l{color:#fff; font-size:1em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:right}
+.sc-row .trk{position:relative; height:clamp(16px,2.2vh,26px)}
+.sc-row .trk i{position:absolute; left:0; top:0; bottom:0; width:0; background:var(--gold); border-radius:0 4px 4px 0; transition:width 1.2s var(--ease)}
+.sc-row .v{color:#fff; font-family:var(--serif); font-size:1.15em; font-variant-numeric:tabular-nums; text-align:right}
+.sc-rows.stack .sc-row{grid-template-columns:1fr auto; row-gap:8px}
+.sc-rows.stack .sc-row .l{white-space:normal; text-align:left}
+.sc-rows.stack .sc-row .trk{grid-column:1 / -1; grid-row:2}
+.sc-row.dim .trk i{background:rgba(234,236,247,.26)}
+.sc-row.dim .l{color:var(--ink-dim)}
+.sc-row.win .l{color:var(--gold)}
+.sc-row .l .ico{width:1.1em; height:1.1em; vertical-align:-.15em; margin-right:.35em; color:var(--gold)}
+.sc-big .sc-rows{font-size:clamp(1.2rem,1.85vw,2rem)}
+.sc-big .sc-row .l{text-align:left}
+.sc-big .sc-row .trk{height:clamp(26px,3.6vh,42px)}
+.sc-meta{display:flex; align-items:center; justify-content:center; gap:14px; margin-top:clamp(20px,3.6vh,42px); color:var(--ink-dim); font-size:clamp(1rem,1.4vw,1.45rem)}
+.sc-meta b{color:#fff; font-family:var(--serif); font-size:1.5em}
+.sc-meta .ico{width:1.4em; height:1.4em; color:var(--gold)}
+.sc-empty{color:var(--ink-dim); font-size:clamp(1.1rem,1.6vw,1.6rem); text-align:center; padding:30px 0}
+
+/* live · bees */
+.sc-bees{display:grid; grid-template-columns:repeat(4,1fr); gap:clamp(12px,1.4vw,26px); width:min(100%,1600px)}
+.sc-bee{position:relative; background:var(--card); border:1px solid rgba(255,255,255,.08); border-radius:20px; padding:clamp(16px,2.2vh,26px) clamp(16px,1.4vw,26px); display:grid; grid-template-columns:auto 1fr auto; gap:8px 16px; align-items:center; transition:border-color .4s, box-shadow .4s}
+.sc-bee .bi2{grid-row:span 2; width:clamp(40px,4.6vh,56px); height:clamp(40px,4.6vh,56px); color:var(--gold)}
+.sc-bee .bi2 .ico{width:100%; height:100%}
+.sc-bee .nm{color:#fff; font-family:var(--serif); font-size:clamp(1.1rem,1.5vw,1.6rem); line-height:1.1}
+.sc-bee .tg{color:var(--ink-dim); font-size:clamp(.8rem,1vw,1.05rem); letter-spacing:.08em}
+.sc-bee .ct{grid-row:span 2; font-family:var(--serif); color:#fff; font-size:clamp(2rem,3vw,3.2rem); font-variant-numeric:tabular-nums}
+.sc-bee .sh{grid-column:1/-1; height:4px; background:rgba(255,255,255,.08); border-radius:2px; overflow:hidden; margin-top:6px}
+.sc-bee .sh i{display:block; height:100%; width:0; background:var(--gold); border-radius:0 2px 2px 0; transition:width 1s var(--ease)}
+.sc-bee.top{border-color:rgba(255,226,0,.6); box-shadow:0 0 0 1px rgba(255,226,0,.35), 0 20px 50px rgba(255,226,0,.12)}
+.sc-bee.top .ct{color:var(--gold)}
+
+/* live · words */
+.sc-cloud{display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:clamp(10px,1.4vh,18px) clamp(18px,2vw,36px); max-width:1600px; min-height:30vh}
+.sc-cloud span{font-family:var(--serif); color:#fff; line-height:1.05; animation:biUp .8s var(--ease) both}
+.sc-cloud span.g{color:var(--gold)}
+.sc-cloud span.d{color:var(--ink-dim)}
+
+/* live · fleet count */
+.sc-fleet{text-align:center}
+.sc-fleet .n{font-family:var(--serif); font-weight:700; color:var(--gold); font-size:clamp(8rem,19vw,22rem); line-height:.9; font-variant-numeric:tabular-nums; text-shadow:0 0 90px rgba(255,226,0,.28)}
+.sc-fleet .l{font-family:var(--serif); color:#fff; font-size:clamp(2rem,3.8vw,4rem); margin-top:clamp(8px,2vh,24px)}
+.sc-fleet .sails{display:flex; justify-content:center; gap:clamp(8px,1vw,18px); margin-top:clamp(20px,4vh,46px); color:var(--gold)}
+.sc-fleet .sails .ico{width:clamp(28px,3vw,46px); height:clamp(28px,3vw,46px); opacity:.85; animation:bob 3.4s ease-in-out infinite; animation-delay:calc(var(--k) * -.4s)}
+@keyframes bob{0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)}}
+
+/* ask — phones answer, bars fill */
+.sc-ask .sc-t{max-width:28ch}
+.sc-hint{display:inline-flex; align-items:center; gap:12px; background:var(--gold); color:var(--navy); font-weight:800; letter-spacing:.14em; text-transform:uppercase; border-radius:999px; padding:10px 22px; font-size:clamp(.85rem,1.1vw,1.1rem); margin-bottom:clamp(18px,3vh,34px)}
+.sc-hint .ico{width:1.4em; height:1.4em}
 </style>
 </head>
 <body>
@@ -588,6 +734,9 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
     <div class="pp-row" style="margin-bottom:8px">
       <button id="ppSound" class="pp-btn pp-grey">Sound on</button>
       <button id="ppQR" class="pp-btn pp-grey">Show QR</button>
+    </div>
+    <div class="pp-row" style="margin-bottom:8px">
+      <button id="ppNotes" class="pp-btn pp-grey" title="Notes, next slide and a clock, in a second window (N)">Presenter view (N)</button>
     </div>
     <div class="pp-row" style="margin-bottom:8px">
       <button id="ppSail" class="pp-btn pp-gold">Set Sail (S)</button>
@@ -725,7 +874,7 @@ const ARCH_KEYS = ARCHETYPES.map(a=>a.key);
 const firebaseConfig = { apiKey:"AIzaSyBjHO57QKoMW-u4oLGGdgDSqw5gttqX6Fg", authDomain:"btyx-61dc6.firebaseapp.com", projectId:"btyx-61dc6", storageBucket:"btyx-61dc6.appspot.com", messagingSenderId:"851137405745", appId:"1:851137405745:web:c95b86b6f0462a9bc20610" };
 
 let app, db, auth, dbReady=false;
-const BUILD = '19 Oct 2026 · v5';   // shown on the start screen so you can tell which build is live
+const BUILD = '8 Nov 2026 · v6';   // shown on the start screen so you can tell which build is live
 /* Where phones join. Worked out from this page's own address, so it is right wherever the show is hosted.
    If you have a short link (e.g. 'go.gov.sg/joinbtx') that points at the audience page, put it in JOIN_SHORT:
    the QR codes and the text on screen will use it instead. */
@@ -775,7 +924,7 @@ const nexusModalBody=document.getElementById('nexusModalBody');
 let currentStep=0;
 let started=false;   // journey only advances/broadcasts after "Begin" is pressed
 let hiddenCells=new Set();  // presenter-hidden aspiration cells (moderation)
-let live={ compass:{total:0,breakdown:{}}, polls:{}, nexus:{total:0,breakdown:{}}, nexusByType:{global:{total:0,breakdown:{}},local:{total:0,breakdown:{}}}, aspirations:[], pulse:{}, folds:{}, fleet:0 };
+let live={ compass:{total:0,breakdown:{}}, polls:{}, nexus:{total:0,breakdown:{}}, nexusByType:{global:{total:0,breakdown:{}},local:{total:0,breakdown:{}}}, aspirations:[], pulse:{}, folds:{}, fleet:0, asks:{} };
 let heartbeat=null, animId=null;
 
 /* ---------- CONTENT ---------- */
@@ -903,13 +1052,14 @@ let mineSeen={}, minePrimed=false;
 function initListeners(){
   startClockListener();
   onSnapshot(collection(db,"compassQuiz"), snap=>{
-    const r={total:0,joined:0,breakdown:{}}, polls={}, nexus={global:{total:0,breakdown:{}},local:{total:0,breakdown:{}}}, pulse={}, words=[], folds={}, landed=[], seen={};
+    const r={total:0,joined:0,breakdown:{}}, polls={}, asks={}, nexus={global:{total:0,breakdown:{}},local:{total:0,breakdown:{}}}, pulse={}, words=[], folds={}, landed=[], seen={};
     let fleet=0;
     snap.forEach(d=>{ const x=d.data()||{}; const id=d.id, prev=mineSeen[id]||{};
       if(EPOCH && x.e!==EPOCH) return;                       // a phone from a rehearsal (or an earlier show)
       r.joined++; const v=x.archetype;
       if(v && ARCH_KEYS.includes(v)){ r.total++; r.breakdown[v]=(r.breakdown[v]||0)+1; if(minePrimed && prev.a!==v) landed.push(v); }
       if(x.v) for(const pid in x.v){ const k=x.v[pid]; if(typeof k!=='number') continue; const t=(polls[pid]=polls[pid]||{total:0,breakdown:{}}); t.total++; t.breakdown[k]=(t.breakdown[k]||0)+1; }
+      if(x.m) for(const aid in x.m){ const k=x.m[aid]; if(typeof k!=='number') continue; const t=(asks[aid]=asks[aid]||{total:0,breakdown:{}}); t.total++; t.breakdown[k]=(t.breakdown[k]||0)+1; }   // a slide's one-tap question
       if(x.n) for(const ty of ['global','local']){ const k=x.n[ty]; if(!k) continue; const t=nexus[ty]; t.total++; t.breakdown[k]=(t.breakdown[k]||0)+1; }
       if(x.p) pulse[x.p]=(pulse[x.p]||0)+1;
       if(x.w) words.push(x.w);
@@ -919,7 +1069,7 @@ function initListeners(){
       seen[id]={a:v||null, s:rx?rx.s:null};
     });
     mineSeen=seen; minePrimed=true;
-    live.compass=r; live.polls=polls; live.nexusByType=nexus; live.pulse=pulse; live.aspirations=words; live.folds=folds; live.fleet=fleet;
+    live.compass=r; live.polls=polls; live.nexusByType=nexus; live.pulse=pulse; live.aspirations=words; live.folds=folds; live.fleet=fleet; live.asks=asks;
     updateParticipant(r.joined, r.total);
     const t=journeySteps[currentStep]?.type, s=journeySteps[currentStep];
     if(t==='chart'){ paintCompass(); landed.slice(0,14).forEach((k,i)=>setTimeout(()=>landBee(k), i*170)); }
@@ -928,6 +1078,8 @@ function initListeners(){
     else if(t==='finale') paintHive();
     else if(t==='pulse_check') paintPulse();
     else if(t==='fold') paintFoldCount();
+    else if(t==='slide' && deckFor(s)) paintSceneLive();
+    postNotes();
   }, err=>{ console.warn(err); syncFail(err); });
 
   if(!isPresenter){
@@ -957,6 +1109,7 @@ function broadcastSession(){
     chapter: step.ch||'', funfact: step.funfactData||null, card: PHONE_CARD[step.id]||null, fold: step.fold||null,
     staticContent: step.type==='values'?true:null,
     tally: (step.type==='poll' && step.revealed) ? pollTally(step.pollData) : null,   // phones draw the result bars from this — they never read the votes
+    scene: sceneState(step),                 // a native deck: which slide, and what phones show beside it
     fleet: live.fleet||0, epoch: EPOCH,
     ts:lastWriteTs, sts:serverTimestamp(), cue
   }).catch(syncFail);
@@ -1194,7 +1347,8 @@ function renderContent(step){
     case 'fleet': return `<div style="width:100%; height:100%; position:relative; background:#00061f">${iframeLoading()}<iframe src="x/fleet.html?embed=1" title="The Fleet Sets Sail" style="width:100%; height:100%; border:0; display:block; position:relative; z-index:1" allow="autoplay"></iframe></div>`;
     case 'memento': return renderClosing(false);
     case 'video': return `<div style="width:100%; height:100%; background:#000; position:relative; display:flex; align-items:center; justify-content:center">${iframeLoading()}<iframe src="${step.url}" style="width:100%; height:100%; border:0; position:relative; z-index:1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`;
-    case 'slide': return `<div style="width:100%; height:100%; background:#000; position:relative">${iframeLoading()}<iframe src="${step.url}" style="width:100%; height:100%; border:0; position:relative; z-index:1" allowfullscreen></iframe></div>`;
+    case 'slide': if(deckFor(step)) return renderScene(step);
+      return `<div style="width:100%; height:100%; background:#000; position:relative">${iframeLoading()}<iframe src="${step.url}" style="width:100%; height:100%; border:0; position:relative; z-index:1" allowfullscreen></iframe></div>`;
     default: return '';
   }
 }
@@ -1676,6 +1830,246 @@ document.getElementById('nexusClose').onclick=()=>nexusModal.classList.add('hidd
 nexusModal.onclick=(e)=>{ if(e.target===nexusModal) nexusModal.classList.add('hidden'); };
 
 /* =====================================================================
+   NATIVE DECKS
+   The six Google Slides embeds become slides drawn here, in the show's own design.
+   Words live in deck/content.js. A deck is used when it has slides and `use:true`
+   (or the page is opened with ?scenes=1 to preview); otherwise the Google deck stays.
+   → / NEXT pages through a deck's slides; past the last slide the journey moves on.
+   Each slide is broadcast in the show's saved state (`scene`), so phones show a
+   companion for it, and an `ask` slide puts a one-tap question on every phone.
+   ===================================================================== */
+const SCENES_PREVIEW=/[?&]scenes=1\b/.test(location.search);
+const DECKS=window.BTY_DECKS||{};
+function deckFor(step){ const d=step && step.type==='slide' && DECKS[step.id]; return (d && Array.isArray(d.slides) && d.slides.length && (d.use || SCENES_PREVIEW)) ? d : null; }
+let sceneIdx=0;
+const escH=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const CH_ICON={ 'Who we are':'school', 'Our values':'heart', 'Passions':'spark', 'NEXUS@BTY':'globe', 'Your pathway':'explorer', 'Your journey':'wave' };
+const askId=s=>s.id||('q_'+String(s.question||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').slice(0,30));   // an ask without an id still gets a stable one
+function curSlide(){ const st=journeySteps[currentStep], d=deckFor(st); return d ? d.slides[Math.min(sceneIdx,d.slides.length-1)] : null; }
+
+/* What phones show beside each slide (kept small: it rides in the show's saved state). */
+function phoneFor(s){
+  if(!s || s.phone===false) return null;
+  if(s.kind==='ask') return { t:'ask', ask:{ id:askId(s), q:String(s.question||''), o:(s.options||[]).map(String) } };
+  const p=s.phone||{};
+  if(p.title||p.line) return { t:'point', icon:p.icon||s.icon||'', title:p.title||'', line:p.line||'' };
+  switch(s.kind){
+    case 'statement': return { t:'point', icon:s.icon||'', title:s.title||'', line:s.sub||s.body||'' };
+    case 'quote':     return { t:'point', icon:'', title:'“'+(s.quote||'')+'”', line:s.by||'' };
+    case 'duo':       return { t:'keys', title:s.title||(s.items||[]).map(x=>x.label).join(' · '), keys:(s.items||[]).map(x=>x.title) };
+    case 'pillars':   return { t:'keys', title:s.title||'', keys:(s.items||[]).map(x=>x.title) };
+    case 'steps':     return { t:'keys', title:s.title||'', keys:(s.items||[]).map(x=>(x.tag?x.tag+' · ':'')+x.title) };
+    case 'stats':     { const x=(s.items||[])[0]||{}; return { t:'stat', title:s.title||'', n:String(x.n||''), suffix:x.suffix||'', label:x.label||'' }; }
+    case 'acronym':   return { t:'chips', title:String(s.title||'').split(':')[0], chips:(s.letters||[]).map(l=>({l:l[0], w:l[1]})) };
+    case 'bars':      return { t:'point', icon:'chart', title:s.title||'', line:s.sub||'' };
+    case 'live':      return { t:'look', icon:s.show==='bees'?'bee':s.show==='picks'?'globe':s.show==='fleet'?'sail':'eye', title:s.show==='fleet'?'The fleet tonight':(s.title||''), line:'Live on the big screen. You are part of this.' };
+  }
+  return null;
+}
+function sceneState(step){ const d=deckFor(step); if(!d) return null; const i=Math.min(sceneIdx,d.slides.length-1); return JSON.parse(JSON.stringify({ deck:step.id, i, n:d.slides.length, phone:phoneFor(d.slides[i]) || null })); }   // no undefined fields: the database refuses them
+
+/* ---------- drawing ---------- */
+function renderScene(step){
+  const d=deckFor(step), ch=d.chapter||step.ch||'';
+  return `<div class="scene" id="scene" data-deck="${step.id}">
+    <div class="sc-top"><span class="sc-ch">${BTY.icon(CH_ICON[ch]||'hex')}${escH(ch)}</span><span class="sc-num" id="scNum"></span></div>
+    <div class="sc-body" id="scBody"></div>
+    <div class="sc-dots" id="scDots">${d.slides.map((_,i)=>`<i data-i="${i}"></i>`).join('')}</div>
+  </div>`;
+}
+const D_=(ms)=>` style="--d:${ms}ms"`;
+function slideHTML(s){
+  const T=(t,cls='')=>t?`<h2 class="sc-t${cls} bi"${D_(60)}>${escH(t)}</h2>`:'';
+  const cols=n=>` style="grid-template-columns:repeat(${n},1fr)"`;
+  switch(s.kind){
+    case 'statement': return `<div class="sc-stmt">
+        ${s.icon?`<div class="sc-ic bi">${BTY.icon(s.icon,'',1.3)}</div>`:''}
+        ${s.eyebrow?`<p class="eyebrow bi"${D_(90)}>${escH(s.eyebrow)}</p>`:''}
+        <h2 class="sc-h${s.latin?' latin':''} bi"${D_(170)}>${escH(s.title)}</h2>
+        ${s.sub?`<p class="sc-sub bi"${D_(420)}>${escH(s.sub)}</p>`:''}
+        ${s.body?`<span class="sc-rule bi"${D_(620)}></span><p class="sc-text bi"${D_(720)}>${escH(s.body)}</p>`:''}
+      </div>`;
+    case 'duo': return `${T(s.title)}<div class="sc-duo">${(s.items||[]).map((x,i)=>`<div class="sc-card bi"${D_(140+i*220)}>
+        ${x.label?`<p class="eyebrow">${escH(x.label)}</p>`:''}<h3>${escH(x.title)}</h3>${x.body?`<p class="b">${escH(x.body)}</p>`:''}</div>`).join('')}</div>`;
+    case 'pillars': { const n=(s.items||[]).length; return `${T(s.title)}<div class="sc-pills n${n}"${cols(n)}>${s.items.map((x,i)=>`<div class="sc-pill bi"${D_(200+i*130)}>
+        ${x.icon?`<span class="pi">${BTY.icon(x.icon,'',1.4)}</span>`:''}<h3>${escH(x.title)}</h3>${x.body?`<p>${escH(x.body)}</p>`:''}</div>`).join('')}</div>`; }
+    case 'stats': return `${T(s.title)}<div class="sc-stats">${(s.items||[]).map((x,i)=>{
+        const num=`<span class="n" data-count="${escH(x.n)}">${escH(x.n)}${x.suffix?`<small>${escH(x.suffix)}</small>`:''}</span>`;
+        const big = x.ring!=null ? `<div class="sc-ring"><svg viewBox="0 0 100 100"><circle class="trk" cx="50" cy="50" r="44"/><circle class="arc" cx="50" cy="50" r="44" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" data-ring="${+x.ring}"/></svg>${num}</div>` : num;
+        return `<div class="sc-stat bi"${D_(180+i*200)}>${big}<span class="l">${escH(x.label)}</span></div>`; }).join('')}</div>`;
+    case 'steps': { const n=(s.items||[]).length; return `${T(s.title)}<div class="sc-steps"${cols(n)}>${s.items.map((x,i)=>`<div class="sc-step bi"${D_(300+i*260)}>
+        <span class="tag">${escH(x.tag||i+1)}</span><h3>${escH(x.title)}</h3>${x.body?`<p>${escH(x.body)}</p>`:''}${x.who?`<span class="who">${BTY.icon(/all/i.test(x.who)?'school':'spark')}${escH(x.who)}</span>`:''}</div>`).join('')}</div>`; }
+    case 'acronym': { const n=(s.letters||[]).length; return `${T(s.title)}<div class="sc-acro"${cols(n)}>${s.letters.map((l,i)=>`<div class="sc-let bi"${D_(220+i*190)}>
+        <span class="L">${escH(l[0])}</span><span class="w">${escH(l[1]||'')}</span>${l[2]?`<span class="x">${escH(l[2])}</span>`:''}</div>`).join('')}</div>`; }
+    case 'quote': return `<div class="sc-quote"><div class="qm bi">“</div><blockquote class="bi"${D_(140)}>${escH(s.quote)}</blockquote>${s.by?`<cite class="bi"${D_(420)}>${escH(s.by)}</cite>`:''}</div>`;
+    case 'bars': { const g=s.groups||[]; const max=Math.max(1,...g.flatMap(x=>x.rows.map(r=>+r[1]||0)));
+      return `${T(s.title)}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<div class="sc-charts" style="--cols:${g.length}">${g.map((x,gi)=>`<div class="sc-chart bi"${D_(240+gi*200)}>
+        <h4>${escH(x.label)}</h4><div class="sc-rows">${x.rows.map(r=>`<div class="sc-row" title="${escH(r[0])}: ${+r[1]} ${escH(s.unit||'')}"><span class="l">${escH(r[0])}</span><span class="trk"><i data-w="${((+r[1]||0)/max*100).toFixed(1)}"></i></span><b class="v">${+r[1]}</b></div>`).join('')}</div></div>`).join('')}</div>`; }
+    case 'live': return liveHTML(s);
+    case 'ask': return `<div class="sc-ask" style="width:min(100%,1500px); display:flex; flex-direction:column; align-items:center">
+        <span class="sc-hint bi">${BTY.icon('phone')}Answer on your phone</span>${T(s.question,' sm')}
+        <div class="sc-big" style="width:100%"><div class="sc-rows bi"${D_(220)} id="scLive">${(s.options||[]).map((o,i)=>row('o'+i,o)).join('')}</div></div>
+        <div class="sc-meta bi"${D_(360)}>${BTY.icon('check')}<b id="scN">0</b><span id="scNl">answers so far</span></div></div>`;
+  }
+  return '';
+}
+function row(k,label,icon){ return `<div class="sc-row" data-k="${escH(k)}"><span class="l">${icon?BTY.icon(icon):''}${escH(label)}</span><span class="trk"><i></i></span><b class="v">0</b></div>`; }
+
+/* The room, live. Each renderer draws a stable frame; paintSceneLive() fills it in place. */
+function shortArch(k){ return String(k).replace(/^The /,''); }
+function liveHTML(s){
+  const T=`<h2 class="sc-t sm bi"${D_(60)}>${escH(s.title||'')}</h2>`;
+  switch(s.show){
+    case 'bees': return `${T}<div class="sc-bees bi"${D_(200)} id="scLive">${ARCHETYPES.map(a=>`<div class="sc-bee" data-k="${escH(a.key)}"><span class="bi2">${BTY.archIcon(a.key)}</span><span class="nm">${escH(shortArch(a.key))}</span><span class="ct">0</span><span class="tg">${escH(a.tag)}</span><span class="sh"><i></i></span></div>`).join('')}</div>
+        <div class="sc-meta bi"${D_(380)}>${BTY.icon('bee')}<b id="scN">0</b><span id="scNl">bees in the Hive</span></div>`;
+    case 'poll': { const p=(journeySteps.find(x=>x.pollData && x.pollData.id===s.poll)||{}).pollData; if(!p) return T+`<p class="sc-empty">That poll is not in the show.</p>`;
+      return `${T}<p class="sc-sub2 bi"${D_(140)}>${escH(p.question)}</p><div class="sc-big" style="width:min(100%,1500px)"><div class="sc-rows bi"${D_(240)} id="scLive">${p.options.map((o,i)=>row('o'+i,o,i===p.correctAnswer?'check':'')).join('')}</div></div>
+        <div class="sc-meta bi"${D_(380)}>${BTY.icon('check')}<b id="scN">0%</b><span id="scNl">got it right</span></div>`; }
+    case 'picks': return `${T}<div class="sc-charts bi"${D_(200)} style="--cols:2"><div class="sc-chart"><h4>International exchanges</h4><div class="sc-rows" id="scLiveG"></div></div><div class="sc-chart"><h4>Industry attachments</h4><div class="sc-rows" id="scLiveL"></div></div></div>
+        <div class="sc-meta bi"${D_(380)}>${BTY.icon('pin')}<b id="scN">0</b><span id="scNl">choices made tonight</span></div>`;
+    case 'pulse': return `${T}<div class="sc-big" style="width:min(100%,1400px)"><div class="sc-rows bi"${D_(200)} id="scLive">${pulseOptions().map(o=>row(o.label,o.label,BTY.MOOD[o.label]||'smile')).join('')}</div></div>
+        <div class="sc-meta bi"${D_(380)}>${BTY.icon('heart')}<b id="scN">0</b><span id="scNl">responses</span></div>`;
+    case 'words': return `${T}<div class="sc-cloud" id="scLive"></div>`;
+    case 'fleet': return `<div class="sc-fleet"><div class="n bi" id="scN" data-count="0">0</div><div class="l bi"${D_(260)}>${escH(s.title||'boats set sail tonight')}</div>
+        <div class="sails bi"${D_(480)}>${Array.from({length:9},(_,k)=>`<span style="--k:${k}">${BTY.icon('sail')}</span>`).join('')}</div></div>`;
+  }
+  return T;
+}
+// Fill a list of rows in place: [{k,label,v,win,dim,icon}] — bars share one scale; widths animate.
+function fillRows(host, rows, max, fmt){
+  if(!host) return;
+  const keys=rows.map(r=>r.k).join('|');
+  if(host.dataset.keys!==keys){ host.dataset.keys=keys; host.innerHTML=rows.map(r=>row(r.k,r.label,r.icon)).join(''); sizeRows(host.parentElement); void host.offsetWidth; }
+  rows.forEach(r=>{ const el=host.querySelector(`.sc-row[data-k="${CSS.escape(r.k)}"]`); if(!el) return;
+    el.querySelector('.trk i').style.width=(max>0?(r.v/max*100):0)+'%';
+    el.querySelector('.v').textContent=fmt?fmt(r):r.v;
+    el.classList.toggle('win',!!r.win); el.classList.toggle('dim',!!r.dim);
+    el.title=`${r.label}: ${fmt?fmt(r):r.v}`; });
+}
+// Label column fits the longest label (in its own font's ch); very long labels sit above their bar.
+function sizeRows(root){ (root||document).querySelectorAll('.sc-rows').forEach(r=>{ const L=[...r.querySelectorAll('.sc-row .l')].map(l=>l.textContent.trim().length+(l.querySelector('.ico')?2:0)); if(!L.length) return; const m=Math.max(...L);
+  r.classList.toggle('stack', m>30); r.style.setProperty('--lw', Math.min(m+1,30)+'ch'); }); }
+function setTxt(id,t){ const el=document.getElementById(id); if(el) el.textContent=t; }
+function paintSceneLive(){
+  const s=curSlide(); if(!s || !document.getElementById('scBody')) return;
+  if(s.kind==='ask'){
+    const t=live.asks[askId(s)]||{total:0,breakdown:{}}, n=t.total||0, top=Math.max(0,...s.options.map((_,i)=>t.breakdown[i]||0));
+    fillRows(document.getElementById('scLive'), s.options.map((o,i)=>({k:'o'+i,label:o,v:t.breakdown[i]||0,win:n>0&&(t.breakdown[i]||0)===top})), top, r=>n?Math.round(r.v/n*100)+'%':'0%');
+    setTxt('scN',n); setTxt('scNl',n===1?'answer so far':'answers so far'); return;
+  }
+  if(s.kind!=='live') return;
+  if(s.show==='bees'){
+    const b=live.compass.breakdown||{}, n=live.compass.total||0, top=Math.max(0,...ARCH_KEYS.map(k=>b[k]||0));
+    document.querySelectorAll('#scLive .sc-bee').forEach(el=>{ const c=b[el.dataset.k]||0; el.querySelector('.ct').textContent=c; el.querySelector('.sh i').style.width=(n?c/n*100:0)+'%'; el.classList.toggle('top', n>0 && c===top); });
+    setTxt('scN',n); setTxt('scNl',n===1?'bee in the Hive':'bees in the Hive');
+  } else if(s.show==='poll'){
+    const p=(journeySteps.find(x=>x.pollData && x.pollData.id===s.poll)||{}).pollData; if(!p) return;
+    const t=live.polls[p.id]||{total:0,breakdown:{}}, n=t.total||0;
+    fillRows(document.getElementById('scLive'), p.options.map((o,i)=>({k:'o'+i,label:o,icon:i===p.correctAnswer?'check':'',v:t.breakdown[i]||0,win:i===p.correctAnswer,dim:i!==p.correctAnswer})), Math.max(0,...p.options.map((_,i)=>t.breakdown[i]||0)), r=>n?Math.round(r.v/n*100)+'%':'0%');
+    setTxt('scN', n?Math.round((t.breakdown[p.correctAnswer]||0)/n*100)+'%':'—'); setTxt('scNl', n?`of ${n} got it right`:'no votes yet');
+  } else if(s.show==='picks'){
+    const name=(ty,id)=>{ const st=journeySteps.find(x=>x.nexusData && x.nexusData.type===ty); const o=st && st.nexusData.options.find(o=>o.id===id); return o?o.text.replace(/\s*\((.+)\)\s*$/,' · $1'):id; };
+    let tot=0, mx=0; const sets={};
+    ['global','local'].forEach(ty=>{ const t=live.nexusByType[ty]||{total:0,breakdown:{}}; tot+=t.total||0;
+      sets[ty]=Object.entries(t.breakdown||{}).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([id,v],i)=>({k:id,label:name(ty,id),v,win:i===0})); sets[ty].forEach(r=>mx=Math.max(mx,r.v)); });
+    ['global','local'].forEach(ty=>{ const h=document.getElementById(ty==='global'?'scLiveG':'scLiveL'); if(!h) return;
+      if(!sets[ty].length){ h.dataset.keys=''; h.innerHTML=`<p class="sc-empty">Waiting for choices…</p>`; } else fillRows(h, sets[ty], mx); });
+    setTxt('scN',tot); setTxt('scNl',tot===1?'choice made tonight':'choices made tonight');
+  } else if(s.show==='pulse'){
+    const n=Object.values(live.pulse).reduce((a,b)=>a+b,0), top=Math.max(0,...Object.values(live.pulse));
+    fillRows(document.getElementById('scLive'), pulseOptions().map(o=>({k:o.label,label:o.label,icon:BTY.MOOD[o.label]||'smile',v:live.pulse[o.label]||0,win:n>0&&(live.pulse[o.label]||0)===top})), top, r=>n?Math.round(r.v/n*100)+'%':'0%');
+    setTxt('scN',n); setTxt('scNl',n===1?'response':'responses');
+  } else if(s.show==='words'){
+    const host=document.getElementById('scLive'); if(!host) return;
+    const counts={}; live.aspirations.map(cleanWord).filter(w=>w && !isProfane(w) && !hiddenCells.has(w.toLowerCase())).forEach(w=>{ const k=w.toLowerCase(); (counts[k]=counts[k]||{w,n:0}).n++; });
+    const ents=Object.values(counts).sort((a,b)=>b.n-a.n).slice(0,40), mx=ents[0]?.n||1;
+    const sig=ents.map(e=>e.w+e.n).join('|'); if(host.dataset.sig===sig) return; host.dataset.sig=sig;
+    if(!ents.length){ host.innerHTML=`<p class="sc-empty">Waiting for the first dream…</p>`; return; }
+    // Biggest in the middle, smaller words fanning out to both sides.
+    const order=[]; ents.forEach((e,i)=>{ if(i%2) order.push(e); else order.unshift(e); });
+    host.innerHTML=order.map((e,i)=>{ const r=e.n/mx, size=1.4+r*3.4; return `<span class="${r>.6?'g':r<.3?'d':''}" style="font-size:clamp(${(size*.55).toFixed(2)}rem,${(size*.9).toFixed(2)}vw,${size.toFixed(2)}rem); animation-delay:${(i*35)}ms" title="${escH(e.w)} ×${e.n}">${escH(e.w.toUpperCase())}</span>`; }).join('');
+  } else if(s.show==='fleet'){
+    const el=document.getElementById('scN'); if(!el) return; const to=live.fleet||0, from=+el.dataset.count||0; if(to===from && el.textContent==String(to)) return; el.dataset.count=to; countUp(el, from, to, 1400);
+  }
+}
+function countUp(el, from, to, ms, suffixHTML=''){ const t0=performance.now();
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){ el.innerHTML=to+suffixHTML; return; }
+  (function tick(now){ const p=Math.min(1,(now-t0)/ms), e=1-Math.pow(1-p,3); el.innerHTML=Math.round(from+(to-from)*e)+suffixHTML; if(p<1 && el.isConnected) requestAnimationFrame(tick); })(t0); }
+function paintScene(){
+  const st=journeySteps[currentStep], d=deckFor(st); const body=document.getElementById('scBody'); if(!d || !body) return;
+  sceneIdx=Math.max(0,Math.min(sceneIdx,d.slides.length-1));
+  const s=d.slides[sceneIdx];
+  body.classList.remove('sc-leave');
+  body.innerHTML=slideHTML(s);
+  sizeRows(body);
+  setTxt('scNum', `${String(sceneIdx+1).padStart(2,'0')} / ${String(d.slides.length).padStart(2,'0')}`);
+  document.querySelectorAll('#scDots i').forEach((el,i)=>{ el.classList.toggle('on',i===sceneIdx); el.classList.toggle('done',i<sceneIdx); });
+  journeyContent.classList.toggle('respond', s.kind==='ask');            // gold frame = "phones, it's your turn"
+  // School-data motion: numbers count up, rings and bars draw in.
+  body.querySelectorAll('.sc-stat .n[data-count]').forEach((el,i)=>{ const raw=el.dataset.count, n=parseInt(raw,10); if(isNaN(n) || String(n)!==raw) return; const suf=el.querySelector('small')?.outerHTML||''; el.innerHTML='0'+suf; setTimeout(()=>countUp(el,0,n,1500,suf), 260+i*200); });
+  setTimeout(()=>{ body.querySelectorAll('[data-ring]').forEach(c=>c.style.strokeDashoffset=String(100-(+c.dataset.ring||0))); body.querySelectorAll('.sc-row .trk i[data-w]').forEach((el,i)=>setTimeout(()=>el.style.width=el.dataset.w+'%', i*60)); }, 420);
+  if(s.kind==='live' || s.kind==='ask') setTimeout(paintSceneLive, 40);
+  if(isPresenter) updatePPStep();
+}
+function gotoScene(i){
+  const d=deckFor(journeySteps[currentStep]); if(!d) return;
+  sceneIdx=Math.max(0,Math.min(i,d.slides.length-1));
+  broadcastSession(); postNotes();
+  const body=document.getElementById('scBody');
+  if(!body){ renderStep(); return; }
+  body.classList.add('sc-leave'); sfx && sfx('flip');
+  clearTimeout(gotoScene.t); gotoScene.t=setTimeout(paintScene, 220);
+}
+
+/* =====================================================================
+   PRESENTER VIEW — notes.html, in a second window on the laptop
+   Same machine, no database: the two windows talk over a BroadcastChannel.
+   It shows the slide now, the one next, what to say and the clock, and its
+   Back / Next buttons drive this screen.
+   ===================================================================== */
+const STEP_NOTES={
+  compass:'Welcome everyone. Ask them to scan the QR and tap to board; the compass quiz takes a minute. Watch the Hive fill; the pill counts phones ready.',
+  video_intro:'Play the welcome film. Phones show "eyes on the screen" and can send reactions.',
+  fold_s:'Fold with us: S for Stewardship. Every phone folds twice. The counter shows boats past fold 2; move on when most are done.',
+  poll_dream:'Ask: what does DREAM stand for? Wait for the votes to settle, then press Reveal.',
+  values:'Tap a card to flip it. Speak to one or two values; Non Vi Sed Arte.',
+  funfact_cca:'Seventeen CCAs, four families: a place for every kind of bee.',
+  fold_a:'Fold with us: A for Applied Learning. Two more folds.',
+  poll_cca:'Ask: what share get their 1st or 2nd choice CCA? Reveal when the votes settle.',
+  poll_nexus_count:'Ask: how many exchanges and attachments? Reveal: 8 and 6.',
+  poll_industry:'Ask: which is NOT an area at Beatty? A trick question: we do them all.',
+  funfact_nexus:'Eight international exchanges every year.',
+  fold_i:'Fold with us: I for International and Industry. The sail takes shape.',
+  nexus_global:'Phones choose the exchange that calls to them; pins grow on the globe. Click a pin to open its card. Scroll to zoom; 0 resets.',
+  nexus_local:'Phones choose an industry attachment; the map counts them.',
+  fold_l:'Fold with us: L. The last fold, then pull the boat open.',
+  pulse_check:'Read the room: phones tap a mood.',
+  set_sail:'Phones name their boats. When most are ready, press SET SAIL and lead the call: Non Vi! Sed Arte! Three times; the boats leave together.',
+  finale:'Every cell is a word from a boat. Click a cell to hide it if needed.',
+  card:'Their Compass Card is on every phone. Ask them to save it and visit the booths. Make Beatty your 1st choice.',
+};
+const notesCh=('BroadcastChannel' in window) ? new BroadcastChannel('btx-notes') : null;
+let showStartedAt=0, stepStartedAt=0, notesStepSeen=-1;
+function stepTitle(st){ return st.title || st.funfactData?.label || (st.type==='video'?'Welcome film':st.id); }
+function slideTitle(s){ return s.title || s.question || (s.items||[]).map(x=>x.label||x.title).filter(Boolean).slice(0,2).join(' · ') || s.kind; }
+function itemAt(stepI, sc){ const st=journeySteps[stepI]; if(!st) return null; const d=deckFor(st); const s=d?d.slides[sc]:null;
+  return { step:stepI+1, ch:st.ch||'', title:s?slideTitle(s):stepTitle(st), kind:s?s.kind:st.type, scene:d?{i:sc+1,n:d.slides.length}:null, notes:(s&&s.notes)||STEP_NOTES[st.id]||'' }; }
+function postNotes(){
+  if(!notesCh || !isPresenter || !started) return;
+  if(notesStepSeen!==currentStep){ notesStepSeen=currentStep; stepStartedAt=Date.now(); }
+  const d=deckFor(journeySteps[currentStep]);
+  const next = (d && sceneIdx<d.slides.length-1) ? itemAt(currentStep, sceneIdx+1) : itemAt(currentStep+1, 0);
+  try{ notesCh.postMessage({ type:'state', total:journeySteps.length, cur:itemAt(currentStep, d?sceneIdx:0), next, startedAt:showStartedAt, stepAt:stepStartedAt,
+    room:{ joined:live.compass.joined||0, ready:live.compass.total||0 }, reveal: journeySteps[currentStep].type==='poll' && !journeySteps[currentStep].revealed }); }catch(e){}
+}
+if(notesCh) notesCh.onmessage=(e)=>{ const m=e.data||{};
+  if(!isPresenter) return;
+  if(m.type==='hello') postNotes();
+  else if(m.type==='cmd'){ if(m.cmd==='next') nextBtn.click(); else if(m.cmd==='prev') prevBtn.click(); }
+};
+function openNotes(){ const w=window.open('notes.html','btxNotes','width=1180,height=760'); if(!w) showToast('Allow pop-ups to open the presenter view'); else setTimeout(postNotes,600); }
+
+/* =====================================================================
    STEP ENGINE
    ===================================================================== */
 function renderStep(){
@@ -1707,6 +2101,7 @@ function renderStep(){
   if(step.type==='chart') paintCompass();
   if(step.type==='poll'){ heartbeat=setInterval(()=>{ if(journeyContent.querySelector(`[data-poll="${step.pollData.id}"]`)) paintPoll(step.pollData.id); },600); }
   if(step.type==='globe'||step.type==='industry_map') paintNexusStats();
+  if(deckFor(step)) paintScene();
 
   progFill.style.width=`${((currentStep+1)/journeySteps.length)*100}%`;
   prevBtn.style.display = currentStep>0?'inline-block':'none';
@@ -1716,6 +2111,7 @@ function renderStep(){
   nextBtn.textContent=label;
   if(isPresenter) updatePPStep();
   updateSailBtn(step);
+  postNotes();
 }
 
 // Animated step transition wrapper
@@ -1728,7 +2124,7 @@ function goRender(){
 
 function beginJourney(){
   if(started) return;
-  started=true;
+  started=true; showStartedAt=Date.now();
   startAudio();
   document.getElementById('start').classList.add('hidden');
   document.getElementById('journey').classList.remove('hidden');
@@ -1741,11 +2137,16 @@ nextBtn.addEventListener('click',(e)=>{
   if(!started){ beginJourney(); return; }   // footer button also starts the journey (Begin may be scrolled off)
   ripple(e, nextBtn);
   const step=journeySteps[currentStep];
-  if(step.type==='poll' && !step.revealed){ step.revealed=true; revealPollInPlace(step); broadcastSession(); sfx('reveal'); launchConfetti(); return; }
-  if(currentStep<journeySteps.length-1){ currentStep++; goRender(); }
+  if(step.type==='poll' && !step.revealed){ step.revealed=true; revealPollInPlace(step); broadcastSession(); postNotes(); sfx('reveal'); launchConfetti(); return; }
+  const dk=deckFor(step);
+  if(dk && sceneIdx<dk.slides.length-1){ gotoScene(sceneIdx+1); return; }   // page within a native deck
+  if(currentStep<journeySteps.length-1){ currentStep++; sceneIdx=0; goRender(); }
   else { finishJourney(); }
 });
-prevBtn.addEventListener('click',(e)=>{ if(!started) return; ripple(e,prevBtn); if(currentStep>0){ journeySteps[currentStep].revealed=false; currentStep--; goRender(); } });
+prevBtn.addEventListener('click',(e)=>{ if(!started) return; ripple(e,prevBtn);
+  const dk=deckFor(journeySteps[currentStep]);
+  if(dk && sceneIdx>0){ gotoScene(sceneIdx-1); return; }
+  if(currentStep>0){ journeySteps[currentStep].revealed=false; currentStep--; const pd=deckFor(journeySteps[currentStep]); sceneIdx=pd?pd.slides.length-1:0; goRender(); } });   // back into a deck lands on its last slide
 
 function finishJourney(){
   journeyContent.innerHTML=`<div class="wrap" style="width:100%">${renderClosing(true)}</div>`;
@@ -1756,7 +2157,7 @@ function finishJourney(){
 
 // Keyboard
 let deckKeyArmed=0;
-function deckOnScreen(){ const st=journeySteps[currentStep]; return started && st && (st.type==='slide' || st.type==='video'); }
+function deckOnScreen(){ const st=journeySteps[currentStep]; return started && st && ((st.type==='slide' && !deckFor(st)) || st.type==='video'); }   // a native deck pages with the keys directly
 document.addEventListener('keydown',e=>{
   if(e.target.closest && e.target.closest('input,textarea')) return;
   const fwd=['ArrowRight',' ','Enter','PageDown'].includes(e.key), back=['ArrowLeft','PageUp'].includes(e.key);
@@ -1773,7 +2174,7 @@ document.addEventListener('keydown',e=>{
 /* =====================================================================
    PRESENTER CONTROLS
    ===================================================================== */
-function updatePPStep(){ const s=journeySteps[currentStep]; const el=document.getElementById('ppStep'); if(el) el.textContent=`Step ${currentStep+1}/${journeySteps.length}: ${s.title||s.id}`; }
+function updatePPStep(){ const s=journeySteps[currentStep]; const el=document.getElementById('ppStep'); const d=deckFor(s); if(el) el.textContent=`Step ${currentStep+1}/${journeySteps.length}: ${d?(d.chapter||s.ch)+' · slide '+(sceneIdx+1)+'/'+d.slides.length:(s.title||s.id)}`; }
 if(isPresenter){
   document.getElementById('presenterPanel').classList.remove('hidden');
   document.getElementById('startReset').classList.remove('hidden');
@@ -1784,6 +2185,8 @@ if(isPresenter){
   document.getElementById('ppSound').onclick=(ev)=>{ soundOn=!soundOn; ev.target.textContent= soundOn?'Sound on':'Muted'; ev.target.className='pp-btn '+(soundOn?'pp-grey':'pp-red'); if(soundOn){ startAudio(); sfx('reveal'); } };
   document.getElementById('ppQR').onclick=()=>document.getElementById('qrOverlay').classList.remove('hidden');
   document.getElementById('ppSail').onclick=fireSetSail;
+  document.getElementById('ppNotes').onclick=openNotes;
+  document.addEventListener('keydown',e=>{ if((e.key==='n'||e.key==='N') && !(e.target.closest && e.target.closest('input,textarea'))) openNotes(); });
   // The big footer button, shown only on the fleet step: the presenter's baton.
   (function(){ const b=document.createElement('button'); b.id='setSailBtn'; b.className='btn set-sail-btn'; b.innerHTML=BTY.icon('sail')+'SET SAIL'; b.style.display='none'; b.onclick=(e)=>{ ripple(e,b); fireBaton(); }; nextBtn.insertAdjacentElement('beforebegin', b); })();
   document.getElementById('ppReset').onclick=openReset;

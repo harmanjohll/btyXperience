@@ -474,7 +474,7 @@ function startSessionListener() {
 // === STATE ===
 const $app = document.getElementById('app');
 const SK = 'btySail_v7';
-const BUILD = '19 Oct 2026 · v5';   // shown on the boarding screen so a phone can tell which build it has
+const BUILD = '8 Nov 2026 · v6';   // shown on the boarding screen so a phone can tell which build it has
 let D = JSON.parse(localStorage.getItem(SK)) || {};
 D.marks = D.marks || [];
 let step = 0;
@@ -2018,7 +2018,7 @@ function applyView(state) {
     if (v !== 'poll' && window.__pollUnsub) { window.__pollUnsub(); window.__pollUnsub = null; }
     // Signature so a repeated snapshot doesn't re-render, but a NEW slide — or the
     // presenter revealing the answer — does.
-    const sig = v + '|' + (state.step ?? '') + '|' + (state.pollData?.id || '') + '|' + (state.nexusData?.type || '') + '|' + (state.revealed ? 'R' : '') + '|' + (state.fold ? state.fold.to : '') + '|' + (state.card ? (state.card.title || '') + (state.card.keys || []).length : '');
+    const sig = v + '|' + (state.step ?? '') + '|' + (state.pollData?.id || '') + '|' + (state.nexusData?.type || '') + '|' + (state.revealed ? 'R' : '') + '|' + (state.fold ? state.fold.to : '') + '|' + (state.card ? (state.card.title || '') + (state.card.keys || []).length : '') + (state.scene ? '|S' + state.scene.deck + ':' + state.scene.i : '');
     if (sig === currentView) return;
     currentView = sig;
     chapterNow = state.chapter || chapterNow;
@@ -2037,7 +2037,7 @@ function applyView(state) {
         case 'chart':         renderAboard(); break;          // the opening room portrait
         case 'fold':          startFoldBeat(state.fold); break; // "Fold with us" — presenter-led
         case 'video':         renderWatch(state); break;
-        case 'slide':         renderGlance(state, 'deck'); break;
+        case 'slide':         state.scene ? renderSceneCompanion(state) : renderGlance(state, 'deck'); break;
         case 'values':        renderGlance(state, 'values'); break;
         case 'funfact':       renderGlance(state, 'funfact'); break;
         default:              renderWatch(state); break;
@@ -2536,6 +2536,76 @@ function renderGlance(state, kind) {
     </div>`;
     wireReactBar();
     cornerCatchUp();
+}
+
+/* --- A native slide on the big screen: the phone shows its companion ---
+   The presenter puts what phones show beside each slide into the show's saved state
+   (`scene.phone`): a key point, a big number, a short list, or a one-tap question. */
+const escP = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function scenePips(sc) { return sc && sc.n > 1 ? `<div class="sc-pips" aria-label="Slide ${sc.i + 1} of ${sc.n}">${Array.from({ length: sc.n }, (_, k) => `<i class="${k < sc.i ? 'done' : k === sc.i ? 'on' : ''}"></i>`).join('')}</div>` : ''; }
+function renderSceneCompanion(state) {
+    const sc = state.scene, p = sc && sc.phone;
+    if (!p) { renderGlance(state, 'deck'); return; }
+    if (p.t === 'ask' && p.ask) { setMode('respond'); showAsk(p.ask, sc); return; }
+    hideCornerBoat();
+    let body = '';
+    if (p.t === 'stat') {
+        const n = parseInt(p.n, 10), whole = !isNaN(n) && String(n) === String(p.n);
+        body = `<div class="glance-num" id="glanceNum">${whole ? '0' : escP(p.n)}${p.suffix ? `<small>${escP(p.suffix)}</small>` : ''}</div><div class="glance-label">${escP(p.label)}</div>${p.title ? `<p class="glance-sub">${escP(p.title)}</p>` : ''}`;
+        if (whole) setTimeout(() => { const el = document.getElementById('glanceNum'); if (!el) return; const suf = p.suffix ? `<small>${escP(p.suffix)}</small>` : '', t0 = performance.now();
+            (function tick(now) { const k = Math.min(1, (now - t0) / 1200); el.innerHTML = Math.round(n * (1 - Math.pow(1 - k, 3))) + suf; if (k < 1 && el.isConnected) requestAnimationFrame(tick); })(t0); }, 60);
+    } else if (p.t === 'keys') {
+        body = `<div class="glance-title">${escP(p.title)}</div><ul class="glance-keys">${(p.keys || []).map(k => `<li>${escP(k)}</li>`).join('')}</ul>`;
+    } else if (p.t === 'chips') {
+        body = `<div class="glance-title">${escP(p.title)}</div><div class="dream-chips">${(p.chips || []).map(c => `<div class="dream-chip"><b>${escP(c.l)}</b>${escP(c.w)}</div>`).join('')}</div>`;
+    } else {
+        body = `${p.icon ? `<div class="glance-ic">${ico(p.icon)}</div>` : ''}<div class="glance-title" style="margin-top:${p.icon ? 14 : 0}px">${escP(p.title)}</div>${p.line ? `<p class="glance-line">${escP(p.line)}</p>` : ''}${p.t === 'look' ? '<p class="glance-sub">Eyes on the big screen</p>' : ''}`;
+    }
+    $app.innerHTML = `
+    <div class="sail-screen follow-screen glance-screen scene-companion fade-up">
+        ${chapterStrip()}
+        <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">${body}${scenePips(sc)}</div>
+        ${reactBarHTML()}
+    </div>`;
+    wireReactBar();
+    cornerCatchUp();
+}
+/* One tap, one answer: it goes into this phone's own saved state (`m`), and the big screen counts it. */
+function showAsk(a, sc) {
+    const mine = D.asks ? D.asks[a.id] : undefined;
+    if (mine !== undefined) {
+        $app.innerHTML = `
+        <div class="sail-screen fade-up">
+            <div class="content-zone" style="padding-top:20px;">
+                <p class="q-eyebrow">${ico('check')}Locked in</p>
+                <h2 class="q-question" style="font-size:1.15rem;">${escP(a.q)}</h2>
+                <div class="q-locked mt-4">
+                    <div class="q-locked-pick">You chose <b>${escP((a.o || [])[mine])}</b></div>
+                    <div class="q-locked-count">Look up: the hall's answers fill the big screen</div>
+                </div>
+            </div>
+            ${reactBarHTML()}
+        </div>`;
+        wireReactBar(); showCornerBoat(); return;
+    }
+    $app.innerHTML = `
+    <div class="sail-screen fade-up">
+        <div class="content-zone" style="padding-top:20px;">
+            <p class="q-eyebrow">${ico('poll')}Quick question · tap one</p>
+            <h2 class="q-question">${escP(a.q)}</h2>
+            <div class="q-opts mt-4">${(a.o || []).map((o, i) => `<button class="answer-opt" data-ask="${i}">${escP(o)}</button>`).join('')}</div>
+            <p class="q-hint">Your answer joins the bars on the big screen.</p>
+        </div>
+    </div>`;
+    document.querySelectorAll('[data-ask]').forEach(b => b.addEventListener('click', () => {
+        const i = parseInt(b.dataset.ask, 10);
+        document.querySelectorAll('.answer-opt').forEach(o => o.disabled = true);
+        b.classList.add('sel'); haptic(40);
+        D.asks = { ...(D.asks || {}), [a.id]: i }; save();
+        pushMine({ m: { [a.id]: i } });
+        setTimeout(() => { if (lastSessionState?.scene?.phone?.ask?.id === a.id) showAsk(a, sc); }, 450);
+    }));
+    showCornerBoat();
 }
 
 /* --- Fold with us: a presenter-led beat of two folds --- */
