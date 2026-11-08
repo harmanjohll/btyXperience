@@ -1103,7 +1103,7 @@ const ARCH_KEYS = ARCHETYPES.map(a=>a.key);
 const firebaseConfig = { apiKey:"AIzaSyBjHO57QKoMW-u4oLGGdgDSqw5gttqX6Fg", authDomain:"btyx-61dc6.firebaseapp.com", projectId:"btyx-61dc6", storageBucket:"btyx-61dc6.appspot.com", messagingSenderId:"851137405745", appId:"1:851137405745:web:c95b86b6f0462a9bc20610" };
 
 let app, db, auth, dbReady=false;
-const BUILD = '8 Nov 2026 · v6';   // shown on the start screen so you can tell which build is live
+const BUILD = '8 Nov 2026 · v7';   // shown on the start screen so you can tell which build is live
 /* Where phones join. Worked out from this page's own address, so it is right wherever the show is hosted.
    If you have a short link (e.g. 'go.gov.sg/joinbtx') that points at the audience page, put it in JOIN_SHORT:
    the QR codes and the text on screen will use it instead. */
@@ -1165,12 +1165,15 @@ const dreamValues=[
   { name:'Mindfulness',  img:'dream/Mindfulness-card.jpg',  tint:'#d99a12', points:["Respecting self","Respecting others","Respecting the environment"] },
 ];
 
+// The audience makes five folds (x/boat.js FOLD_PLAN): one per beat, and the pull open at the end.
+const FOLD_PLAN_P=[{start:0,end:1,label:'Fold the paper in half, top edge down to the bottom'},{start:1,end:3,label:'Fold a corner down to the centre; the other follows'},{start:3,end:6,label:'Fold the brim up; the back follows, and it opens into a diamond'},{start:6,end:7,label:'Fold the bottom point up to the top'},{start:7,end:8,label:'Pull the sides apart: your boat!'}];
+const foldsDoneP=n=>FOLD_PLAN_P.filter(g=>g.start<(n||0)).length;
 let boatMod=null; import('./x/boat.js').then(m=>{ boatMod=m; }).catch(()=>{});   // the same origami the phones fold
 const journeySteps=[
   { id:'compass', type:'chart', title:"The Hive Awakens", desc:"A living portrait of everyone in the room, right now." },
   { id:'video_intro', type:'video', url:"https://www.youtube.com/embed/6xpckUCGIlE?autoplay=1&modestbranding=1&rel=0&controls=0" },
   { id:'deck_a', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRpjJ-5NgPJO2LRLdKEcpBgqv-xMAriN5QxdbJSPLS5IE2y2pjNhE0icRG8lKqp0x0dM0KbbS9e1HWK/pubembed?start=false&loop=false&delayms=60000" },
-  { id:'fold_s', type:'fold', title:"Fold with us · S", desc:"Stewardship — the foundation.", fold:{letter:'S', name:'Stewardship', sub:'The Foundation', from:0, to:2} },
+  { id:'fold_s', type:'fold', title:"Fold with us · S", desc:"Stewardship — the foundation.", fold:{letter:'S', name:'Stewardship', sub:'The Foundation', from:0, to:1} },
   { id:'poll_dream', type:'poll', title:"Live Poll · Our Core Values", pollData:{ id:'dream_poll',
      question:"What does D.R.E.A.M. stand for at Beatty?",
      options:["Discipline, Respect, Excellence, Achievement, Mindfulness","Discipline, Resilience, Empathy, Adaptability, Mindfulness","Diligence, Respect, Empathy, Adaptability, Mastery","Determination, Resilience, Excellence, Ambition, Mindfulness"],
@@ -1178,7 +1181,7 @@ const journeySteps=[
   { id:'values', type:'values', title:"The D.R.E.A.M. We Live By", desc:"Tap a value to see how it grows a Beattyian. Non Vi Sed Arte — not with force, but with skill." },
   { id:'deck_b', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vSrojJmwv5d-ElzN38A8S1Q_YAYl1_VulE6jPSFy6n8dEjPUnzNltCRstS8VC3fUgSg7Xd0fYN4-NWZ/pubembed?start=false&loop=false&delayms=60000" },
   { id:'funfact_cca', type:'funfact', funfactData:{ number:"17", label:"CCAs to belong to", subtitle:"Across Uniformed Groups, Performing Arts, Sports & Games and Clubs — a hive has a place for every kind of bee." } },
-  { id:'fold_a', type:'fold', title:"Fold with us · A", desc:"Applied Learning — the structure.", fold:{letter:'A', name:'Applied Learning', sub:'The Structure', from:2, to:4} },
+  { id:'fold_a', type:'fold', title:"Fold with us · A", desc:"Applied Learning — the structure.", fold:{letter:'A', name:'Applied Learning', sub:'The Structure', from:1, to:3} },
   { id:'poll_cca', type:'poll', title:"Live Poll · Pursuing Passions", pollData:{ id:'cca',
      question:"What share of students get their 1st or 2nd choice CCA?",
      options:["50%","70%","90%","100%"], correctAnswer:2,
@@ -1193,7 +1196,7 @@ const journeySteps=[
      options:["Sustainability","Journalism & Media","Engineering & AI","None — we do all of these"], correctAnswer:3,
      insight:"A trick! Beatty offers all of these. Every passion has a pathway." } },
   { id:'funfact_nexus', type:'funfact', funfactData:{ number:"8", label:"International exchanges every year", subtitle:"From Hanoi to New Zealand, Estonia to Bali — Beattyians explore the world." } },
-  { id:'fold_i', type:'fold', title:"Fold with us · I", desc:"International & Industry — the sail.", fold:{letter:'I', name:'International & Industry', sub:'The Sail', from:4, to:6} },
+  { id:'fold_i', type:'fold', title:"Fold with us · I", desc:"International & Industry — the sail.", fold:{letter:'I', name:'International & Industry', sub:'The Sail', from:3, to:6} },
   { id:'nexus_global', type:'globe', title:"Exploring New Skies, Building Ties", desc:"NEXUS@BTY international exchanges. Choose the one that calls to you — your bee lands on the globe.",
      nexusData:{ type:'global', options:[ {id:'GeoBali',text:'Bali (Geography)'},{id:'LitBali',text:'Bali (Literature)'},{id:'NZ',text:'New Zealand'},{id:'Korea',text:'South Korea (A.I.)'},{id:'MiharaJapan',text:'Japan (Social Sciences)'},{id:'MutsuzawaJapan',text:'Japan (STEM)'},{id:'Estonia',text:'Estonia (Cyber)'},{id:'Hanoi',text:'Vietnam (Hanoi)'} ] } },
   { id:'nexus_local', type:'industry_map', title:"Dive into the Wonders of Work", desc:"NEXUS@BTY industry attachments across Singapore. Where would you thrive?",
@@ -1433,7 +1436,7 @@ function renderBloom(){
     <div class="bloom-msg" id="bloomMsg"><div class="vis-title center">The Hive Wakes<span class="vs">Phones up, screens facing out. On zero, we light the hall together.</span></div></div>`;
 }
 /* ---------- FOLD WITH US: a presenter-led fold beat ----------
-   The room folds together. The big screen demos the two folds on a loop (the
+   The room folds together. The big screen demos this beat's fold on a loop (the
    same SVG stages the phones use), names the chapter, and counts the boats that
    have reached this stage so the presenter knows when to move on (~80%). */
 let foldDemoTimer=null;
@@ -1442,12 +1445,12 @@ function renderFold(step){
   const C=2*Math.PI*52;
   return `<div class="fold-stage">
     <div class="fold-demo"><div class="fd-table" id="foldDemo"><div class="fd-layer cur"></div><div class="fd-layer next"></div><div class="fd-hint"><span class="dot"></span></div></div>
-      <div class="fd-steps" id="fdSteps">${Array.from({length:8},(_,i)=>`<i class="${i<f.from?'done':(i<f.to?'beat':'')}"></i>`).join('')}</div>
-      <div class="fd-stepcap" id="fdStepCap">Fold ${f.from+1} of 8</div></div>
+      <div class="fd-steps" id="fdSteps">${FOLD_PLAN_P.map(g=>`<i class="${g.end<=f.from?'done':(g.start>=f.from&&g.end<=f.to?'beat':'')}"></i>`).join('')}</div>
+      <div class="fd-stepcap" id="fdStepCap">Fold ${foldsDoneP(f.from)+1} of ${FOLD_PLAN_P.length}</div></div>
     <div class="fold-side">
       <p class="eyebrow">Fold with us · on your phone</p>
       <h2 class="stage-title"><span class="fold-letter">${f.letter}</span>${f.name}</h2>
-      <p class="stage-sub" style="margin:8px 0 0">${f.sub} · folds ${f.from+1}–${f.to}</p>
+      <p class="stage-sub" style="margin:8px 0 0">${f.sub} · ${foldsDoneP(f.to)-foldsDoneP(f.from)>1?`folds ${foldsDoneP(f.from)+1} and ${foldsDoneP(f.to)}`:`fold ${foldsDoneP(f.to)}`} of ${FOLD_PLAN_P.length}</p>
       <p class="fold-cap" id="foldCap"></p>
       <div class="fold-count fold-live" id="foldCount">
         <div class="fold-ring"><svg viewBox="0 0 120 120"><circle class="bg" cx="60" cy="60" r="52"/><circle class="fg" cx="60" cy="60" r="52" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${C.toFixed(1)}"/></svg><span class="fc-n">0</span></div>
@@ -1463,22 +1466,25 @@ function runFoldDemo(f){
   const HINT={0:[[50,14],[50,86]],1:[[13,31],[38,61]],2:[[87,31],[62,61]],3:[[50,82],[50,52]],4:[[50,82],[50,52]],5:[[18,50],[50,50]],6:[[50,84],[50,20]],7:[[16,50],[4,50]]};
   const cur=host.querySelector('.fd-layer.cur'), nxtL=host.querySelector('.fd-layer.next'), dot=host.querySelector('.fd-hint .dot');
   const steps=document.getElementById('fdSteps'), stepCap=document.getElementById('fdStepCap');
-  let i=f.from, timers=[];
+  // One loop per fold the audience makes (a fold and the moves that follow it play as one).
+  const gs=FOLD_PLAN_P.map((g,k)=>({...g,k})).filter(g=>g.start>=f.from && g.end<=f.to);
+  let gi=0, i=f.from, timers=[];
   const later=(fn,ms)=>timers.push(setTimeout(()=>{ if(document.getElementById('foldDemo')===host) fn(); },ms));
   const play=()=>{
     if(!document.getElementById('foldDemo')){ clearInterval(foldDemoTimer); foldDemoTimer=null; timers.forEach(clearTimeout); return; }
     if(!boatMod){ cur.innerHTML=BTY.icon('fold'); return; }
-    const st=boatMod.STAGE_FOR_FOLD?boatMod.STAGE_FOR_FOLD[i]:i, nx=Math.min(9,st+1);
+    const g=gs[gi]||{start:i,end:i+1,k:i,label:''}; i=g.start;
+    const st=g.start, nx=Math.min(9,g.end);
     host.classList.remove('turn','hint');
     cur.innerHTML=boatMod.buildOrigamiSVG(boatMod.BOAT_DEFAULTS, st, 640);
     nxtL.innerHTML=boatMod.buildOrigamiSVG(boatMod.BOAT_DEFAULTS, nx, 640);
     const h=HINT[i]||[[50,20],[50,80]]; dot.style.setProperty('--x0',h[0][0]+'%'); dot.style.setProperty('--y0',h[0][1]+'%'); dot.style.setProperty('--x1',h[1][0]+'%'); dot.style.setProperty('--y1',h[1][1]+'%');
-    if(cap) cap.innerHTML=`<b>Fold ${i+1}</b>${(boatMod.FOLD_LABELS&&boatMod.FOLD_LABELS[i])||''}`;
-    if(steps) steps.querySelectorAll('i').forEach((el,k)=>el.className= k<i?'done':(k===i?'now':(k<f.to?'beat':'')));
-    if(stepCap) stepCap.textContent=`Fold ${i+1} of 8`;
+    if(cap) cap.innerHTML=`<b>Fold ${g.k+1}</b>${g.label||''}`;
+    if(steps) steps.querySelectorAll('i').forEach((el,k)=>{ const p=FOLD_PLAN_P[k]; el.className= k<g.k?'done':(k===g.k?'now':(p.start>=f.from&&p.end<=f.to?'beat':'')); });
+    if(stepCap) stepCap.textContent=`Fold ${g.k+1} of ${FOLD_PLAN_P.length}`;
     later(()=>{ void host.offsetWidth; host.classList.add('hint'); }, 700);
     later(()=>host.classList.add('turn'), 2000);
-    i++; if(i>=f.to) i=f.from; };
+    gi=(gi+1)%Math.max(1,gs.length); };
   play(); foldDemoTimer=setInterval(play,4600);
 }
 function paintFoldCount(){
@@ -1488,7 +1494,7 @@ function paintFoldCount(){
   el.querySelector('.fc-n').textContent=n;
   const tot=document.getElementById('fcTotal'), sub=document.getElementById('fcSub');
   if(tot) tot.textContent= total>0 ? `of ${total}` : 'Fold along';
-  if(sub) sub.textContent= s.fold.to>=8 ? 'boats complete' : `past fold ${s.fold.to}`;
+  if(sub) sub.textContent= s.fold.to>=8 ? 'boats complete' : `past fold ${foldsDoneP(s.fold.to)} of ${FOLD_PLAN_P.length}`;
   const C=2*Math.PI*52, fg=el.querySelector('.fold-ring .fg'); if(fg) fg.style.strokeDashoffset=(C*(1-(total>0?Math.min(1,n/total):0))).toFixed(1);
   el.classList.toggle('most', total>0 && n/total>=0.8);
   const hb=document.getElementById('foldHarbour');
@@ -2339,19 +2345,19 @@ function gotoScene(i){
 const STEP_NOTES={
   compass:'Welcome everyone. Ask them to scan the QR and tap to board; the compass quiz takes a minute. Watch the Hive fill; the pill counts phones ready.',
   video_intro:'Play the welcome film. Phones show "eyes on the screen" and can send reactions.',
-  fold_s:'Fold with us: S for Stewardship. Every phone folds twice. The counter shows boats past fold 2; move on when most are done.',
+  fold_s:'Fold with us: S for Stewardship. One fold: in half. The counter shows boats past fold 1; move on when most are done.',
   poll_dream:'Ask: what does DREAM stand for? Wait for the votes to settle, then press Reveal.',
   values:'Tap a card to flip it. Speak to one or two values; Non Vi Sed Arte.',
   funfact_cca:'Seventeen CCAs, four families: a place for every kind of bee.',
-  fold_a:'Fold with us: A for Applied Learning. Two more folds.',
+  fold_a:'Fold with us: A for Applied Learning. One fold: a corner to the centre; the other corner follows by itself.',
   poll_cca:'Ask: what share get their 1st or 2nd choice CCA? Reveal when the votes settle.',
   poll_nexus_count:'Ask: how many exchanges and attachments? Reveal: 8 and 6.',
   poll_industry:'Ask: which is NOT an area at Beatty? A trick question: we do them all.',
   funfact_nexus:'Eight international exchanges every year.',
-  fold_i:'Fold with us: I for International and Industry. The sail takes shape.',
+  fold_i:'Fold with us: I for International and Industry. One fold: the brim up; the back follows and it opens into a diamond.',
   nexus_global:'Phones choose the exchange that calls to them; pins grow on the globe. Click a pin to open its card. Scroll to zoom; 0 resets.',
   nexus_local:'Phones choose an industry attachment; the map counts them.',
-  fold_l:'Fold with us: L. The last fold, then pull the boat open.',
+  fold_l:'Fold with us: L. The last two: the point up, then pull the boat open. Five folds in all.',
   pulse_check:'Read the room: phones tap a mood.',
   set_sail:'Phones name their boats. When most are ready, press SET SAIL and lead the call: Non Vi! Sed Arte! Three times; the boats leave together.',
   finale:'Every cell is a word from a boat. Click a cell to hide it if needed.',

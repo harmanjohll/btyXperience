@@ -1,5 +1,5 @@
 /* === Beatty SAIL — Sailor (Participant) v7 ===
-   Washi craft origami · 8 folds · hanko stamps · ink trail.
+   Washi craft origami · 5 folds · hanko stamps · ink trail.
 */
 
 // Firebase is loaded via DYNAMIC import (see FIREBASE block below) so a CDN
@@ -12,6 +12,7 @@ import {
     STAMP_MARKS, MARK_SLOTS,
     FIREBASE_CONFIG, LOGO_URL, HAND_FONT, cleanWord, wordOK,
     IS_IOS, iosTap, buzz,
+    FOLD_PLAN, FOLD_TOTAL, AUTO_FOLDS, foldsDone, gestureAt,
 } from './boat.js';
 
 // === PAPER CREASE SOUND (Web Audio API) ===
@@ -314,7 +315,7 @@ function handwrite(host, word, { size = 22, per = 95, top = '80%' } = {}) {
 }
 
 /* Hat → Diamond → Boat: a mini-reveal with a two-note chime at each. */
-const CHAPTER_AT = { 5: ['🎩', "That's a hat!"], 6: ['💎', 'Now a diamond'] };
+const CHAPTER_AT = { 6: ['💎', 'Now a diamond'] };
 function chapterFlash(nextFold) {
     const ch = CHAPTER_AT[nextFold]; if (!ch) return;
     playChapterChime(); feel('chapter');
@@ -474,7 +475,7 @@ function startSessionListener() {
 // === STATE ===
 const $app = document.getElementById('app');
 const SK = 'btySail_v7';
-const BUILD = '8 Nov 2026 · v6';   // shown on the boarding screen so a phone can tell which build it has
+const BUILD = '8 Nov 2026 · v7';   // shown on the boarding screen so a phone can tell which build it has
 let D = JSON.parse(localStorage.getItem(SK)) || {};
 D.marks = D.marks || [];
 let step = 0;
@@ -986,7 +987,7 @@ function renderWelcome() {
             </div>
             <p class="text-xs mb-6 text-center font-serif italic" style="color:var(--text-muted);">"Between your hands and a sheet of paper, every path is possible."</p>
             <button id="startBtn" class="btn-start">Fold Your Boat</button>
-            <p class="text-[10px] mt-2" style="color:var(--text-muted);">2 minutes · 8 folds · your personal compass card</p>
+            <p class="text-[10px] mt-2" style="color:var(--text-muted);">2 minutes · 5 folds · your personal compass card</p>
             <p class="text-[11px] mt-4 font-serif italic" style="color:var(--accent-gold);">From our Hive, every Beattyian sets sail.</p>
             <p class="text-[10px] mt-1 tracking-widest uppercase" style="color:var(--text-muted);">Non Vi Sed Arte · Open House 2026</p>
         </div>
@@ -1018,8 +1019,8 @@ const NEXT_STEP_AFTER_FOLD = { 0: 2, 1: 3, 2: 5, 3: 6, 4: 9, 5: 10, 6: 13, 7: 14
 /* ── CHAPTER CARDS — SAIL letter intros before chapter-starting folds ── */
 const CHAPTER_FOR_FOLD = {
     0: { letter: 'S', title: 'Stewardship', subtitle: 'The Foundation' },
-    2: { letter: 'A', title: 'Applied Learning', subtitle: 'The Structure' },
-    4: { letter: 'I', title: 'International & Industry', subtitle: 'The Sail' },
+    1: { letter: 'A', title: 'Applied Learning', subtitle: 'The Structure' },
+    3: { letter: 'I', title: 'International & Industry', subtitle: 'The Sail' },
     6: { letter: 'L', title: 'Learning to Live, Learn & Love', subtitle: 'The Flag' },
 };
 
@@ -1033,7 +1034,41 @@ const CHAPTER_INTENSITY = {
 let currentChapter = 'S';
 function getIntensity() { return CHAPTER_INTENSITY[currentChapter] || CHAPTER_INTENSITY.S; }
 
+/* A move that follows the audience's fold by itself (the other corner, the back brim, the
+   hat opening into a diamond): it plays on its own, with a word of what is happening. */
+const AUTO_CAPTION = { 2: 'The other corner follows', 4: 'The back brim follows', 5: 'It opens into a diamond' };
+function playAutoFolds(stageEl, list, done) {
+    if (!list.length || !stageEl.isConnected) { done(); return; }
+    const a = list[0], c = colors();
+    const cap = document.createElement('div'); cap.className = 'auto-fold-cap'; cap.textContent = AUTO_CAPTION[a] || '';
+    stageEl.querySelector('.auto-fold-cap')?.remove(); stageEl.appendChild(cap);
+    const flash = document.createElement('div'); flash.className = 'fold-flash'; stageEl.appendChild(flash); setTimeout(() => flash.remove(), 700);
+    feel('tick');
+    const svg = stageEl.querySelector('.origami-svg');
+    if (a === 5) {
+        stageEl.classList.remove('fold-animating');
+        if (svg) { svg.style.transition = 'transform 0.6s cubic-bezier(0.22,1,0.36,1)'; svg.style.transform = 'scaleX(0.35) scaleY(1.3)'; }
+        setTimeout(() => { const s2 = stageEl.querySelector('.origami-svg'); if (s2) s2.outerHTML = buildOrigamiSVG(c, 6, 280, extras()); spawnParticles(stageEl, getIntensity().particles); playLock(); }, 650);
+        setTimeout(() => { cap.remove(); playAutoFolds(stageEl, list.slice(1), done); }, 1350);
+    } else {
+        stageEl.classList.remove('fold-animating'); void stageEl.offsetWidth; stageEl.classList.add('fold-animating');
+        setTimeout(() => { const s2 = stageEl.querySelector('.origami-svg'); if (s2) s2.outerHTML = buildOrigamiSVG(c, STAGE_FOR_FOLD[a] + 1, 280, extras()); spawnParticles(stageEl, getIntensity().particles); playLock(); }, 450);
+        setTimeout(() => { cap.remove(); playAutoFolds(stageEl, list.slice(1), done); }, 1050);
+    }
+}
+// A phone that stopped mid-way (a reload between a fold and the move that follows it) finishes the move by itself.
+function resumeAutoFold(foldIndex) {
+    const entry = Object.values(AUTO_FOLDS).find(l => l.includes(foldIndex));
+    const rest = entry ? entry.slice(entry.indexOf(foldIndex)) : [foldIndex];
+    const last = rest[rest.length - 1];
+    if (!foldFollowActive) { step = NEXT_STEP_AFTER_FOLD[last]; route(); return; }   // the old guided flow: it was folded with its gesture
+    $app.innerHTML = `<div class="sail-screen"><div class="paper-zone"><div class="origami-stage" id="origamiStage">${buildOrigamiSVG(colors(), STAGE_FOR_FOLD[foldIndex], 280, extras())}</div></div><div class="content-zone text-center"></div></div>`;
+    const stageEl = document.getElementById('origamiStage');
+    setTimeout(() => playAutoFolds(stageEl, rest, () => onFoldBeatDone(last)), 400);
+}
+
 function renderFoldStep(foldIndex) {
+    if (gestureAt(foldIndex) < 0) { resumeAutoFold(foldIndex); return; }
     armFoldAssist(foldIndex);
     const chapter = CHAPTER_FOR_FOLD[foldIndex];
     if (chapter) {
@@ -1105,15 +1140,15 @@ function renderFoldStepInner(foldIndex) {
         </div>
         <div class="content-zone text-center">
             <div class="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-2" style="background:rgba(255,226,0,0.1);border:1px solid rgba(255,226,0,0.3);">
-                <div class="fold-badge">${foldIndex + 1}</div>
-                <span class="font-bold text-sm" style="color:var(--accent-gold-light);">Fold ${foldIndex + 1} of 8</span>
+                <div class="fold-badge">${gestureAt(foldIndex) + 1}</div>
+                <span class="font-bold text-sm" style="color:var(--accent-gold-light);">Fold ${gestureAt(foldIndex) + 1} of ${FOLD_TOTAL}</span>
             </div>
             <div class="fold-step-indicator justify-center">
                 <div class="fold-step-mini">${buildOrigamiSVG(BOAT_DEFAULTS, paperStage, 24)}</div>
                 <span class="fold-step-arrow-icon">→</span>
-                <div class="fold-step-mini">${buildOrigamiSVG(BOAT_DEFAULTS, Math.min(paperStage + 1, 8), 24)}</div>
+                <div class="fold-step-mini">${buildOrigamiSVG(BOAT_DEFAULTS, Math.min(FOLD_PLAN[gestureAt(foldIndex)].end, 8), 24)}</div>
             </div>
-            <p class="text-xs mb-1" style="color:var(--text-secondary);">${FOLD_LABELS[foldIndex]}</p>
+            <p class="text-xs mb-1" style="color:var(--text-secondary);">${FOLD_PLAN[gestureAt(foldIndex)].label}</p>
             <p class="text-[10px]" style="color:var(--text-muted);">${hint}</p>
         </div>
     </div>`;
@@ -1238,10 +1273,12 @@ function renderFoldStepInner(foldIndex) {
 
             const advanceDelay = isHatToDiamond ? 1400 : 1000;
             const nextStep = NEXT_STEP_AFTER_FOLD[foldIndex];
-            setTimeout(() => {
-                if (foldFollowActive) onFoldBeatDone(foldIndex);
+            const chain = AUTO_FOLDS[foldIndex] || [];          // the moves that follow this one by themselves
+            setTimeout(() => playAutoFolds(stageEl, chain, () => {
+                const last = chain.length ? chain[chain.length - 1] : foldIndex;
+                if (foldFollowActive) onFoldBeatDone(last);
                 else { step = nextStep; route(); }
-            }, advanceDelay);
+            }), chain.length ? advanceDelay - 350 : advanceDelay);
         }
     });
 }
@@ -1955,7 +1992,7 @@ function showCornerBoat() {
     const el = document.getElementById('cornerBoat');
     if (!el) return;
     const stage = Math.min(D.nextFold || 0, 8);
-    const waiting = Math.max(0, (D.foldTarget || 0) - (D.nextFold || 0));
+    const waiting = Math.max(0, foldsDone(D.foldTarget) - foldsDone(D.nextFold));   // in the audience's folds (five in all)
     const grew = cornerStagePrev !== -1 && stage !== cornerStagePrev;
     el.hidden = false;
     el.innerHTML = `<div class="cb-inner">${buildOrigamiSVG(colors(), stage, 92, extras())}${waiting ? `<span class="cb-badge">${waiting}</span>` : ''}</div><span class="cb-label">${waiting ? (waiting === 1 ? '1 fold waiting · tap' : waiting + ' folds waiting · tap') : 'Your boat'}</span>`;
@@ -2610,7 +2647,7 @@ function showAsk(a, sc) {
     showCornerBoat();
 }
 
-/* --- Fold with us: a presenter-led beat of two folds --- */
+/* --- Fold with us: a presenter-led beat (one fold, or two on the last beat) --- */
 let foldAssistTimer = null;
 function startFoldBeat(f) {
     if (!f) { renderWatch(lastSessionState || {}); return; }
@@ -2636,10 +2673,11 @@ function armFoldAssist(foldIndex) {
     }, 30000);
 }
 function foldAssist(foldIndex) {
+    const chain = AUTO_FOLDS[foldIndex] || [], last = chain.length ? chain[chain.length - 1] : foldIndex;   // finish the moves that follow, too
     const st = document.getElementById('origamiStage');
-    if (st) { st.querySelectorAll('.crease-overlay').forEach(o => o.remove()); const svg = st.querySelector('.origami-svg'); if (svg) svg.outerHTML = buildOrigamiSVG(colors(), Math.min(8, STAGE_FOR_FOLD[foldIndex] + 1), 280, extras()); }
+    if (st) { st.querySelectorAll('.crease-overlay').forEach(o => o.remove()); const svg = st.querySelector('.origami-svg'); if (svg) svg.outerHTML = buildOrigamiSVG(colors(), Math.min(8, STAGE_FOR_FOLD[last] + 1), 280, extras()); }
     haptic(40); try { playFoldSound(); } catch (e) {}
-    setTimeout(() => onFoldBeatDone(foldIndex), 600);
+    setTimeout(() => onFoldBeatDone(last), 600);
 }
 
 /* --- Resting / holding screens shown between the presenter's slides --- */
@@ -2783,7 +2821,7 @@ function renderRest(title, sub) {
     if (soloMode) addSoloNext();
 }
 /* --- Solo fallback: fold your boat + add a dream even with no presenter --- */
-const SOLO_SEQ = ['fold', 'fold', 'fold', 'fold', 'fold', 'fold', 'fold', 'fold', 'dream'];
+const SOLO_SEQ = ['fold', 'fold', 'fold', 'fold', 'fold', 'dream'];   // five folds, then the dream
 function armSoloFallback() {
     if (followMode || soloMode) return;
     clearTimeout(soloTimerId);

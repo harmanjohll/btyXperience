@@ -99,7 +99,7 @@ export async function foldTo(p, n) {
     if (!(await p.$('#origamiStage .fold-overlay'))) { await p.waitForTimeout(500); continue; }
     await p.waitForTimeout(750);
     if (await p.$('.pull-dot') && !(await p.$('.fold-dot'))) { await pullOpen(p); await waitFold(p, cur + 1, 8000); continue; }
-    await fold(p); await waitFold(p, cur + 1, 6000);
+    await fold(p); await waitFold(p, cur + 1, 9000);       // a fold and the moves that follow it by themselves
   }
   return ((await phoneState(p)).nextFold || 0) >= n;
 }

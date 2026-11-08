@@ -1,6 +1,6 @@
 // The whole show, end to end: one presenter and three phones on one shared (stand-in) database.
 // Checks that phones follow the presenter's pace, answer only when asked, are counted on the
-// big screen, fold in four beats, set sail together, and leave with a card.
+// big screen, fold in four beats (five folds in all), set sail together, and leave with a card.
 import { startServer } from './lib/server.mjs';
 import { loadPlaywright, checker, presenter, phone, board, goStep, sleep, until, appHTML, phoneState, foldTo, shot } from './lib/harness.mjs';
 
@@ -32,13 +32,14 @@ await phones[0].click('.react-btn[data-e="👏"]');
 const floated = await until(() => pr.$('#reactionOverlay .floating-reaction'), 5000);
 c.ok(floated, 'a phone\'s 👏 floats up the big screen');
 
-// --- Step 4: Fold with us · S (folds 1–2) --------------------------------------------------
+// --- Step 4: Fold with us · S (fold 1 of 5) -------------------------------------------------
 await goStep(pr, 4);
 await until(() => phones[0].$('#origamiStage .fold-overlay'), 6000);
-const folded1 = []; for (const p of phones) folded1.push(await foldTo(p, 2));
-c.ok(folded1.every(Boolean), 'fold beat S: every phone folds twice');
+const folded1 = []; for (const p of phones) folded1.push(await foldTo(p, 1));
+c.ok(folded1.every(Boolean), 'fold beat S: every phone makes one fold');
 const fc = await until(async () => { const t = await pr.$eval('.fc-n', e => e.textContent).catch(() => ''); return t === '3' ? t : null; }, 6000);
-c.ok(fc, 'presenter counts 3 boats past fold 2');
+c.ok(fc, 'presenter counts 3 boats past fold 1');
+c.ok(/fold 1 of 5/.test(await pr.$eval('#fcSub', e => e.textContent)), 'the big screen counts in the audience\'s folds ("past fold 1 of 5")');
 await shot(pr, 'sync-04-fold');
 
 // --- Step 5: poll → vote → reveal → phones draw the tally ----------------------------------
@@ -56,11 +57,11 @@ c.ok(bar, 'phones draw the result bars from the tally (67% / 33%)');
 await shot(phones[2], 'sync-05-phone-reveal');
 
 // --- Steps 9, 15: the next fold beats ------------------------------------------------------
-for (const [stepN, to] of [[9, 4], [15, 6]]) {
+for (const [stepN, to] of [[9, 3], [15, 6]]) {          // A: a corner (the other follows) · I: the brim (the back and the diamond follow)
   await goStep(pr, stepN);
   await until(() => phones[0].$('#origamiStage .fold-overlay'), 6000);
   const r = []; for (const p of phones) r.push(await foldTo(p, to));
-  c.ok(r.every(Boolean), `fold beat at step ${stepN}: phones reach fold ${to}`);
+  c.ok(r.every(Boolean), `fold beat at step ${stepN}: one fold each, paper at stage ${to}`);
 }
 
 // --- Step 16/17: globe + map picks ---------------------------------------------------------
@@ -79,7 +80,7 @@ c.ok(mp, 'map: 3 choices counted, separately from the globe');
 await goStep(pr, 20);
 await until(() => phones[0].$('#origamiStage .fold-overlay, .pull-dot'), 8000);
 const r8 = []; for (const p of phones) r8.push(await foldTo(p, 8));
-c.ok(r8.every(Boolean), 'fold beat L: every boat is complete (8 folds)');
+c.ok(r8.every(Boolean), 'fold beat L: point up, pull open: every boat is complete (5 folds in all)');
 
 // --- Step 21: pulse ----------------------------------------------------------------------
 await goStep(pr, 21);
