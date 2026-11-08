@@ -715,6 +715,70 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 .sc-ask .sc-t{max-width:28ch}
 .sc-hint{display:inline-flex; align-items:center; gap:12px; background:var(--gold); color:var(--navy); font-weight:800; letter-spacing:.14em; text-transform:uppercase; border-radius:999px; padding:10px 22px; font-size:clamp(.85rem,1.1vw,1.1rem); margin-bottom:clamp(18px,3vh,34px)}
 .sc-hint .ico{width:1.4em; height:1.4em}
+
+/* ---------- Colour: cream and red alongside navy and gold ----------
+   Navy and gold alone run hot. Story slides can turn to a cream page (the colour of the
+   boat's paper) with navy words and red accents; live, data and question slides stay navy.
+   Red is for accents and large type only (it is too light for small text on cream);
+   gold never sits on cream. */
+:root{ --cream:#F6EFE1; --cream-deep:#EADFC8; --paper-ink:#000C53; --paper-dim:#454E7A; --paper-line:rgba(0,12,83,.12); --cream-ink:rgba(246,239,225,.82) }
+
+/* navy slides: cream for reading, red for the small accents */
+.sc-ch{color:var(--cream)} .sc-ch .ico{color:var(--red)}
+.sc-body .eyebrow{color:var(--cream)}
+.sc-body .eyebrow::before, .sc-stmt .eyebrow::after, .sc-chart h4::before{content:""; display:inline-block; width:22px; height:3px; border-radius:2px; background:var(--red); vertical-align:middle; transform:translateY(-2px)}
+.sc-body .eyebrow::before, .sc-chart h4::before{margin-right:12px} .sc-stmt .eyebrow::after{margin-left:12px}
+.sc-sub{color:var(--cream)}
+.sc-rule, .sc-card::before{background:var(--red)}
+.sc-text, .sc-card p.b, .sc-pill p, .sc-step p, .sc-let .x, .sc-meta, .sc-sub2, .sc-empty{color:var(--cream-ink)}
+.sc-bee .tg{color:rgba(246,239,225,.66)}
+.sc-chart h4{color:var(--cream)}
+.sc-step .who{border-color:rgba(236,50,55,.6); color:var(--cream)} .sc-step .who .ico{color:var(--red)}
+.sc-row.dim .trk i{background:rgba(246,239,225,.24)} .sc-row.dim .l{color:rgba(246,239,225,.7)}
+.sc-meta .ico{color:var(--red)}
+
+/* the cream page */
+.scene{transition:background-color .5s var(--ease), box-shadow .5s var(--ease), margin .5s var(--ease), width .5s var(--ease), height .5s var(--ease), border-radius .5s var(--ease)}
+.scene.cream{color:var(--paper-ink); margin:14px; width:calc(100% - 28px); height:calc(100% - 28px); border-radius:22px;
+  background-color:var(--cream);
+  background-image:
+    radial-gradient(1100px 520px at 18% 0%, rgba(255,255,255,.6), transparent 62%),
+    radial-gradient(900px 500px at 100% 100%, rgba(234,223,200,.7), transparent 60%),
+    linear-gradient(30deg, rgba(0,12,83,.03) 12%, transparent 12.5%, transparent 87%, rgba(0,12,83,.03) 87.5%),
+    linear-gradient(150deg, rgba(0,12,83,.03) 12%, transparent 12.5%, transparent 87%, rgba(0,12,83,.03) 87.5%),
+    linear-gradient(30deg, rgba(0,12,83,.03) 12%, transparent 12.5%, transparent 87%, rgba(0,12,83,.03) 87.5%),
+    linear-gradient(150deg, rgba(0,12,83,.03) 12%, transparent 12.5%, transparent 87%, rgba(0,12,83,.03) 87.5%);
+  background-size:auto, auto, 56px 98px, 56px 98px, 56px 98px, 56px 98px;
+  background-position:0 0, 0 0, 0 0, 0 0, 28px 49px, 28px 49px;
+  box-shadow:0 34px 90px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.7)}
+@media (prefers-reduced-motion:reduce){ .scene{transition:none} }
+.scene.cream .sc-ch, .scene.cream .sc-body .eyebrow, .scene.cream .sc-chart h4{color:var(--paper-ink)}
+.scene.cream .sc-num{color:var(--paper-dim)}
+.scene.cream .sc-dots i{background:rgba(0,12,83,.14)} .scene.cream .sc-dots i.done{background:rgba(236,50,55,.42)} .scene.cream .sc-dots i.on{background:var(--red)}
+.scene.cream .sc-t, .scene.cream .sc-h, .scene.cream .sc-h.latin{color:var(--paper-ink)} .scene.cream .sc-t em{color:var(--red)}
+.scene.cream .sc-ic{color:var(--red); background:radial-gradient(circle, rgba(236,50,55,.1), rgba(236,50,55,0) 70%); box-shadow:inset 0 0 0 1.5px rgba(236,50,55,.45)}
+.scene.cream .sc-sub{color:var(--red)}
+.scene.cream .sc-text, .scene.cream .sc-card p.b, .scene.cream .sc-pill p, .scene.cream .sc-step p, .scene.cream .sc-let .x, .scene.cream .sc-meta, .scene.cream .sc-sub2, .scene.cream .sc-empty{color:var(--paper-dim)}
+.scene.cream .sc-card, .scene.cream .sc-pill{background:#fff; border:1px solid var(--paper-line); box-shadow:0 18px 44px rgba(0,12,83,.1), 0 2px 6px rgba(0,12,83,.06)}
+.scene.cream .sc-card h3, .scene.cream .sc-pill h3{color:var(--paper-ink)}
+.sc-pill{position:relative; overflow:hidden}
+.scene.cream .sc-pill::before{content:""; position:absolute; left:0; right:0; top:0; height:4px; background:var(--red)}
+.scene.cream .sc-pill .pi{color:var(--red)}
+.scene.cream .sc-stat .n, .scene.cream .sc-stat .l{color:var(--paper-ink)}
+.scene.cream .sc-ring .trk{stroke:rgba(0,12,83,.1)} .scene.cream .sc-ring .arc{stroke:var(--red)}
+.scene.cream .sc-steps::before{background:linear-gradient(90deg, var(--red), rgba(236,50,55,.12))}
+.scene.cream .sc-step .tag{background:var(--paper-ink); color:var(--cream); box-shadow:0 0 0 8px var(--cream)}
+.scene.cream .sc-step h3{color:var(--paper-ink)}
+.scene.cream .sc-step .who{border-color:rgba(236,50,55,.55); color:var(--paper-ink)}
+.scene.cream .sc-let .L{color:var(--red); text-shadow:none} .scene.cream .sc-let .w{color:var(--paper-ink)}
+.scene.cream .sc-quote .qm{color:var(--red)} .scene.cream .sc-quote blockquote{color:var(--paper-ink)} .scene.cream .sc-quote cite{color:var(--paper-dim)}
+.scene.cream .sc-chart h4{border-bottom-color:var(--paper-line)}
+.scene.cream .sc-row .l, .scene.cream .sc-row .v{color:var(--paper-ink)}
+.scene.cream .sc-row .trk i{background:var(--paper-ink)}
+.scene.cream .sc-row.win .l{color:var(--paper-ink); font-weight:700} .scene.cream .sc-row.win .trk i{background:var(--red)}
+.scene.cream .sc-row.dim .trk i{background:rgba(0,12,83,.22)} .scene.cream .sc-row.dim .l{color:var(--paper-dim)}
+.scene.cream .sc-row .l .ico, .scene.cream .sc-meta .ico{color:var(--red)} .scene.cream .sc-meta b{color:var(--paper-ink)}
+.scene.cream .sc-cloud span{color:var(--paper-ink)} .scene.cream .sc-cloud span.g{color:var(--red)} .scene.cream .sc-cloud span.d{color:var(--paper-dim)}
 </style>
 </head>
 <body>
@@ -1904,7 +1968,7 @@ function slideHTML(s){
     case 'quote': return `<div class="sc-quote"><div class="qm bi">“</div><blockquote class="bi"${D_(140)}>${escH(s.quote)}</blockquote>${s.by?`<cite class="bi"${D_(420)}>${escH(s.by)}</cite>`:''}</div>`;
     case 'bars': { const g=s.groups||[]; const max=Math.max(1,...g.flatMap(x=>x.rows.map(r=>+r[1]||0)));
       return `${T(s.title)}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<div class="sc-charts" style="--cols:${g.length}">${g.map((x,gi)=>`<div class="sc-chart bi"${D_(240+gi*200)}>
-        <h4>${escH(x.label)}</h4><div class="sc-rows">${x.rows.map(r=>`<div class="sc-row" title="${escH(r[0])}: ${+r[1]} ${escH(s.unit||'')}"><span class="l">${escH(r[0])}</span><span class="trk"><i data-w="${((+r[1]||0)/max*100).toFixed(1)}"></i></span><b class="v">${+r[1]}</b></div>`).join('')}</div></div>`).join('')}</div>`; }
+        <h4>${escH(x.label)}</h4><div class="sc-rows">${x.rows.map(r=>`<div class="sc-row${(+r[1]||0)===Math.max(...x.rows.map(q=>+q[1]||0))?' win':''}" title="${escH(r[0])}: ${+r[1]} ${escH(s.unit||'')}"><span class="l">${escH(r[0])}</span><span class="trk"><i data-w="${((+r[1]||0)/max*100).toFixed(1)}"></i></span><b class="v">${+r[1]}</b></div>`).join('')}</div></div>`).join('')}</div>`; }
     case 'live': return liveHTML(s);
     case 'ask': return `<div class="sc-ask" style="width:min(100%,1500px); display:flex; flex-direction:column; align-items:center">
         <span class="sc-hint bi">${BTY.icon('phone')}Answer on your phone</span>${T(s.question,' sm')}
@@ -2005,6 +2069,7 @@ function paintScene(){
   setTxt('scNum', `${String(sceneIdx+1).padStart(2,'0')} / ${String(d.slides.length).padStart(2,'0')}`);
   document.querySelectorAll('#scDots i').forEach((el,i)=>{ el.classList.toggle('on',i===sceneIdx); el.classList.toggle('done',i<sceneIdx); });
   journeyContent.classList.toggle('respond', s.kind==='ask');            // gold frame = "phones, it's your turn"
+  document.getElementById('scene')?.classList.toggle('cream', s.tone==='cream' && s.kind!=='ask');   // a cream page: navy words, red accents
   // School-data motion: numbers count up, rings and bars draw in.
   body.querySelectorAll('.sc-stat .n[data-count]').forEach((el,i)=>{ const raw=el.dataset.count, n=parseInt(raw,10); if(isNaN(n) || String(n)!==raw) return; const suf=el.querySelector('small')?.outerHTML||''; el.innerHTML='0'+suf; setTimeout(()=>countUp(el,0,n,1500,suf), 260+i*200); });
   setTimeout(()=>{ body.querySelectorAll('[data-ring]').forEach(c=>c.style.strokeDashoffset=String(100-(+c.dataset.ring||0))); body.querySelectorAll('.sc-row .trk i[data-w]').forEach((el,i)=>setTimeout(()=>el.style.width=el.dataset.w+'%', i*60)); }, 420);

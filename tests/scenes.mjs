@@ -36,7 +36,7 @@ c.ok(Object.keys(decks).length === 6 && total >= 20, `six decks, ${total} slides
 const ph = await phone(browser, srv.url, 'phone');
 await board(ph);
 
-let slidesSeen = 0, step = 1, guard = 0;
+let slidesSeen = 0, step = 1, guard = 0, creamSeen = 0, toneWrong = [];
 const TOTAL = await pr.$eval('#progText', el => +el.textContent.split('/')[1]);
 while (step < TOTAL && guard++ < 200) {
   const was = await scene();
@@ -53,6 +53,9 @@ while (step < TOTAL && guard++ < 200) {
   const st = srv.api.get('session/state');
   if (!(st.scene && st.scene.deck === deck && st.scene.i === i - 1)) c.ok(false, `${deck} slide ${i} is in the show's saved state`);
   const sl = await slideNow();
+  const tone = await pr.evaluate(() => { const el = document.getElementById('scene'); return { cream: el.classList.contains('cream'), bg: getComputedStyle(el).backgroundColor }; });
+  if (tone.cream) creamSeen++;
+  if (tone.cream !== (sl.tone === 'cream' && sl.kind !== 'ask') || (tone.cream && tone.bg !== 'rgb(246, 239, 225)')) toneWrong.push(`${deck} ${i}`);
   if (sl.kind === 'ask') {
     const opt = await until(() => ph.$('.answer-opt[data-ask]'), 5000);
     c.ok(opt, `${deck}: "${sl.question}" reaches the phone`);
@@ -78,6 +81,7 @@ while (step < TOTAL && guard++ < 200) {
   }
 }
 c.ok(slidesSeen === total, `every slide was shown once (${slidesSeen}/${total})`);
+c.ok(creamSeen >= 8 && !toneWrong.length, `cream pages where marked (${creamSeen}), questions always navy ${toneWrong.join(', ')}`);
 
 // BACK out of the step after a deck lands on that deck's last slide.
 await pr.click('#prevBtn'); await sleep(900);          // card → deck_f, last slide
