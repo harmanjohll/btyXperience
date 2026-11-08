@@ -104,6 +104,20 @@ service cloud.firestore {
       allow write: if signedIn(); // TODO: restrict to the presenter (see above)
     }
 
+    // Hive Rush booth game (games/hiverush). The host device owns its game doc; each player
+    // device may only write its own player doc, keyed by its anonymous uid.
+    match /hiveRush/{pin} {
+      allow read:   if signedIn();
+      allow create: if signedIn() && pin.matches('^[0-9]{4}$')
+                    && request.resource.data.hostUid == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.hostUid == request.auth.uid;
+      match /players/{pid} {
+        allow read:  if signedIn();
+        allow write: if signedIn() && request.auth.uid == pid
+                     && (!('name' in request.resource.data) || str(request.resource.data.name, 40));
+      }
+    }
+
     // Deny anything not matched above.
     match /{document=**} {
       allow read, write: if false;
