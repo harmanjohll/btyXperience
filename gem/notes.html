@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presenter view · The Hive</title>
+<script src="bty-ui.js"></script>
+<style>
+/* The presenter's own window, on the laptop: what is on the big screen now, what comes
+   next, what to say, and the clock. It talks to the big screen over a BroadcastChannel
+   (same browser, same machine; no database). Open it from the big screen with N. */
+:root{
+  --navy:#000C53; --navy-900:#00061f; --navy-800:#071246; --gold:#FFE200; --gold-soft:#FFEC66; --red:#EC3237;
+  --ink:#EAECF7; --ink-dim:#A7ADD6; --line:rgba(255,226,0,.18); --card:rgba(10,20,74,.72);
+  --serif:"Georgia","Iowan Old Style","Times New Roman",serif;
+  --sans:"Calibri","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%; margin:0}
+body{font-family:var(--sans); color:var(--ink); background:linear-gradient(160deg,var(--navy-900),var(--navy) 60%,#040a33); display:grid; grid-template-rows:auto 1fr auto; -webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--serif); margin:0; font-weight:700}
+.ico{width:1.2em; height:1.2em; vertical-align:-.2em}
+header{display:flex; align-items:center; gap:18px; padding:14px 22px; border-bottom:1px solid var(--line); background:rgba(0,6,31,.55)}
+header .brand{font-family:var(--serif); color:var(--gold); font-size:1.15rem}
+header .pos{color:var(--ink-dim); letter-spacing:.18em; text-transform:uppercase; font-size:.8rem; font-weight:700}
+header .sp{flex:1}
+.clock{display:flex; gap:18px; align-items:baseline; font-variant-numeric:tabular-nums}
+.clock div{display:flex; flex-direction:column; align-items:flex-end}
+.clock b{font-family:var(--serif); color:#fff; font-size:1.6rem; line-height:1}
+.clock span{color:var(--ink-dim); font-size:.68rem; letter-spacing:.2em; text-transform:uppercase; margin-top:4px}
+.clock .step b{color:var(--gold)}
+.room{display:flex; align-items:center; gap:8px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:999px; padding:7px 14px; font-weight:700}
+.room .ico{color:var(--gold)}
+main{display:grid; grid-template-columns:1.55fr 1fr; gap:20px; padding:20px 22px; min-height:0}
+.card{background:var(--card); border:1px solid var(--line); border-radius:20px; padding:22px 24px; min-height:0; display:flex; flex-direction:column}
+.eyebrow{color:var(--gold); font-weight:800; letter-spacing:.28em; text-transform:uppercase; font-size:.76rem; display:flex; align-items:center; gap:10px}
+.eyebrow .tag{background:var(--gold); color:var(--navy); border-radius:999px; padding:3px 10px; letter-spacing:.14em}
+.ch{color:var(--ink-dim); margin-top:14px; letter-spacing:.14em; text-transform:uppercase; font-size:.78rem; font-weight:700}
+#nowTitle{font-size:clamp(1.8rem,3.2vw,2.6rem); color:#fff; margin-top:6px; line-height:1.12}
+.pips{display:flex; gap:6px; margin-top:14px}
+.pips i{width:22px; height:4px; border-radius:2px; background:rgba(255,255,255,.16)}
+.pips i.done{background:rgba(255,226,0,.45)} .pips i.on{background:var(--gold); width:40px}
+#nowNotes{margin-top:18px; font-size:clamp(1.15rem,1.9vw,1.55rem); line-height:1.5; color:var(--ink); overflow:auto; white-space:pre-wrap}
+#nowNotes.empty{color:var(--ink-dim); font-style:italic}
+.cue{margin-top:auto; padding-top:14px}
+.cue span{display:inline-flex; align-items:center; gap:8px; background:var(--red); color:#fff; border-radius:12px; padding:10px 16px; font-weight:800; letter-spacing:.04em}
+.next #nextTitle{font-size:1.45rem; color:#fff; margin-top:8px; line-height:1.2}
+.next #nextNotes{margin-top:12px; color:var(--ink-dim); font-size:1.02rem; line-height:1.45; overflow:auto}
+.next .card{opacity:.92}
+.keys{margin-top:16px; color:var(--ink-dim); font-size:.86rem; line-height:1.7}
+.keys kbd{font-family:var(--sans); background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); border-radius:6px; padding:1px 7px; color:#fff; font-weight:700}
+footer{display:flex; gap:14px; padding:14px 22px 18px; border-top:1px solid var(--line); background:rgba(0,6,31,.55)}
+footer button{flex:1; border:none; border-radius:14px; font-family:var(--sans); font-weight:800; letter-spacing:.06em; text-transform:uppercase; font-size:1.15rem; padding:18px; cursor:pointer; transition:transform .15s, filter .15s}
+footer button:active{transform:scale(.98)}
+#nPrev{background:rgba(255,255,255,.07); color:#fff; border:1px solid rgba(255,255,255,.2); flex:.6}
+#nNext{background:var(--gold); color:var(--navy); box-shadow:0 10px 26px rgba(255,226,0,.25)}
+#wait{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,6,31,.92); z-index:5; text-align:center; padding:30px}
+#wait h2{color:var(--gold); font-size:1.8rem} #wait p{color:var(--ink-dim); font-size:1.1rem; max-width:52ch; line-height:1.5}
+#wait code{color:#fff}
+.hidden{display:none !important}
+/* The NOW card is a cream page (easier to read on a laptop); red marks it */
+:root{ --cream:#F6EFE1; --paper-dim:#454E7A }
+.card.now{background:var(--cream); border:none; box-shadow:0 20px 50px rgba(0,0,0,.4), inset 0 0 0 1px rgba(255,255,255,.7); color:var(--navy)}
+.now .eyebrow{color:var(--navy)} .now .eyebrow .tag{background:var(--red); color:#fff}
+.now .ch{color:var(--paper-dim)}
+.now #nowTitle{color:var(--navy)}
+.now #nowNotes{color:#1b2350} .now #nowNotes.empty{color:#6b7299}
+.now .pips i{background:rgba(0,12,83,.14)} .now .pips i.done{background:rgba(236,50,55,.42)} .now .pips i.on{background:var(--red)}
+.next .eyebrow::before{content:""; display:inline-block; width:18px; height:3px; border-radius:2px; background:var(--red); margin-right:2px}
+@media (max-width:820px){ main{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<header>
+  <span class="brand">Presenter view</span>
+  <span class="pos" id="pos">Step –</span>
+  <span class="sp"></span>
+  <span class="room" id="room"></span>
+  <div class="clock">
+    <div class="step"><b id="tStep">0:00</b><span>this step</span></div>
+    <div><b id="tShow">0:00</b><span>show</span></div>
+    <div><b id="tNow">--:--</b><span>time</span></div>
+  </div>
+</header>
+<main>
+  <section class="card now">
+    <p class="eyebrow"><span class="tag">Now</span><span id="nowKind"></span></p>
+    <p class="ch" id="nowCh"></p>
+    <h1 id="nowTitle">Waiting for the big screen…</h1>
+    <div class="pips" id="nowPips"></div>
+    <div id="nowNotes" class="empty">Notes for each step and slide appear here.</div>
+    <div class="cue hidden" id="cue"><span>Next press reveals the answer</span></div>
+  </section>
+  <section class="next">
+    <div class="card" style="height:100%">
+      <p class="eyebrow">Next up</p>
+      <p class="ch" id="nextCh"></p>
+      <h2 id="nextTitle">–</h2>
+      <div id="nextNotes"></div>
+      <p class="keys"><kbd>→</kbd> or <kbd>Space</kbd> next &nbsp; <kbd>←</kbd> back<br>On the big screen: <kbd>P</kbd> controls · <kbd>S</kbd> set sail · <kbd>N</kbd> this window</p>
+    </div>
+  </section>
+</main>
+<footer>
+  <button id="nPrev" type="button">❮ Back</button>
+  <button id="nNext" type="button">Next ❯</button>
+</footer>
+<div id="wait"><div><h2>Looking for the big screen</h2><p>Open the show in this browser with <code>btx27.html?presenter=true</code> and press Begin. This window follows it and its buttons drive it.</p></div></div>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const KIND={ statement:'Slide', duo:'Slide', pillars:'Slide', stats:'School data', steps:'Slide', acronym:'Slide', quote:'Slide', bars:'School data', live:'Live from the room', ask:'Phones answer',
+    chart:'Join', video:'Film', slide:'Deck', fold:'Fold with us', poll:'Live poll', values:'Values', funfact:'Fun fact', globe:'Phones choose', industry_map:'Phones choose', pulse_check:'Phones answer', fleet:'Set sail', finale:'Hive', memento:'Card' };
+  let st=null, seen=0;
+  const ch=('BroadcastChannel' in window) ? new BroadcastChannel('btx-notes') : null;
+  if(!ch){ $('wait').querySelector('p').textContent='This browser cannot link windows. Use a current Chrome or Edge.'; return; }
+  const send=m=>ch.postMessage(m);
+  const fmt=ms=>{ if(!(ms>0)) return '0:00'; const s=Math.floor(ms/1000), h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=String(s%60).padStart(2,'0'); return h?`${h}:${String(m).padStart(2,'0')}:${x}`:`${m}:${x}`; };
+  function pips(sc){ return sc && sc.n>1 ? Array.from({length:sc.n},(_,k)=>`<i class="${k<sc.i-1?'done':k===sc.i-1?'on':''}"></i>`).join('') : ''; }
+  function paint(){
+    if(!st) return;
+    const c=st.cur||{}, n=st.next;
+    $('pos').textContent=`Step ${c.step} / ${st.total}${c.scene?` · slide ${c.scene.i} / ${c.scene.n}`:''}`;
+    $('nowKind').textContent=KIND[c.kind]||'';
+    $('nowCh').textContent=c.ch||'';
+    $('nowTitle').textContent=c.title||'';
+    $('nowPips').innerHTML=pips(c.scene);
+    const nn=$('nowNotes'); nn.textContent=c.notes||'No notes for this one.'; nn.classList.toggle('empty',!c.notes);
+    $('cue').classList.toggle('hidden',!st.reveal);
+    $('nextCh').textContent=n?(n.ch||''):'';
+    $('nextTitle').textContent=n?(n.title||''):'The end: thank the hall';
+    $('nextNotes').textContent=n?(n.notes||''):'';
+    $('room').innerHTML=(window.BTY?BTY.icon('bee'):'')+`${st.room?st.room.joined:0} in the Hive · ${st.room?st.room.ready:0} ready`;
+    $('nNext').textContent=st.reveal?'Reveal answer ❯':(n?'Next ❯':'Finish');
+  }
+  function tick(){
+    const now=Date.now();
+    $('tNow').textContent=new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    if(st){ $('tShow').textContent=fmt(st.startedAt?now-st.startedAt:0); $('tStep').textContent=fmt(st.stepAt?now-st.stepAt:0); }
+    $('wait').classList.toggle('hidden', !!st && now-seen<15000);
+  }
+  ch.onmessage=e=>{ const m=e.data||{}; if(m.type==='state'){ st=m; seen=Date.now(); paint(); tick(); } };
+  $('nNext').onclick=()=>send({type:'cmd', cmd:'next'});
+  $('nPrev').onclick=()=>send({type:'cmd', cmd:'prev'});
+  document.addEventListener('keydown',e=>{
+    if(['ArrowRight',' ','Enter','PageDown'].includes(e.key)){ e.preventDefault(); send({type:'cmd', cmd:'next'}); }
+    else if(['ArrowLeft','PageUp'].includes(e.key)){ e.preventDefault(); send({type:'cmd', cmd:'prev'}); }
+  });
+  send({type:'hello'}); setInterval(()=>{ if(!st || Date.now()-seen>5000) send({type:'hello'}); }, 2500);
+  setInterval(tick, 1000); tick();
+})();
+</script>
+</body>
+</html>

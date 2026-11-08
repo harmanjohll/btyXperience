@@ -28,7 +28,9 @@ c.ok(joinTxt === srv.url + '/x/', `the big join QR scans to the audience page ($
 const pillTxt = await decodeQR(pr, '#qrPill .qr-svg');
 c.ok(pillTxt === srv.url + '/x/', 'the header QR scans to the same page');
 
-for (let n = 2; n <= 26; n++) {
+const TOTAL = await pr.$eval('#progText', e => +e.textContent.split('/')[1]);
+c.ok(TOTAL === 25, `the show has ${TOTAL} steps (The Hive Wakes is cut)`);
+for (let n = 2; n <= TOTAL; n++) {
   await goStep(pr, n);
   const at = await stepNum(pr);
   if (at !== n) { c.ok(false, `reached step ${n} (at ${at})`); continue; }
@@ -56,9 +58,24 @@ for (let n = 2; n <= 26; n++) {
     await pr.keyboard.press('0'); await sleep(900);
     c.ok(Math.abs(await pr.evaluate(() => window.__globe.zoom) - 1) < 0.02, '"0" resets the view');
     await shot(pr, 'p-16-globe');
+    c.ok(await pr.$('.gpin[data-id="LitBali"]') && await pr.$('.gpin[data-id="GeoBali"]'), 'globe: Literature · Bali and Geography · Bali are separate pins');
+    c.ok(/Bali \(Literature\)/.test(await pr.$eval('#nexusStats', e => e.textContent)), 'live choices list Bali (Literature)');
+  }
+  if (n === 17) {
+    // Beatty sits in Toa Payoh beside SPH (Berita Harian, Tamil Murasu); no two labels overlap.
+    const g = await pr.evaluate(() => {
+      const dots = [...document.querySelectorAll('.map-frame .sgdot')].map(d => { const r = d.getBoundingClientRect(); return { home: d.classList.contains('home'), x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
+      const labs = [...document.querySelectorAll('.map-frame .sglbl .lbl')].map(l => l.getBoundingClientRect());
+      let overlap = 0; for (let i = 0; i < labs.length; i++) for (let j = i + 1; j < labs.length; j++) { const a = labs[i], b = labs[j]; if (a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom) overlap++; }
+      const home = dots.find(d => d.home), others = dots.filter(d => !d.home);
+      const near = Math.min(...others.map(d => Math.hypot(d.x - home.x, d.y - home.y)));
+      return { overlap, near, labels: labs.length };
+    });
+    c.ok(g.labels === 7 && g.overlap === 0, `map: 7 labels, none overlapping (${g.overlap} overlaps)`);
+    c.ok(g.near < 45, `map: Beatty is right beside SPH in Toa Payoh (${g.near.toFixed(0)} px)`);
   }
 }
-c.ok(pr.errs.length === 0, 'no page errors across 26 steps ' + JSON.stringify(pr.errs.slice(0, 5)));
+c.ok(pr.errs.length === 0, 'no page errors across every step ' + JSON.stringify(pr.errs.slice(0, 5)));
 await browser.close(); await srv.close();
 console.log(c.fails.length ? `\nFAILED ${c.fails.length}: ${c.fails.join(' | ')}` : '\nALL PASS');
 process.exit(c.fails.length ? 1 : 0);

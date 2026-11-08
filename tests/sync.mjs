@@ -75,28 +75,21 @@ for (const p of phones) await p.click('.answer-opt[data-nx="ASTAR"]');
 const mp = await until(async () => /3/.test(await pr.$eval('#nexusStats', e => e.textContent).catch(() => '')), 6000);
 c.ok(mp, 'map: 3 choices counted, separately from the globe');
 
-// --- Step 20: The Hive Wakes (bloom cue) ---------------------------------------------------
+// --- Step 20: last fold beat → boat complete ----------------------------------------------
 await goStep(pr, 20);
-await pr.click('#setSailBtn');
-const bl = await until(async () => (await Promise.all(phones.map(p => p.$('#bloomScreen')))).every(Boolean), 6000);
-c.ok(bl, 'lights out: every phone goes black and counts down together');
-await sleep(13500);
-
-// --- Step 21: last fold beat → boat complete ----------------------------------------------
-await goStep(pr, 21);
 await until(() => phones[0].$('#origamiStage .fold-overlay, .pull-dot'), 8000);
 const r8 = []; for (const p of phones) r8.push(await foldTo(p, 8));
 c.ok(r8.every(Boolean), 'fold beat L: every boat is complete (8 folds)');
 
-// --- Step 22: pulse ----------------------------------------------------------------------
-await goStep(pr, 22);
+// --- Step 21: pulse ----------------------------------------------------------------------
+await goStep(pr, 21);
 await until(() => phones[0].$('[data-mood]'), 6000);
 for (const p of phones) await p.click('[data-mood="Excited!"]');
 const pl = await until(async () => mine().filter(d => d.data.p === 'Excited!').length === 3, 5000);
 c.ok(pl, 'pulse: three moods saved');
 
-// --- Step 23: name the boat, then SET SAIL together --------------------------------------
-await goStep(pr, 23);
+// --- Step 22: name the boat, then SET SAIL together --------------------------------------
+await goStep(pr, 22);
 for (const [i, p] of phones.entries()) {
   await until(() => p.$('#dreamInput, #holdBoat, .ready-screen'), 8000);
   if (await p.$('#dreamInput')) { await p.fill('#dreamInput', ['Engineer', 'Doctor', 'Artist'][i]); await p.click('#dreamBtn'); }
@@ -111,22 +104,22 @@ c.ok(launched, 'every boat launches on the same count');
 const at = (await Promise.all(phones.map(phoneState))).map(d => d.launchedAt);
 c.ok(Math.max(...at) - Math.min(...at) < 400, `launch moments within 400 ms of each other (${Math.max(...at) - Math.min(...at)} ms)`);
 await sleep(1500);
-await shot(pr, 'sync-23-fleet');
+await shot(pr, 'sync-22-fleet');
 
-// --- Step 24: Hive of aspirations ---------------------------------------------------------
-await goStep(pr, 24);
+// --- Step 23: Hive of aspirations ---------------------------------------------------------
+await goStep(pr, 23);
 const words = await until(async () => { const t = await pr.$eval('#journeyContent', e => e.textContent).catch(() => ''); return /ENGINEER|Engineer/.test(t) && /DOCTOR|Doctor/.test(t) ? t : null; }, 6000);
 c.ok(words, 'the hive shows the boats\' words');
 
-// --- Step 26: the card ---------------------------------------------------------------------
-await goStep(pr, 26);
+// --- Step 25: the card ---------------------------------------------------------------------
+await goStep(pr, 25);
 const card = await until(() => phones[0].$('.compass-card'), 8000);
 c.ok(card, 'phones land on their Compass Card');
 const fleetN = state().fleet;
 c.ok(fleetN === 3, 'the show\'s saved state knows the fleet size: ' + fleetN);
 const lbl = await until(async () => /One of 3 boats/.test(await appHTML(phones[0])), 6000);
 c.ok(lbl, 'card: "One of 3 boats"');
-await shot(phones[0], 'sync-26-card');
+await shot(phones[0], 'sync-25-card');
 
 // --- Reset = a new show: phones start fresh, counts go back to zero (no deletes needed) ---
 const e1 = state().epoch;
