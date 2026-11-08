@@ -1,4 +1,4 @@
-// The native decks (deck/content.js, previewed with ?scenes=1): every slide renders and pages
+// The native decks (deck/content.js; ?scenes=0 brings the Google decks back): every slide renders and pages
 // with NEXT / BACK, the room's live dashboards fill from the phones' saved states, a slide's
 // one-tap question reaches the phones and its bars fill, and the presenter view follows along.
 import { startServer } from './lib/server.mjs';
@@ -9,7 +9,7 @@ const srv = await startServer();
 const browser = await chromium.launch({ headless: true });
 const c = checker('scenes');
 console.log('SCENES');
-const pr = await presenter(browser, srv.url, '&scenes=1');
+const pr = await presenter(browser, srv.url);
 const put = (path, data) => fetch(srv.url + '/__fs/write', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ op: 'set', path, data, merge: true }) });
 
 // A room's worth of phones, written straight into the stand-in database for this show.
@@ -31,12 +31,13 @@ const scene = () => pr.evaluate(() => { const b = document.getElementById('scBod
 const slideNow = () => pr.evaluate(() => { const d = window.BTY_DECKS[document.getElementById('scene').dataset.deck]; return d.slides[parseInt(document.getElementById('scNum').textContent, 10) - 1]; });
 const decks = await pr.evaluate(() => Object.fromEntries(Object.entries(window.BTY_DECKS).map(([k, d]) => [k, d.slides.length])));
 const total = Object.values(decks).reduce((a, b) => a + b, 0);
-c.ok(Object.keys(decks).length === 6 && total >= 20, `six decks, ${total} slides`);
+c.ok(Object.keys(decks).length === 6 && total >= 60, `six decks, ${total} slides, all switched on`);
+c.ok(await pr.evaluate(() => Object.values(window.BTY_DECKS).every(d => d.use)), 'every deck is use:true');
 
 const ph = await phone(browser, srv.url, 'phone');
 await board(ph);
 
-let slidesSeen = 0, step = 1, guard = 0, creamSeen = 0, toneWrong = [];
+let slidesSeen = 0, step = 1, guard = 0, creamSeen = 0, toneWrong = [], imgCount = 0, brokenAll = [];
 const TOTAL = await pr.$eval('#progText', el => +el.textContent.split('/')[1]);
 while (step < TOTAL && guard++ < 200) {
   const was = await scene();
@@ -73,14 +74,19 @@ while (step < TOTAL && guard++ < 200) {
   if (sl.kind === 'live' && sl.show === 'picks') c.ok((await pr.$$('#scLiveG .sc-row')).length >= 4 && (await pr.$$('#scLiveL .sc-row')).length >= 3, 'live: the hall\'s globe and map picks');
   if (sl.kind === 'live' && sl.show === 'words') c.ok((await pr.$$('#scLive span')).length >= 6, 'live: the hall\'s words');
   if (sl.kind === 'live' && sl.show === 'fleet') c.ok(await until(async () => (await pr.$eval('#scN', el => el.textContent)) === '24', 3000), 'live: 24 boats set sail');
+  const imgs = await pr.evaluate(() => [...document.querySelectorAll('#scBody img')].map(im => ({ src: im.getAttribute('src'), ok: im.complete && im.naturalWidth > 0 })));
+  const broken = imgs.filter(x => !x.ok);
+  if (broken.length) { await sleep(1500); const again = await pr.evaluate(() => [...document.querySelectorAll('#scBody img')].filter(im => !(im.complete && im.naturalWidth > 0)).map(im => im.getAttribute('src'))); if (again.length) brokenAll.push(...again); }
+  imgCount += imgs.length;
   if (deck === 'deck_c' && i === 2) {
     const nt = await notes.evaluate(() => ({ now: document.getElementById('nowTitle')?.textContent, next: document.getElementById('nextTitle')?.textContent, notes: document.getElementById('nowNotes')?.textContent }));
-    c.ok(nt.now === 'Four families' && /CCA/.test(nt.notes || ''), `presenter view follows: now "${nt.now}"`);
+    c.ok(nt.now === 'The joy of stewardship' && /leadership/i.test(nt.notes || ''), `presenter view follows: now "${nt.now}"`);
     c.ok(nt.next && nt.next.length > 3, `presenter view: next "${nt.next}"`);
     await shot(notes, 'sc-notes');
   }
 }
 c.ok(slidesSeen === total, `every slide was shown once (${slidesSeen}/${total})`);
+c.ok(imgCount > 100 && !brokenAll.length, `every photo loads (${imgCount} shown) ${brokenAll.slice(0, 5).join(', ')}`);
 c.ok(creamSeen >= 8 && !toneWrong.length, `cream pages where marked (${creamSeen}), questions always navy ${toneWrong.join(', ')}`);
 
 // BACK out of the step after a deck lands on that deck's last slide.
@@ -96,10 +102,10 @@ await notes.click('#nNext'); await sleep(700);
 const fwd = await scene();
 c.ok(fwd && parseInt(fwd.num, 10) === decks.deck_f, 'the presenter view\'s Next pages the big screen');
 
-// Without ?scenes=1 the Google deck is still what shows (decks are use:false until approved).
-const plain = await presenter(browser, srv.url);
+// ?scenes=0 brings the Google decks back (the show-day escape hatch).
+const plain = await presenter(browser, srv.url, '&scenes=0');
 await plain.click('#nextBtn'); await sleep(500); await plain.click('#nextBtn'); await sleep(1200);
-c.ok(await plain.$('iframe[src*="docs.google.com"]') && !(await plain.$('#scene')), 'without ?scenes=1 the Google deck still shows');
+c.ok(await plain.$('iframe[src*="docs.google.com"]') && !(await plain.$('#scene')), '?scenes=0 brings the Google deck back');
 
 const errs = [pr, ph, notes, plain].flatMap(p => p.errs);
 c.ok(errs.length === 0, 'no page errors ' + JSON.stringify(errs.slice(0, 5)));

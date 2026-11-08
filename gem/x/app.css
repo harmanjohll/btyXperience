@@ -1062,3 +1062,9 @@ body:has(#cornerBoat:not([hidden])) .react-hint { display: none; }
 .sc-pips i.on { background: var(--accent-gold); width: 30px; }
 .glance-num small { font-size: .5em; margin-left: .04em; }
 .scene-companion .glance-keys { max-width: 300px; width: 100%; }
+
+/* A slide's links, tappable on the phone (Connect@Beatty, the feedback form) */
+.ph-links { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 300px; margin-top: 18px; }
+.ph-links .answer-opt { text-decoration: none; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.ph-links .answer-opt span { font-size: .72rem; color: var(--text-muted); font-weight: 600; }
+.sc-pips.many { gap: 4px; } .sc-pips.many i { width: 8px; } .sc-pips.many i.on { width: 18px; }

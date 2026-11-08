@@ -2542,7 +2542,7 @@ function renderGlance(state, kind) {
    The presenter puts what phones show beside each slide into the show's saved state
    (`scene.phone`): a key point, a big number, a short list, or a one-tap question. */
 const escP = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-function scenePips(sc) { return sc && sc.n > 1 ? `<div class="sc-pips" aria-label="Slide ${sc.i + 1} of ${sc.n}">${Array.from({ length: sc.n }, (_, k) => `<i class="${k < sc.i ? 'done' : k === sc.i ? 'on' : ''}"></i>`).join('')}</div>` : ''; }
+function scenePips(sc) { return sc && sc.n > 1 ? `<div class="sc-pips${sc.n > 12 ? ' many' : ''}" aria-label="Slide ${sc.i + 1} of ${sc.n}">${Array.from({ length: sc.n }, (_, k) => `<i class="${k < sc.i ? 'done' : k === sc.i ? 'on' : ''}"></i>`).join('')}</div>` : ''; }
 function renderSceneCompanion(state) {
     const sc = state.scene, p = sc && sc.phone;
     if (!p) { renderGlance(state, 'deck'); return; }
@@ -2556,6 +2556,8 @@ function renderSceneCompanion(state) {
             (function tick(now) { const k = Math.min(1, (now - t0) / 1200); el.innerHTML = Math.round(n * (1 - Math.pow(1 - k, 3))) + suf; if (k < 1 && el.isConnected) requestAnimationFrame(tick); })(t0); }, 60);
     } else if (p.t === 'keys') {
         body = `<div class="glance-title">${escP(p.title)}</div><ul class="glance-keys">${(p.keys || []).map(k => `<li>${escP(k)}</li>`).join('')}</ul>`;
+    } else if (p.t === 'links') {
+        body = `<div class="glance-ic">${ico('qr')}</div><div class="glance-title" style="margin-top:14px">${escP(p.title)}</div>${p.line ? `<p class="glance-line">${escP(p.line)}</p>` : ''}<div class="ph-links">${(p.links || []).filter(l => /^https:\/\//.test(l.url || '')).map(l => `<a class="answer-opt" href="${escP(l.url)}" target="_blank" rel="noopener">${escP(l.label || l.url)}<span>${escP(String(l.url).replace(/^https:\/\//, ''))}</span></a>`).join('')}</div>`;
     } else if (p.t === 'chips') {
         body = `<div class="glance-title">${escP(p.title)}</div><div class="dream-chips">${(p.chips || []).map(c => `<div class="dream-chip"><b>${escP(c.l)}</b>${escP(c.w)}</div>`).join('')}</div>`;
     } else {
