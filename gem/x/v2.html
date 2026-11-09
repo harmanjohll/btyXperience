@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Beatty Experience — Set Sail · Version 2</title>
+    <link rel="stylesheet" href="util.css">
+    <link rel="stylesheet" href="app.css">
+    <!-- The handwriting face for the hull and the card. Non-blocking: if hall wifi
+         blocks Google Fonts the system cursive face is used and nothing waits. -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" media="print" onload="this.media='all'">
+</head>
+<body class="antialiased">
+    <div id="app" class="relative z-10 min-h-screen flex flex-col items-center justify-center p-4 pb-12"></div>
+    <!-- Persistent "your boat" companion: tucked in the corner while you answer
+         questions, growing fold by fold as the session goes. Lives outside #app
+         so page transitions never wipe it. -->
+    <div id="cornerBoat" class="corner-boat" hidden aria-label="Your folded boat so far"></div>
+    <script src="../qrcode.js"></script>
+    <script src="../bty-ui.js"></script>
+    <script type="module" src="app-v2.js"></script>
+</body>
+</html>

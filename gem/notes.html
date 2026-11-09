@@ -112,7 +112,7 @@ footer button:active{transform:scale(.98)}
   const KIND={ statement:'Slide', duo:'Slide', pillars:'Slide', stats:'School data', steps:'Slide', acronym:'Slide', quote:'Slide', bars:'School data', live:'Live from the room', ask:'Phones answer',
     chart:'Join', video:'Film', slide:'Deck', fold:'Fold with us', poll:'Live poll', values:'Values', funfact:'Fun fact', globe:'Phones choose', industry_map:'Phones choose', pulse_check:'Phones answer', fleet:'Set sail', finale:'Hive', memento:'Card' };
   let st=null, seen=0;
-  const ch=('BroadcastChannel' in window) ? new BroadcastChannel('btx-notes') : null;
+  const ch=('BroadcastChannel' in window) ? new BroadcastChannel(/[?&]v=2\b/.test(location.search) ? 'btx-notes-v2' : 'btx-notes') : null;   // ?v=2: version 2's big screen
   if(!ch){ $('wait').querySelector('p').textContent='This browser cannot link windows. Use a current Chrome or Edge.'; return; }
   const send=m=>ch.postMessage(m);
   const fmt=ms=>{ if(!(ms>0)) return '0:00'; const s=Math.floor(ms/1000), h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=String(s%60).padStart(2,'0'); return h?`${h}:${String(m).padStart(2,'0')}:${x}`:`${m}:${x}`; };
