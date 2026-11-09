@@ -35,7 +35,7 @@ const wf = `filter="url(#${WASHI_FILTER_ID})"`;
 export const SAIL_DATA = {
     S: {
         letter: 'S', title: 'Stewardship', subtitle: 'The Foundation',
-        foldInstruction: 'Make your first two folds — preparing the paper.',
+        foldInstruction: 'Make your first fold, preparing the paper.',
         scenario: 'You are leading a team for the first time. Everyone looks to you. The group is diverse — some eager, some unsure, and some with strong opinions.',
         question: 'What is your first instinct as a leader?',
         options: [
@@ -49,7 +49,7 @@ export const SAIL_DATA = {
     },
     A: {
         letter: 'A', title: 'Applied Learning', subtitle: 'The Structure',
-        foldInstruction: 'Fold both corners — shaping the structure.',
+        foldInstruction: 'Fold a corner, shaping the structure.',
         scenario: 'Your school just received a grant to solve a real-world community problem. You have full creative freedom and one semester on the clock.',
         question: 'Which problem domain draws you in most?',
         options: [
@@ -70,7 +70,7 @@ export const SAIL_DATA = {
     },
     I: {
         letter: 'I', title: 'International & Industry', subtitle: 'The Sail',
-        foldInstruction: 'Fold the flaps — the hat takes shape.',
+        foldInstruction: 'Fold the brim, and the hat becomes a diamond.',
         scenario: 'You have been offered a fully-funded trip abroad. One destination, one chance to bring knowledge back that could change your school.',
         question: 'Where would the wind take you?',
         options: [
@@ -91,7 +91,7 @@ export const SAIL_DATA = {
     },
     L: {
         letter: 'L', title: 'Learning to Live, Learn & Love', subtitle: 'The Flag',
-        foldInstruction: 'The final fold — reveal your boat!',
+        foldInstruction: 'The last folds, reveal your boat!',
         scenario: 'It is the last day of school. As you look back on your years at Beatty, one value stands out — the compass bearing that guided you through every storm.',
         question: 'Which value is your compass?',
         options: [
@@ -320,6 +320,27 @@ export const FOLD_FLAPS = [
     // Fold 7: pull apart → boat (structural)
     { clipFrom: null, clipTo: null, axis: '50% 50%', rotate: 'rotateY', maxDeg: 0 },
 ];
+
+/* ── THE AUDIENCE MAKES FIVE FOLDS ──
+   The paper still moves through all eight shapes, but three of those moves follow on their
+   own: fold one corner and the other follows; fold the brim up and the back brim follows,
+   then the hat opens into a diamond. Five gestures, one per beat, plus the pull open:
+     1 fold in half            (S)
+     2 a corner to the centre  (A)   the other corner follows
+     3 the brim up             (I)   the back brim follows, then the diamond
+     4 the point up            (L)
+     5 pull it open            (L)   your boat */
+export const FOLD_PLAN = [
+    { start: 0, end: 1, label: 'Fold the paper in half, top edge down to the bottom' },
+    { start: 1, end: 3, label: 'Fold a corner down to the centre; the other follows' },
+    { start: 3, end: 6, label: 'Fold the brim up; the back follows, and it opens into a diamond' },
+    { start: 6, end: 7, label: 'Fold the bottom point up to the top' },
+    { start: 7, end: 8, label: 'Pull the sides apart: your boat!' },
+];
+export const FOLD_TOTAL = FOLD_PLAN.length;
+export const AUTO_FOLDS = { 1: [2], 3: [4, 5] };          // a gesture → the moves that follow by themselves
+export const foldsDone = next => FOLD_PLAN.filter(g => g.start < (next || 0)).length;   // folds the audience has made
+export const gestureAt = i => FOLD_PLAN.findIndex(g => g.start === i);                  // -1 for a move that follows by itself
 
 export const FOLD_LABELS = [
     'Fold the paper in half — top edge down to the bottom',

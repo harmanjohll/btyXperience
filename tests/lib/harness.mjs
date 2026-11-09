@@ -47,11 +47,14 @@ export async function presenter(browser, base, query = '') {
   return p;
 }
 export async function stepNum(p) { const t = await p.$eval('#progText', e => e.textContent).catch(() => ''); const m = t.match(/Step\s+(\d+)/i); return m ? +m[1] : -1; }
+export async function slideNum(p) { return p.$eval('#scNum', e => e.textContent).catch(() => ''); }
 export async function goStep(p, n) {
-  for (let i = 0; i < 80; i++) {
+  for (let i = 0; i < 200; i++) {
     const c = await stepNum(p); if (c >= n) break;
+    const sc = await slideNum(p);
     await p.click('#nextBtn');
-    await until(async () => (await stepNum(p)) !== c, 2500, 60);   // a reveal press keeps the step; the next press moves on
+    // a reveal press keeps the step; inside a native deck the slide number moves instead
+    await until(async () => (await stepNum(p)) !== c || (sc && (await slideNum(p)) !== sc), 2500, 60);
   }
   await p.waitForTimeout(600);
   return stepNum(p);
@@ -96,7 +99,7 @@ export async function foldTo(p, n) {
     if (!(await p.$('#origamiStage .fold-overlay'))) { await p.waitForTimeout(500); continue; }
     await p.waitForTimeout(750);
     if (await p.$('.pull-dot') && !(await p.$('.fold-dot'))) { await pullOpen(p); await waitFold(p, cur + 1, 8000); continue; }
-    await fold(p); await waitFold(p, cur + 1, 6000);
+    await fold(p); await waitFold(p, cur + 1, 9000);       // a fold and the moves that follow it by themselves
   }
   return ((await phoneState(p)).nextFold || 0) >= n;
 }

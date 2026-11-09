@@ -30,8 +30,9 @@ await go({ currentView: 'slide', card: { title: '', keys: [] } }); c.ok(await p.
 await go({ currentView: 'values', chapter: 'Our values' }); await shot(p, 'ph-07-values');
 await go({ currentView: 'funfact', chapter: 'Passions', funfact: { number: '17', label: 'CCAs to belong to', subtitle: 'A hive has a place for every kind of bee.' } }, 1700); await shot(p, 'ph-08-funfact');
 
-await go({ currentView: 'fold', chapter: 'Our values', fold: { to: 2, letter: 'S' } }, 1200); await shot(p, 'ph-09-fold');
-c.ok(await foldTo(p, 2), 'fold beat: two folds'); await sleep(600); await shot(p, 'ph-10-rest');
+await go({ currentView: 'fold', chapter: 'Our values', fold: { to: 1, letter: 'S' } }, 1200); await shot(p, 'ph-09-fold');
+c.ok(/Fold 1 of 5/.test(await p.$eval('#app', e => e.textContent)), 'the phone says "Fold 1 of 5"');
+c.ok(await foldTo(p, 1), 'fold beat S: one fold'); await sleep(600); await shot(p, 'ph-10-rest');
 
 await go({ currentView: 'poll', pollData: POLL, revealed: false }); c.ok((await p.$$('.answer-opt')).length === 4, 'poll: four answers'); await shot(p, 'ph-11-poll');
 await p.click('.answer-opt[data-poll="1"]'); await sleep(700); c.ok(!(await appHTML(p)).includes('pbar-fill'), 'locked in, no result yet'); await shot(p, 'ph-12-locked');

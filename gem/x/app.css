@@ -1062,3 +1062,13 @@ body:has(#cornerBoat:not([hidden])) .react-hint { display: none; }
 .sc-pips i.on { background: var(--accent-gold); width: 30px; }
 .glance-num small { font-size: .5em; margin-left: .04em; }
 .scene-companion .glance-keys { max-width: 300px; width: 100%; }
+
+/* A slide's links, tappable on the phone (Connect@Beatty, the feedback form) */
+.ph-links { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 300px; margin-top: 18px; }
+.ph-links .answer-opt { text-decoration: none; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.ph-links .answer-opt span { font-size: .72rem; color: var(--text-muted); font-weight: 600; }
+.sc-pips.many { gap: 4px; } .sc-pips.many i { width: 8px; } .sc-pips.many i.on { width: 18px; }
+
+/* A move that follows by itself: a short caption under the paper */
+.auto-fold-cap { position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%); white-space: nowrap; background: rgba(0,6,31,.82); border: 1px solid rgba(255,226,0,.35); color: var(--accent-gold-light); border-radius: 999px; padding: 6px 14px; font-size: .78rem; font-weight: 700; letter-spacing: .02em; animation: autoCapIn .35s ease-out both; z-index: 6; pointer-events: none; }
+@keyframes autoCapIn { from { opacity: 0; transform: translate(-50%, 6px); } to { opacity: 1; transform: translate(-50%, 0); } }
