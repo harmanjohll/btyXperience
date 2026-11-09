@@ -11,6 +11,7 @@
 <script src="qrcode.js"></script>
 <script src="bty-ui.js"></script>
 <script src="deck/content.js"></script>   <!-- the show's slides: edit the words there -->
+<script src="deck/img/sizes.js"></script> <!-- photo proportions, so photos are laid out whole -->
 
 <style>
 /* ============================================================
@@ -172,6 +173,7 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .cl-screen{width:min(30vh,300px,22vw); aspect-ratio:9/16; border-radius:34px; padding:10px; background:linear-gradient(160deg,#1b2350,#060a24); box-shadow:0 0 0 2px rgba(255,255,255,.12), 0 40px 80px rgba(0,0,0,.6), 0 0 120px rgba(255,226,0,.14); transform:rotate(-3deg)}
 .cl-screen img{width:100%; height:100%; object-fit:cover; border-radius:26px; display:block}
 @media (min-height:900px){ .cl-screen{width:min(40vh,360px,24vw)} }
+.cl-screen{width:min(36vh,400px,24vw) !important; transform:rotate(-2deg)}   /* the pass is the climax: show it big */
 .cl-tag{display:inline-flex; align-items:center; gap:8px; margin-top:22px; color:var(--ink-dim); font-size:clamp(.75rem,1vw,.95rem); letter-spacing:.18em; text-transform:uppercase}
 .cl-tag .ico{width:18px; height:18px; color:var(--gold)}
 .cl-side .stage-title{font-size:clamp(2.4rem,5vw,5rem); line-height:1.02}
@@ -579,13 +581,13 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 .sc-ch{color:var(--gold); display:flex; align-items:center; gap:12px}
 .sc-ch .ico{width:1.5em; height:1.5em}
 .sc-num{color:var(--ink-dim); letter-spacing:.24em; font-variant-numeric:tabular-nums}
-.sc-body{flex:1 1 auto; min-height:0; display:flex; flex-direction:column; justify-content:center; align-items:center; transition:opacity .22s var(--ease-in), transform .22s var(--ease-in)}
+.sc-body{flex:1 1 auto; min-height:0; padding-bottom:10px; display:flex; flex-direction:column; justify-content:center; align-items:center; transition:opacity .22s var(--ease-in), transform .22s var(--ease-in)}
 .sc-body.sc-leave{opacity:0; transform:translateY(-12px)}
 .sc-dots{display:flex; gap:10px; justify-content:center; padding-top:10px}
 .sc-dots i{display:block; width:30px; height:4px; border-radius:2px; background:rgba(255,255,255,.16); transition:background .45s var(--ease), width .45s var(--ease)}
 .sc-dots i.done{background:rgba(255,226,0,.42)}
 .sc-dots i.on{background:var(--gold); width:64px}
-.bi{animation:biUp .85s var(--ease) both; animation-delay:var(--d,0ms)}
+.bi{animation:biUp .45s var(--ease) both; animation-delay:var(--d,0ms)}
 @keyframes biUp{from{opacity:0; transform:translateY(26px)} to{opacity:1; transform:none}}
 @media (prefers-reduced-motion:reduce){ .bi{animation:none} .sc-body{transition:none} }
 
@@ -892,7 +894,8 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 .sc-logos img{max-width:100%; max-height:100%; object-fit:contain}
 /* pins on a map */
 .sc-pins{position:relative; width:100%; height:100%; display:flex; flex-direction:column; align-items:center}
-.pins-t{margin-bottom:6px}
+.pins-t{margin-bottom:0}
+.sc-pins .pn-map{width:min(100%,1500px); max-height:calc(100% - 60px)}
 .pn-map{position:relative; flex:1; aspect-ratio:16/9; max-width:100%; max-height:100%}
 .pn-map > img{position:absolute; inset:0; width:100%; height:100%; object-fit:contain; mix-blend-mode:multiply}
 .pn{position:absolute; width:clamp(26px,2.2vw,40px); height:clamp(26px,2.2vw,40px); transform:translate(-50%,-92%); color:var(--red); filter:drop-shadow(0 4px 6px rgba(0,0,0,.25))} .pn .ico{width:100%; height:100%; fill:rgba(236,50,55,.18)}
@@ -944,6 +947,132 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 .scene.cream .sc-card .dl{color:var(--paper-dim)}
 .scene.cream .sc-stairs path.big{stroke:rgba(0,12,83,.35)} .scene.cream .sc-stairs path.small{stroke:var(--red)} .scene.cream .sc-stairs .sl{color:var(--paper-ink)}
 .scene.cream .sc-gal figure, .scene.cream .ft-media figure, .scene.cream .sc-qimg figure{box-shadow:0 14px 34px rgba(0,12,83,.18)}
+
+/* ---------- Phase 12: photos whole, calmer motion ---------- */
+.fit-box{position:relative}
+.fit-box > figure{margin:0; overflow:hidden; border-radius:14px; background:transparent; box-shadow:0 14px 34px rgba(0,0,0,.35)}
+.fit-box > figure img{width:100%; height:100%; object-fit:contain; display:block; animation:none}
+.fit-box > figure figcaption{position:absolute; left:10px; bottom:10px; background:rgba(0,6,31,.82); color:#fff; border-left:4px solid var(--red); padding:5px 11px; border-radius:8px; font-weight:700; font-size:clamp(.8rem,1vw,1.05rem)}
+.fit-box:not(.fitted) > figure{opacity:0}
+.sc-gal.fit-box{display:block; height:auto; flex:1 1 0; min-height:0; max-height:none; width:min(100%,1720px)}
+.ft-media.fit-box{display:block; height:min(64vh,680px)}
+.sc-qimg .q-media{height:min(60vh,640px)}
+.scene.cream .fit-box > figure{box-shadow:0 14px 34px rgba(0,12,83,.18)}
+.kb{animation:none !important}
+/* photo slide: the whole photo over a blurred fill of itself, caption in a band below */
+.sc-photo .ph-blur, .sc-cover.whole .ph-blur{position:absolute; inset:-40px; width:calc(100% + 80px); height:calc(100% + 80px); object-fit:cover; filter:blur(34px) brightness(.42) saturate(1.15)}
+.sc-photo .ph-area{position:absolute; left:3%; right:3%; top:clamp(46px,6vh,64px); bottom:clamp(20px,3vh,36px)}
+.sc-photo.has-band .ph-area{bottom:clamp(108px,13vh,150px)}
+.ph-band{position:absolute; left:0; right:0; bottom:0; height:clamp(96px,12vh,138px); display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; background:linear-gradient(0deg, rgba(0,6,31,.92), rgba(0,6,31,.55)); border-top:3px solid var(--red)}
+.ph-band h3{font-size:clamp(1.8rem,3vw,3.2rem); color:#fff; line-height:1.05}
+.ph-band p{color:var(--cream); font-size:clamp(1rem,1.4vw,1.5rem); margin-top:6px}
+.ph-band .eyebrow{margin-bottom:6px; color:var(--cream)}
+/* cover with the whole photo: photo on the right, title on the left */
+.sc-cover.whole .cv-area{position:absolute; right:3%; top:8%; bottom:8%; width:58%}
+.sc-cover.whole.has-day .cv-area{bottom:clamp(110px,15vh,150px)}
+.sc-cover .cv-wash.side{background:linear-gradient(90deg, rgba(0,6,31,.9) 0%, rgba(0,12,83,.55) 34%, transparent 46%)}
+.sc-cover.whole .cv-txt{max-width:36%}
+.sc-cover.whole .cv-h{font-size:clamp(2.8rem,5.4vw,6.2rem)}
+
+/* ---------- Phase 12: explanatory motion ---------- */
+.arrive{opacity:0; animation:biUp .5s var(--ease) both; animation-delay:var(--d,0ms)}
+@media (prefers-reduced-motion:reduce){ .arrive{animation:none; opacity:1} }
+/* crest: each meaning lights its part of the crest */
+.sc-crest{display:grid; grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr); gap:clamp(30px,5vw,100px); align-items:center; width:min(100%,1500px)}
+.cr-img{position:relative; height:min(64vh,680px); aspect-ratio:849/1200; justify-self:center}
+.cr-img img{width:100%; height:100%; object-fit:contain; display:block; filter:drop-shadow(0 20px 40px rgba(0,12,83,.25))}
+.cr-rings{position:absolute; inset:0; width:100%; height:100%; overflow:visible}
+.cr-ring{fill:rgba(236,50,55,.06); stroke:var(--red); stroke-width:.7; vector-effect:non-scaling-stroke; stroke-dasharray:100; stroke-dashoffset:100; opacity:0; transition:opacity .4s}
+.cr-ring{stroke-width:4px}
+.cr-ring.now{opacity:1; animation:ringDraw .9s var(--ease) forwards, ringPulse 1.6s ease-in-out .9s infinite}
+.cr-ring.lit:not(.now){opacity:.0}
+.cr-ring.done{opacity:0}
+@keyframes ringDraw{to{stroke-dashoffset:0}}
+@keyframes ringPulse{0%,100%{fill:rgba(236,50,55,.06)} 50%{fill:rgba(236,50,55,.16)}}
+.cr-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:clamp(14px,2.6vh,30px)}
+.cr-list li{padding-left:22px; border-left:4px solid rgba(0,12,83,.15); opacity:.28; transform:translateX(8px); transition:opacity .5s, transform .5s var(--ease), border-color .5s}
+.cr-list li.lit{opacity:.6; transform:none}
+.cr-list li.now, .cr-list li.done{opacity:1; border-left-color:var(--red)}
+.cr-list li.now{transform:scale(1.02); transform-origin:left center}
+.cr-list b{display:block; font-family:var(--serif); font-size:clamp(1.6rem,2.6vw,2.8rem); color:var(--paper-ink); line-height:1.1}
+.cr-list span{display:block; color:var(--paper-dim); font-size:clamp(1.05rem,1.55vw,1.65rem); margin-top:6px; line-height:1.35}
+@media (prefers-reduced-motion:reduce){ .cr-list li{opacity:1; transform:none} }
+/* slope chart: how the top skills moved */
+.sc-slope{width:min(100%,1640px); height:auto; max-height:62vh; overflow:visible}
+.sl-head{font-family:var(--serif); font-weight:700; font-size:40px; fill:var(--gold)}
+.sl-item{font-family:var(--sans); font-size:29px; fill:var(--cream-ink)}
+.sl-item .sl-n{font-weight:700; fill:rgba(246,239,225,.45)}
+.sl-item.hi{font-weight:700; fill:#fff} .sl-item.hi .sl-n{fill:var(--gold)}
+.sl-line{fill:none; stroke:rgba(246,239,225,.16); stroke-width:2; stroke-dasharray:100; stroke-dashoffset:100; animation:ringDraw 1.1s var(--ease) forwards; animation-delay:calc(.9s + var(--c) * 1.5s)}
+.sl-line.hi{stroke-width:6; stroke-linecap:round}
+.sl-line.h0{stroke:var(--red)} .sl-line.h1{stroke:var(--gold)}
+.sl-col{opacity:0; animation:biUp .5s var(--ease) forwards; animation-delay:calc(.2s + var(--c) * 1.5s)}
+.sl-item.h0{fill:#ff8a8d} .sl-item.h0 .sl-n{fill:var(--red)}
+@media (prefers-reduced-motion:reduce){ .sl-line{animation:none; stroke-dashoffset:0} .sl-col{animation:none; opacity:1} }
+/* stairs: a climber shows steady habits against bursts of inspiration */
+.sc-stairs path{stroke-dasharray:none; stroke-dashoffset:0; animation:none}
+.sc-stairs .climber{fill:var(--red); stroke:#fff; stroke-width:3; filter:drop-shadow(0 3px 6px rgba(0,0,0,.3))}
+.scene.cream .sc-stairs .climber{stroke:var(--cream)}
+/* FSBB: students sort by level, then mix into form classes */
+.mx-phase{position:relative; height:clamp(34px,4.6vh,50px); width:100%; text-align:center; margin-bottom:clamp(10px,2vh,20px)}
+.mx-p{position:absolute; left:0; right:0; font-family:var(--serif); font-size:clamp(1.3rem,2.1vw,2.2rem); color:var(--cream); transition:opacity .6s, transform .6s var(--ease)}
+.mx-phase .p2{opacity:0; transform:translateY(10px)}
+.mx-phase[data-p="2"] .p1{opacity:0; transform:translateY(-10px)} .mx-phase[data-p="2"] .p2{opacity:1; transform:none}
+.sc-mixer{position:relative; width:min(100%,1500px); height:min(40vh,400px)}
+.mx-box, .mx-lvl{position:absolute; border-radius:24px; transition:opacity .6s, left .9s var(--ease), width .9s var(--ease), top .9s var(--ease), height .9s var(--ease)}
+.mx-box{background:rgba(246,239,225,.9); box-shadow:0 18px 40px rgba(0,0,0,.3)}
+.mx-lvl{border:2px dashed rgba(246,239,225,.35); display:flex; justify-content:center; align-items:flex-start; gap:10px; padding-top:12px; color:var(--cream); font-weight:800; font-size:clamp(1.2rem,1.8vw,1.9rem); letter-spacing:.06em}
+.mx-lvl b, .mx-legend b{display:inline-block; width:18px; height:18px; border-radius:50%; vertical-align:-3px}
+.mx-dot{position:absolute; border-radius:50%; box-shadow:inset 0 -3px 0 rgba(0,0,0,.15); transition:left 1.3s var(--ease), top 1.3s var(--ease)}
+.mx-legend{display:flex; justify-content:center; gap:20px; align-items:center; margin-top:clamp(12px,2vh,22px); color:var(--cream); font-weight:700; font-size:clamp(.95rem,1.3vw,1.3rem)}
+.mx-legend b{margin-right:6px} .mx-legend em{font-style:normal; color:var(--cream-ink); font-weight:400}
+/* tie breakers: the worked example, one stage at a time */
+.sc-tie{display:grid; grid-template-columns:1.05fr repeat(4,1fr); gap:clamp(8px,.8vw,14px); width:min(100%,1760px); height:min(58vh,620px)}
+.tb-kids, .tb-col{display:grid; grid-template-rows:clamp(44px,5.4vh,58px) repeat(5,minmax(0,1fr)); gap:clamp(6px,.8vh,10px); min-height:0}
+.tb-col h4{grid-row:1}
+.sc-t.wide{max-width:none}
+.tb-kids::before{content:""}
+.tb-kid{position:relative; background:rgba(246,239,225,.92); color:var(--paper-ink); border-radius:12px; padding:4px 12px; display:flex; flex-direction:column; justify-content:center; min-height:0; overflow:hidden}
+.tb-kid b{font-family:var(--serif); font-size:clamp(1.1rem,1.5vw,1.6rem); line-height:1.1} .tb-kid span{font-size:clamp(.8rem,1vw,1.05rem); color:var(--paper-dim)} .tb-kid small{font-size:clamp(.72rem,.88vw,.95rem); color:var(--paper-dim)}
+.tb-to{position:absolute; right:10px; top:50%; transform:translateY(-50%) scale(.6); opacity:0; background:var(--red); color:#fff; font-style:normal; font-weight:800; border-radius:10px; padding:6px 12px; font-size:clamp(.85rem,1.1vw,1.15rem); transition:opacity .4s, transform .5s var(--ease)}
+.tb-kid.done .tb-to{opacity:1; transform:translateY(-50%) scale(1)}
+.tb-col h4{font-family:var(--sans); font-weight:800; font-size:clamp(.92rem,1.2vw,1.28rem); color:var(--gold); letter-spacing:.04em; height:clamp(44px,5.4vh,58px); display:flex; align-items:flex-end; padding-bottom:6px; border-bottom:2px solid rgba(255,226,0,.35)}
+.tb-box{background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:8px 12px; display:flex; flex-direction:column; justify-content:center; gap:6px; min-height:0}
+.tb-box p{color:var(--cream); font-size:clamp(.95rem,1.22vw,1.32rem); line-height:1.35; margin:0}
+.tb-res{align-self:flex-start; background:var(--gold); color:var(--navy); font-weight:800; border-radius:8px; padding:4px 10px; font-size:clamp(.8rem,1vw,1.05rem)}
+.tb-col{opacity:.12; transition:opacity .6s} .tb-col.on{opacity:1}
+.tb-col.on .tb-box{animation:biUp .5s var(--ease) both}
+@media (prefers-reduced-motion:reduce){ .tb-col{opacity:1} }
+/* quotes: the graduates in their own words */
+.sc-quotes{display:grid; grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr); gap:clamp(24px,3vw,60px); width:min(100%,1680px); align-items:center}
+.qs-media{height:min(62vh,660px)}
+.qs-grid{display:grid; grid-template-columns:1fr 1fr; gap:clamp(12px,1.4vw,24px)}
+.qs-card{margin:0; background:#fff; border-radius:18px; padding:clamp(16px,2.4vh,26px) clamp(16px,1.6vw,26px); box-shadow:0 14px 34px rgba(0,12,83,.1); border-top:4px solid var(--red)}
+.qs-card .qm{font-family:var(--serif); color:var(--red); font-size:clamp(2.4rem,3.6vw,3.8rem); line-height:.6; display:block; height:.45em}
+.qs-card p{font-family:var(--serif); font-style:italic; color:var(--paper-ink); font-size:clamp(1rem,1.4vw,1.5rem); line-height:1.35; margin:8px 0 0}
+.qs-card cite{display:block; margin-top:10px; color:var(--paper-dim); font-style:normal; font-size:clamp(.8rem,1vw,1.05rem); letter-spacing:.1em; text-transform:uppercase}
+/* NEXUS stages: a marker travels the journey */
+.sc-steps.travel::before{animation:lineGrow 2.6s linear .2s both}
+.st-marker{position:absolute; top:clamp(13px,1.7vh,19px); left:4%; width:clamp(14px,1.2vw,20px); height:clamp(14px,1.2vw,20px); border-radius:50%; background:var(--red); box-shadow:0 0 0 6px rgba(236,50,55,.25); z-index:2; animation:stMarch 2.6s linear .2s both}
+@keyframes stMarch{from{left:4%} to{left:calc(96% - 20px)}}
+@media (prefers-reduced-motion:reduce){ .st-marker{display:none} }
+/* flight paths from Singapore */
+.pn-arcs{position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none}
+.pn-arc{fill:none; stroke:var(--red); stroke-width:2.5px; vector-effect:non-scaling-stroke; stroke-dasharray:100; stroke-dashoffset:100; animation:ringDraw .8s var(--ease) forwards; animation-delay:var(--d,0ms); opacity:.75}
+.pn-home{position:absolute; transform:translate(-50%,-50%); z-index:2}
+.pn-home i{display:block; width:16px; height:16px; border-radius:50%; background:var(--paper-ink); box-shadow:0 0 0 5px rgba(0,12,83,.2); animation:homePulse 2s ease-in-out infinite}
+.pn-home b{position:absolute; left:20px; top:-4px; white-space:nowrap; font-size:clamp(.78rem,1vw,1.05rem); color:var(--paper-ink); background:rgba(255,255,255,.85); padding:2px 8px; border-radius:6px}
+@keyframes homePulse{50%{box-shadow:0 0 0 12px rgba(0,12,83,0)}}
+@media (prefers-reduced-motion:reduce){ .pn-arc{animation:none; stroke-dashoffset:0} }
+/* a day at Beatty */
+.day-bar{position:absolute; left:clamp(40px,6vw,120px); right:clamp(40px,6vw,120px); bottom:clamp(22px,4vh,46px); height:clamp(54px,7vh,76px); display:grid; grid-template-columns:1fr 1fr; gap:6px; z-index:3}
+.db-seg{border-radius:12px; background:rgba(246,239,225,.12); border:1px solid rgba(246,239,225,.22); display:flex; flex-direction:column; justify-content:center; padding:0 18px; color:rgba(246,239,225,.6); transition:background .6s, color .6s}
+.db-seg b{font-family:var(--serif); font-size:clamp(1.05rem,1.5vw,1.5rem)} .db-seg span{font-size:clamp(.8rem,1vw,1.05rem)}
+.day-bar.go .db-seg.on{background:var(--cream); color:var(--paper-ink); border-color:var(--cream)}
+.db-start{position:absolute; left:0; top:-26px; color:var(--cream); font-weight:700; font-size:clamp(.8rem,1vw,1.05rem)}
+.db-sun{position:absolute; top:-46px; left:0; width:40px; height:40px; color:var(--gold); transition:left 1.6s var(--ease)} .db-sun .ico{width:100%; height:100%}
+.day-bar[data-part="morning"].go .db-sun{left:calc(25% - 20px)} .day-bar[data-part="afternoon"].go .db-sun{left:calc(75% - 20px)}
+.sc-cover.whole .cv-txt{bottom:clamp(130px,18vh,200px)}
 </style>
 </head>
 <body>
@@ -1172,8 +1301,8 @@ let boatMod=null; import('./x/boat.js').then(m=>{ boatMod=m; }).catch(()=>{});  
 const journeySteps=[
   { id:'compass', type:'chart', title:"The Hive Awakens", desc:"A living portrait of everyone in the room, right now." },
   { id:'video_intro', type:'video', url:"https://www.youtube.com/embed/6xpckUCGIlE?autoplay=1&modestbranding=1&rel=0&controls=0" },
-  { id:'deck_a', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRpjJ-5NgPJO2LRLdKEcpBgqv-xMAriN5QxdbJSPLS5IE2y2pjNhE0icRG8lKqp0x0dM0KbbS9e1HWK/pubembed?start=false&loop=false&delayms=60000" },
   { id:'fold_s', type:'fold', title:"Fold with us · S", desc:"Stewardship — the foundation.", fold:{letter:'S', name:'Stewardship', sub:'The Foundation', from:0, to:1} },
+  { id:'deck_a', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRpjJ-5NgPJO2LRLdKEcpBgqv-xMAriN5QxdbJSPLS5IE2y2pjNhE0icRG8lKqp0x0dM0KbbS9e1HWK/pubembed?start=false&loop=false&delayms=60000" },
   { id:'poll_dream', type:'poll', title:"Live Poll · Our Core Values", pollData:{ id:'dream_poll',
      question:"What does D.R.E.A.M. stand for at Beatty?",
      options:["Discipline, Respect, Excellence, Achievement, Mindfulness","Discipline, Resilience, Empathy, Adaptability, Mindfulness","Diligence, Respect, Empathy, Adaptability, Mastery","Determination, Resilience, Excellence, Ambition, Mindfulness"],
@@ -1197,8 +1326,10 @@ const journeySteps=[
      insight:"A trick! Beatty offers all of these. Every passion has a pathway." } },
   { id:'funfact_nexus', type:'funfact', funfactData:{ number:"8", label:"International exchanges every year", subtitle:"From Hanoi to New Zealand, Estonia to Bali — Beattyians explore the world." } },
   { id:'fold_i', type:'fold', title:"Fold with us · I", desc:"International & Industry — the sail.", fold:{letter:'I', name:'International & Industry', sub:'The Sail', from:3, to:6} },
+  { id:'deck_d', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRIJppB8CD0rLo6qLaE4eiXeJHcYviqju1Gf3QChKnv7XsJY2cfYQ0eU8M7pSf5Bos2DcyuIxl6ZCPX/pubembed?start=false&loop=false&delayms=60000" },
   { id:'nexus_global', type:'globe', title:"Exploring New Skies, Building Ties", desc:"NEXUS@BTY international exchanges. Choose the one that calls to you — your bee lands on the globe.",
      nexusData:{ type:'global', options:[ {id:'GeoBali',text:'Bali (Geography)'},{id:'LitBali',text:'Bali (Literature)'},{id:'NZ',text:'New Zealand'},{id:'Korea',text:'South Korea (A.I.)'},{id:'MiharaJapan',text:'Japan (Social Sciences)'},{id:'MutsuzawaJapan',text:'Japan (STEM)'},{id:'Estonia',text:'Estonia (Cyber)'},{id:'Hanoi',text:'Vietnam (Hanoi)'} ] } },
+  { id:'deck_d2', type:'slide' },   // native only: the industry half of the NEXUS deck, before the map (the Google deck_d holds both halves)
   { id:'nexus_local', type:'industry_map', title:"Dive into the Wonders of Work", desc:"NEXUS@BTY industry attachments across Singapore. Where would you thrive?",
      // Real places (lat, lon). Each label sits at (ax, ay) on the 1086×800 map image, joined to its dot by a leader line.
      localData:[
@@ -1209,14 +1340,13 @@ const journeySteps=[
        {id:"Journalism",  name:"Berita Harian",       lat:1.3393, lon:103.8525, ax:700, ay:282, side:'r', dx:9, dy:-7},
        {id:"TamilMurasu", name:"Tamil Murasu",        lat:1.3393, lon:103.8525, ax:705, ay:420, side:'r', dx:9, dy:9} ],
      nexusData:{ type:'local', options:[ {id:'Rockwell',text:'Rockwell Automation'},{id:'PIL',text:'PIL (Maritime)'},{id:'Journalism',text:'Berita Harian'},{id:'TamilMurasu',text:'Tamil Murasu'},{id:'Makita',text:'Makita (Mechatronics)'},{id:'ASTAR',text:'A*STAR Research'} ] } },
-  { id:'deck_d', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRIJppB8CD0rLo6qLaE4eiXeJHcYviqju1Gf3QChKnv7XsJY2cfYQ0eU8M7pSf5Bos2DcyuIxl6ZCPX/pubembed?start=false&loop=false&delayms=60000" },
   { id:'deck_e', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRxw0Yj77fW9I87q0-XgXfqwGPwdi6RPDXBHb7CMGmEJTdBhELve0N5rAg5WbtS2vivKyV5WZO9gB_m/pubembed?start=false&loop=false&delayms=60000" },
   { id:'fold_l', type:'fold', title:"Fold with us · L", desc:"Learning to Live, Learn & Love — the flag. Pull it open: a boat.", fold:{letter:'L', name:'Learning to Live, Learn & Love', sub:'The Flag', from:6, to:8} },
-  { id:'pulse_check', type:'pulse_check', title:"How's the Hive Feeling?", desc:"Tap on your phone — let's read the room." },
   { id:'set_sail', type:'fleet', title:"Set Sail, Beatty!", desc:"Every boat is a Beattyian setting sail from our Hive. Look up — here comes the fleet." },
   { id:'finale', type:'finale', title:"Our Hive of Aspirations", desc:"Every cell is a dream from someone in this room tonight." },
   { id:'deck_f', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vQx7tJCZ8s5AD5S9F7S2kNmAgfEX7KnIP6fLMQfcFCfQr4-9JeUVxFcyYRhzNtZYbBaCvLM1Wz8p1sX/pubembed?start=false&loop=false&delayms=60000" },
-  { id:'card', type:'memento', title:"Your Journey Begins", desc:"Check your phone for your personal Beatty Compass Card." },
+  { id:'card', type:'memento', title:"Your Journey Begins", desc:"Check your phone: your Beatty Boarding Pass." },
+  { id:'deck_tail', type:'slide' }, // native only: thank you, FAQs, getting here, links. Phones stay on their card.
 ];
 
 /* ---------- What the phone shows alongside each slide ----------
@@ -1229,7 +1359,7 @@ const CHAPTER_OF={ compass:'Into the Hive', video_intro:'Who we are', deck_a:'Wh
   funfact_cca:'Passions', fold_a:'Passions', poll_cca:'Passions', deck_c:'Passions',
   poll_nexus_count:'NEXUS@BTY', poll_industry:'NEXUS@BTY', funfact_nexus:'NEXUS@BTY', fold_i:'NEXUS@BTY', nexus_global:'NEXUS@BTY', nexus_local:'NEXUS@BTY', deck_d:'NEXUS@BTY',
   deck_e:'Your pathway', fold_l:'Set sail', pulse_check:'Set sail', set_sail:'Set sail', finale:'Set sail',
-  deck_f:'Your journey', card:'Your journey' };
+  deck_f:'Your journey', card:'Your journey', deck_d2:'NEXUS@BTY', deck_tail:'Your journey' };
 const PHONE_CARD={
   deck_a:{ title:'', keys:[] },   // e.g. title:'Welcome to Beatty', keys:['Est. 1953 · named after Admiral Beatty', '…', '…']
   deck_b:{ title:'', keys:[] },
@@ -1583,6 +1713,7 @@ function renderContent(step){
     case 'memento': return renderClosing(false);
     case 'video': return `<div style="width:100%; height:100%; background:#000; position:relative; display:flex; align-items:center; justify-content:center">${iframeLoading()}<iframe src="${step.url}" style="width:100%; height:100%; border:0; position:relative; z-index:1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`;
     case 'slide': if(deckFor(step)) return renderScene(step);
+      if(!step.url) return `<div class="wrap" style="width:100%">${renderClosing(true)}</div>`;
       return `<div style="width:100%; height:100%; background:#000; position:relative">${iframeLoading()}<iframe src="${step.url}" style="width:100%; height:100%; border:0; position:relative; z-index:1" allowfullscreen></iframe></div>`;
     default: return '';
   }
@@ -1593,11 +1724,11 @@ const CARD_URL='https://go.gov.sg/probeatty', CARD_URL_LABEL='beattysec.moe.edu.
 const WHY_BEATTY=[['8','international exchanges'],['6','industry attachments'],['17','CCAs to belong to']];
 function renderClosing(thanks){
   return `<div class="closing">
-    <div class="cl-phone"><div class="cl-screen"><img src="card-sample.jpg" alt="A Beatty Compass Card"></div><span class="cl-tag">${BTY.icon('phone')} On every phone now</span></div>
+    <div class="cl-phone"><div class="cl-screen"><img src="card-sample.jpg" alt="A Beatty Boarding Pass"></div><span class="cl-tag">${BTY.icon('phone')} On every phone now</span></div>
     <div class="cl-side">
       <p class="eyebrow">${thanks?'Thank you for sailing with us':'Your journey begins'}</p>
       <h2 class="stage-title">Make Beatty your<br><span class="gold">1st choice</span></h2>
-      <p class="stage-sub">Your Compass Card is on your phone — your boat, your bee, your course. Save it, share it, and bring it to the Hive booth.</p>
+      <p class="stage-sub">Your Boarding Pass is on your phone: from P6 to your dream, by way of Beatty. Save it, and bring it to S1 Posting.</p>
       <div class="cl-why">${WHY_BEATTY.map(([n,t])=>`<p><b>${n}</b><span>${t}</span></p>`).join('')}</div>
       <div class="cl-cta">
         <span class="cl-qr">${BTY.qrSVG(CARD_URL,{label:'Explore Beatty'})}</span>
@@ -2080,6 +2211,7 @@ let sceneIdx=0;
 const escH=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const CH_ICON={ 'Who we are':'school', 'Our values':'heart', 'Passions':'spark', 'NEXUS@BTY':'globe', 'Your pathway':'explorer', 'Your journey':'wave' };
 const askId=s=>s.id||('q_'+String(s.question||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').slice(0,30));   // an ask without an id still gets a stable one
+function stepGone(st){ return st && st.type==='slide' && !deckFor(st) && !st.url; }   // nothing to show: the journey skips it
 function curSlide(){ const st=journeySteps[currentStep], d=deckFor(st); return d ? d.slides[Math.min(sceneIdx,d.slides.length-1)] : null; }
 
 /* What phones show beside each slide (kept small: it rides in the show's saved state). */
@@ -2110,11 +2242,15 @@ function phoneFor(s){
     case 'pins':      return { t:'keys', title:s.title||'', keys:(s.pins||[]).map(p=>p.label).slice(0,7) };
     case 'stairs':    return { t:'point', icon:'arrow', title:s.title||'', line:(s.right&&s.right.caption)||'' };
     case 'mix':       return { t:'point', icon:'school', title:s.title||'', line:s.foot||'' };
+    case 'crest':     return { t:'keys', title:s.title||'', keys:(s.items||[]).map(x=>x.title) };
+    case 'slope':     return { t:'keys', title:s.title||'', keys:(s.mark||[]).map(m=>{ const c=s.cols||[]; const r=c.map(col=>col.items.findIndex(t=>t.toLowerCase()===m.toLowerCase())+1); return m+': '+r.map((n,i)=>(c[i].head.replace(/^In /,''))+' #'+(n||'–')).join(', '); }) };
+    case 'tiebreak':  return { t:'keys', title:'Tie breakers', keys:['1 · Citizenship','2 · Choice order of schools','3 · Computerised balloting'] };
+    case 'quotes':    return { t:'point', icon:'', title:s.title||'', line:'' };
     case 'live':      return { t:'look', icon:s.show==='bees'?'bee':s.show==='picks'?'globe':s.show==='fleet'?'sail':'eye', title:s.show==='fleet'?'The fleet tonight':(s.title||''), line:'Live on the big screen. You are part of this.' };
   }
   return null;
 }
-function sceneState(step){ const d=deckFor(step); if(!d) return null; const i=Math.min(sceneIdx,d.slides.length-1); return JSON.parse(JSON.stringify({ deck:step.id, i, n:d.slides.length, phone:phoneFor(d.slides[i]) || null })); }   // no undefined fields: the database refuses them
+function sceneState(step){ const d=deckFor(step); if(!d) return null; const i=Math.min(sceneIdx,d.slides.length-1); return JSON.parse(JSON.stringify({ deck:step.id, i, n:d.slides.length, phone:d.keepCard?null:(phoneFor(d.slides[i]) || null), keep:d.keepCard?1:0 })); }   // no undefined fields: the database refuses them
 
 /* ---------- drawing ---------- */
 function renderScene(step){
@@ -2125,10 +2261,75 @@ function renderScene(step){
     <div class="sc-dots" id="scDots">${d.slides.map((_,i)=>`<i data-i="${i}"></i>`).join('')}</div>
   </div>`;
 }
-const D_=(ms)=>` style="--d:${ms}ms"`;
+const D_=(ms)=>` style="--d:${Math.round(Math.min(ms,1200)/3)}ms"`;   // text is on screen within half a second
 const IMG=p=>'deck/img/'+String(p||'').replace(/^\/+/,'');
+const AR=p=>{ const z=(window.BTY_IMG_SIZES||{})[String(p||'').replace(/^\/+/,'')]; return z ? z[0]/z[1] : 1.5; };
+// A whole photo: laid out by fitPhotos() at its true proportions, so no one is ever cropped out.
+const FIG=x=>{ x=typeof x==='string'?{src:x}:x; return `<figure data-ar="${AR(x.src).toFixed(4)}"><img src="${IMG(x.src)}" alt="${escH(x.cap||'')}">${x.cap?`<figcaption>${escH(x.cap)}</figcaption>`:''}</figure>`; };
+/* Lay photos out whole inside a box: try every way of splitting them into 1 to 4 rows (in order),
+   size each row so its photos fill the width at their own aspect ratios, scale to fit the height,
+   and keep the arrangement that covers the most area. Centred, nothing cropped. */
+function fitPhotos(box){
+  const figs=[...box.children].filter(e=>e.tagName==='FIGURE'); if(!figs.length) return;
+  const W=box.clientWidth, H=box.clientHeight; if(!W||!H) return;
+  const g=Math.max(8,Math.round(W*.008)), A=figs.map(f=>+f.dataset.ar||1.5), n=A.length;
+  let best=null;
+  const tryRows=(cuts)=>{ const rows=[]; let a=0; for(const c of [...cuts,n]){ rows.push(A.slice(a,c)); a=c; }
+    const hs=rows.map(r=>(W-g*(r.length-1))/r.reduce((x,y)=>x+y,0)), tot=hs.reduce((x,y)=>x+y,0)+g*(rows.length-1);
+    const k=Math.min(1,H/tot), area=k*k*rows.reduce((sum,r,i)=>sum+hs[i]*hs[i]*r.reduce((x,y)=>x+y,0),0);
+    if(!best || area>best.area*1.001) best={rows,hs,k,tot,area}; };
+  const comb=(start,left,cuts)=>{ if(left===0){ tryRows(cuts); return; } for(let c=start;c<=n-left;c++) comb(c+1,left-1,[...cuts,c]); };
+  for(let r=1;r<=Math.min(4,n);r++) comb(1,r-1,[]);
+  const {rows,hs,k,tot}=best; let y=(H-k*tot)/2, idx=0;
+  rows.forEach((r,ri)=>{ const h=hs[ri]*k, rw=r.reduce((s2,a)=>s2+a*h,0)+g*(r.length-1); let x=(W-rw)/2;
+    r.forEach(a=>{ const f=figs[idx++]; Object.assign(f.style,{position:'absolute',left:x+'px',top:y+'px',width:(a*h)+'px',height:h+'px'}); x+=a*h+g; });
+    y+=h+g; });
+  box.classList.add('fitted');
+}
+addEventListener('resize',()=>document.querySelectorAll('#scBody .fit-box').forEach(fitPhotos));
 const DREAM_TINTS=['#5B7BFF','#FF8A3D','#FF4D52','#3FBF5A','#FFD23F','#FF9A3D'];
 function rainbowText(t, tints){ const c=tints||DREAM_TINTS; let k=0; return [...String(t||'')].map(ch=>ch===' '?' ':`<span style="color:${c[(k++)%c.length]}">${escH(ch)}</span>`).join(''); }
+// A day at Beatty: where in the day this part sits (a sun travels along the day).
+function dayBar(part){ const segs=[['morning','Morning','Lessons'],['afternoon','Afternoon','CCAs and enrichment']];
+  return `<div class="day-bar" data-part="${escH(part)}">${segs.map(g=>`<div class="db-seg${g[0]===part?' on':''}"><b>${g[1]}</b><span>${g[2]}</span></div>`).join('')}<span class="db-start">7.30am</span><span class="db-sun">${BTY.icon('spark','',1.6)}</span></div>`; }
+// MOE's simplified tie breaker example (from the original slide), worked through in four columns.
+const TIE_STUDENTS=[{id:'jane',name:'Jane',cit:'Singapore Citizen',pts:'16 pts',choices:'1) Sch A'},{id:'bryan',name:'Bryan',cit:'Singapore Citizen',pts:'20 pts',choices:'1) Sch B'},{id:'mary',name:'Mary',cit:'Singapore Citizen',pts:'20 pts',choices:'1) Sch A 2) Sch B 3) Sch C'},{id:'alan',name:'Alan',cit:'Permanent Resident',pts:'20 pts',choices:'1) Sch A 2) Sch B 3) Sch D'},{id:'rina',name:'Rina',cit:'Permanent Resident',pts:'20 pts',choices:'1) Sch A 2) Sch B 3) Sch D 4) Sch E'}];
+const TIE_STAGES=[
+  {head:'Better scores are posted first', boxes:[{row:'1', text:'Jane has a better PSLE score.', to:[['jane','A']]},{row:'2 / span 4', text:'Bryan, Mary, Alan and Rina have the same score. With School A full, they vie for the last place in their next choice, School B.'}]},
+  {head:'Tie breaker 1: Citizenship', boxes:[{row:'2 / span 2', text:'Bryan and Mary are Singapore Citizens: they have priority for School B.'},{row:'4 / span 2', text:'Alan and Rina are Permanent Residents: they are considered for their next choice, School D.'}]},
+  {head:'Tie breaker 2: Choice order', boxes:[{row:'2', text:'Bryan ranked School B higher than Mary.', to:[['bryan','B']]},{row:'3', text:'School B is now full.', to:[['mary','C']]},{row:'4 / span 2', text:'Alan and Rina both ranked School D third.'}]},
+  {head:'Tie breaker 3: Computerised balloting', boxes:[{row:'4', text:'The ballot gives Alan the last place.', to:[['alan','D']]},{row:'5', text:'School D is now full.', to:[['rina','E']]}]}];
+/* Motion that explains, run once when a slide paints (nothing waits for a press). */
+function animateSlide(s, body){
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const T=(fn,ms)=>setTimeout(()=>{ if(body.isConnected) fn(); }, reduce?0:ms);
+  if(s.kind==='crest'){ const n=(s.items||[]).length;
+    for(let i=0;i<n;i++) T(()=>{ body.querySelectorAll('.cr-list li').forEach((li,k)=>{ li.classList.toggle('now',k===i); if(k<=i) li.classList.add('lit'); });
+      body.querySelectorAll('.cr-ring').forEach((r,k)=>{ r.classList.toggle('now',k===i); if(k<=i) r.classList.add('lit'); }); }, 400+i*1400);
+    T(()=>{ body.querySelectorAll('.cr-list li, .cr-ring').forEach(e=>{ e.classList.remove('now'); e.classList.add('lit','done'); }); }, 400+n*1400); }
+  if(s.kind==='stairs'){ body.querySelectorAll('.sc-stairs .st').forEach((st,si)=>{ const path=st.querySelector('path'), dot=st.querySelector('.climber'); if(!path||!dot) return;
+      const len=path.getTotalLength(), big=path.classList.contains('big'), t0=performance.now(), dur=big?5200:5200;
+      // Small stairs: one steady pace. Big stairs: a burst up each riser, then a long stall on the flat.
+      const prog=t=>{ if(!big) return t; const steps=(s.left&&s.left.steps)||3, seg=1/steps, k=Math.min(steps-1,Math.floor(t/seg)), f=(t-k*seg)/seg; const rise=.5/steps; return k*seg + (f<.12 ? (f/.12)*rise : rise + Math.max(0,(f-.7)/.3)*(seg-rise)); };
+      const tick=now=>{ if(!st.isConnected) return; const t=Math.min(1,(now-t0)/dur), p=path.getPointAtLength(prog(t)*len); dot.setAttribute('cx',p.x); dot.setAttribute('cy',p.y); if(t<1) requestAnimationFrame(tick); };
+      const p0=path.getPointAtLength(0); dot.setAttribute('cx',p0.x); dot.setAttribute('cy',p0.y);
+      if(reduce){ const p=path.getPointAtLength(len); dot.setAttribute('cx',p.x); dot.setAttribute('cy',p.y); } else setTimeout(()=>requestAnimationFrame(tick), 400+si*150); }); }
+  if(s.kind==='mix'){ const box=body.querySelector('.sc-mixer'); if(!box) return; const W=box.clientWidth, H=box.clientHeight, nC=+box.dataset.classes, nL=+box.dataset.levels, dots=[...box.querySelectorAll('.mx-dot')];
+      const R=Math.max(14,Math.min(26,W/70)), gap=W*.02;
+      const place=(phase)=>{ const groups=phase===1?nL:nC, key=phase===1?'li':'ci', bw=(W-gap*(groups-1))/groups;
+        box.querySelectorAll(phase===1?'.mx-lvl':'.mx-box').forEach((b,i)=>Object.assign(b.style,{left:i*(bw+gap)+'px',width:bw+'px',opacity:1}));
+        box.querySelectorAll(phase===1?'.mx-box':'.mx-lvl').forEach(b=>b.style.opacity=0);
+        const colsN=Math.max(3,Math.floor((bw-36)/(R*2.6))), cnt={}; dots.forEach(d=>{ const g=+d.dataset[key]; cnt[g]=(cnt[g]||0)+1; });
+        const rowsMax=Math.max(...Object.values(cnt).map(c=>Math.ceil(c/colsN))), top0=phase===1?58:26, bh=top0+rowsMax*R*2.6+16, y0=Math.max(0,(H-bh)/2);
+        box.querySelectorAll(phase===1?'.mx-lvl':'.mx-box').forEach(b=>Object.assign(b.style,{top:y0+'px',height:bh+'px'}));
+        const per={}; dots.forEach(d=>{ const g=+d.dataset[key]; const k=per[g]=(per[g]||0)+1, c=(k-1)%colsN, r=Math.floor((k-1)/colsN), rowN=Math.min(colsN, cnt[g]-r*colsN), off=(bw-rowN*R*2.6+R*.6)/2;
+          Object.assign(d.style,{width:R*2+'px',height:R*2+'px',left:(g*(bw+gap)+off+c*R*2.6)+'px',top:(y0+top0+r*R*2.6)+'px'}); });
+        body.querySelector('.mx-phase')?.setAttribute('data-p',phase); };
+      place(1); T(()=>place(2), 2600); }
+  if(s.kind==='tiebreak'){ const cols=body.querySelectorAll('.tb-col');
+    cols.forEach((c,i)=>T(()=>{ c.classList.add('on'); c.querySelectorAll('.tb-res').forEach(r=>{ const k=body.querySelector(`.tb-kid[data-k="${r.dataset.k}"]`); if(k){ k.classList.add('done'); k.querySelector('.tb-to').textContent=r.textContent.split('→')[1].trim(); } }); }, 600+i*2400)); }
+  if(s.kind==='cover' && s.day){ T(()=>body.querySelector('.day-bar')?.classList.add('go'), 500); }
+}
 function nexusLogo(){ return `<svg class="nx-logo" viewBox="0 0 300 300" aria-label="NEXUS@BTY"><defs><path id="nxTop" d="M40 150 A110 110 0 0 1 260 150"/><path id="nxBot" d="M30 150 A120 120 0 0 0 270 150"/></defs>
   <circle cx="150" cy="150" r="92" fill="none" stroke="#EC3237" stroke-width="5" pathLength="100" class="nx-ring"/>
   <path d="M95 95 L205 205 M205 95 L95 205" stroke="#EC3237" stroke-width="12" stroke-linecap="round" pathLength="100" class="nx-x"/>
@@ -2154,35 +2355,40 @@ function slideHTML(s){
         const num=`<span class="n${String(x.n).length>4?' sm':''}" data-count="${escH(x.n)}">${escH(x.n)}${x.suffix?`<small>${escH(x.suffix)}</small>`:''}</span>`;
         const big = x.ring!=null ? `<div class="sc-ring"><svg viewBox="0 0 100 100"><circle class="trk" cx="50" cy="50" r="44"/><circle class="arc" cx="50" cy="50" r="44" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" data-ring="${+x.ring}"/></svg>${num}</div>` : num;
         return `<div class="sc-stat bi"${D_(180+i*200)}>${big}<span class="l">${escH(x.label)}</span></div>`; }).join('')}</div>`;
-    case 'steps': { const n=(s.items||[]).length; return `${T(s.title)}<div class="sc-steps"${cols(n)}>${s.items.map((x,i)=>`<div class="sc-step bi"${D_(300+i*260)}>
+    case 'steps': { const n=(s.items||[]).length; return `${T(s.title)}<div class="sc-steps travel" style="grid-template-columns:repeat(${n},1fr); --n:${n}"><span class="st-marker"></span>${s.items.map((x,i)=>`<div class="sc-step arrive" style="--d:${300+i*900}ms">
         <span class="tag">${escH(x.tag||i+1)}</span><h3>${escH(x.title)}</h3>${x.body?`<p>${escH(x.body)}</p>`:''}${x.who?`<span class="who">${BTY.icon(/all/i.test(x.who)?'school':'spark')}${escH(x.who)}</span>`:''}</div>`).join('')}</div>`; }
     case 'acronym': { const n=(s.letters||[]).length; return `${T(s.title)}<div class="sc-acro"${cols(n)}>${s.letters.map((l,i)=>`<div class="sc-let bi"${D_(220+i*190)}>
         <span class="L"${s.tints?` style="color:${s.tints[i%s.tints.length]}"`:''}>${escH(l[0])}</span><span class="w">${escH(l[1]||'')}</span>${l[2]?`<span class="x">${escH(l[2])}</span>`:''}</div>`).join('')}</div>`; }
     case 'quote': { const long=String(s.quote||'').length>200 ? ' long' : '';
       const q=`<div class="sc-quote${long}">${s.title?`<p class="eyebrow bi">${escH(s.title)}</p>`:''}<div class="qm bi">“</div><blockquote class="bi"${D_(140)}>${escH(s.quote)}</blockquote>${s.by?`<cite class="bi"${D_(420)}>${escH(s.by)}</cite>`:''}
         ${s.also?`<div class="q2 bi"${D_(700)}><blockquote>${escH(s.also.quote)}</blockquote>${s.also.by?`<cite>${escH(s.also.by)}</cite>`:''}</div>`:''}</div>`;
-      return s.img ? `<div class="sc-qimg"><figure class="bi${s.fit==='contain'?' contain':''}"${D_(100)}><img src="${IMG(s.img)}" alt="" style="object-position:${escH(s.pos||'50% 40%')}"></figure>${q}</div>` : q; }
+      return s.img ? `<div class="sc-qimg"><div class="q-media fit-box bi"${D_(100)}>${FIG(s.img)}</div>${q}</div>` : q; }
     case 'bars': { const g=s.groups||[]; const max=Math.max(1,...g.flatMap(x=>x.rows.map(r=>+r[1]||0)));
       return `${T(s.title)}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<div class="sc-charts" style="--cols:${g.length}">${g.map((x,gi)=>`<div class="sc-chart bi"${D_(240+gi*200)}>
         <h4>${escH(x.label)}</h4><div class="sc-rows">${x.rows.map(r=>`<div class="sc-row${(+r[1]||0)===Math.max(...x.rows.map(q=>+q[1]||0))?' win':''}" title="${escH(r[0])}: ${+r[1]} ${escH(s.unit||'')}"><span class="l">${escH(r[0])}</span><span class="trk"><i data-w="${((+r[1]||0)/max*100).toFixed(1)}"></i></span><b class="v">${+r[1]}${escH(s.suffix||'')}</b></div>`).join('')}</div></div>`).join('')}</div>`; }
     /* ---------- photos and pages (Phase 11) ---------- */
     case 'cover': { const tl=s.rainbow ? rainbowText(s.title, s.tints) : escH(s.title);
-      return `<div class="sc-bleed sc-cover${s.img?'':' plain'}${s.align==='center'?' center':''}">
-        ${s.img?`<div class="cv-bg"><img class="kb" src="${IMG(s.img)}" alt="" style="object-position:${escH(s.pos||'50% 50%')}"></div><div class="cv-wash"></div>`:''}
+      const bg = !s.img ? '' : s.whole
+        ? `<img class="ph-blur" src="${IMG(s.img)}" alt=""><div class="cv-area fit-box">${FIG(s.img)}</div><div class="cv-wash side"></div>`
+        : `<div class="cv-bg"><img src="${IMG(s.img)}" alt="" style="object-position:${escH(s.pos||'50% 50%')}"></div><div class="cv-wash"></div>`;
+      return `<div class="sc-bleed sc-cover${s.img?'':' plain'}${s.whole?' whole':''}${s.day?' has-day':''}${s.align==='center'?' center':''}">
+        ${bg}${s.day?dayBar(s.day):''}
         <div class="cv-txt">${s.crest?`<img class="cv-crest bi" src="${IMG('a/crest.png')}" alt="Beatty crest">`:''}
           ${s.eyebrow?`<p class="eyebrow bi"${D_(120)}>${escH(s.eyebrow)}</p>`:''}
           <h2 class="cv-h bi${s.rainbow?' rainbow':''}"${D_(220)}>${tl}</h2>
           ${s.sub?`<p class="cv-sub bi"${D_(520)}>${escH(s.sub)}</p>`:''}</div></div>`; }
-    case 'photo': return `<div class="sc-bleed sc-photo${s.fit==='contain'?' contain':''}">
-        ${s.fit==='contain'?`<img class="ph-blur" src="${IMG(s.img)}" alt="">`:''}
-        <img class="ph-img${s.fit==='contain'?'':' kb'}" src="${IMG(s.img)}" alt="${escH(s.title||'')}" style="object-position:${escH(s.pos||'50% 50%')}">
-        ${(s.title||s.caption)?`<div class="ph-cap bi"${D_(500)}>${s.eyebrow?`<p class="eyebrow">${escH(s.eyebrow)}</p>`:''}${s.title?`<h3>${escH(s.title)}</h3>`:''}${s.caption?`<p>${escH(s.caption)}</p>`:''}</div>`:''}</div>`;
+    case 'photo': { const cap=(s.title||s.caption);
+      return `<div class="sc-bleed sc-photo${cap?' has-band':''}"><img class="ph-blur" src="${IMG(s.img)}" alt="">
+        <div class="ph-area fit-box">${FIG(s.img)}</div>
+        ${cap?`<div class="ph-band bi"${D_(200)}>${s.eyebrow?`<p class="eyebrow">${escH(s.eyebrow)}</p>`:''}${s.title?`<h3>${escH(s.title)}</h3>`:''}${s.caption?`<p>${escH(s.caption)}</p>`:''}</div>`:''}</div>`; }
     case 'gallery': { const im=(s.imgs||[]).map(x=>typeof x==='string'?{src:x}:x), n=im.length;
       return `${T(s.title, s.sub?' sm tight':' sm')}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}
-        <div class="sc-gal g${Math.min(n,7)}">${im.map((x,i)=>`<figure class="bi${x.fit==='contain'?' contain':''}"${D_(200+i*110)}><img src="${IMG(x.src)}" alt="${escH(x.cap||'')}" style="object-position:${escH(x.pos||'50% 40%')}">${x.cap?`<figcaption>${escH(x.cap)}</figcaption>`:''}</figure>`).join('')}</div>
-        ${s.note?`<p class="sc-note bi"${D_(400+n*110)}>${escH(s.note)}</p>`:''}`; }
+        <div class="sc-gal fit-box bi"${D_(160)}>${im.map(FIG).join('')}</div>
+        ${s.note?`<p class="sc-note bi"${D_(300)}>${escH(s.note)}</p>`:''}`; }
     case 'feature': { const im=(s.imgs||(s.img?[s.img]:[])).map(x=>typeof x==='string'?{src:x}:x);
-      const media = `<div class="ft-media${s.round?' round':''}${s.fit==='contain'?' contain':''} m${Math.min(im.length,4)} bi"${D_(140)}>${im.slice(0,4).map(x=>`<figure${x.fit==='contain'?' class="contain"':''}><img src="${IMG(x.src)}" alt="${escH(x.cap||'')}" style="object-position:${escH(x.pos||'50% 40%')}">${x.cap?`<figcaption>${escH(x.cap)}</figcaption>`:''}</figure>`).join('')}</div>`;
+      const media = s.round
+        ? `<div class="ft-media round bi"${D_(140)}>${im.slice(0,1).map(x=>`<figure><img src="${IMG(x.src)}" alt="" style="object-position:${escH(x.pos||s.pos||'50% 30%')}"></figure>`).join('')}</div>`
+        : `<div class="ft-media fit-box bi"${D_(140)}>${im.slice(0,4).map(FIG).join('')}</div>`;
       const items=(s.items||[]).map((x,i)=>{ const o=typeof x==='string'?{body:x}:x; return `<li class="bi"${D_(320+i*140)}>${o.icon?`<span class="fi">${BTY.icon(o.icon)}</span>`:''}<div>${o.title?`<b>${escH(o.title)}</b>`:''}${o.body?`<span>${escH(o.body)}</span>`:''}</div></li>`; }).join('');
       const txt = `<div class="ft-txt">${s.eyebrow?`<p class="eyebrow bi"${D_(80)}>${escH(s.eyebrow)}</p>`:''}${s.title?`<h2 class="sc-t sm left bi"${D_(100)}>${escH(s.title)}</h2>`:''}${s.sub?`<p class="ft-sub bi"${D_(200)}>${escH(s.sub)}</p>`:''}
         ${items?`<ul class="ft-list">${items}</ul>`:''}${(s.tags||[]).length?`<div class="ft-tags bi"${D_(500)}>${s.tags.map(t=>`<span>${escH(t)}</span>`).join('')}</div>`:''}${s.note?`<p class="sc-note left bi"${D_(600)}>${escH(s.note)}</p>`:''}</div>`;
@@ -2194,26 +2400,51 @@ function slideHTML(s){
         ${s.note?`<p class="sc-note bi"${D_(900)}>${escH(s.note)}</p>`:''}`; }
     case 'venn': { const it=s.items||[];
       return `${T(s.title,' sm')}<div class="sc-venn">
-        <div class="vn-c">${it.slice(0,4).map((x,i)=>`<span class="ring r${i} bi" style="--d:${200+i*180}ms; --c:${x.color||['#4F7BD9','#E07B39','#E3B341','#8A8F9E'][i]}"><b>${escH(x.tag||'')}</b></span>`).join('')}<span class="core bi"${D_(950)}>${escH(s.centre||'BTY')}</span></div>
-        ${it.slice(0,4).map((x,i)=>`<div class="vn-q q${i} bi"${D_(420+i*180)}><h4>${escH(x.title)}</h4><p>${escH(x.q||'')}</p></div>`).join('')}
-      </div>${s.foot?`<p class="vn-foot bi"${D_(1200)}>${escH(s.foot)}</p>`:''}`; }
+        <div class="vn-c">${it.slice(0,4).map((x,i)=>`<span class="ring r${i} fly" style="--d:${250+i*650}ms; --c:${x.color||['#4F7BD9','#E07B39','#E3B341','#8A8F9E'][i]}"><b>${escH(x.tag||'')}</b></span>`).join('')}<span class="core arrive" style="--d:${250+4*650}ms">${escH(s.centre||'BTY')}</span></div>
+        ${it.slice(0,4).map((x,i)=>`<div class="vn-q q${i} arrive" style="--d:${450+i*650}ms"><h4>${escH(x.title)}</h4><p>${escH(x.q||'')}</p></div>`).join('')}
+      </div>${s.foot?`<p class="vn-foot arrive" style="--d:${450+4*650}ms">${escH(s.foot)}</p>`:''}`; }
     case 'table': return `${T(s.title,' sm')}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<table class="sc-table bi"${D_(260)}>
         ${s.head?`<thead><tr>${s.head.map(h=>`<th>${escH(h)}</th>`).join('')}</tr></thead>`:''}<tbody>${(s.rows||[]).map(r=>`<tr>${r.map((c,ci)=>`<td${ci===0&&c===''?' class="cont"':''}>${escH(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>
         ${s.note?`<p class="sc-note bi"${D_(500)}>${escH(s.note)}</p>`:''}`;
     case 'links': return `${T(s.title,' sm')}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<div class="sc-links">${(s.items||[]).map((x,i)=>`<div class="lk bi"${D_(220+i*160)}>
         <span class="qr">${BTY.qrSVG(x.url,{label:x.label})}</span>${x.icon?`<span class="li">${BTY.icon(x.icon)}</span>`:''}<b>${escH(x.label||'')}</b><span>${escH(String(x.url).replace(/^https?:\/\//,''))}</span></div>`).join('')}</div>`;
     case 'logos': return `${T(s.title,' sm')}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<div class="sc-logos">${(s.items||[]).map((x,i)=>`<div class="lg bi"${D_(200+i*110)} title="${escH(x.name||'')}"><img src="${IMG(x.img)}" alt="${escH(x.name||'')}"></div>`).join('')}</div>`;
-    case 'pins': return `<div class="sc-pins">${s.title?`<h2 class="sc-t sm pins-t bi"${D_(60)}>${escH(s.title)}</h2>`:''}<div class="pn-map"><img src="${IMG(s.img)}" alt="">
-        ${(s.pins||[]).map((p,i)=>`<span class="pn bi" style="left:${p.x}%; top:${p.y}%; --d:${300+i*170}ms">${BTY.icon('pin','',2)}</span><div class="pn-l bi" style="left:${p.lx}%; top:${p.ly}%; --d:${400+i*170}ms"><b>${escH(p.label)}</b>${p.sub?`<span>${escH(p.sub)}</span>`:''}</div>`).join('')}</div></div>`;
+    case 'pins': { const hm=s.home; const arcs=hm?(s.pins||[]).map((p,i)=>{ const mx=(hm.x+p.x)/2, my=Math.min(hm.y,p.y)-Math.max(8,Math.abs(p.x-hm.x)*.35); return `<path class="pn-arc" style="--d:${300+i*700}ms" d="M${hm.x} ${hm.y} Q ${mx} ${my} ${p.x} ${p.y}" pathLength="100"/>`; }).join(''):'';
+      return `<div class="sc-pins">${s.title?`<h2 class="sc-t sm pins-t bi"${D_(60)}>${escH(s.title)}</h2>`:''}<div class="pn-map" style="aspect-ratio:${AR(s.img).toFixed(4)}"><img src="${IMG(s.img)}" alt="">
+        ${hm?`<svg class="pn-arcs" viewBox="0 0 100 100" preserveAspectRatio="none">${arcs}</svg><span class="pn-home" style="left:${hm.x}%; top:${hm.y}%"><i></i><b>${escH(hm.label||'Beatty, Singapore')}</b></span>`:''}
+        ${(s.pins||[]).map((p,i)=>{ const t=hm?1000+i*700:300+i*170; return `<span class="pn arrive" style="left:${p.x}%; top:${p.y}%; --d:${t}ms">${BTY.icon('pin','',2)}</span><div class="pn-l arrive" style="left:${p.lx}%; top:${p.ly}%; --d:${t+120}ms"><b>${escH(p.label)}</b>${p.sub?`<span>${escH(p.sub)}</span>`:''}</div>`; }).join('')}</div></div>`; }
+    /* ---------- Phase 12: diagrams that explain, played once, automatically ---------- */
+    case 'crest': { const it=s.items||[];
+      return `<div class="sc-crest"><div class="cr-img bi"><img src="${IMG(s.img||'a/crest.png')}" alt="The Beatty crest">
+          <svg class="cr-rings" viewBox="0 0 100 100" preserveAspectRatio="none">${it.map((x,i)=>{ const a=x.area||[50,50,20,20]; return `<ellipse class="cr-ring" data-i="${i}" cx="${a[0]}" cy="${a[1]}" rx="${a[2]}" ry="${a[3]}" pathLength="100"/>`; }).join('')}</svg></div>
+        <div class="cr-txt">${s.title?`<h2 class="sc-t sm left bi">${escH(s.title)}</h2>`:''}<ul class="cr-list">${it.map((x,i)=>`<li data-i="${i}"><b>${escH(x.title)}</b><span>${escH(x.body||'')}</span></li>`).join('')}</ul></div></div>`; }
+    case 'slope': { const C=s.cols||[], n=C.length, rows=Math.max(...C.map(c=>c.items.length)); const W=1640, H=Math.min(720, 62*rows+80), x0=10, cw=(W-20)/n, lw=Math.min(410,cw-120);
+      const ys=i=>70+i*((H-80)/Math.max(1,rows-1||1)) - (rows>1?0:0), hi=new Map((s.mark||[]).map((m,i)=>[m.toLowerCase(),i]));
+      const lines=[]; for(let c=0;c<n-1;c++) C[c].items.forEach((t,i)=>{ const j=C[c+1].items.findIndex(u=>u.toLowerCase()===t.toLowerCase()); if(j<0) return; const k=hi.get(t.toLowerCase());
+        lines.push(`<path class="sl-line${k!=null?' hi h'+k:''}" style="--c:${c}" d="M${x0+c*cw+lw+14} ${ys(i)} C ${x0+c*cw+lw+14+(cw-lw-28)/2} ${ys(i)}, ${x0+(c+1)*cw-14-(cw-lw-28)/2} ${ys(j)}, ${x0+(c+1)*cw-14} ${ys(j)}" pathLength="100"/>`); });
+      const labels=C.map((col,c)=>`<g class="sl-col" style="--c:${c}"><text class="sl-head" x="${x0+c*cw}" y="30">${escH(col.head)}</text>${col.items.map((t,i)=>{ const k=hi.get(t.toLowerCase()); return `<text class="sl-item${k!=null?' hi h'+k:''}" x="${x0+c*cw}" y="${ys(i)+8}"><tspan class="sl-n">${i+1}</tspan> ${escH(t)}</text>`; }).join('')}</g>`).join('');
+      return `${T(s.title,' sm tight')}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<svg class="sc-slope" viewBox="0 0 ${W} ${H}">${lines.join('')}${labels}</svg>${s.note?`<p class="sc-note">${escH(s.note)}</p>`:''}`; }
     case 'stairs': { const L=s.left||{}, R=s.right||{};
-      const stair=(n,w,h,cls)=>{ let d=`M10 ${h-10}`, x=10, y=h-10; const sx=(w-20)/n, sy=(h-30)/n; for(let i=0;i<n;i++){ y-=sy; d+=` L${x} ${y}`; x+=sx; d+=` L${x} ${y}`; } return `<path class="${cls}" d="${d}" pathLength="100"/>`; };
+      const stair=(n,w,h)=>{ let d=`M10 ${h-10}`, x=10, y=h-10; const sx=(w-20)/n, sy=(h-30)/n; for(let i=0;i<n;i++){ y-=sy; d+=` L${x} ${y}`; x+=sx; d+=` L${x} ${y}`; } return d; };
       return `${T(s.title,' sm')}<div class="sc-stairs">
-        <div class="st bi"${D_(200)}><svg viewBox="0 0 600 380">${stair(R.steps||12,600,380,'small')}</svg>${(R.labels||[]).map((t,i)=>`<span class="sl s${i}">${escH(t)}</span>`).join('')}<p>${escH(R.caption||'')}</p></div>
-        <div class="st bi"${D_(500)}><svg viewBox="0 0 600 380">${stair(L.steps||3,600,380,'big')}</svg>${Array.from({length:L.steps||3},(_,i)=>`<span class="ins i${i}">“${escH(L.label||'Inspiration')}”</span>`).join('')}<p>${escH(L.caption||'')}</p></div>
+        <div class="st"><svg viewBox="0 0 600 380"><path class="small" d="${stair(R.steps||12,600,380)}"/><circle class="climber" r="11"/></svg>${(R.labels||[]).map((t,i)=>`<span class="sl s${i}">${escH(t)}</span>`).join('')}<p>${escH(R.caption||'')}</p></div>
+        <div class="st"><svg viewBox="0 0 600 380"><path class="big" d="${stair(L.steps||3,600,380)}"/><circle class="climber" r="11"/></svg>${Array.from({length:L.steps||3},(_,i)=>`<span class="ins i${i}">“${escH(L.label||'Inspiration')}”</span>`).join('')}<p>${escH(L.caption||'')}</p></div>
       </div>`; }
-    case 'mix': { const C=['#3B6FD8','#E2463F','#F2C94C']; let seed=7; const rnd=()=>{ seed=(seed*9301+49297)%233280; return seed/233280; };
-      return `${T(s.title,' sm')}${s.chip?`<span class="mx-chip bi"${D_(140)}>${escH(s.chip)}</span>`:''}<div class="sc-mix">${Array.from({length:s.groups||4},(_,g)=>`<div class="mx bi"${D_(260+g*160)}>${Array.from({length:12},()=>{ const r=rnd(); return `<i style="background:${C[r<.55?0:r<.82?1:2]}"></i>`; }).join('')}</div>`).join('')}</div>
-        ${s.foot?`<p class="mx-foot bi"${D_(1000)}>${escH(s.foot)}</p>`:''}`; }
+    case 'mix': { const lv=s.levels||[['G3','#3B6FD8'],['G2','#E2463F'],['G1','#F2C94C']], cls=s.classes||[[6,3,1],[5,3,1],[5,2,2],[6,2,1]];
+      let dots=[]; cls.forEach((c,ci)=>c.forEach((cnt,li)=>{ for(let k=0;k<cnt;k++) dots.push({ci,li}); }));
+      return `${T(s.title,' sm tight')}<div class="mx-phase bi"><span class="mx-p p1">${escH(s.phase1||'Subject classes: each at their own level')}</span><span class="mx-p p2">${escH(s.phase2||'Form classes: together for the Common Core')}</span></div>
+        <div class="sc-mixer" data-classes="${cls.length}" data-levels="${lv.length}">${cls.map((_,ci)=>`<div class="mx-box" data-ci="${ci}"></div>`).join('')}${lv.map((l,li)=>`<div class="mx-lvl" data-li="${li}"><b style="background:${l[1]}"></b>${escH(l[0])}</div>`).join('')}
+          ${dots.map((d,i)=>`<i class="mx-dot" data-ci="${d.ci}" data-li="${d.li}" style="background:${lv[d.li][1]}"></i>`).join('')}</div>
+        <div class="mx-legend bi">${lv.map(l=>`<span><b style="background:${l[1]}"></b>${escH(l[0])}</span>`).join('')}<em>${escH(s.legend||'subject levels')}</em></div>
+        ${s.foot?`<p class="mx-foot">${escH(s.foot)}</p>`:''}`; }
+    case 'tiebreak': { const st=s.students||TIE_STUDENTS, cols=s.stages||TIE_STAGES;
+      const gr=r=>String(r).replace(/^(\d+)/,(m,n)=>String(+n+1));   // row 1 is the headings
+      return `${T(s.title,' sm tight wide')}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<div class="sc-tie">
+        <div class="tb-kids">${st.map(k=>`<div class="tb-kid" data-k="${k.id}"><b>${escH(k.name)}</b><span>${escH(k.cit)} · ${escH(k.pts)}</span><small>${escH(k.choices)}</small><i class="tb-to"></i></div>`).join('')}</div>
+        ${cols.map((c,ci)=>`<div class="tb-col" data-ci="${ci}"><h4>${escH(c.head)}</h4>${c.boxes.map(b=>`<div class="tb-box" style="grid-row:${gr(b.row)}"><p>${escH(b.text)}</p>${b.to?b.to.map(t=>`<span class="tb-res" data-k="${t[0]}">${escH(t[0][0].toUpperCase()+t[0].slice(1))} → School ${escH(t[1])}</span>`).join(''):''}</div>`).join('')}</div>`).join('')}
+      </div>`; }
+    case 'quotes': { const it=s.items||[];
+      return `${T(s.title,' sm tight')}<div class="sc-quotes">${s.img?`<div class="qs-media fit-box bi">${FIG(s.img)}</div>`:''}<div class="qs-grid">${it.map((x,i)=>`<blockquote class="qs-card bi"${D_(150+i*120)}><span class="qm">“</span><p>${escH(x.q)}</p>${x.by?`<cite>${escH(x.by)}</cite>`:''}</blockquote>`).join('')}</div></div>`; }
     case 'live': return liveHTML(s);
     case 'ask': return `<div class="sc-ask" style="width:min(100%,1500px); display:flex; flex-direction:column; align-items:center">
         <span class="sc-hint bi">${BTY.icon('phone')}Answer on your phone</span>${T(s.question,' sm')}
@@ -2314,6 +2545,7 @@ function paintScene(){
   body.classList.remove('sc-leave');
   body.innerHTML=slideHTML(s);
   sizeRows(body);
+  body.querySelectorAll('.fit-box').forEach(fitPhotos);
   setTxt('scNum', `${String(sceneIdx+1).padStart(2,'0')} / ${String(d.slides.length).padStart(2,'0')}`);
   document.querySelectorAll('#scDots i').forEach((el,i)=>{ el.classList.toggle('on',i===sceneIdx); el.classList.toggle('done',i<sceneIdx); });
   journeyContent.classList.toggle('respond', s.kind==='ask');            // gold frame = "phones, it's your turn"
@@ -2322,9 +2554,11 @@ function paintScene(){
   body.querySelectorAll('.sc-stat .n[data-count]').forEach((el,i)=>{ const raw=el.dataset.count, n=parseInt(raw,10); if(isNaN(n) || String(n)!==raw) return; const suf=el.querySelector('small')?.outerHTML||''; el.innerHTML='0'+suf; setTimeout(()=>countUp(el,0,n,1500,suf), 260+i*200); });
   setTimeout(()=>{ body.querySelectorAll('[data-ring]').forEach(c=>c.style.strokeDashoffset=String(100-(+c.dataset.ring||0))); body.querySelectorAll('.sc-row .trk i[data-w]').forEach((el,i)=>setTimeout(()=>el.style.width=el.dataset.w+'%', i*60)); }, 420);
   if(s.kind==='live' || s.kind==='ask') setTimeout(paintSceneLive, 40);
+  animateSlide(s, body);
   document.getElementById('scene')?.classList.toggle('bleed', s.kind==='cover' || s.kind==='photo');
   preloadSlide(d.slides[sceneIdx+1]) ; preloadSlide(journeySteps[currentStep+1] && deckFor(journeySteps[currentStep+1])?.slides[0]);
   if(isPresenter) updatePPStep();
+  const lastOne=currentStep===journeySteps.length-1 && sceneIdx===d.slides.length-1; if(!(st.type==='poll' && !st.revealed)) nextBtn.textContent=lastOne?'Finish':'Next ❯';
 }
 function gotoScene(i){
   const d=deckFor(journeySteps[currentStep]); if(!d) return;
@@ -2359,9 +2593,11 @@ const STEP_NOTES={
   nexus_local:'Phones choose an industry attachment; the map counts them.',
   fold_l:'Fold with us: L. The last two: the point up, then pull the boat open. Five folds in all.',
   pulse_check:'Read the room: phones tap a mood.',
+  deck_d2:'Industry attachments: who our students work with.',
+  deck_tail:'After the show: phones stay on their boarding pass. Questions from the floor.',
   set_sail:'Phones name their boats. When most are ready, press SET SAIL and lead the call: Non Vi! Sed Arte! Three times; the boats leave together.',
   finale:'Every cell is a word from a boat. Click a cell to hide it if needed.',
-  card:'Their Compass Card is on every phone. Ask them to save it and visit the booths. Make Beatty your 1st choice.',
+  card:'Their Boarding Pass is on every phone: their boat, their bee, their route through Beatty. Ask them to press Save now. Make Beatty your 1st choice in S1 Posting.',
 };
 const notesCh=('BroadcastChannel' in window) ? new BroadcastChannel('btx-notes') : null;
 let showStartedAt=0, stepStartedAt=0, notesStepSeen=-1;
@@ -2422,7 +2658,7 @@ function renderStep(){
   prevBtn.style.display = currentStep>0?'inline-block':'none';
   let label='Next ❯';
   if(step.type==='poll' && !step.revealed) label='Reveal Answer';
-  else if(currentStep===journeySteps.length-1) label='Finish';
+  else if(currentStep===journeySteps.length-1 && !(deckFor(step) && sceneIdx<deckFor(step).slides.length-1)) label='Finish';
   nextBtn.textContent=label;
   if(isPresenter) updatePPStep();
   updateSailBtn(step);
@@ -2455,14 +2691,19 @@ nextBtn.addEventListener('click',(e)=>{
   if(step.type==='poll' && !step.revealed){ step.revealed=true; revealPollInPlace(step); broadcastSession(); postNotes(); sfx('reveal'); launchConfetti(); return; }
   const dk=deckFor(step);
   if(dk && sceneIdx<dk.slides.length-1){ gotoScene(sceneIdx+1); return; }   // page within a native deck
-  if(currentStep<journeySteps.length-1){ currentStep++; sceneIdx=0; goRender(); }
+  let to=currentStep+1; while(to<journeySteps.length && stepGone(journeySteps[to])) to++;
+  if(to<journeySteps.length){ currentStep=to; sceneIdx=0; goRender(); }
   else { finishJourney(); }
 });
 prevBtn.addEventListener('click',(e)=>{ if(!started) return; ripple(e,prevBtn);
   const dk=deckFor(journeySteps[currentStep]);
   if(dk && sceneIdx>0){ gotoScene(sceneIdx-1); return; }
-  if(currentStep>0){ journeySteps[currentStep].revealed=false; currentStep--; const pd=deckFor(journeySteps[currentStep]); sceneIdx=pd?pd.slides.length-1:0; goRender(); } });   // back into a deck lands on its last slide
+  let to=currentStep-1; while(to>0 && stepGone(journeySteps[to])) to--;
+  if(to>=0 && to<currentStep){ journeySteps[currentStep].revealed=false; currentStep=to; const pd=deckFor(journeySteps[currentStep]); sceneIdx=pd?pd.slides.length-1:0; goRender(); } });   // back into a deck lands on its last slide
 
+window.__stepIndex=id=>journeySteps.findIndex(x=>x.id===id);
+window.__stepId=k=>(journeySteps[k]||{}).id||null;   // for the tests: a step's position by its id
+window.__jump=(id,i)=>{ const k=typeof id==='number'?id:journeySteps.findIndex(x=>x.id===id); if(k<0) return false; if(!started) beginJourney(); currentStep=k; sceneIdx=i||0; renderStep(); return true; };   // for the audit script: go straight to a step and slide
 function finishJourney(){
   journeyContent.innerHTML=`<div class="wrap" style="width:100%">${renderClosing(true)}</div>`;
   if(dbReady && isPresenter) setDoc(doc(db,"session","state"),{currentView:'end',ts:Date.now()}).catch(()=>{});

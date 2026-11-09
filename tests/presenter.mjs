@@ -1,7 +1,7 @@
 // The big screen on its own: all 26 steps render without errors (screenshot each),
 // plus the globe's controls, poll layout and the bee landing on the opening chart.
 import { startServer } from './lib/server.mjs';
-import { loadPlaywright, checker, presenter, goStep, stepNum, sleep, until, shot, decodeQR } from './lib/harness.mjs';
+import { loadPlaywright, checker, presenter, goStep, stepNum, stepIndex, sleep, until, shot, decodeQR } from './lib/harness.mjs';
 
 const { chromium } = await loadPlaywright();
 const srv = await startServer();
@@ -29,18 +29,21 @@ const pillTxt = await decodeQR(pr, '#qrPill .qr-svg');
 c.ok(pillTxt === srv.url + '/x/', 'the header QR scans to the same page');
 
 const TOTAL = await pr.$eval('#progText', e => +e.textContent.split('/')[1]);
-c.ok(TOTAL === 25, `the show has ${TOTAL} steps (The Hive Wakes is cut)`);
+c.ok(TOTAL === 26, `the show has ${TOTAL} steps (no pulse check; NEXUS deck split around the picks; a tail after the card)`);
+const AT = { poll: 1 + await stepIndex(pr, 'poll_nexus_count'), globe: 1 + await stepIndex(pr, 'nexus_global'), map: 1 + await stepIndex(pr, 'nexus_local') };
+c.ok(AT.globe === 1 + 1 + await stepIndex(pr, 'deck_d') && AT.map === 1 + 1 + await stepIndex(pr, 'deck_d2'), 'the exchange slides come before the globe, the industry slides before the map');
+c.ok(await stepIndex(pr, 'fold_s') === 2 && await stepIndex(pr, 'pulse_check') === -1, 'fold S follows the film; no pulse check');
 for (let n = 2; n <= TOTAL; n++) {
   await goStep(pr, n);
   const at = await stepNum(pr);
   if (at !== n) { c.ok(false, `reached step ${n} (at ${at})`); continue; }
-  await sleep(n === 16 ? 1200 : 500);
+  await sleep(n === AT.globe ? 1200 : 500);
   await shot(pr, 'p-' + String(n).padStart(2, '0'));
-  if (n === 12) {
+  if (n === AT.poll) {
     const q = await pr.$eval('.poll-q', e => ({ h: e.getBoundingClientRect().height, lh: parseFloat(getComputedStyle(e).lineHeight) }));
     c.ok(q.h / q.lh < 2.6, `step 12 question sits on ≤2 lines (${(q.h / q.lh).toFixed(1)})`);
   }
-  if (n === 16) {
+  if (n === AT.globe) {
     // Globe: zoom about the pointer, buttons, keys, drag, double-click, reset, limits.
     await pr.waitForSelector('#globeCanvas');
     c.ok(Math.abs(await pr.evaluate(() => window.__globe.zoom) - 1) < 0.01, 'globe opens at zoom 1');
@@ -61,7 +64,7 @@ for (let n = 2; n <= TOTAL; n++) {
     c.ok(await pr.$('.gpin[data-id="LitBali"]') && await pr.$('.gpin[data-id="GeoBali"]'), 'globe: Literature · Bali and Geography · Bali are separate pins');
     c.ok(/Bali \(Literature\)/.test(await pr.$eval('#nexusStats', e => e.textContent)), 'live choices list Bali (Literature)');
   }
-  if (n === 17) {
+  if (n === AT.map) {
     // Beatty sits in Toa Payoh beside SPH (Berita Harian, Tamil Murasu); no two labels overlap.
     const g = await pr.evaluate(() => {
       const dots = [...document.querySelectorAll('.map-frame .sgdot')].map(d => { const r = d.getBoundingClientRect(); return { home: d.classList.contains('home'), x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
