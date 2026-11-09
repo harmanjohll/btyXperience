@@ -1,5 +1,5 @@
 /* VERSION 2 of the audience app (x/v2.html). Version 1 is app.js (x/index.html).
-   === Beatty SAIL — Sailor (Participant) v7 ===
+   === Beatty SAIL: Sailor (Participant) v7 ===
    Washi craft origami · 5 folds · hanko stamps · ink trail.
 */
 
@@ -167,7 +167,7 @@ function playFoldSound() {
     } catch(e) { /* audio not supported */ }
 }
 /* ============================================================
-   THE SIX SOUNDS — all paper-coloured, all under 1.5 s. No music on the
+   THE SIX SOUNDS: all paper-coloured, all under 1.5 s. No music on the
    phone, so each fold is heard: crease slide (gain follows the finger),
    lock, chapter chime, reveal hit, departure whoosh, found-you ping.
    ============================================================ */
@@ -265,9 +265,9 @@ const HAPTIC = { tick: 18, lock: 45, chapter: [25, 40, 25], reveal: [50, 30, 100
 function hapticsProbe(buzz) {
     const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     if (ios) { if (buzz) iosTap(); return { kind: 'ios', text: 'iPhone: you’ll feel a tap on folds and taps (iOS 18 and later); the paper shakes too.' }; }
-    if (!navigator.vibrate) return { kind: 'none', text: 'This browser has no vibration — your paper shakes instead.' };
+    if (!navigator.vibrate) return { kind: 'none', text: 'This browser has no vibration: your paper shakes instead.' };
     let ok = true; if (buzz) { try { ok = navigator.vibrate(HAPTIC.test) !== false; } catch (e) { ok = false; } }
-    return ok ? { kind: 'ok', text: 'Haptics on — you should have felt a double buzz.' } : { kind: 'blocked', text: 'Vibration is off on this phone. Settings → Sound & vibration → Vibration / haptics.' };
+    return ok ? { kind: 'ok', text: 'Haptics on: you should have felt a double buzz.' } : { kind: 'blocked', text: 'Vibration is off on this phone. Settings → Sound & vibration → Vibration / haptics.' };
 }
 function hapticsLineHTML() {
     const h = hapticsProbe(false);
@@ -666,7 +666,7 @@ function spawnRipples(container) {
 }
 
 /* ============================================================
-   PAGE TRANSITION — crossfade with subtle slide
+   PAGE TRANSITION: crossfade with subtle slide
    ============================================================ */
 function transition(renderFn) {
     const current = $app.firstElementChild;
@@ -1527,10 +1527,10 @@ function renderAspiration() {
 }
 
 /* ============================================================
-   RENDER: PROCESSING — "Charting your course..."
+   RENDER: PROCESSING: "Charting your course..."
    ============================================================ */
 /* ============================================================
-   GRAND REVEAL — 3-ACT CINEMATIC
+   GRAND REVEAL: 3-ACT CINEMATIC
    Merges processing + archetype reveal into one dramatic sequence.
    Act 1 (0–2.5s): Boat sails in from left with wake particles
    Act 2 (2.5–4.5s): Light bloom, letter-by-letter name, particle burst + screen shake
@@ -1614,7 +1614,7 @@ function renderArchetypeReveal() {
    RENDER: MEMENTO CARD
    ============================================================ */
 /* ============================================================
-   THE COMPASS CARD — a proof object, and the record of the voyage.
+   THE COMPASS CARD: a proof object, and the record of the voyage.
    The boat first, large, wearing the stamps of every choice made tonight.
    Then the word, who they are in the Hive (quote, persona), the four
    S·A·I·L rows with what they chose and discovered, recommended pathways,
@@ -1641,16 +1641,16 @@ let cardFile = null, cardRendering = null;
 
 /* Who you are in the Hive — the eight bees, in Beatty's voice. */
 const BEE_PROFILES = {
-    'The Innovator':            { color: '#FFE200', quote: 'Machine Learning opened my eyes to what’s possible. Now I use data to build solutions for real problems.', persona: 'Driven by technology — you use data and problem-solving to build new and better ways of doing things.', recommended: ['A.I. @ South Korea', 'Rockwell Automation attachment', 'ALP · Think.Create.Innovate'], s: 'challenge', a: 'ai' },
-    'The Global Explorer':      { color: '#2BB3A8', quote: 'Studying abroad taught me that leadership transcends borders. Every culture has wisdom to share.', persona: 'Deep cultural curiosity — you understand the world by going out to meet it.', recommended: ['Geography @ Bali', 'Social Sciences @ Japan', 'NEXUS@BTY exchanges'], s: 'inspire', a: null },
-    'The Industry Trailblazer': { color: '#F28C28', quote: 'The best classroom I ever had was a factory floor.', persona: 'You learn by doing — hands on machines, systems and real work, and you bring it all back to school.', recommended: ['Makita Mechatronics attachment', 'PIL Maritime attachment', 'Rockwell Automation'], s: 'model', a: 'robotics' },
-    'The Community Steward':    { color: '#F26D8B', quote: 'Strength isn’t standing alone — it’s making sure nobody has to.', persona: 'You lead with heart. Empathy and mindfulness guide you — you build trust before you build plans.', recommended: ['Leaders for Life Programme', 'Peer Support · Values-in-Action', 'Student Council'], s: 'enable', a: null },
+    'The Innovator':            { color: '#FFE200', quote: 'Machine Learning opened my eyes to what’s possible. Now I use data to build solutions for real problems.', persona: 'Driven by technology: you use data and problem-solving to build new and better ways of doing things.', recommended: ['A.I. @ South Korea', 'Rockwell Automation attachment', 'ALP · Think.Create.Innovate'], s: 'challenge', a: 'ai' },
+    'The Global Explorer':      { color: '#2BB3A8', quote: 'Studying abroad taught me that leadership transcends borders. Every culture has wisdom to share.', persona: 'Deep cultural curiosity: you understand the world by going out to meet it.', recommended: ['Geography @ Bali', 'Social Sciences @ Japan', 'NEXUS@BTY exchanges'], s: 'inspire', a: null },
+    'The Industry Trailblazer': { color: '#F28C28', quote: 'The best classroom I ever had was a factory floor.', persona: 'You learn by doing: hands on machines, systems and real work, and you bring it all back to school.', recommended: ['Makita Mechatronics attachment', 'PIL Maritime attachment', 'Rockwell Automation'], s: 'model', a: 'robotics' },
+    'The Community Steward':    { color: '#F26D8B', quote: 'Strength isn’t standing alone: it’s making sure nobody has to.', persona: 'You lead with heart. Empathy and mindfulness guide you: you build trust before you build plans.', recommended: ['Leaders for Life Programme', 'Peer Support · Values-in-Action', 'Student Council'], s: 'enable', a: null },
     'The Creative Artist':      { color: '#B57BEA', quote: 'Give me a blank canvas and I’ll show you the future.', persona: 'You think in sketches, prototypes and stories. Technology is your medium, not your master.', recommended: ['Berita Harian · Tamil Murasu newsrooms', 'Design & Technology', 'Performing & Visual Arts CCAs'], s: 'inspire', a: 'creative' },
-    'The STEM Futurist':        { color: '#7FD3F7', quote: 'Every experiment is a question the world hasn’t answered yet.', persona: 'Energised by science and systems — you build tomorrow’s infrastructure one prototype at a time.', recommended: ['A*STAR Research attachment', 'STEM @ Japan', 'ALP · Machine Learning'], s: 'challenge', a: 'robotics' },
-    'The Voice Amplifier':      { color: '#EC3237', quote: 'A team becomes unstoppable when every person knows they matter.', persona: 'You lift every voice around you — by vision, by words, by making sure the quiet ones are heard.', recommended: ['Journalism @ Berita Harian', 'Debate & Public Speaking', 'Student Leadership'], s: 'encourage', a: 'creative' },
+    'The STEM Futurist':        { color: '#7FD3F7', quote: 'Every experiment is a question the world hasn’t answered yet.', persona: 'Energised by science and systems: you build tomorrow’s infrastructure one prototype at a time.', recommended: ['A*STAR Research attachment', 'STEM @ Japan', 'ALP · Machine Learning'], s: 'challenge', a: 'robotics' },
+    'The Voice Amplifier':      { color: '#EC3237', quote: 'A team becomes unstoppable when every person knows they matter.', persona: 'You lift every voice around you, by vision, by words, by making sure the quiet ones are heard.', recommended: ['Journalism @ Berita Harian', 'Debate & Public Speaking', 'Student Leadership'], s: 'encourage', a: 'creative' },
     'The Eco-Strategist':       { color: '#B5D334', quote: 'We don’t inherit the Earth from our ancestors; we borrow it from our children.', persona: 'Passionate about sustainability, green innovation and servant leadership.', recommended: ['Sustainability @ New Zealand', 'Geography @ Bali', 'Green Engineering'], s: 'enable', a: 'green' },
 };
-function beeProfile() { return BEE_PROFILES[D.bee] || { color: '#FFE200', quote: 'Non Vi Sed Arte — not by force, but by skill.', persona: 'A Beattyian: every bee has a place in the Hive, and a course of its own.', recommended: ['NEXUS@BTY exchanges', 'Industry attachments', 'Leaders for Life Programme'], s: null, a: null }; }
+function beeProfile() { return BEE_PROFILES[D.bee] || { color: '#FFE200', quote: 'Non Vi Sed Arte: not by force, but by skill.', persona: 'A Beattyian: every bee has a place in the Hive, and a course of its own.', recommended: ['NEXUS@BTY exchanges', 'Industry attachments', 'Leaders for Life Programme'], s: null, a: null }; }
 
 /* The boat wears its voyage: every choice made tonight becomes a stamp. */
 const DEST_STAMP = { Hanoi: 'hanoi', GeoBali: 'bali', LitBali: 'bali', NZ: 'nz', Korea: 'korea', MiharaJapan: 'japan', MutsuzawaJapan: 'japan', Estonia: 'estonia' };
@@ -1934,7 +1934,7 @@ function setSailTransition(onDone) {
         <div id="sailBoat" style="width:210px;height:210px;filter:drop-shadow(0 0 14px rgba(255,226,0,0.35));">${buildOrigamiSVG(c, 8, 210, extras())}</div>
         <p style="font-family:'Georgia',serif;color:var(--accent-gold);font-size:1.5rem;margin-top:6px;">Setting sail…</p>
         <p style="color:var(--text-secondary);font-size:0.82rem;margin-top:6px;letter-spacing:0.24em;text-transform:uppercase;">${(D.aspiration||'').toUpperCase()}</p>
-        <p style="color:var(--text-muted);font-size:0.7rem;margin-top:14px;">Look up — your boat is joining the fleet.</p>`;
+        <p style="color:var(--text-muted);font-size:0.7rem;margin-top:14px;">Look up: your boat is joining the fleet.</p>`;
     document.body.appendChild(ov);
     const boat = ov.querySelector('#sailBoat');
     if (!reduce) boat.animate(
@@ -1975,7 +1975,7 @@ function renderReadyToSail() {
             <h1 class="font-serif text-2xl mb-1" style="color:var(--text-primary);">${(D.aspiration || 'Set sail').toUpperCase()}</h1>
             <div class="ready-wait mt-4 mb-2">
                 <span class="ready-dot"></span>
-                <span class="text-sm" style="color:var(--text-secondary); text-wrap:balance;">Hold it — waiting for the captain's cue…</span>
+                <span class="text-sm" style="color:var(--text-secondary); text-wrap:balance;">Hold it: waiting for the captain's cue…</span>
             </div>
             <p class="text-[11px] max-w-xs" style="color:var(--text-muted);">When the whole hall sets sail together, your boat joins the fleet on the big screen. Look up.</p>
             <button id="sailNowBtn" class="nav-btn secondary mt-8" style="opacity:0;transition:opacity .5s;">Set sail now</button>
@@ -2017,7 +2017,7 @@ function showCornerBoat() {
     const waiting = Math.max(0, foldsDone(D.foldTarget) - foldsDone(D.nextFold));   // in the audience's folds (five in all)
     const grew = cornerStagePrev !== -1 && stage !== cornerStagePrev;
     el.hidden = false;
-    el.innerHTML = `<div class="cb-inner">${buildOrigamiSVG(colors(), stage, 92, extras())}${waiting ? `<span class="cb-badge">${waiting}</span>` : ''}</div><span class="cb-label">${waiting ? (waiting === 1 ? '1 fold waiting · tap' : waiting + ' folds waiting · tap') : 'Your boat'}</span>`;
+    el.innerHTML = `<div class="cb-inner">${buildOrigamiSVG(colors(), stage, 92, extras())}${waiting ? `<span class="cb-badge">${waiting}</span>` : ''}</div><span class="cb-label">${waiting ? 'Tap to fold' : 'Your boat'}</span>`;
     el.classList.toggle('waiting', waiting > 0);
     if (grew) { el.classList.add('grew'); setTimeout(() => el.classList.remove('grew'), 660); }
     cornerStagePrev = stage;
@@ -2109,7 +2109,7 @@ let lastSessionState = null;
 /* --- Folds on the passive slides --- */
 function advanceFold() {
     const fi = (D.nextFold == null) ? 0 : D.nextFold;
-    if (fi > 7) { renderLookUp('Your boat is folded — eyes on the screen'); return; }
+    if (fi > 7) { renderLookUp('Your boat is folded: eyes on the screen'); return; }
     foldFollowActive = true;
     step = FOLD_STEP_FOR_INDEX[fi];
     route();
@@ -2217,7 +2217,7 @@ function showNexus(nd) {
             <div class="q-opts mt-4">
                 ${nd.options.map(o => `<button class="answer-opt" data-nx="${o.id}" data-nt="${key}" data-ntxt="${o.text.replace(/"/g, '&quot;')}">${o.text}</button>`).join('')}
             </div>
-            <p class="q-hint">Your bee lands on the big screen — and colours your sail.</p>
+            <p class="q-hint">Your bee lands on the big screen, and colours your sail.</p>
         </div>
     </div>`;
     document.querySelectorAll('[data-nx]').forEach(b => b.addEventListener('click', () => {
@@ -2244,7 +2244,7 @@ function renderChosenNexus(type) {
         <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
             <div class="follow-check mb-2">✓</div>
             <h1 class="font-serif text-xl mb-1" style="color:var(--accent-gold);">Your bee has landed</h1>
-            <p class="text-sm mb-4" style="color:var(--text-secondary);">${pick?.text || ''} — watch the big screen</p>
+            <p class="text-sm mb-4" style="color:var(--text-secondary);">${pick?.text || ''}: watch the big screen</p>
             <div class="follow-boat">${buildOrigamiSVG(c, stage, 190, extras())}</div>
         </div>
     </div>`;
@@ -2283,11 +2283,11 @@ function showName() {
     <div class="sail-screen fade-up">
         <div class="content-zone" style="padding-top:18px;">
             <p class="q-eyebrow">${ico('sail')}Name your boat</p>
-            <h2 class="q-question">One word — what do you aspire to become?</h2>
+            <h2 class="q-question">One word: what do you aspire to become?</h2>
             <div class="origami-stage medium mx-auto my-3" id="dreamBoat" style="max-width:220px;">${buildOrigamiSVG(c, 9, 220, extras())}</div>
             <input type="text" id="dreamInput" maxlength="16" class="dream-field" placeholder="e.g. Innovator" autocomplete="off" autocapitalize="characters">
             <button class="nav-btn primary w-full mt-3 text-base uppercase tracking-wide" id="dreamBtn">Write it on the hull</button>
-            <p class="q-hint">It sails with you — and joins the Hive of aspirations.</p>
+            <p class="q-hint">It sails with you, and joins the Hive of aspirations.</p>
         </div>
     </div>`;
     const f = document.getElementById('dreamInput');
@@ -2311,7 +2311,7 @@ async function submitName() {
     renderNameWriting(w, () => { if (D.launched) renderHiveCell(); else renderReadyToSail(); });
 }
 async function submitNameGuard(w, f) {
-    if (!wordOK(w)) { f.value = ''; f.placeholder = 'Let’s keep it kind — try another word'; f.style.borderColor = '#ef4444'; feel('tick'); return false; }
+    if (!wordOK(w)) { f.value = ''; f.placeholder = 'Let’s keep it kind: try another word'; f.style.borderColor = '#ef4444'; feel('tick'); return false; }
     return true;
 }
 /* The word writes itself on the hull in handwriting, pencil scratching, and ends on a rising arpeggio. */
@@ -2377,7 +2377,7 @@ function startSailSequence(localAt) {
             <p class="text-[10px] mb-2 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">Set Sail, Beatty</p>
             <h1 class="font-serif text-2xl mb-3" id="holdWord" style="color:var(--text-primary);min-height:1.2em;">Hold your boat</h1>
             <div class="hold-boat" id="holdBoat">${buildOrigamiSVG(c, 9, 230, extras())}<div class="hold-ring"></div></div>
-            <p class="text-sm mt-4 max-w-xs" id="holdSub" style="color:var(--text-secondary);">Thumb on the boat. On the third <em style="color:var(--accent-gold);">Sed Arte</em> — let go, and look up.</p>
+            <p class="text-sm mt-4 max-w-xs" id="holdSub" style="color:var(--text-secondary);">Thumb on the boat. On the third <em style="color:var(--accent-gold);">Sed Arte</em>: let go, and look up.</p>
         </div>
     </div>`;
     let wi = 0, dimmed = false;
@@ -2420,7 +2420,7 @@ function renderAtSea() {
     <div class="sail-screen atsea-screen fade-up" id="atSea" style="--sail:${col}">
         <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
             <p class="text-[10px] mb-2 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">You've set sail</p>
-            <h1 class="font-serif text-2xl mb-2" style="color:var(--text-primary);">Look up — you're in the fleet</h1>
+            <h1 class="font-serif text-2xl mb-2" style="color:var(--text-primary);">Look up: you're in the fleet</h1>
             <div class="atsea-swatch" style="background:${col};color:${col}"></div>
             <p class="text-sm mt-3 max-w-xs" style="color:var(--text-secondary);">Find the <b style="color:${col}">${name}</b> sail${dest && dest.text ? ` bound for <b style="color:var(--text-primary)">${dest.text}</b>` : ''}. Every boat on the big screen is a Beattyian setting sail from our Hive.</p>
             <div class="follow-boat mt-4">${buildOrigamiSVG(c, 9, 150, extras())}</div>
@@ -2435,7 +2435,7 @@ function scheduleRollCall() {
     const when = sailLocalAt + 12000 + i * 3000 - Date.now(); if (when < -2500) return;
     setTimeout(() => {
         const rc = document.getElementById('rollCall'), scr = document.getElementById('atSea'); if (!rc || !scr) return;
-        const sub = document.getElementById('rcSub'); if (sub) sub.textContent = (D.global.text || '') + " — that's you!";
+        const sub = document.getElementById('rcSub'); if (sub) sub.textContent = (D.global.text || '') + ": that's you!";
         rc.hidden = false; scr.classList.add('rc-flash'); hapticPattern([40, 60, 40]); playPing();
         setTimeout(() => { rc.hidden = true; scr.classList.remove('rc-flash'); }, 2800);
     }, Math.max(0, when));
@@ -2454,7 +2454,7 @@ function renderHiveCell() {
         <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
             <p class="text-[10px] mb-4 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">Your cell in the Hive</p>
             <div class="hive-hex"><span>${w}</span></div>
-            <p class="text-sm mt-5 max-w-xs" style="color:var(--text-secondary);">Look up — it's rising off your hull and into the Hive. Every cell up there is a Beattyian's dream.</p>
+            <p class="text-sm mt-5 max-w-xs" style="color:var(--text-secondary);">Look up: it's rising off your hull and into the Hive. Every cell up there is a Beattyian's dream.</p>
         </div>
         ${reactBarHTML()}
     </div>`;
@@ -2516,9 +2516,9 @@ const CHAPTERS = ['Into the Hive', 'Who we are', 'Our values', 'Passions', 'NEXU
 // While a deck is on the big screen and no phone card was written for it, the phone shows its chapter's line.
 const CHAPTER_LINES = {
     'Into the Hive': ['bee', 'A living portrait of everyone in the room.'],
-    'Who we are': ['school', 'Non Vi Sed Arte — not with force, but with skill.'],
-    'Our values': ['heart', 'D.R.E.A.M. — Discipline, Resilience, Empathy, Adaptability, Mindfulness.'],
-    'Passions': ['spark', '17 CCAs — a place for every kind of bee.'],
+    'Who we are': ['school', 'Non Vi Sed Arte: not with force, but with skill.'],
+    'Our values': ['heart', 'D.R.E.A.M.: Discipline, Resilience, Empathy, Adaptability, Mindfulness.'],
+    'Passions': ['spark', '17 CCAs: a place for every kind of bee.'],
     'NEXUS@BTY': ['globe', '8 international exchanges · 6 industry attachments.'],
     'Your pathway': ['explorer', 'Every Beattyian A Purpose Driven Steward.'],
     'Set sail': ['sail', 'Your boat sails with the whole hall.'],
@@ -2724,9 +2724,9 @@ function renderBoard() {
             <img src="${LOGO_URL}" alt="Beatty" style="width:52px;height:64px;object-fit:contain;margin:0 auto 12px;display:block" onerror="this.style.display='none'">
             <p class="q-eyebrow" style="text-align:center;">${ico('bee')}Come into the Hive</p>
             <h2 class="q-question" style="text-align:center;">Beatty Open House</h2>
-            <p class="q-hint" style="margin:8px 0 18px;">Five quick picks find your bee. Then your phone follows the big screen — polls, folds, and setting sail together.</p>
+            <p class="q-hint" style="margin:8px 0 18px;">Five quick picks find your bee. Then your phone follows the big screen: polls, folds, and setting sail together.</p>
             <button class="nav-btn primary w-full" id="boardBtn" style="font-size:1.05rem;padding:16px;">Tap to board</button>
-            <p class="q-hint" style="margin-top:14px;">One tap turns on sound and keeps your screen awake${/iP(hone|ad|od)/.test(navigator.userAgent) ? '' : ' — and buzzes, if your phone allows it'}.</p>
+            <p class="q-hint" style="margin-top:14px;">One tap turns on sound and keeps your screen awake${/iP(hone|ad|od)/.test(navigator.userAgent) ? '' : ', and buzzes, if your phone allows it'}.</p>
             <p class="q-hint" style="margin-top:18px;opacity:.55;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;">build ${BUILD}</p>
         </div>
     </div>`;
@@ -2787,7 +2787,7 @@ function renderBeeReveal(bee) {
             <h1 class="font-serif text-2xl mt-2" style="color:var(--accent-gold);">${bee.name}</h1>
             <p class="text-[11px] tracking-[0.2em] uppercase mt-1" style="color:var(--text-secondary);">${bee.tag} · you've joined the Hive</p>
             <p class="font-serif italic text-sm mt-4 max-w-xs" style="color:var(--text-primary);">“${prof.quote || 'Non Vi Sed Arte'}”</p>
-            <p class="text-[11px] mt-4" style="color:var(--text-muted);">Look up — your bee lands on the big screen.</p>
+            <p class="text-[11px] mt-4" style="color:var(--text-muted);">Look up: your bee lands on the big screen.</p>
         </div>
     </div>`;
     playChapterChime(); feel('chapter');
@@ -2928,7 +2928,7 @@ document.getElementById('cornerBoat')?.addEventListener('click', function () {
 });
 
 /* ============================================================
-   START — presenter-driven. The phone boards with a "follow along" hold; the
+   START: presenter-driven. The phone boards with a "follow along" hold; the
    presenter's session/state then drives everything: answer the on-screen
    questions, fold the boat on the passive slides, set sail together. Someone
    who already sailed AND kept their card returns straight to it.

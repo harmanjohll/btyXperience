@@ -39,6 +39,30 @@ c.ok(await until(() => phones[0].$('.boarding-pass'), 8000), 'v2 phones land on 
 await shot(pr, 'v2-card'); await shot(phones[0], 'v2-phone-pass');
 c.ok(!s1().cue && s1().currentView !== 'memento', 'version 1\'s saved state never moved');
 
+// The version 2 design rules, on every slide: one left edge for the chapter line and every title,
+// nothing runs into the slide dots or off the page, and no em dash on screen.
+const decks = await pr.evaluate(() => Object.fromEntries(Object.entries(window.BTY_DECKS).map(([k, d]) => [k, d.slides.length])));
+const bad = { edge: [], dots: [], dash: [] };
+for (const [id, n] of Object.entries(decks)) for (let i = 0; i < n; i++) {
+  await pr.evaluate(([id, i]) => window.__jump(id, i), [id, i]); await sleep(i ? 1700 : 2200);
+  const r = await pr.evaluate(() => {
+    const body = document.getElementById('scBody'), ch = document.querySelector('#scene .sc-ch'), dots = document.getElementById('scDots'); if (!body || !ch || !dots) return null;
+    const L = ch.getBoundingClientRect().left, D = dots.getBoundingClientRect().top;
+    const t = body.querySelector(':scope > .sc-t'), edge = t ? Math.abs(t.getBoundingClientRect().left - L) : 0;
+    const vis = el => { const cs = getComputedStyle(el); return cs.display !== 'none' && cs.visibility !== 'hidden' && +cs.opacity > .05 && el.getClientRects().length; };
+    const over = [...body.querySelectorAll('h2,h3,h4,p,li,b,figure,img,blockquote,.sc-row,.pp,.lg,.lk')].filter(el => vis(el) && !el.closest('.sc-bleed')).filter(el => el.getBoundingClientRect().bottom > D + 2).map(el => el.tagName + ' ' + (el.textContent || el.getAttribute('src') || '').trim().slice(0, 30));
+    return { edge, over, dash: /\u2014/.test(body.innerText) };
+  });
+  if (!r) continue;
+  const k = `${id} ${i + 1}`;
+  if (r.edge > 4) bad.edge.push(`${k} (${Math.round(r.edge)}px)`);
+  if (r.over.length) bad.dots.push(`${k}: ${r.over[0]}`);
+  if (r.dash) bad.dash.push(k);
+}
+c.ok(!bad.edge.length, 'every title starts on the chapter line\'s left edge ' + bad.edge.slice(0, 6).join(', '));
+c.ok(!bad.dots.length, 'nothing runs into the slide dots ' + bad.dots.slice(0, 6).join(' | '));
+c.ok(!bad.dash.length, 'no em dash on any slide ' + bad.dash.slice(0, 6).join(', '));
+
 const errs = [v1, pr, ...phones].flatMap(p => p.errs);
 c.ok(errs.length === 0, 'no page errors ' + JSON.stringify(errs.slice(0, 5)));
 await browser.close(); await srv.close();
