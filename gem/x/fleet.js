@@ -429,7 +429,7 @@ const DEST_ROLL = [
 function startSessionListener() {
     if (!db || !onSnapshot || !doc) return;
     try {
-        onSnapshot(doc(db, "session", "state"), (snap) => {
+        onSnapshot(doc(db, "session", /[?&]v=2\b/.test(location.search) ? "v2" : "state"), (snap) => {   // ?v=2: version 2's saved state
             const d = (snap && snap.data) ? snap.data() : null; if (!d) return;
             if (d.epoch && d.epoch !== fleetEpoch) {                       // learnt the show's id: drop any rehearsal boat that slipped in first
                 fleetEpoch = d.epoch;

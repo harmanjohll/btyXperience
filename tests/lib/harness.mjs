@@ -38,9 +38,9 @@ export async function newPage(browser, { width, height, label, mobile = false })
 export async function shot(page, name) { await page.screenshot({ path: path.join(OUT, name + '.png') }); }
 
 /* ---------- presenter ---------- */
-export async function presenter(browser, base, query = '') {
+export async function presenter(browser, base, query = '', page = 'btx27.html') {   // page: 'v2.html' for version 2
   const p = await newPage(browser, { width: 1920, height: 1080, label: 'presenter' });
-  await p.goto(base + '/btx27.html?presenter=true' + query, { waitUntil: 'domcontentloaded' });
+  await p.goto(base + '/' + page + '?presenter=true' + query, { waitUntil: 'domcontentloaded' });
   await until(() => p.evaluate(() => typeof dbReady !== 'undefined' ? dbReady : false).catch(() => false), 10000);
   await p.click('#beginBtn');
   await p.waitForTimeout(500);
@@ -64,9 +64,9 @@ export async function goStep(p, n) {
 }
 
 /* ---------- phone ---------- */
-export async function phone(browser, base, label) {
+export async function phone(browser, base, label, path = '/x/') {   // path: '/x/v2.html' for version 2
   const p = await newPage(browser, { width: 390, height: 844, label, mobile: false });   // mouse gestures drive the fold code; hasTouch would switch it to touch-only
-  await p.goto(base + '/x/', { waitUntil: 'domcontentloaded' });
+  await p.goto(base + path, { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(700);
   return p;
 }
@@ -76,7 +76,7 @@ export async function board(p, picks = [[1, 0], [1, 0], [1, 0], [1, 0], [1, 0]])
   for (const [a, b] of picks) { await p.click(`.quiz-opt[data-i="${a}"]`); await p.waitForTimeout(150); await p.click(`.quiz-opt[data-i="${b}"]`); await p.waitForTimeout(520); }
   await p.waitForTimeout(3200);
 }
-export const phoneState = p => p.evaluate(() => { try { return JSON.parse(localStorage.getItem('btySail_v7') || '{}'); } catch (e) { return {}; } });
+export const phoneState = p => p.evaluate(() => { try { return JSON.parse(localStorage.getItem('btySail_v7') || localStorage.getItem('btySail_show2') || '{}'); } catch (e) { return {}; } });   // version 1 or version 2
 export const appHTML = p => p.evaluate(() => document.getElementById('app').innerHTML);
 
 async function drag(p, sx, sy, ex, ey, N = 22) {
