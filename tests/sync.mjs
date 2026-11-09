@@ -2,7 +2,7 @@
 // Checks that phones follow the presenter's pace, answer only when asked, are counted on the
 // big screen, fold in four beats (five folds in all), set sail together, and leave with a card.
 import { startServer } from './lib/server.mjs';
-import { loadPlaywright, checker, presenter, phone, board, goStep, sleep, until, appHTML, phoneState, foldTo, shot } from './lib/harness.mjs';
+import { loadPlaywright, checker, presenter, phone, board, goStepId, sleep, until, appHTML, phoneState, foldTo, shot } from './lib/harness.mjs';
 
 const { chromium } = await loadPlaywright();
 const srv = await startServer();
@@ -24,16 +24,16 @@ c.ok(pill, 'presenter: "3 in the Hive · 3 ready"');
 c.ok(mine().every(d => d.data.done && /^The /.test(d.data.archetype)), 'each phone keeps ONE saved state with its bee');
 await shot(pr, 'sync-01-hive');
 
-// --- Step 2: video → phones watch; a reaction floats up ----------------------------------
-await goStep(pr, 2);
+// --- The film → phones watch; a reaction floats up ----------------------------------
+await goStepId(pr, 'video_intro');
 await until(() => phones[0].$('#reactBar'), 5000);
 c.ok(await phones[0].$('.watch-screen'), 'video: phones show "eyes on the screen"');
 await phones[0].click('.react-btn[data-e="👏"]');
 const floated = await until(() => pr.$('#reactionOverlay .floating-reaction'), 5000);
 c.ok(floated, 'a phone\'s 👏 floats up the big screen');
 
-// --- Step 4: Fold with us · S (fold 1 of 5) -------------------------------------------------
-await goStep(pr, 4);
+// --- Fold with us · S (fold 1 of 5) -------------------------------------------------
+await goStepId(pr, 'fold_s');
 await until(() => phones[0].$('#origamiStage .fold-overlay'), 6000);
 const folded1 = []; for (const p of phones) folded1.push(await foldTo(p, 1));
 c.ok(folded1.every(Boolean), 'fold beat S: every phone makes one fold');
@@ -42,8 +42,8 @@ c.ok(fc, 'presenter counts 3 boats past fold 1');
 c.ok(/fold 1 of 5/.test(await pr.$eval('#fcSub', e => e.textContent)), 'the big screen counts in the audience\'s folds ("past fold 1 of 5")');
 await shot(pr, 'sync-04-fold');
 
-// --- Step 5: poll → vote → reveal → phones draw the tally ----------------------------------
-await goStep(pr, 5);
+// --- The DREAM poll → vote → reveal → phones draw the tally ----------------------------------
+await goStepId(pr, 'poll_dream');
 await until(() => phones[0].$('.answer-opt'), 6000);
 await phones[0].click('.answer-opt[data-poll="1"]'); await phones[1].click('.answer-opt[data-poll="1"]'); await phones[2].click('.answer-opt[data-poll="0"]');
 const voted = await until(async () => /3/.test(await pr.$eval('.votes-chip .pv', e => e.textContent).catch(() => '')), 6000);
@@ -56,41 +56,35 @@ const bar = await until(async () => { const w = await phones[2].$eval('.pbar[dat
 c.ok(bar, 'phones draw the result bars from the tally (67% / 33%)');
 await shot(phones[2], 'sync-05-phone-reveal');
 
-// --- Steps 9, 15: the next fold beats ------------------------------------------------------
-for (const [stepN, to] of [[9, 3], [15, 6]]) {          // A: a corner (the other follows) · I: the brim (the back and the diamond follow)
-  await goStep(pr, stepN);
+// --- The next fold beats ------------------------------------------------------
+for (const [stepN, to] of [['fold_a', 3], ['fold_i', 6]]) {          // A: a corner (the other follows) · I: the brim (the back and the diamond follow)
+  await goStepId(pr, stepN);
   await until(() => phones[0].$('#origamiStage .fold-overlay'), 6000);
   const r = []; for (const p of phones) r.push(await foldTo(p, to));
   c.ok(r.every(Boolean), `fold beat at step ${stepN}: one fold each, paper at stage ${to}`);
 }
 
-// --- Step 16/17: globe + map picks ---------------------------------------------------------
-await goStep(pr, 16);
+// --- Globe and map picks ---------------------------------------------------------
+await goStepId(pr, 'nexus_global');
 await until(() => phones[0].$('.answer-opt[data-nx]'), 6000);
 for (const p of phones) await p.click('.answer-opt[data-nx="Hanoi"]');
 const gl = await until(async () => { const t = await pr.$eval('.gpin[data-id="Hanoi"] .gcnt', e => e.textContent).catch(() => ''); return t === '3' ? t : null; }, 6000);
 c.ok(gl, 'globe: Hanoi pin shows 3');
-await goStep(pr, 17);
+await goStepId(pr, 'nexus_local');
 await until(() => phones[0].$('.answer-opt[data-nx]'), 6000);
 for (const p of phones) await p.click('.answer-opt[data-nx="ASTAR"]');
 const mp = await until(async () => /3/.test(await pr.$eval('#nexusStats', e => e.textContent).catch(() => '')), 6000);
 c.ok(mp, 'map: 3 choices counted, separately from the globe');
 
-// --- Step 20: last fold beat → boat complete ----------------------------------------------
-await goStep(pr, 20);
+// --- Last fold beat → boat complete ----------------------------------------------
+await goStepId(pr, 'fold_l');
 await until(() => phones[0].$('#origamiStage .fold-overlay, .pull-dot'), 8000);
 const r8 = []; for (const p of phones) r8.push(await foldTo(p, 8));
 c.ok(r8.every(Boolean), 'fold beat L: point up, pull open: every boat is complete (5 folds in all)');
 
-// --- Step 21: pulse ----------------------------------------------------------------------
-await goStep(pr, 21);
-await until(() => phones[0].$('[data-mood]'), 6000);
-for (const p of phones) await p.click('[data-mood="Excited!"]');
-const pl = await until(async () => mine().filter(d => d.data.p === 'Excited!').length === 3, 5000);
-c.ok(pl, 'pulse: three moods saved');
 
-// --- Step 22: name the boat, then SET SAIL together --------------------------------------
-await goStep(pr, 22);
+// --- Name the boat, then SET SAIL together --------------------------------------
+await goStepId(pr, 'set_sail');
 for (const [i, p] of phones.entries()) {
   await until(() => p.$('#dreamInput, #holdBoat, .ready-screen'), 8000);
   if (await p.$('#dreamInput')) { await p.fill('#dreamInput', ['Engineer', 'Doctor', 'Artist'][i]); await p.click('#dreamBtn'); }
@@ -107,13 +101,13 @@ c.ok(Math.max(...at) - Math.min(...at) < 400, `launch moments within 400 ms of e
 await sleep(1500);
 await shot(pr, 'sync-22-fleet');
 
-// --- Step 23: Hive of aspirations ---------------------------------------------------------
-await goStep(pr, 23);
+// --- Hive of aspirations ---------------------------------------------------------
+await goStepId(pr, 'finale');
 const words = await until(async () => { const t = await pr.$eval('#journeyContent', e => e.textContent).catch(() => ''); return /ENGINEER|Engineer/.test(t) && /DOCTOR|Doctor/.test(t) ? t : null; }, 6000);
 c.ok(words, 'the hive shows the boats\' words');
 
-// --- Step 25: the card ---------------------------------------------------------------------
-await goStep(pr, 25);
+// --- The card ---------------------------------------------------------------------
+await goStepId(pr, 'card');
 const card = await until(() => phones[0].$('.compass-card'), 8000);
 c.ok(card, 'phones land on their Compass Card');
 const fleetN = state().fleet;

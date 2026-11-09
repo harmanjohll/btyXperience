@@ -47,6 +47,9 @@ export async function presenter(browser, base, query = '') {
   return p;
 }
 export async function stepNum(p) { const t = await p.$eval('#progText', e => e.textContent).catch(() => ''); const m = t.match(/Step\s+(\d+)/i); return m ? +m[1] : -1; }
+// Go to a step by its id (e.g. 'fold_s', 'set_sail'), pressing Next as the presenter would.
+export async function stepIndex(p, id) { return p.evaluate(id => { const t = document.getElementById('progText'); return window.__stepIndex ? window.__stepIndex(id) : -1; }, id); }
+export async function goStepId(p, id) { const k = await stepIndex(p, id); if (k < 0) throw new Error('no step ' + id); return goStep(p, k + 1); }
 export async function slideNum(p) { return p.$eval('#scNum', e => e.textContent).catch(() => ''); }
 export async function goStep(p, n) {
   for (let i = 0; i < 200; i++) {

@@ -52,11 +52,12 @@ window.BTY_DECKS = {
   deck_a: { use:true, chapter:'Who we are', slides:[
     { kind:'cover', img:'a/identity.jpg', pos:'70% 35%', eyebrow:'Who we are', title:'Identity', sub:'Unity, hard work, and skill over force',
       notes:'Who we are begins with one Coat of Arms.' },
-    { kind:'feature', tone:'cream', img:'a/crest.png', fit:'contain', title:'Our crest', items:[
-        { title:'Unity', body:'As symbolised by the admiral command colours of navy blue and yellow' },
-        { title:'Hard work', body:'As symbolised by the bees around the bee hive' },
-        { title:'Not by force, but with skill', body:'As symbolised by our motto, Non Vi Sed Arte' } ],
-      notes:'Three things our crest stands for: unity in the navy and yellow, hard work in the bees, and skill over force in our motto.' },
+    { kind:'crest', tone:'cream', img:'a/crest.png', title:'Our crest', items:[
+        { title:'Unity', body:'As symbolised by the admiral command colours of navy blue and yellow', area:[50,34,43,34] },
+        { title:'Hard work', body:'As symbolised by the bees around the bee hive', area:[49,45,31,19] },
+        { title:'Not by force, but with skill', body:'As symbolised by our motto, Non Vi Sed Arte', area:[50,72,47,10] } ],
+      phone:{ title:'Our crest', line:'Unity, hard work, and skill over force.' },
+      notes:'Three things our crest stands for. The screen lights each part in turn: the navy and yellow for unity, the bees for hard work, the motto for skill over force.' },
     { kind:'statement', icon:'school', eyebrow:'Our motto', title:'Non Vi Sed Arte', latin:true, sub:'Not with force but with skill.',
       body:'Chosen by Mr Meyer, our first principal, from the Coat of Arms of Admiral Earl David Beatty.',
       notes:'Say it slowly. We will shout it together when the boats set sail; ask them to remember it.' },
@@ -64,16 +65,18 @@ window.BTY_DECKS = {
         { src:'a/clip-future.jpg', fit:'contain' }, { src:'a/nabilah.jpg' }, { src:'a/results.jpg' }, { src:'a/clip-st.jpg', fit:'contain' }, { src:'a/clip-bh.jpg', fit:'contain' } ],
       phone:{ title:'They took charge of their future', line:'Our graduates, in the news.' },
       notes:'Our graduates in The Straits Times and Berita Harian. Cheryl, an auditory learner, read her notes out loud so she could understand them better. Others overcame family duties, migraines and hospital stays to do well.' },
-    { kind:'quote', tone:'cream', title:'In their words',
-      quote:'I believe that good and positive friends are important because we can help each other. If they are more knowledgeable in certain subjects, they can teach me but if they are weak, we can attend additional classes together.',
-      also:{ quote:'I had many duties, like helping my younger sibling with homework, keeping the house clean, and more. We must do these things because our parents are working hard and we too must help.' },
-      img:'a/nabilah.jpg', pos:'50% 30%',
-      notes:'Two of our graduates, in their own words. Another: "I would schedule Zoom consultations with my teachers and watch YouTube videos to understand geography concepts better."' },
-    { kind:'columns', title:'The world is changing, fast', sub:'The top ten skills, then and next', mark:['Judgment & Decision Making','Complex Problem Solving'], cols:[
+    { kind:'quotes', tone:'cream', title:'In their words', img:'a/nabilah.jpg', items:[
+        { q:'Cheryl considers herself more of an auditory learner, so she made it a point to read her learning materials out loud just so she could understand them better.', by:'The Straits Times' },
+        { q:'I believe that good and positive friends are important because we can help each other.', by:'A Beatty graduate' },
+        { q:'I had many duties, like helping my younger sibling with homework, keeping the house clean, and more. Our parents are working hard and we too must help.', by:'A Beatty graduate, Berita Harian' },
+        { q:'I would schedule Zoom consultations with my teachers and watch YouTube videos to understand geography concepts better.', by:'A Beatty graduate' } ],
+      phone:{ title:'In their words', line:'Our graduates on how they took charge.' },
+      notes:'Four graduates, four habits: learning the way that suits you, good friends, responsibility at home, and reaching out to teachers.' },
+    { kind:'slope', title:'The world is changing, fast', sub:'The top ten skills, then and next: watch two of them move', mark:['Judgment & Decision Making','Complex Problem Solving'], cols:[
         { head:'In 2015', items:['Complex Problem Solving','Coordinating with Others','People Management','Critical Thinking','Negotiation','Quality Control','Service Orientation','Judgment & Decision Making','Active Listening','Creativity'] },
         { head:'In 2020', items:['People Management','Complex Problem Solving','Critical Thinking','Creativity','Coordinating with Others','Emotional Intelligence','Judgment & Decision Making','Service Orientation','Negotiation','Cognitive Flexibility'] },
         { head:'In 2030', items:['Judgment & Decision Making','Fluency of Ideas','Active Learning','Learning Strategies','Originality','System Evaluation','Deductive Reasoning','Complex Problem Solving','Systems Analysis','Monitoring'] } ],
-      notes:'Watch Judgment and Decision Making climb from 8th to 1st; new skills like Learning Strategies and Originality arrive. This is why we teach how to learn, not only what to learn.' },
+      notes:'The red line: Judgment and Decision Making climbs from 8th to 1st. The gold line: Complex Problem Solving slips from 1st to 8th; new skills like Learning Strategies and Originality arrive. This is why we teach how to learn, not only what to learn.' },
     { kind:'bars', tone:'cream', title:'Top reasons for working in the gig economy', suffix:'%', groups:[
         { label:'Gig workers say', rows:[['Make extra money on the side',55],['Balancing career and family needs',48],['Autonomy and control',48],['Only way to make an income',22],['Earning while seeking a better job',19]] } ],
       notes:'Work itself is changing: more people choose gig work, for money, family and autonomy. Our children need to be adaptive.' },
@@ -85,8 +88,6 @@ window.BTY_DECKS = {
         { icon:'explorer',  title:'Agile Learners',    body:'To learn how to learn, how to live, and how to love', more:'To become joyful explorers, purposeful navigators and reflective knowledge builders' },
         { icon:'steward',   title:'Active Contributors', body:'To be driven, to serve and to add value', more:'To become impactful changemakers, compassionate connectors and community builders' } ],
       notes:'Our mission in three words each: Adaptive Thinkers, Agile Learners, Active Contributors.' },
-    { kind:'live', show:'bees', title:'The Hive tonight',
-      notes:'The room, live: the bee each person found in the compass quiz. Call out the biggest group and the rarest bee.' },
     { kind:'venn', tone:'cream', title:'Purpose', centre:'BTY', foot:'Every Beattyian A Purpose Driven Steward', items:[
         { tag:'VS', title:'Valued by self', q:'What allows you to live out your values, and help you find meaning and purpose?' },
         { tag:'RC', title:'Relatedness and community', q:'What is that which allows you to relate and connect with others?' },
@@ -100,15 +101,6 @@ window.BTY_DECKS = {
 
   /* ---------- Step 7 · A day at Beatty (after the DREAM poll and the value cards) ---------- */
   deck_b: { use:true, chapter:'Our values', slides:[
-    { kind:'live', show:'poll', poll:'dream_poll', title:'How well does the hall know DREAM?',
-      notes:'The poll from a minute ago, recalled.' },
-    { kind:'acronym', title:'DREAM', tints:['#5B7BFF','#FF8A3D','#FF4D52','#3FBF5A','#FFD23F'], letters:[
-        ['D','Discipline','Turning good habits into quiet strength'],
-        ['R','Resilience','Learning through every challenge'],
-        ['E','Empathy','Understanding before being understood'],
-        ['A','Adaptability','Inquiring with an open mind'],
-        ['M','Mindfulness','Respecting self, others and the environment'] ],
-      notes:'Our five values, the dispositions every Beattyian grows.' },
     { kind:'ask', id:'grow_value', question:'Which value do you most want to grow?',
       options:['Discipline','Resilience','Empathy','Adaptability','Mindfulness'],
       notes:'Phones answer now. Read out the leader; there is no wrong answer.' },
@@ -116,16 +108,16 @@ window.BTY_DECKS = {
       right:{ steps:12, labels:['Routines','Habits'], caption:'Routines build into habits, one small step at a time' },
       left:{ steps:3, label:'Inspiration', caption:'Inspiration comes in bursts' },
       notes:'Inspiration gets you started, but it comes and goes. Routines, kept daily, become habits, and habits carry you up.' },
-    { kind:'cover', img:'b/morning.jpg', eyebrow:'A day at Beatty', title:'Morning', sub:'Reset, Refreshed, Ready',
+    { kind:'cover', img:'b/morning.jpg', whole:true, day:'morning', eyebrow:'A day at Beatty', title:'Morning', sub:'Reset, Refreshed, Ready',
       notes:'Let us walk through a day at Beatty, starting with the morning.' },
     { kind:'quote', tone:'cream', title:'Habits to build the child for life',
       quote:'You don\'t determine your future. You determine your habits. Your habits determine your future.', by:'F. M. Alexander',
       also:{ quote:'Schools are also social institutions and coming to school isn\'t just about tests; it\'s also about spending meaningful time with your peers. Early starts are also about forming habits that set students up for life, like how to start the day right.', by:'Our principal, in The Straits Times' },
       img:'b/clip-habits.jpg', fit:'contain',
       notes:'We kept our 7.30am start. Early starts are about forming habits that set students up for life.' },
-    { kind:'mix', title:'FSBB@Beatty', chip:'Common Core',
+    { kind:'mix', title:'FSBB@Beatty', phase1:'Subject classes: each student at their own level', phase2:'Form classes: mixed, together for the Common Core', legend:'subject levels', chip:'Common Core',
       foot:'Applied Learning Programme, Assembly Programmes, Art, Character & Citizenship Education, Design & Technology, Food & Consumer Education, Form Teacher Guidance, Music, Physical Education',
-      notes:'Full Subject Based Banding: every form class mixes students taking subjects at different levels, and they learn the common core together.' },
+      notes:'Full Subject Based Banding. First the screen sorts students by subject level; then they mix into form classes, where they learn the Common Core together. [confirm] which colour means which level.' },
     { kind:'feature', tone:'cream', title:'Awareness: beliefs, emotions, behaviours',
       sub:'Why pay attention to emotions? Social and emotional competence has been strongly linked with being happier and contented, and stronger achievement.',
       imgs:[{ src:'b/journal-1.jpg', fit:'contain' },{ src:'b/journal-2.jpg', fit:'contain' },{ src:'b/journal-3.jpg', fit:'contain' },{ src:'b/journal-4.jpg', fit:'contain' }],
@@ -139,7 +131,7 @@ window.BTY_DECKS = {
       tags:['Beattyians: Think. Create. Innovate.'],
       notes:'Our ALP, featured in Berita Harian.' },
     { kind:'gallery', tone:'cream', title:'Makerspace@Beatty', sub:'A flexible learning space as a playground for learning through "structured" and "unstructured" play',
-      imgs:[{ src:'b/maker-space.jpg' },{ src:'b/maker-drone.jpg', cap:'Drone programming' },{ src:'b/maker-heatpress.jpg', cap:'Heat press' },{ src:'b/maker-sewing.jpg', cap:'Sewing' },{ src:'b/maker-3d.jpg', cap:'3D printing' },{ src:'b/maker-laser.jpg', cap:'Laser cutting' }],
+      imgs:[{ src:'b/maker-space.jpg' },{ src:'b/maker-neon.jpg' },{ src:'b/maker-drone.jpg', cap:'Drone programming' },{ src:'b/maker-heatpress.jpg', cap:'Heat press' },{ src:'b/maker-sewing.jpg', cap:'Sewing' },{ src:'b/maker-3d.jpg', cap:'3D printing' },{ src:'b/maker-laser.jpg', cap:'Laser cutting' }],
       notes:'Drones, heat press, sewing, 3D printing and laser cutting, all in one space.' },
     { kind:'feature', title:'ALP 3.0', sub:'Tech enabled Design Thinker', img:'b/alp3.jpg', fit:'contain',
       items:[{ icon:'futurist', title:'Machine learning', body:'Design thinking, now with the tools of AI' }],
@@ -170,7 +162,7 @@ window.BTY_DECKS = {
       notes:'Every Beattyian has latent giftings; we help them find them.' },
     { kind:'gallery', title:'Education and career guidance', imgs:['b/ecg-1.jpg','b/ecg-2.jpg','b/ecg-3.jpg'],
       notes:'Guidance on pathways and careers, from Secondary 1.' },
-    { kind:'cover', img:'b/canoe.jpg', pos:'50% 60%', eyebrow:'A day at Beatty', title:'Afternoon', sub:'Enriching Character, Pursuing Passions',
+    { kind:'cover', img:'b/canoe.jpg', whole:true, day:'afternoon', eyebrow:'A day at Beatty', title:'Afternoon', sub:'Enriching Character, Pursuing Passions',
       notes:'In the afternoon: CCAs.' },
     { kind:'quote', tone:'cream', title:'Take flight with CCA',
       quote:'CCAs bring students from diverse backgrounds and different academic streams together.', by:'Ms Tng Ee Hwei, HOD of PE and CCA',
@@ -190,8 +182,6 @@ window.BTY_DECKS = {
 
   /* ---------- Step 11 · Passions: enrichment and NEXUS (after the CCA fact, fold A and the CCA poll) ---------- */
   deck_c: { use:true, chapter:'Passions', slides:[
-    { kind:'live', show:'poll', poll:'cca', title:'Did the hall guess right?',
-      notes:'The CCA poll, recalled: nine in ten get their first or second choice.' },
     { kind:'feature', tone:'cream', title:'The joy of stewardship', sub:'Purpose driven stewards',
       imgs:[{ src:'c/wheel.png', fit:'contain' },'c/stewards.jpg'], items:[
         { title:'Practices of leadership', body:'Model the way, inspire a shared vision, challenge the process, enable others to act, encourage the heart' },
@@ -232,7 +222,7 @@ window.BTY_DECKS = {
         { title:'Singapore Poly', body:'Diploma in Architecture' },
         { title:'Today', body:'A Teacher Assistant at Lighthouse School' } ],
       notes:'One of ours, from our Hearing Loss Support programme.' },
-    { kind:'cover', img:'c/nx201-3.jpg', eyebrow:'Niche programmes', title:'Experiential learning',
+    { kind:'cover', img:'c/nx201-3.jpg', whole:true, eyebrow:'Niche programmes', title:'Experiential learning',
       notes:'Now, our niche programme: NEXUS.' },
     { kind:'statement', logo:'nexus', title:'NEXUS', sub:'a connection or series of connections, linking two or more things; a central or focal point',
       notes:'Navigation and exploration, understandings and synergies, across disciplines.' },
@@ -254,9 +244,9 @@ window.BTY_DECKS = {
       notes:'Secondary 2s explore AI and its applications.' },
   ]},
 
-  /* ---------- Step 18 · NEXUS@BTY: the world (after the globe and the map) ---------- */
+  /* ---------- NEXUS@BTY · the exchanges (before the globe pick) ---------- */
   deck_d: { use:true, chapter:'NEXUS@BTY', slides:[
-    { kind:'pins', tone:'cream', title:'Internationalisation Programme', img:'d/worldmap.jpg', pins:[
+    { kind:'pins', tone:'cream', title:'Internationalisation Programme', img:'d/worldmap.jpg', home:{ x:66.8, y:54.4, label:'Beatty, Singapore' }, pins:[
         { x:30.4, y:5.0,  lx:33,   ly:1.5,  label:'Digital Citizenship & Smart Nations e-Exchange with Estonia', sub:'12 to 20 Sec 3 students' },
         { x:74.1, y:25.3, lx:47,   ly:15,   label:'A.I. Research Exchange with Middle Schools, South Korea', sub:'8 to 10 Sec 3 students' },
         { x:79.2, y:24.2, lx:76,   ly:5,    label:'Science & Mathematics Research Exchange with Mutsuzawa High School', sub:'10 to 12 Sec 3 students' },
@@ -272,17 +262,19 @@ window.BTY_DECKS = {
       notes:'Science research in Mihara, Hiroshima, and science and mathematics in Mutsuzawa.' },
     { kind:'gallery', title:'NX3015: Geographical Investigation @ Bali', imgs:['d/bali-1.jpg','d/bali-2.jpg','d/bali-3.jpg','d/bali-4.jpg','d/bali-5.jpg'],
       notes:'Every Secondary 3 Geography student reads a real volcanic landscape.' },
-    { kind:'gallery', tone:'cream', title:'NX302: Industry Attachments', imgs:['d/ind-1.jpg','d/ind-2.jpg','d/ind-3.jpg','d/ind-4.jpg'],
+  ]},
+
+  /* ---------- NEXUS@BTY · industry attachments (between the globe and the map pick) ---------- */
+  deck_d2: { use:true, chapter:'NEXUS@BTY', slides:[
+    { kind:'gallery', title:'NX302: Industry Attachments', imgs:['d/ind-1.jpg','d/ind-2.jpg','d/ind-3.jpg','d/ind-4.jpg'],
       notes:'Selected students spend time with our industry partners.' },
-    { kind:'logos', title:'Our industry partners', items:[
+    { kind:'logos', tone:'cream', title:'Our industry partners', items:[
         { img:'d/logo-rockwell.png', name:'Rockwell Automation' },{ img:'d/logo-pil.png', name:'PIL' },{ img:'d/logo-astar.png', name:'A*STAR' },{ img:'d/logo-nus.png', name:'NUS' },
         { img:'d/logo-sph.png', name:'SPH' },{ img:'d/logo-deloitte.png', name:'Deloitte' },{ img:'d/logo-ite.png', name:'ITE' },{ img:'d/logo-science.png', name:'Science Centre Singapore' } ],
       notes:'Rockwell Automation, PIL, A*STAR, NUS, SPH, Deloitte, ITE and the Science Centre.' },
-    { kind:'gallery', tone:'cream', title:'European Union @ BTY', imgs:['d/eu-1.jpg',{ src:'d/eu-2.jpg', cap:'Estonia: Digital Transformation & Sustainability' },'d/eu-3.jpg'],
+    { kind:'gallery', title:'European Union @ BTY', imgs:['d/eu-1.jpg',{ src:'d/eu-2.jpg', cap:'Estonia: Digital Transformation & Sustainability' },'d/eu-3.jpg'],
       note:'Ms Eszter Nemeth, Deputy Head of Mission of the EU in Singapore, engaging Beattyians in a meaningful discussion on the roles youths can play to enhance EU Singapore ties.',
       notes:'The EU came to us.' },
-    { kind:'live', show:'picks', title:'Where tonight\'s hall would go',
-      notes:'What the room chose on the globe and the map, live.' },
   ]},
 
   /* ---------- Step 19 · Your pathway: our teachers and our spaces ---------- */
@@ -320,17 +312,31 @@ window.BTY_DECKS = {
     { kind:'people', tone:'cream', title:'Beatty\'s future', items:[
         { img:'f/future-1.jpg' },{ img:'f/future-2.jpg' },{ img:'f/future-3.jpg' },{ img:'f/future-4.jpg' },{ img:'f/future-5.jpg' } ],
       notes:'And those who come next.' },
-    { kind:'live', show:'words', title:'Tonight, the hall dreams of',
-      notes:'The words from every boat tonight. Read a few aloud.' },
-    { kind:'live', show:'fleet', title:'boats set sail tonight',
-      notes:'Every boat folded and launched in this hall.' },
+    { kind:'stats', tone:'cream', title:'Some statistics', items:[
+        { n:'9 in 10', label:'4E students qualify for JC', ring:90 },
+        { n:'~100%', label:'of 4E students qualify for Poly or JC', ring:99 },
+        { n:'3 in 10', label:'4N students qualify for PFP', ring:30 } ],
+      notes:'Nine in ten Express students qualify for JC; nearly all qualify for Poly or JC; three in ten Normal students qualify for the Polytechnic Foundation Programme. [confirm] this year\'s figures.' },
+    { kind:'pillars', title:'Choosing a secondary school', items:[
+        { icon:'curious', title:'Ask', body:'What are their strengths, interests and abilities?', more:'What courses and programmes will develop these? Will the pace of learning suit them?' },
+        { icon:'eye', title:'Consider', body:'School culture; courses; programmes, subjects and CCAs offered; location and transport', more:'If your child has special educational needs, schools with specialised facilities or resources' },
+        { icon:'check', title:'Submit', body:'6 school options, so your child is more likely to get a school of choice', more:'Include 2 to 3 schools where your child\'s PSLE score is better than the school\'s cut off point' },
+        { icon:'globe', title:'Refer to', body:'MOE\'s SchoolFinder', more:'Subjects, CCAs, location and contact details of every school' } ],
+      notes:'MOE\'s advice, in four words: ask, consider, submit, refer.' },
+    { kind:'statement', tone:'cream', icon:'arrow', title:'Your ranking of school choices matters',
+      body:'The higher you rank your preferred school in your choice order, the better your child\'s chance of being posted there if there is a tie breaker. Schools\' PSLE score ranges can vary from year to year.',
+      notes:'Rank the school you want first.' },
+    { kind:'tiebreak', title:'Tie breakers in the new S1 Posting System',
+      sub:'Used only if two or more students with the same PSLE score vie for the last place(s) in a school. A simplified example.',
+      notes:'Five students, last places. Jane scores better, so she goes first to School A. The other four tie. Citizenship: Bryan and Mary are Singapore Citizens, so they get School B before Alan and Rina. Choice order: Bryan ranked School B higher than Mary, so Bryan gets it; Mary goes to School C. Ballot: Alan and Rina both ranked School D third; the ballot gives Alan School D, and Rina goes to School E.' },
+    { kind:'quote', tone:'cream', quote:'Don\'t choose what you think is the best school, but what is the best school for your child.',
+      by:'Fermencia Quek, with her daughter Caitlin, Beatty Secondary School', img:'f/parent-quote.jpg', fit:'contain',
+      notes:'A Beatty parent, in MOE\'s guide to choosing a school.' },
     { kind:'photo', img:'f/choose.jpg', title:'Choose Beatty!', notes:'Choose Beatty.' },
-    { kind:'links', title:'Connect@Beatty', items:[
-        { label:'Facebook', url:'https://go.gov.sg/beattyfb' },{ label:'Instagram', url:'https://go.gov.sg/beattyig' },{ label:'LinkedIn', url:'https://go.gov.sg/beattyin' } ],
-      notes:'Scan to follow us. Phones get these as links too.' },
-    { kind:'links', tone:'cream', title:'Your voice matters', sub:'Please share your feedback using this form.', items:[
-        { label:'Feedback form', url:'https://go.gov.sg/oh25survey' } ],
-      notes:'[confirm] this year\'s feedback link (last year: go.gov.sg/oh25survey).' },
+  ]},
+
+  /* ---------- After the card · phones stay on their boarding pass ---------- */
+  deck_tail: { use:true, keepCard:true, chapter:'Your journey', slides:[
     { kind:'cover', crest:true, title:'Thank you!', sub:'Harmonising Hearts, Thriving Together',
       notes:'Thank the hall.' },
     { kind:'cover', title:'FAQs', phone:{ title:'Questions?', line:'Ask us anything.' }, notes:'Questions from the floor.' },
@@ -346,30 +352,11 @@ window.BTY_DECKS = {
       rows:[['Standard Level','AL 5 or better','G3 EL, MA, SC and MTL'],['','AL 6 or better','G2 EL, MA, SC and MTL'],['Foundation Level','AL A','G2 EL, MA, SC and MTL']],
       note:'Students in PG3 will take all subjects at the G3 level, regardless of their individual AL scores at the PSLE.',
       notes:'How subject based banding works with AL scores.' },
-    { kind:'stats', tone:'cream', title:'Some statistics', items:[
-        { n:'9 in 10', label:'4E students qualify for JC', ring:90 },
-        { n:'~100%', label:'of 4E students qualify for Poly or JC', ring:99 },
-        { n:'3 in 10', label:'4N students qualify for PFP', ring:30 } ],
-      notes:'Nine in ten Express students qualify for JC; nearly all qualify for Poly or JC; three in ten Normal students qualify for the Polytechnic Foundation Programme. [confirm] this year\'s figures.' },
-    { kind:'ask', id:'school_choice', question:'What matters most when you choose a secondary school?',
-      options:['Caring teachers and friends','Opportunities beyond the classroom','A CCA I love','Strong academic pathways'],
-      notes:'Phones answer. Speak to whichever wins: we have an answer for each.' },
-    { kind:'quote', tone:'cream', quote:'Don\'t choose what you think is the best school, but what is the best school for your child.',
-      by:'Fermencia Quek, with her daughter Caitlin, Beatty Secondary School', img:'f/parent-quote.jpg', fit:'contain',
-      notes:'A Beatty parent, in MOE\'s guide to choosing a school.' },
-    { kind:'pillars', title:'Choosing a secondary school', items:[
-        { icon:'curious', title:'Ask', body:'What are their strengths, interests and abilities?', more:'What courses and programmes will develop these? Will the pace of learning suit them?' },
-        { icon:'eye', title:'Consider', body:'School culture; courses; programmes, subjects and CCAs offered; location and transport', more:'If your child has special educational needs, schools with specialised facilities or resources' },
-        { icon:'check', title:'Submit', body:'6 school options, so your child is more likely to get a school of choice', more:'Include 2 to 3 schools where your child\'s PSLE score is better than the school\'s cut off point' },
-        { icon:'globe', title:'Refer to', body:'MOE\'s SchoolFinder', more:'Subjects, CCAs, location and contact details of every school' } ],
-      notes:'MOE\'s advice, in four words: ask, consider, submit, refer.' },
-    { kind:'statement', tone:'cream', icon:'arrow', title:'Your ranking of school choices matters',
-      body:'The higher you rank your preferred school in your choice order, the better your child\'s chance of being posted there if there is a tie breaker. Schools\' PSLE score ranges can vary from year to year.',
-      notes:'Rank the school you want first.' },
-    { kind:'steps', title:'Tie breakers in the new S1 Posting System', items:[
-        { tag:'1', title:'Citizenship', body:'Singapore Citizens first, then Permanent Residents, then international students.' },
-        { tag:'2', title:'Choice order of schools', body:'Those who ranked the school higher in their choice order go first.' },
-        { tag:'3', title:'Computerised balloting', body:'If students are still tied, a computerised ballot decides.' } ],
-      notes:'Tie breakers apply only when students with the same PSLE score vie for the last places in a school.' },
+    { kind:'links', title:'Connect@Beatty', items:[
+        { label:'Facebook', url:'https://go.gov.sg/beattyfb' },{ label:'Instagram', url:'https://go.gov.sg/beattyig' },{ label:'LinkedIn', url:'https://go.gov.sg/beattyin' } ],
+      notes:'Scan to follow us.' },
+    { kind:'links', tone:'cream', title:'Your voice matters', sub:'Please share your feedback using this form.', items:[
+        { label:'Feedback form', url:'https://go.gov.sg/oh25survey' } ],
+      notes:'[confirm] this year\'s feedback link (last year: go.gov.sg/oh25survey).' },
   ]},
 };

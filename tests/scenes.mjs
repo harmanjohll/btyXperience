@@ -31,19 +31,20 @@ const scene = () => pr.evaluate(() => { const b = document.getElementById('scBod
 const slideNow = () => pr.evaluate(() => { const d = window.BTY_DECKS[document.getElementById('scene').dataset.deck]; return d.slides[parseInt(document.getElementById('scNum').textContent, 10) - 1]; });
 const decks = await pr.evaluate(() => Object.fromEntries(Object.entries(window.BTY_DECKS).map(([k, d]) => [k, d.slides.length])));
 const total = Object.values(decks).reduce((a, b) => a + b, 0);
-c.ok(Object.keys(decks).length === 6 && total >= 60, `six decks, ${total} slides, all switched on`);
+c.ok(Object.keys(decks).length === 8 && total >= 70, `eight native decks (NEXUS split in two, plus the tail), ${total} slides`);
 c.ok(await pr.evaluate(() => Object.values(window.BTY_DECKS).every(d => d.use)), 'every deck is use:true');
 
 const ph = await phone(browser, srv.url, 'phone');
 await board(ph);
 
-let slidesSeen = 0, step = 1, guard = 0, creamSeen = 0, toneWrong = [], imgCount = 0, brokenAll = [];
+let slidesSeen = 0, step = 1, guard = 0, creamSeen = 0, toneWrong = [], imgCount = 0, brokenAll = [], stuck = 0;
 const TOTAL = await pr.$eval('#progText', el => +el.textContent.split('/')[1]);
-while (step < TOTAL && guard++ < 200) {
-  const was = await scene();
+while (guard++ < 220 && stuck < 2) {                   // to the very last slide of the tail
+  const was = await scene(), wasStep = step;
   await pr.click('#nextBtn'); await sleep(was ? 560 : 420);
   step = await stepNum(pr);
   const s = await scene();
+  if (step === wasStep && s && was && s.num === was.num) { stuck++; continue; }
   if (!s) continue;
   slidesSeen++;
   await sleep(1500);                                   // let the build-in finish
@@ -78,7 +79,9 @@ while (step < TOTAL && guard++ < 200) {
   const broken = imgs.filter(x => !x.ok);
   if (broken.length) { await sleep(1500); const again = await pr.evaluate(() => [...document.querySelectorAll('#scBody img')].filter(im => !(im.complete && im.naturalWidth > 0)).map(im => im.getAttribute('src'))); if (again.length) brokenAll.push(...again); }
   imgCount += imgs.length;
-  if (deck === 'deck_c' && i === 2) {
+  const [ci, cn] = s.num.split('/').map(x => parseInt(x, 10));
+  if (step === TOTAL && ci === cn) break;                // the last slide of the tail: one more Next would end the show
+  if (deck === 'deck_c' && i === 1) {
     const nt = await notes.evaluate(() => ({ now: document.getElementById('nowTitle')?.textContent, next: document.getElementById('nextTitle')?.textContent, notes: document.getElementById('nowNotes')?.textContent }));
     c.ok(nt.now === 'The joy of stewardship' && /leadership/i.test(nt.notes || ''), `presenter view follows: now "${nt.now}"`);
     c.ok(nt.next && nt.next.length > 3, `presenter view: next "${nt.next}"`);
@@ -89,7 +92,12 @@ c.ok(slidesSeen === total, `every slide was shown once (${slidesSeen}/${total})`
 c.ok(imgCount > 100 && !brokenAll.length, `every photo loads (${imgCount} shown) ${brokenAll.slice(0, 5).join(', ')}`);
 c.ok(creamSeen >= 8 && !toneWrong.length, `cream pages where marked (${creamSeen}), questions always navy ${toneWrong.join(', ')}`);
 
+// The tail: every phone stays on its boarding pass.
+c.ok(await pr.$eval('#scene', el => el.dataset.deck) === 'deck_tail' && await until(() => ph.$('.boarding-pass'), 4000), 'after the card, the tail slides keep the phone on its boarding pass');
+await shot(ph, 'sc-phone-pass');
+
 // BACK out of the step after a deck lands on that deck's last slide.
+await pr.evaluate(() => window.__jump('card', 0)); await sleep(900);
 await pr.click('#prevBtn'); await sleep(900);          // card → deck_f, last slide
 const back = await scene();
 c.ok(back && parseInt(back.num, 10) === decks.deck_f, `back into a deck lands on its last slide (${back && back.num})`);
@@ -104,8 +112,11 @@ c.ok(fwd && parseInt(fwd.num, 10) === decks.deck_f, 'the presenter view\'s Next 
 
 // ?scenes=0 brings the Google decks back (the show-day escape hatch).
 const plain = await presenter(browser, srv.url, '&scenes=0');
-await plain.click('#nextBtn'); await sleep(500); await plain.click('#nextBtn'); await sleep(1200);
+for (let k = 0; k < 3; k++) { await plain.click('#nextBtn'); await sleep(500); }          // the film, fold S, then deck A
+await sleep(800);
 c.ok(await plain.$('iframe[src*="docs.google.com"]') && !(await plain.$('#scene')), '?scenes=0 brings the Google deck back');
+await plain.evaluate(() => window.__jump('nexus_global', 0)); await sleep(600); await plain.click('#nextBtn'); await sleep(900);
+c.ok(await stepNum(plain) === 1 + await plain.evaluate(() => window.__stepIndex('nexus_local')), '?scenes=0 skips the native only industry half (straight from the globe to the map)');
 
 const errs = [pr, ph, notes, plain].flatMap(p => p.errs);
 c.ok(errs.length === 0, 'no page errors ' + JSON.stringify(errs.slice(0, 5)));
