@@ -2744,7 +2744,7 @@ function photoSpec(box){ const figs=[...box.children].filter(e=>e.tagName==='FIG
 function planPhotos(sp, W, H){
   if(!sp.n||!W||!H) return null;
   const {n,A,C,Wh}=sp, anyWhole=Wh.some(Boolean);
-  const g=Math.max(10,Math.round(W*.009)), capH=Math.round(Math.max(30,Math.min(44,H*.055))), CROP=1.12, SIDE=1.25;
+  const g=Math.max(10,Math.round(W*.009)), capH=Math.round(Math.max(30,Math.min(44,H*.055))), CROP=1.12, SIDE=1.12;   // a photo loses at most about a tenth, top and bottom or at the sides
   // A row's photos at height h: whole ones keep their shape; the others may widen (cropping top and bottom) to fill the row.
   const rowW=(x,y,h)=>{ const gaps=g*(y-x-1); let nat=0, cap=0; for(let i=x;i<y;i++){ nat+=A[i]*h; if(!Wh[i]) cap+=A[i]*h*(CROP-1); }
     const f=cap>0?Math.max(0,Math.min(1,(W-gaps-nat)/cap)):0; return { f, w:nat+cap*f+gaps }; };
