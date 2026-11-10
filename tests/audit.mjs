@@ -7,21 +7,25 @@
 //   goldcream  gold text on a cream page
 //   late       text still invisible at 0.6 s (diagrams that explain step by step are exempt)
 // Usage: node tests/audit.mjs            (prints the flags; exits 1 if any)
+//        V=2 node tests/audit.mjs        version 2 (v2.html, /x/v2.html) into tests/out/audit-v2/
+//        ONLY=deck_b,deck_c node tests/audit.mjs   just those steps; TAG=after writes to audit-v2-after/
 import fs from 'fs';
 import path from 'path';
 import { startServer } from './lib/server.mjs';
 import { loadPlaywright, presenter, phone, board, sleep, until, OUT } from './lib/harness.mjs';
 
-const DIR = path.join(OUT, 'audit'); fs.mkdirSync(DIR, { recursive: true });
+const V2 = process.env.V === '2', ONLY = (process.env.ONLY || '').split(',').filter(Boolean);
+const DIR = path.join(OUT, 'audit' + (V2 ? '-v2' : '') + (process.env.TAG ? '-' + process.env.TAG : '')); fs.mkdirSync(DIR, { recursive: true });
+const DOC = V2 ? 'session/v2' : 'session/state';
 const { chromium } = await loadPlaywright();
 const srv = await startServer();
 const browser = await chromium.launch({ headless: true });
-const pr = await presenter(browser, srv.url);
+const pr = await presenter(browser, srv.url, '', V2 ? 'v2.html' : 'btx27.html');
 const put = (p, data) => fetch(srv.url + '/__fs/write', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ op: 'set', path: p, data, merge: true }) });
-const e = await until(() => srv.api.get('session/state')?.epoch, 4000);
+const e = await until(() => srv.api.get(DOC)?.epoch, 4000);
 const A = ['The Innovator', 'The Global Explorer', 'The Industry Trailblazer', 'The Community Steward', 'The Creative Artist', 'The STEM Futurist', 'The Voice Amplifier', 'The Eco-Strategist'];
 for (let i = 0; i < 18; i++) await put('compassQuiz/a' + i, { e, archetype: A[i % 8], done: true, v: { dream_poll: i % 4 ? 1 : 0, cca: 2 }, n: { global: ['Hanoi', 'NZ', 'GeoBali'][i % 3], local: ['ASTAR', 'PIL'][i % 2] }, w: ['Engineer', 'Doctor', 'Artist'][i % 3], f: 8, boat: { launched: true }, m: { grow_value: i % 5, cca_family: i % 4 } });
-const ph = await phone(browser, srv.url, 'phone'); await board(ph);
+const ph = await phone(browser, srv.url, 'phone', V2 ? '/x/v2.html' : '/x/'); await board(ph);
 
 const plan = await pr.evaluate(() => { const out = []; let k = 0; while (true) { const id = (window.__stepId ? window.__stepId(k) : null); if (!id) break; out.push(id); k++; } return out; });
 const decks = await pr.evaluate(() => Object.fromEntries(Object.entries(window.BTY_DECKS).map(([k, d]) => [k, d.slides.length])));
@@ -43,7 +47,8 @@ const check = () => pr.evaluate(() => {
   // crop: a photo drawn at the wrong proportions (round portraits and the blurred fills are on purpose)
   root.querySelectorAll('img').forEach(im => { if (!vis(im) || !im.naturalWidth || im.closest('.face,.round,.cl-screen,.cv-bg') || im.classList.contains('ph-blur')) return;   // round portraits, blurred fills and the two scenic cover backdrops are on purpose
     const cs = getComputedStyle(im); if (cs.objectFit !== 'cover') return; const r = im.getBoundingClientRect(); const a1 = r.width / r.height, a2 = im.naturalWidth / im.naturalHeight;
-    if (Math.abs(a1 - a2) / a2 > .08) out.push({ k: 'crop', t: im.getAttribute('src') + (im.closest('.cv-bg') ? ' (full-bleed cover)' : '') }); });
+    const trim = im.closest('.fit-box') ? .2 : .08;   // laid out photos may lose a sliver (at most ~15%) to fill their box; screenshots marked whole never do
+    if (Math.abs(a1 - a2) / a2 > trim) out.push({ k: 'crop', t: im.getAttribute('src') + (im.closest('.cv-bg') ? ' (full-bleed cover)' : '') }); });
   // gold on cream
   if (scene && scene.classList.contains('cream')) textEls.forEach(el => { const c = getComputedStyle(el).color; if (/255, 226, 0|255, 236, 102/.test(c)) out.push({ k: 'goldcream', t: el.textContent.trim().slice(0, 40) }); });
   return out;
@@ -55,6 +60,7 @@ const lateCheck = () => pr.evaluate(() => { const root = document.getElementById
 let n = 0;
 for (let k = 0; k < plan.length; k++) {
   const id = plan[k], slides = decks[id] || 1;
+  if (ONLY.length && !ONLY.includes(id)) continue;
   for (let i = 0; i < slides; i++) {
     const name = `${String(k + 1).padStart(2, '0')}-${id}-${String(i + 1).padStart(2, '0')}`;
     await pr.evaluate(([id, i]) => window.__jump(id, i), [id, i]);
@@ -65,6 +71,7 @@ for (let k = 0; k < plan.length; k++) {
     await at(1500); await pr.screenshot({ path: path.join(DIR, name + '-1500.png') });
     await at(3000); await pr.screenshot({ path: path.join(DIR, name + '-3000.png') });
     if (/^(deck_|values|funfact|chart|poll|memento|card)/.test(id) || decks[id]) { await sleep(id === 'deck_f' || id === 'deck_d' ? 6000 : 3500); }
+    await pr.screenshot({ path: path.join(DIR, name + '-settled.png') });   // after every build and diagram has played
     const f = [...await check(), ...late];
     await ph.screenshot({ path: path.join(DIR, name + '-phone.png') });
     f.forEach(x => flags.push({ slide: name, ...x }));

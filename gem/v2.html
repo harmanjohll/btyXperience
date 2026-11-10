@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Beatty Experience · The Hive · Version 2</title>
-<meta name="description" content="Beatty Secondary Open House — Harmonising Hearts, Thriving Together.">
+<meta name="description" content="Beatty Secondary Open House: Harmonising Hearts, Thriving Together.">
 
 <!-- Coastlines for the globe (Natural Earth, local file — no CDN). If it fails to load the flat SVG chart is used. -->
 <script src="land.js"></script>
@@ -15,9 +15,9 @@
 
 <style>
 /* ============================================================
-   THE HIVE — Beatty Secondary Open House (Presenter / Big Screen)
+   THE HIVE: Beatty Secondary Open House (Presenter / Big Screen)
    Design system: navy-dominant, gold accent, red sparingly.
-   Fonts: Georgia (display) + Calibri (body) via system stacks — NO web-font CDN.
+   Fonts: Georgia (display) + Calibri (body) via system stacks: NO web-font CDN.
    Self-contained: no Tailwind, no external CSS. Offline-resilient.
    ============================================================ */
 
@@ -332,7 +332,7 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 
 /* --- DREAM value cards --- */
 /* grid-auto-rows (not height) gives each card row a definite height so the flip
-   faces — which are absolutely positioned — always have height, even when wrapped. */
+   faces: which are absolutely positioned: always have height, even when wrapped. */
 .dream-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:clamp(10px,1.4vw,22px); width:100%; grid-auto-rows:min(56vh,620px)}
 .dcard{perspective:1400px; cursor:pointer}
 .dcard-inner{position:relative; width:100%; height:100%; transition:transform .8s var(--ease); transform-style:preserve-3d}
@@ -574,7 +574,7 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 }
 
 /* ============================================================
-   NATIVE DECKS — the slides, drawn here (content in deck/content.js)
+   NATIVE DECKS: the slides, drawn here (content in deck/content.js)
    ============================================================ */
 .scene{position:relative; width:100%; height:100%; display:flex; flex-direction:column; padding:clamp(16px,2.6vh,34px) clamp(28px,4vw,84px) clamp(12px,2vh,24px)}
 .sc-top{display:flex; justify-content:space-between; align-items:center; gap:20px; font-size:clamp(.72rem,1vw,.98rem); letter-spacing:.32em; text-transform:uppercase; font-weight:700}
@@ -1060,9 +1060,9 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 .pn-arcs{position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none}
 .pn-arc{fill:none; stroke:var(--red); stroke-width:2.5px; vector-effect:non-scaling-stroke; stroke-dasharray:100; stroke-dashoffset:100; animation:ringDraw .8s var(--ease) forwards; animation-delay:var(--d,0ms); opacity:.75}
 .pn-home{position:absolute; transform:translate(-50%,-50%); z-index:2}
-.pn-home i{display:block; width:16px; height:16px; border-radius:50%; background:var(--paper-ink); box-shadow:0 0 0 5px rgba(0,12,83,.2); animation:homePulse 2s ease-in-out infinite}
+.pn-home i{display:block; width:16px; height:16px; border-radius:50%; background:var(--paper-ink); box-shadow:0 0 0 5px rgba(0,12,83,.2); animation:pinPulse 2s ease-in-out infinite}
 .pn-home b{position:absolute; left:20px; top:-4px; white-space:nowrap; font-size:clamp(.78rem,1vw,1.05rem); color:var(--paper-ink); background:rgba(255,255,255,.85); padding:2px 8px; border-radius:6px}
-@keyframes homePulse{50%{box-shadow:0 0 0 12px rgba(0,12,83,0)}}
+@keyframes pinPulse{50%{box-shadow:0 0 0 12px rgba(0,12,83,0)}}
 @media (prefers-reduced-motion:reduce){ .pn-arc{animation:none; stroke-dashoffset:0} }
 /* a day at Beatty */
 .day-bar{position:absolute; left:clamp(40px,6vw,120px); right:clamp(40px,6vw,120px); bottom:clamp(22px,4vh,46px); height:clamp(54px,7vh,76px); display:grid; grid-template-columns:1fr 1fr; gap:6px; z-index:3}
@@ -1073,6 +1073,265 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 .db-sun{position:absolute; top:-46px; left:0; width:40px; height:40px; color:var(--gold); transition:left 1.6s var(--ease)} .db-sun .ico{width:100%; height:100%}
 .day-bar[data-part="morning"].go .db-sun{left:calc(25% - 20px)} .day-bar[data-part="afternoon"].go .db-sun{left:calc(75% - 20px)}
 .sc-cover.whole .cv-txt{bottom:clamp(130px,18vh,200px)}
+
+/* ============================================================
+   VERSION 2 DESIGN SYSTEM (applies on top of everything above)
+   One grid: a fixed left edge shared by the chapter line, every title and every content block.
+   One title position: top left, under the chapter line. Content is centred in the space below it.
+   One type scale: titles 72, sub heads 44, body 30, small 24, labels 20 (px at 1080p). Nothing smaller.
+   One radius rule: pages 24, cards and photos 16, chips and buttons fully round.
+   Captions sit under photos, never on them. Red is for accents and large type, never body text.
+   ============================================================ */
+:root{ --r:16px; --r-page:24px;
+  --t-title:clamp(2.3rem,3.75vw,4.5rem); --t-h3:clamp(1.5rem,2.3vw,2.75rem); --t-body:clamp(1.2rem,1.6vw,1.9rem);
+  --t-small:clamp(1rem,1.25vw,1.5rem); --t-label:clamp(.82rem,1.05vw,1.25rem); }
+
+/* --- chrome: slimmer header and footer, so the slide gets the screen --- */
+header{height:clamp(60px,7vh,80px); gap:16px}
+header .crest{height:clamp(38px,5vh,56px)}
+.brandwrap .school{font-size:clamp(1.05rem,1.6vw,1.5rem)}
+.brandwrap .theme{font-size:clamp(.56rem,.75vw,.72rem); margin-top:4px}
+.pill{padding:7px 13px; border-radius:999px}
+#participantPill{font-size:clamp(.95rem,1.35vw,1.3rem); min-width:0}
+.qr-pill{border-radius:12px} .qr-pill img{width:clamp(34px,4.4vh,46px)}
+footer{padding:clamp(6px,.9vh,10px) clamp(16px,2.5vw,36px)}
+.progress-meta{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0)}   /* kept for the tests, not shown */
+.progress-bar{height:6px}
+#prevBtn, #nextBtn{padding:.55rem 1.3rem; min-width:118px !important; font-size:.95rem}
+.pp-toggle{opacity:0} .pp-toggle:hover, .pp-toggle:focus-visible, #presenterPanel:not(.collapsed) .pp-toggle{opacity:1}
+
+/* --- the slide frame --- */
+.scene{padding:clamp(14px,2vh,26px) clamp(32px,4.2vw,80px) clamp(10px,1.6vh,18px)}
+.scene.cream{border-radius:var(--r-page)}
+.sc-top{font-size:var(--t-label); letter-spacing:.28em}
+.sc-body{justify-content:flex-start; align-items:center; padding-top:clamp(10px,1.8vh,22px); padding-bottom:clamp(8px,1.4vh,16px)}
+.sc-body > :where(:not(.sc-bleed)){width:100%; max-width:none}
+/* the title is pinned top left; whatever follows is centred in the space that is left */
+.sc-body > .sc-t, .sc-body > .sc-sub2, .sc-body > .sc-hint{align-self:stretch; text-align:left; margin-left:0; margin-right:0}
+.sc-body > :first-child:not(.sc-t):not(.sc-hint){margin-top:auto}
+.sc-body > .sc-t + :not(.sc-sub2), .sc-body > .sc-sub2 + *{margin-top:auto}
+.sc-body > :last-child{margin-bottom:auto}
+.sc-t, .sc-t.sm{font-size:var(--t-title); line-height:1.06; max-width:none; text-wrap:balance; margin-bottom:clamp(8px,1.4vh,16px)}
+.sc-sub2{font-size:var(--t-body); margin:0 0 clamp(6px,1vh,12px); text-align:left; max-width:60ch}
+.sc-body > .sc-sub2{max-width:none}
+.sc-note{font-size:var(--t-small); max-width:none; text-align:left}
+.sc-note.left{text-align:left}
+
+/* --- type floor --- */
+.sc-text, .sc-card p.b, .sc-pill p, .sc-step p, .ft-list span, .vn-q p, .sc-stairs p, .mx-foot, .cr-list span, .sc-cols ol, .sc-table{font-size:var(--t-body)}
+.sc-let .x, .sc-people span, .sc-links span, .qs-card p, .tb-box p, .sc-row, .pn-l b, .sc-meta{font-size:var(--t-small)}
+.sc-rows{font-size:var(--t-small)}
+.sc-big .sc-rows{font-size:var(--t-body)}
+.pn-l span, .tb-kid span, .tb-kid small, .tb-res, .qs-card cite, .sc-quote cite, .pn-home b, .ft-tags span{font-size:var(--t-label)}
+.sc-card h3, .sc-pill h3, .sc-step h3, .ft-list b, .cr-list b, .sc-cols h4{font-size:var(--t-h3)}
+.sc-pills.n5 .sc-pill h3{font-size:clamp(1.3rem,1.9vw,2.25rem)}
+
+/* --- one radius --- */
+.sc-card, .sc-pill, .sc-bee, .sc-cols .cl, .sc-table, .sc-links .qr, .sc-logos .lg, .mx-box, .mx-lvl, .tb-kid, .tb-box, .qs-card, .sc-qimg figure, .ft-media figure, .sc-gal figure, .db-seg, .ph-cap{border-radius:var(--r)}
+.fit-box > figure img{border-radius:var(--r)}
+
+/* --- photos: whole, filling their box; captions under the photo, never on it --- */
+.fit-box > figure{overflow:visible; background:transparent; box-shadow:none; border-radius:0}
+.fit-box > figure img{height:calc(100% - var(--cap,0px)); object-fit:cover; object-position:var(--pos,50% 35%); box-shadow:0 14px 34px rgba(0,0,0,.35)}
+.fit-box > figure.whole img{object-fit:contain}
+.fit-box > figure figcaption{position:absolute; left:2px; right:2px; bottom:0; top:auto; height:var(--cap,0px); display:flex; align-items:flex-end; background:none; border:0; border-radius:0; padding:0; color:var(--cream); font-weight:700; font-size:var(--t-label); letter-spacing:.02em; line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.fit-box > figure figcaption::before{content:""; display:inline-block; flex:none; width:16px; height:3px; border-radius:2px; background:var(--red); margin:0 10px .42em 0}
+.scene.cream .fit-box > figure figcaption{color:var(--paper-ink)}
+.scene.cream .fit-box > figure img{box-shadow:0 14px 34px rgba(0,12,83,.18)}
+.sc-gal.fit-box{width:100%; flex:1 1 0; min-height:0; margin-top:clamp(6px,1vh,12px)}
+
+/* --- feature: title on top, then photo and words side by side --- */
+.sc-feat{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr); gap:clamp(28px,3.4vw,64px); align-items:center; flex:1 1 0; min-height:0}
+.sc-feat.flip{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)}
+.sc-feat.solo{grid-template-columns:1fr; max-width:none}
+.sc-feat .ft-media.fit-box{height:100%; min-height:0}
+.sc-feat .ft-media.round{height:auto}
+.ft-txt{display:flex; flex-direction:column; justify-content:center}
+.ft-sub{font-size:var(--t-body); color:var(--cream); font-style:normal; font-family:var(--sans); line-height:1.4}
+.scene.cream .ft-sub{color:var(--paper-ink)}
+.ft-list li{padding-left:20px}
+.ft-tags{margin-top:clamp(18px,3vh,30px)}
+
+/* --- red never carries body text --- */
+.scene.cream .sc-pill p.more, .sc-pill p.more{color:inherit; font-style:normal}
+.scene.cream .sc-sub{color:var(--paper-ink)}
+
+/* --- statements and quotes: one idea, centred, a short measure --- */
+.sc-stmt{max-width:none}
+.sc-stmt .sc-h{max-width:20ch}
+.sc-stmt .sc-text{max-width:46ch; color:var(--cream)}
+.scene.cream .sc-stmt .sc-text{color:var(--paper-ink)}
+.sc-rule{margin:clamp(18px,3vh,34px) auto clamp(14px,2.4vh,26px)}
+.sc-quote{max-width:1240px; margin-left:auto; margin-right:auto}
+.sc-quote blockquote{font-size:clamp(2.1rem,3.6vw,4.3rem); line-height:1.2}
+.sc-quote cite{font-size:var(--t-label)}
+
+/* --- bars: % data on a 0 to 100 scale; values beside the bar --- */
+.sc-charts{width:100%}
+.sc-row .trk{background:rgba(246,239,225,.08); border-radius:0 4px 4px 0}
+.scene.cream .sc-row .trk{background:rgba(0,12,83,.06)}
+
+/* --- hero numbers: rings drawn to their true value --- */
+.sc-ring .arc{stroke-linecap:butt}
+
+/* --- pins on a map: pins and the centre of the venn keep their place while they arrive --- */
+.pn-map .pn{transform:none; translate:-50% -92%}
+.vn-c .core{transform:none; translate:-50% -50%}
+.pn-map > img{-webkit-mask-image:linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image:linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent)}
+.pn-arc{vector-effect:none; stroke-width:3px; opacity:.85}
+.pn-lead{stroke:var(--paper-ink); stroke-width:1.5px; opacity:0; fill:none; animation:leadIn .4s var(--ease) forwards; animation-delay:var(--d,0ms)}
+@keyframes leadIn{to{opacity:.45}}
+.pn-l{max-width:23%; padding:8px 14px; border-radius:12px}
+.sc-pins{height:auto; flex:1 1 0; min-height:0}
+.sc-pins .pn-map{max-height:100%; width:auto; max-width:100%}
+.cr-ring{vector-effect:none}
+
+/* --- chapter line shows the slide's own chapter when it has one --- */
+.sc-ch{transition:opacity .3s}
+
+/* --- slope: the whole chart fits; the new column arrives in time --- */
+.sc-slope{flex:1 1 0; min-height:0; width:100%; max-height:none}
+.sl-col{animation-delay:calc(.15s + var(--c) * .8s)}
+.sl-line{animation-delay:calc(.6s + var(--c) * .8s)}
+
+/* --- FSBB: one phase line at a time --- */
+.mx-p{transition:opacity .3s, transform .3s var(--ease)}
+.mx-phase[data-p="2"] .p2{transition-delay:.32s}
+.sc-mixer{width:100%; flex:1 1 0; min-height:min(34vh,340px); max-height:44vh}
+.mx-foot{text-align:left; max-width:none}
+.mx-phase{text-align:left} .mx-p{text-align:left}
+.mx-legend{justify-content:flex-start}
+
+/* --- tie breakers: stages wait unseen (headings show the plan), then play --- */
+.tb-col{opacity:1}
+.tb-col h4{opacity:.38; transition:opacity .5s; height:auto; flex-direction:column; align-items:flex-start; justify-content:flex-end; gap:2px; font-size:var(--t-small)}
+.tb-col h4 small{display:block; font-size:var(--t-label); letter-spacing:.16em; text-transform:uppercase; color:var(--cream); font-weight:700; opacity:.8}
+.tb-col.on h4{opacity:1}
+.tb-col .tb-box{opacity:0}
+.tb-col.on .tb-box{opacity:1}
+.tb-kids, .tb-col{grid-template-rows:clamp(58px,7vh,80px) repeat(5,minmax(0,1fr))}
+.sc-tie{width:100%; flex:1 1 0; min-height:0; height:auto; max-height:62vh}
+.tb-kid small{font-size:var(--t-label)}
+@media (prefers-reduced-motion:reduce){ .tb-col h4, .tb-col .tb-box{opacity:1} }
+
+/* --- venn: everything on screen within three seconds --- */
+.sc-venn{flex:1 1 0; min-height:0; height:auto; max-height:60vh}
+
+/* --- a day at Beatty: the sun rides the bar --- */
+.db-sun{top:-20px; width:34px; height:34px}
+.day-bar[data-part="afternoon"] .db-start{display:none}
+.day-bar[data-part="morning"].go .db-sun{left:calc(25% - 17px)} .day-bar[data-part="afternoon"].go .db-sun{left:calc(75% - 17px)}
+
+/* --- people: a row of portraits; "you" closes the row --- */
+.sc-people{flex-wrap:nowrap}
+.sc-people .pp.you .face{display:flex; align-items:center; justify-content:center; background:var(--paper-ink); color:var(--gold)}
+.sc-people .pp.you .face .ico{width:46%; height:46%}
+.sc-people .pp.you b{color:var(--red)}
+
+/* --- rows: three ideas as a table, not three equal cards --- */
+.sc-rowsx{display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1fr) minmax(0,1.2fr); width:100%; border-top:2px solid var(--paper-ink)}
+.sc-rowsx .rx-h{font-size:var(--t-label); letter-spacing:.2em; text-transform:uppercase; font-weight:800; color:var(--paper-dim); padding:12px 24px 12px 0; border-bottom:1px solid var(--paper-line)}
+.sc-rowsx .rx-k{display:flex; align-items:center; gap:18px; padding:clamp(16px,2.6vh,30px) 24px clamp(16px,2.6vh,30px) 0; border-bottom:1px solid var(--paper-line)}
+.sc-rowsx .rx-k .ico{flex:none; width:clamp(40px,3.4vw,60px); height:clamp(40px,3.4vw,60px); color:var(--red)}
+.sc-rowsx .rx-k b{font-family:var(--serif); font-size:var(--t-h3); color:var(--paper-ink); line-height:1.08}
+.sc-rowsx .rx-c{padding:clamp(16px,2.6vh,30px) 24px clamp(16px,2.6vh,30px) 0; border-bottom:1px solid var(--paper-line); font-size:var(--t-body); color:var(--paper-ink); line-height:1.35; display:flex; align-items:center}
+.sc-rowsx .rx-c.dim{color:var(--paper-dim)}
+.scene:not(.cream) .sc-rowsx{border-top-color:var(--cream)}
+.scene:not(.cream) .sc-rowsx .rx-h, .scene:not(.cream) .sc-rowsx .rx-c.dim{color:var(--cream-ink)}
+.scene:not(.cream) .sc-rowsx .rx-k b, .scene:not(.cream) .sc-rowsx .rx-c{color:#fff}
+.scene:not(.cream) .sc-rowsx > *{border-bottom-color:rgba(246,239,225,.14)}
+.scene:not(.cream) .sc-rowsx .rx-k .ico{color:var(--gold)}
+.sc-rowsx.logo{grid-template-columns:auto minmax(0,.8fr) minmax(0,1fr) minmax(0,1.2fr)}
+.sc-rowsx .rx-logo{grid-row:1 / span 4; padding-right:clamp(24px,3vw,56px); display:flex; align-items:center}
+.sc-rowsx .rx-logo .nx-logo{width:clamp(220px,26vh,320px)}
+
+/* --- legacy poll steps: the question is the headline; one bar colour; counts beside the bar --- */
+.poll-head{text-align:left; padding:0; display:flex; flex-direction:column; gap:12px; align-items:flex-start}
+.poll-head .votes-chip{position:static; transform:none}
+.poll-q, .poll-q.long{margin:0; max-width:none; text-align:left; font-size:var(--t-title)}
+.poll-q.long{font-size:clamp(2rem,3.2vw,3.9rem)}
+.poll-wrap .poll-row{align-items:center}
+.poll-label{font-size:var(--t-body)}
+.poll-n{color:#fff; font-size:var(--t-body); font-variant-numeric:tabular-nums}
+.poll-track{border-radius:0 8px 8px 0; background:rgba(246,239,225,.07); border:0}
+.poll-fill{border-radius:0 8px 8px 0; background:var(--cream); color:var(--navy); font-size:0}
+.poll-fill.correct{background:var(--gold)}
+.poll-wrap.revealed .poll-opt:not(.win) .poll-fill{background:rgba(246,239,225,.28)}
+.poll-wait{text-align:left !important}
+.respond .eyebrow + .poll-wrap{margin-top:0}
+
+/* --- fun fact: no dead space in the card --- */
+.fact-card{padding-bottom:clamp(28px,4vh,48px) !important}
+.dcard .hint{display:none}
+
+/* (v2) the page tone changes colour only; its size never animates (photos and diagrams measure it) */
+.scene{transition:background-color .5s var(--ease), box-shadow .5s var(--ease)}
+.sc-body > .sc-hint{align-self:flex-start}
+.sc-ask .sc-meta{justify-content:flex-start}
+.sc-ask{display:flex; flex-direction:column}
+.poll-page .poll-eyebrow{text-align:left; margin-bottom:6px}
+
+.sc-rowsx.two{grid-template-columns:minmax(0,.9fr) minmax(0,1.5fr)}
+.sc-rowsx.two.logo{grid-template-columns:auto minmax(0,.85fr) minmax(0,1.5fr)}
+.sc-rowsx.logo{border-top:0}
+.sc-rowsx.logo > .rx-h{border-top:2px solid var(--paper-ink)}
+/* NEXUS stages: the marker travels to the last stage and slips under it; the "who" chips line up */
+.sc-step{display:flex; flex-direction:column; align-items:flex-start}
+.sc-step{z-index:2} .sc-step .tag{z-index:3}
+.sc-step p{margin-bottom:clamp(14px,2.2vh,24px)}
+.sc-step .who{margin-top:auto}
+.st-marker{z-index:1; animation-name:stMarch2}
+@keyframes stMarch2{from{left:4%} to{left:calc((var(--n) - 1) / var(--n) * 100% + 70px)}}
+.sc-steps{align-items:stretch}
+
+.sc-quotes:not(:has(.qs-media)){grid-template-columns:1fr}
+.sc-quotes:not(:has(.qs-media)) .qs-grid{gap:clamp(16px,1.8vw,30px)}
+.qs-card{border-top:0; position:relative; padding-top:clamp(22px,3vh,34px)}
+.qs-card::before{content:""; position:absolute; left:clamp(16px,1.6vw,26px); top:0; width:56px; height:4px; border-radius:0 0 3px 3px; background:var(--red)}
+.qs-card p{font-size:var(--t-body); line-height:1.32}
+
+.globe-hint{display:none}
+.vn-q{max-width:34ch}
+.stage-title{text-wrap:balance}
+
+.poll-page{width:100% !important; max-width:none !important; padding:0 clamp(32px,4.2vw,80px) !important}
+.poll-page .poll-wrap{padding:0; width:100%; max-width:none}
+.stage-sub{text-wrap:balance}
+
+.sc-body > .sc-hint{width:auto}
+/* stairs: labels are placed on the drawing itself, each above its own step */
+.st-art{position:relative}
+.sc-stairs .ins{white-space:nowrap; transform:translateX(-50%)}
+.sc-stairs .ins.i0{left:18%; top:55%} .sc-stairs .ins.i1{left:50%; top:24%} .sc-stairs .ins.i2{left:82%; top:-7%}
+.sc-stairs .sl.s0{left:18%; top:36%} .sc-stairs .sl.s1{left:52%; top:4%}
+
+.mx-foot b{display:block; font-family:var(--serif); font-size:var(--t-h3); color:#fff; margin-bottom:6px}
+.scene.cream .mx-foot b{color:var(--paper-ink)}
+
+.scene .fit-box > figure, .scene.cream .fit-box > figure{box-shadow:none !important; background:transparent !important}
+.sc-card::before{display:none}
+
+/* acronym: words and questions line up across the letters */
+.sc-acro{grid-template-rows:auto auto auto; align-items:start}
+.sc-let{display:grid; grid-row:span 3; grid-template-rows:subgrid; justify-items:center; align-items:start; align-content:start}
+.sc-let .x{max-width:22ch}
+.ft-txt > .ft-sub:only-child{font-family:var(--serif); font-size:var(--t-h3); line-height:1.25}
+
+/* NEXUS logo: a two tone X behind the word reads as "cross disciplinary", as in the school's own mark */
+.nx-logo .nx-x{opacity:.85} .nx-logo .nx-x2{opacity:.7}
+.nx-logo .nx-word{fill:var(--gold); opacity:0; animation:leadIn2 .5s var(--ease) 1.5s forwards}
+.scene.cream .nx-logo .nx-word{fill:var(--paper-ink)}
+@keyframes leadIn2{to{opacity:1}}
+@media (prefers-reduced-motion:reduce){ .nx-logo .nx-word{animation:none; opacity:1} }
+.sc-rowsx .rx-logo .nx-logo{width:clamp(250px,30vh,330px)}
+.sc-feat .ft-media.round{justify-items:center}
+.ft-media.round figure{width:min(44vh,440px)}
+
+.poll-fill{padding:0; box-sizing:border-box}
+.poll-opt.win .poll-track{border-radius:0 8px 8px 0}
+
+.pn-l b{font-size:var(--t-label); line-height:1.22} .pn-l span{font-size:clamp(.8rem,.95vw,1.12rem)}
+.pn-l{max-width:21%; padding:7px 12px}
 </style>
 </head>
 <body>
@@ -1159,12 +1418,12 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
       <img id="startCrest" src="BTlogo.png" alt="Beatty Secondary crest" onerror="this.style.display='none'">
       <p class="eyebrow" style="margin-top:20px">Beatty Secondary School · Open House</p>
       <h1 class="stage-title" style="font-size:clamp(2.2rem,5.5vw,5rem)">Come Into the Hive</h1>
-      <p class="stage-sub" style="margin:14px auto 0">Harmonising Hearts, Thriving Together — where every aspiration takes flight.</p>
+      <p class="stage-sub" style="margin:14px auto 0">Harmonising Hearts, Thriving Together. Where every aspiration takes flight.</p>
       <div class="join-card" style="margin:clamp(26px,4vh,50px) auto 0; width:fit-content">
         <div class="qr-frame"><img src="joinbtyqr.png" alt="QR code to join" onerror="this.parentElement.innerHTML='<div style=&quot;width:180px;height:180px;display:flex;align-items:center;justify-content:center;color:#000;font-weight:700&quot;>Scan QR at booth</div>'"></div>
         <div style="text-align:left; display:flex; flex-direction:column; gap:14px">
           <p style="font-family:var(--serif); font-size:clamp(1.6rem,3vw,2.6rem); color:#fff">Scan to join</p>
-          <p style="color:var(--ink-dim); font-size:clamp(1rem,1.6vw,1.4rem)">Take out your phone — your journey is personal.</p>
+          <p style="color:var(--ink-dim); font-size:clamp(1rem,1.6vw,1.4rem)">Take out your phone: your journey is personal.</p>
           <button id="beginBtn" class="btn btn-primary" style="align-self:flex-start; margin-top:6px; font-size:1.2rem; padding:1rem 2.4rem">Begin the Journey ➜</button>
           <p id="modeNote" class="mode-note"></p>
           <button id="startReset" class="hidden" style="align-self:flex-start; background:rgba(236,50,55,.15); color:#ffb4b6; border:1px solid rgba(236,50,55,.3); padding:.5rem 1rem; border-radius:8px; font-size:.85rem; cursor:pointer">⚠ Reset Session</button>
@@ -1263,13 +1522,13 @@ loadFirebase()
 function broadcastIfActive(){ if(started && isPresenter) renderStep(); }
 // Say plainly which screen this is. Only ?presenter=true drives the phones; a plain copy is a mirror.
 (function(){ const b=document.getElementById('liveBadge'), n=document.getElementById('modeNote');
-  if(isPresenter){ b.textContent='● LIVE'; b.classList.add('live'); n.className='mode-note live'; n.innerHTML='● This screen is <b>live</b> — every phone on the audience link follows it. <span class="build">build '+BUILD+'</span>'; }
-  else { b.textContent='VIEW ONLY'; n.innerHTML='<span>View-only copy — phones are <b>not</b> following this screen.</span><button id="goLive">Present live ➜</button><span class="build">build '+BUILD+'</span>';
+  if(isPresenter){ b.textContent='● LIVE'; b.classList.add('live'); n.className='mode-note live'; n.innerHTML='● This screen is <b>live</b>: every phone on the audience link follows it. <span class="build">build '+BUILD+'</span>'; }
+  else { b.textContent='VIEW ONLY'; n.innerHTML='<span>View-only copy: phones are <b>not</b> following this screen.</span><button id="goLive">Present live ➜</button><span class="build">build '+BUILD+'</span>';
     document.getElementById('goLive').onclick=()=>{ location.search='?presenter=true'; }; }
 })();
 let lastSyncToast=0;
 function syncFail(e){ const now=Date.now(); if(now-lastSyncToast<30000) return; lastSyncToast=now;
-  showToast('⚠ Phones are not receiving this step — '+((e&&(e.code||e.message))||'write failed'), 6000);
+  showToast('⚠ Phones are not receiving this step: '+((e&&(e.code||e.message))||'write failed'), 6000);
   const b=document.getElementById('liveBadge'); if(b){ b.textContent='⚠ NOT SYNCING'; b.className='pill warn'; } }
 
 /* ---------- DOM ---------- */
@@ -1304,33 +1563,33 @@ let boatMod=null; import('./x/boat.js').then(m=>{ boatMod=m; }).catch(()=>{});  
 const journeySteps=[
   { id:'compass', type:'chart', title:"The Hive Awakens", desc:"A living portrait of everyone in the room, right now." },
   { id:'video_intro', type:'video', url:"https://www.youtube.com/embed/6xpckUCGIlE?autoplay=1&modestbranding=1&rel=0&controls=0" },
-  { id:'fold_s', type:'fold', title:"Fold with us · S", desc:"Stewardship — the foundation.", fold:{letter:'S', name:'Stewardship', sub:'The Foundation', from:0, to:1} },
+  { id:'fold_s', type:'fold', title:"Fold with us · S", desc:"Stewardship: the foundation.", fold:{letter:'S', name:'Stewardship', sub:'The Foundation', from:0, to:1} },
   { id:'deck_a', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRpjJ-5NgPJO2LRLdKEcpBgqv-xMAriN5QxdbJSPLS5IE2y2pjNhE0icRG8lKqp0x0dM0KbbS9e1HWK/pubembed?start=false&loop=false&delayms=60000" },
   { id:'poll_dream', type:'poll', title:"Live Poll · Our Core Values", pollData:{ id:'dream_poll',
      question:"What does D.R.E.A.M. stand for at Beatty?",
      options:["Discipline, Respect, Excellence, Achievement, Mindfulness","Discipline, Resilience, Empathy, Adaptability, Mindfulness","Diligence, Respect, Empathy, Adaptability, Mastery","Determination, Resilience, Excellence, Ambition, Mindfulness"],
-     correctAnswer:1, insight:"Correct! D.R.E.A.M. — Discipline, Resilience, Empathy, Adaptability, Mindfulness — guides every Beattyian." } },
-  { id:'values', type:'values', title:"The D.R.E.A.M. We Live By", desc:"Tap a value to see how it grows a Beattyian. Non Vi Sed Arte — not with force, but with skill." },
+     correctAnswer:1, insight:"Correct! DREAM (Discipline, Resilience, Empathy, Adaptability, Mindfulness) guides every Beattyian." } },
+  { id:'values', type:'values', title:"The D.R.E.A.M. We Live By", desc:"Five values that grow a Beattyian. Non Vi Sed Arte: not with force, but with skill." },
   { id:'deck_b', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vSrojJmwv5d-ElzN38A8S1Q_YAYl1_VulE6jPSFy6n8dEjPUnzNltCRstS8VC3fUgSg7Xd0fYN4-NWZ/pubembed?start=false&loop=false&delayms=60000" },
-  { id:'funfact_cca', type:'funfact', funfactData:{ number:"17", label:"CCAs to belong to", subtitle:"Across Uniformed Groups, Performing Arts, Sports & Games and Clubs — a hive has a place for every kind of bee." } },
-  { id:'fold_a', type:'fold', title:"Fold with us · A", desc:"Applied Learning — the structure.", fold:{letter:'A', name:'Applied Learning', sub:'The Structure', from:1, to:3} },
+  { id:'funfact_cca', type:'funfact', funfactData:{ number:"17", label:"CCAs to belong to", subtitle:"Across Uniformed Groups, Performing Arts, Sports & Games and Clubs. A hive has a place for every kind of bee." } },
+  { id:'fold_a', type:'fold', title:"Fold with us · A", desc:"Applied Learning: the structure.", fold:{letter:'A', name:'Applied Learning', sub:'The Structure', from:1, to:3} },
   { id:'poll_cca', type:'poll', title:"Live Poll · Pursuing Passions", pollData:{ id:'cca',
      question:"What share of students get their 1st or 2nd choice CCA?",
      options:["50%","70%","90%","100%"], correctAnswer:2,
-     insight:"9 in 10 Beattyians land a CCA they truly love — passion has a home here." } },
+     insight:"9 in 10 Beattyians land a CCA they truly love. Passion has a home here." } },
   { id:'deck_c', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vSPBCKf2jwhgnzADjp6D8QcYaz5aSykXkmBsCCSgYNS5QugQUIPYg1pHoD9i3WBkKxH7BjZaTqQvQZe/pubembed?start=false&loop=false&delayms=60000" },
   { id:'poll_nexus_count', type:'poll', title:"Live Poll · Our Opportunities", pollData:{ id:'nexus_count_v2',
      question:"How many international exchanges & industry attachments does Beatty offer?",
      options:["4 & 4","6 & 6","8 & 6","10 & 10"], correctAnswer:2,
-     insight:"8 international exchanges + 6 industry attachments — 14 doors into the wider world." } },
+     insight:"8 international exchanges and 6 industry attachments: 14 doors into the wider world." } },
   { id:'poll_industry', type:'poll', title:"Live Poll · Our Pathways", pollData:{ id:'industry',
      question:"Which is NOT an area students can dive into at Beatty?",
-     options:["Sustainability","Journalism & Media","Engineering & AI","None — we do all of these"], correctAnswer:3,
+     options:["Sustainability","Journalism & Media","Engineering & AI","None: we do all of these"], correctAnswer:3,
      insight:"A trick! Beatty offers all of these. Every passion has a pathway." } },
-  { id:'funfact_nexus', type:'funfact', funfactData:{ number:"8", label:"International exchanges every year", subtitle:"From Hanoi to New Zealand, Estonia to Bali — Beattyians explore the world." } },
-  { id:'fold_i', type:'fold', title:"Fold with us · I", desc:"International & Industry — the sail.", fold:{letter:'I', name:'International & Industry', sub:'The Sail', from:3, to:6} },
+  { id:'funfact_nexus', type:'funfact', funfactData:{ number:"8", label:"International exchanges every year", subtitle:"From Hanoi to New Zealand, Estonia to Bali, Beattyians explore the world." } },
+  { id:'fold_i', type:'fold', title:"Fold with us · I", desc:"International & Industry: the sail.", fold:{letter:'I', name:'International & Industry', sub:'The Sail', from:3, to:6} },
   { id:'deck_d', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRIJppB8CD0rLo6qLaE4eiXeJHcYviqju1Gf3QChKnv7XsJY2cfYQ0eU8M7pSf5Bos2DcyuIxl6ZCPX/pubembed?start=false&loop=false&delayms=60000" },
-  { id:'nexus_global', type:'globe', title:"Exploring New Skies, Building Ties", desc:"NEXUS@BTY international exchanges. Choose the one that calls to you — your bee lands on the globe.",
+  { id:'nexus_global', type:'globe', title:"Exploring New Skies, Building Ties", desc:"NEXUS@BTY international exchanges. Choose the one that calls to you. Your bee lands on the globe.",
      nexusData:{ type:'global', options:[ {id:'GeoBali',text:'Bali (Geography)'},{id:'LitBali',text:'Bali (Literature)'},{id:'NZ',text:'New Zealand'},{id:'Korea',text:'South Korea (A.I.)'},{id:'MiharaJapan',text:'Japan (Social Sciences)'},{id:'MutsuzawaJapan',text:'Japan (STEM)'},{id:'Estonia',text:'Estonia (Cyber)'},{id:'Hanoi',text:'Vietnam (Hanoi)'} ] } },
   { id:'deck_d2', type:'slide' },   // native only: the industry half of the NEXUS deck, before the map (the Google deck_d holds both halves)
   { id:'nexus_local', type:'industry_map', title:"Dive into the Wonders of Work", desc:"NEXUS@BTY industry attachments across Singapore. Where would you thrive?",
@@ -1344,8 +1603,8 @@ const journeySteps=[
        {id:"TamilMurasu", name:"Tamil Murasu",        lat:1.3393, lon:103.8525, ax:705, ay:420, side:'r', dx:9, dy:9} ],
      nexusData:{ type:'local', options:[ {id:'Rockwell',text:'Rockwell Automation'},{id:'PIL',text:'PIL (Maritime)'},{id:'Journalism',text:'Berita Harian'},{id:'TamilMurasu',text:'Tamil Murasu'},{id:'Makita',text:'Makita (Mechatronics)'},{id:'ASTAR',text:'A*STAR Research'} ] } },
   { id:'deck_e', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRxw0Yj77fW9I87q0-XgXfqwGPwdi6RPDXBHb7CMGmEJTdBhELve0N5rAg5WbtS2vivKyV5WZO9gB_m/pubembed?start=false&loop=false&delayms=60000" },
-  { id:'fold_l', type:'fold', title:"Fold with us · L", desc:"Learning to Live, Learn & Love — the flag. Pull it open: a boat.", fold:{letter:'L', name:'Learning to Live, Learn & Love', sub:'The Flag', from:6, to:8} },
-  { id:'set_sail', type:'fleet', title:"Set Sail, Beatty!", desc:"Every boat is a Beattyian setting sail from our Hive. Look up — here comes the fleet." },
+  { id:'fold_l', type:'fold', title:"Fold with us · L", desc:"Learning to Live, Learn & Love: the flag. Pull it open: a boat.", fold:{letter:'L', name:'Learning to Live, Learn & Love', sub:'The Flag', from:6, to:8} },
+  { id:'set_sail', type:'fleet', title:"Set Sail, Beatty!", desc:"Every boat is a Beattyian setting sail from our Hive. Look up: here comes the fleet." },
   { id:'finale', type:'finale', title:"Our Hive of Aspirations", desc:"Every cell is a dream from someone in this room tonight." },
   { id:'deck_f', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vQx7tJCZ8s5AD5S9F7S2kNmAgfEX7KnIP6fLMQfcFCfQr4-9JeUVxFcyYRhzNtZYbBaCvLM1Wz8p1sX/pubembed?start=false&loop=false&delayms=60000" },
   { id:'card', type:'memento', title:"Your Journey Begins", desc:"Check your phone: your Beatty Boarding Pass." },
@@ -1354,7 +1613,7 @@ const journeySteps=[
 
 /* ---------- What the phone shows alongside each slide ----------
    Chapters are structural (a strip of dots on the phone, current one named);
-   PHONE_CARD is what a GLANCE card says during a slide deck — a title and up to
+   PHONE_CARD is what a GLANCE card says during a slide deck: a title and up to
    three takeaways a parent would want to remember. Fill these from each deck's
    content; while empty the phone shows the chapter and "eyes on the screen". */
 const CHAPTER_OF={ compass:'Into the Hive', video_intro:'Who we are', deck_a:'Who we are', fold_s:'Who we are',
@@ -1375,20 +1634,20 @@ journeySteps.forEach(st=>{ if(!st.ch) st.ch=CHAPTER_OF[st.id]||''; });
 const RESPOND_TYPES=['chart','poll','globe','industry_map','pulse_check','finale','fold'];
 
 const modalData={
-  GeoBali:{ title:"Geography @ Bali", students:30, duration:"1 Week", desc:"An immersive study of Bali's living landscape — its volcanic geography and the communities who adapt to it.", highlights:["Read a real volcanic landscape","See how communities adapt to their environment","Learn on-site, beyond the classroom"] },
-  LitBali:{ title:"Literature @ Bali", duration:"1 Week", desc:"Literature on location — reading and writing about Bali's stories, culture and people, where they come from.", highlights:["Read texts in the place they describe","Write from first-hand experience","Learn on-site, beyond the classroom"] },
-  NZ:{ title:"Leadership & Sustainability @ Aorere College, New Zealand", students:10, duration:"1 Week", desc:"Co-designed with Aorere College — leadership grown through service and sustainability.", highlights:["Sharpen critical & creative thinking","Develop real leadership qualities","See language's role in leading others"] },
+  GeoBali:{ title:"Geography @ Bali", students:30, duration:"1 Week", desc:"An immersive study of Bali's living landscape: its volcanic geography and the communities who adapt to it.", highlights:["Read a real volcanic landscape","See how communities adapt to their environment","Learn on-site, beyond the classroom"] },
+  LitBali:{ title:"Literature @ Bali", duration:"1 Week", desc:"Literature on location: reading and writing about Bali's stories, culture and people, where they come from.", highlights:["Read texts in the place they describe","Write from first-hand experience","Learn on-site, beyond the classroom"] },
+  NZ:{ title:"Leadership & Sustainability @ Aorere College, New Zealand", students:10, duration:"1 Week", desc:"Co designed with Aorere College: leadership grown through service and sustainability.", highlights:["Sharpen critical & creative thinking","Develop real leadership qualities","See language's role in leading others"] },
   Korea:{ title:"Artificial Intelligence @ South Korea", students:12, duration:"1 Week", desc:"Step into the future of technology in one of the world's most innovative societies.", highlights:["Hands-on with applied A.I.","Learn from a leading tech culture","Bring the future home to Beatty"] },
   MiharaJapan:{ title:"Social Sciences @ Mihara, Japan", students:14, duration:"1 Week", desc:"A transformative exchange with Hiroshima University High School.", highlights:["Deepen global & cultural literacy","Grow social-emotional competencies","Live rich Japanese culture"] },
   MutsuzawaJapan:{ title:"STEM @ Mutsuzawa, Japan", students:14, duration:"1 Week", desc:"Shaping future leaders in science and technology innovation.", highlights:["Deepen global & cultural literacy","Grow social-emotional competencies","Live rich Japanese culture"] },
-  Hanoi:{ title:"Culture & Enterprise @ Hanoi, Vietnam", students:20, duration:"1 Week", desc:"An immersion in Vietnam's capital — its history, its fast-growing enterprises and a city changing by the year.", highlights:["Deepen global & cultural literacy","See a young economy up close","Bring a wider world back to Beatty"] },
+  Hanoi:{ title:"Culture & Enterprise @ Hanoi, Vietnam", students:20, duration:"1 Week", desc:"An immersion in Vietnam's capital: its history, its fast-growing enterprises and a city changing by the year.", highlights:["Deepen global & cultural literacy","See a young economy up close","Bring a wider world back to Beatty"] },
   Estonia:{ title:"Cybersecurity @ Estonia", students:16, duration:"1 Week", desc:"Learn from the world's leading digital society and dive deep into cybersecurity.", highlights:["Explore digital citizenship","Cultural exchange & Estonian film","Research a secure digital future"] },
-  Rockwell:{ title:"Engineering @ Rockwell Automation", students:12, duration:"7–8 months", desc:"A head start in industrial automation — cybersecurity, digital twinning and sustainability." },
-  PIL:{ title:"Maritime, Materials & Corporate Communications @ Pacific International Lines", students:12, duration:"7–8 months", desc:"Understand global trade — sustainable logistics, innovative materials and corporate engagement." },
-  ASTAR:{ title:"Research @ A*STAR", students:6, duration:"7–8 months", desc:"Live as a research scientist at Singapore's premier R&D agency." },
-  Journalism:{ title:"Media & Journalism @ Berita Harian", students:8, duration:"7–8 months", desc:"The fast-paced world of news and ethical reporting in Malay-language media." },
-  TamilMurasu:{ title:"Media & Journalism @ Tamil Murasu", students:8, duration:"7–8 months", desc:"The vibrant world of news and media in the Tamil-language community." },
-  Makita:{ title:"Mechatronics @ ITE West & Makita", students:16, duration:"7–8 months", desc:"A deep dive into modern mechatronics and manufacturing with industry leader Makita." },
+  Rockwell:{ title:"Engineering @ Rockwell Automation", students:12, duration:"7 to 8 months", desc:"A head start in industrial automation: cybersecurity, digital twinning and sustainability." },
+  PIL:{ title:"Maritime, Materials & Corporate Communications @ Pacific International Lines", students:12, duration:"7 to 8 months", desc:"Understand global trade: sustainable logistics, innovative materials and corporate engagement." },
+  ASTAR:{ title:"Research @ A*STAR", students:6, duration:"7 to 8 months", desc:"Live as a research scientist at Singapore's premier R&D agency." },
+  Journalism:{ title:"Media & Journalism @ Berita Harian", students:8, duration:"7 to 8 months", desc:"The fast-paced world of news and ethical reporting in Malay-language media." },
+  TamilMurasu:{ title:"Media & Journalism @ Tamil Murasu", students:8, duration:"7 to 8 months", desc:"The vibrant world of news and media in the Tamil-language community." },
+  Makita:{ title:"Mechatronics @ ITE West & Makita", students:16, duration:"7 to 8 months", desc:"A deep dive into modern mechatronics and manufacturing with industry leader Makita." },
 };
 
 /* ---------- The show's id ----------
@@ -1407,9 +1666,9 @@ async function loadEpoch(){
 function newEpoch(){ return 'show-'+Date.now().toString(36); }
 
 /* ---------- Firebase listeners ----------
-   Two saved states, nothing else — the same channel last year's show used.
-   · session/state      — the show's saved state (this screen writes it; phones follow it)
-   · compassQuiz/{uid}  — each phone's saved state, merged as it goes: its bee, its votes,
+   Two saved states, nothing else: the same channel last year's show used.
+   · session/state     : the show's saved state (this screen writes it; phones follow it)
+   · compassQuiz/{uid} : each phone's saved state, merged as it goes: its bee, its votes,
                           its globe/map picks, its mood, its dream word, its folds, its boat,
                           its last reaction. One collection to listen to; every tally is
                           counted here, on the big screen, never on the phones. */
@@ -1520,7 +1779,7 @@ function fireSetSail(){
 function runSailOverlay(localAt){
   document.getElementById('sailOv')?.remove();
   const ov=document.createElement('div'); ov.id='sailOv'; ov.className='sail-ov';
-  ov.innerHTML=`<div class="sail-ov-eyebrow">Set Sail, Beatty</div><div class="sail-ov-word" id="sailWord">Hold your boat</div><div class="sail-ov-sub" id="sailSub">Thumb on your boat. I say <em>Non Vi</em> — you say <em>Sed Arte</em>. On the third, let go.</div><div class="sail-ov-call" id="sailCall"></div>`;
+  ov.innerHTML=`<div class="sail-ov-eyebrow">Set Sail, Beatty</div><div class="sail-ov-word" id="sailWord">Hold your boat</div><div class="sail-ov-sub" id="sailSub">Thumb on your boat. I say <em>Non Vi</em>, you say <em>Sed Arte</em>. On the third, let go.</div><div class="sail-ov-call" id="sailCall"></div>`;
   document.body.appendChild(ov);
   const wordEl=document.getElementById('sailWord'), subEl=document.getElementById('sailSub'), callEl=document.getElementById('sailCall');
   let wi=0, riser=false, dimmed=false, fired=false, rc=-1, done=false;
@@ -1539,7 +1798,7 @@ function runSailOverlay(localAt){
     if(fired){
       const t=-rem;                                   // ms since launch
       if(t>=12000 && t<12000+DEST_ROLL.length*3000){ const i=Math.floor((t-12000)/3000); if(i!==rc){ rc=i; const d=DEST_ROLL[i];
-        callEl.innerHTML=`<span class="sail-ov-swatch" style="background:${d.col}"></span>${d.name} — <em>wave!</em>`; callEl.classList.remove('pop'); void callEl.offsetWidth; callEl.classList.add('pop'); sailSound('chime'); } }
+        callEl.innerHTML=`<span class="sail-ov-swatch" style="background:${d.col}"></span>${d.name}: <em>wave!</em>`; callEl.classList.remove('pop'); void callEl.offsetWidth; callEl.classList.add('pop'); sailSound('chime'); } }
       else if(t>=12000+DEST_ROLL.length*3000 && callEl.textContent){ callEl.textContent=''; }
       if(t>=42000){ done=true; ov.classList.add('out'); setTimeout(()=>ov.remove(),800); return; }
     }
@@ -1583,7 +1842,7 @@ function renderFold(step){
     <div class="fold-side">
       <p class="eyebrow">Fold with us · on your phone</p>
       <h2 class="stage-title"><span class="fold-letter">${f.letter}</span>${f.name}</h2>
-      <p class="stage-sub" style="margin:8px 0 0">${f.sub} · ${foldsDoneP(f.to)-foldsDoneP(f.from)>1?`folds ${foldsDoneP(f.from)+1} and ${foldsDoneP(f.to)}`:`fold ${foldsDoneP(f.to)}`} of ${FOLD_PLAN_P.length}</p>
+      <p class="stage-sub" style="margin:8px 0 0">${f.sub}</p>
       <p class="fold-cap" id="foldCap"></p>
       <div class="fold-count fold-live" id="foldCount">
         <div class="fold-ring"><svg viewBox="0 0 120 120"><circle class="bg" cx="60" cy="60" r="52"/><circle class="fg" cx="60" cy="60" r="52" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${C.toFixed(1)}"/></svg><span class="fc-n">0</span></div>
@@ -1627,7 +1886,7 @@ function paintFoldCount(){
   el.querySelector('.fc-n').textContent=n;
   const tot=document.getElementById('fcTotal'), sub=document.getElementById('fcSub');
   if(tot) tot.textContent= total>0 ? `of ${total}` : 'Fold along';
-  if(sub) sub.textContent= s.fold.to>=8 ? 'boats complete' : `past fold ${foldsDoneP(s.fold.to)} of ${FOLD_PLAN_P.length}`;
+  if(sub) sub.textContent= s.fold.to>=8 ? 'boats complete' : 'boats folded';
   const C=2*Math.PI*52, fg=el.querySelector('.fold-ring .fg'); if(fg) fg.style.strokeDashoffset=(C*(1-(total>0?Math.min(1,n/total):0))).toFixed(1);
   el.classList.toggle('most', total>0 && n/total>=0.8);
   const hb=document.getElementById('foldHarbour');
@@ -1670,7 +1929,7 @@ function runBloomOverlay(localAt){
 }
 
 /* Reveal the answer where it stands: the correct bar ignites gold and the insight
-   lands as the punchline. No slide reload — the reveal is a moment, not a page. */
+   lands as the punchline. No slide reload: the reveal is a moment, not a page. */
 function revealPollInPlace(step){
   const p=step.pollData; const host=journeyContent.querySelector(`[data-poll="${p.id}"]`);
   if(!host){ goRender(); return; }
@@ -1679,6 +1938,7 @@ function revealPollInPlace(step){
     row.classList.add('win'); row.querySelector('.poll-fill')?.classList.add('correct');
     const lab=row.querySelector('.poll-label'); if(lab && !lab.querySelector('.win-tag')) lab.insertAdjacentHTML('beforeend', `<span class="win-tag">${BTY.icon('check')}Answer</span>`);
   });
+  host.classList.add('revealed');
   const wait=host.querySelector('.poll-wait'); if(wait) wait.remove();
   if(p.insight && !host.querySelector('.poll-insight')){ const ins=document.createElement('p'); ins.className='poll-insight'; ins.textContent=p.insight; host.appendChild(ins); }
   nextBtn.textContent='Next ❯';
@@ -1727,7 +1987,7 @@ const CARD_URL='https://go.gov.sg/probeatty', CARD_URL_LABEL='beattysec.moe.edu.
 const WHY_BEATTY=[['8','international exchanges'],['6','industry attachments'],['17','CCAs to belong to']];
 function renderClosing(thanks){
   return `<div class="closing">
-    <div class="cl-phone"><div class="cl-screen"><img src="card-sample.jpg" alt="A Beatty Boarding Pass"></div><span class="cl-tag">${BTY.icon('phone')} On every phone now</span></div>
+    <div class="cl-phone"><div class="cl-screen"><img src="card-sample-v2.jpg" alt="A Beatty Boarding Pass"></div><span class="cl-tag">${BTY.icon('phone')} On every phone now</span></div>
     <div class="cl-side">
       <p class="eyebrow">${thanks?'Thank you for sailing with us':'Your journey begins'}</p>
       <h2 class="stage-title">Make Beatty your<br><span class="gold">1st choice</span></h2>
@@ -1765,7 +2025,7 @@ function renderCompass(){
           <div class="tag">${a.tag}</div>
         </div>`).join('')
       }</div>
-      <p id="compassWait" style="color:var(--ink-dim); margin-top:18px; font-size:clamp(.95rem,1.4vw,1.25rem)">Scan, then pick your answers — your bee lands here.</p>
+      <p id="compassWait" style="color:var(--ink-dim); margin-top:18px; font-size:clamp(.95rem,1.4vw,1.25rem)">Scan, then pick your answers: your bee lands here.</p>
       <div id="compassDone" class="compass-done" hidden><div class="cd-bar"><div class="cd-fill"></div></div><span class="cd-text"></span></div>
     </div>
   </div></div>`;
@@ -1793,7 +2053,7 @@ function paintCompass(){
   const done=document.getElementById('compassDone');
   if(done){ done.hidden= joined===0; const all= joined>0 && total>=joined;
     done.querySelector('.cd-fill').style.width=(joined>0? total/joined*100 : 0)+'%'; done.classList.toggle('all', all);
-    done.querySelector('.cd-text').textContent= all ? `All ${joined} bees have found their place ✓` : `${total} of ${joined} have found their bee — a few still choosing…`; }
+    done.querySelector('.cd-text').textContent= all ? `All ${joined} bees have found their place ✓` : `${total} of ${joined} have found their bee, a few still choosing…`; }
   let max=0,maxKey=null; ARCH_KEYS.forEach(k=>{ if((bd[k]||0)>max){max=bd[k];maxKey=k;} });
   grid.querySelectorAll('.arch-cell').forEach(cell=>{
     const k=cell.dataset.arch, c=bd[k]||0, pct= total>0?(c/total*100):0;
@@ -1806,7 +2066,7 @@ function paintCompass(){
 /* Poll */
 function renderPoll(p){
   const d=live.polls[p.id]||{total:0,breakdown:{}}, total=d.total||0, revealed=!!journeySteps[currentStep].revealed;
-  return `<div class="wrap poll-wrap" data-poll="${p.id}">
+  return `<div class="wrap poll-wrap${revealed?' revealed':''}" data-poll="${p.id}">
     <div class="poll-head">
       <h2 class="poll-q${p.question.length>58?' long':''}">${p.question}</h2>
       <div class="votes-chip">${BTY.icon('bee')} <span class="pv">${total}</span><span class="pvm">${live.compass.total>0?` of ${live.compass.total}`:''}</span> voted</div>
@@ -1814,7 +2074,7 @@ function renderPoll(p){
     <div>${p.options.map((o,i)=>{
       const c=d.breakdown?.[i]||0, pct= total>0?(c/total*100):0, correct=i===p.correctAnswer;
       return `<div class="poll-opt ${correct&&revealed?'win':''}" data-i="${i}">
-        <div class="poll-row"><span class="poll-label">${o}${correct&&revealed?`<span class="win-tag">${BTY.icon('check')}Answer</span>`:''}</span><span class="poll-n"><span class="pn">${c}</span></span></div>
+        <div class="poll-row"><span class="poll-label">${o}${correct&&revealed?`<span class="win-tag">${BTY.icon('check')}Answer</span>`:''}</span><span class="poll-n"><span class="pc">${c}</span></span></div>
         <div class="poll-track"><div class="poll-fill ${correct&&revealed?'correct':''}" style="width:${pct}%">${Math.round(pct)}%</div></div>
       </div>`; }).join('')}
     </div>
@@ -1831,7 +2091,7 @@ function paintPoll(id){
   s.pollData.options.forEach((o,i)=>{
     const c=d.breakdown?.[i]||0, pct= total>0?(c/total*100):0;
     const row=host.querySelector(`.poll-opt[data-i="${i}"]`); if(!row) return;
-    row.querySelector('.pn').textContent=c;
+    row.querySelector('.pc').textContent=c;
     const fill=row.querySelector('.poll-fill'); fill.style.width=pct+'%'; fill.textContent=Math.round(pct)+'%';
   });
 }
@@ -1839,7 +2099,7 @@ function paintPoll(id){
 /* Values */
 function renderValues(){
   return `<div class="wrap"><div class="dream-grid">${dreamValues.map(v=>`
-    <div class="dcard" role="button" tabindex="0" aria-label="${v.name} — flip for detail">
+    <div class="dcard" role="button" tabindex="0" aria-label="${v.name}: flip for detail">
       <div class="dcard-inner">
         <div class="dface dfront">
           <div class="bg" style="background-image:url('${v.img}'); background-color:${v.tint||'#0a1650'}"></div>
@@ -2015,7 +2275,7 @@ function renderGlobe(){
   </div>`;
 }
 /* Land as a 2048×1024 equirectangular mask (built once). Painting the sphere by
-   sampling it is exact for any rotation — no polygon clipping at the horizon, so
+   sampling it is exact for any rotation: no polygon clipping at the horizon, so
    land and sea can never swap. Coastlines are marked so they can glow. */
 let landTex=null;
 function buildLandTexture(){
@@ -2212,7 +2472,7 @@ const DECKS=window.BTY_DECKS||{};
 function deckFor(step){ if(SCENES_OFF) return null; const d=step && step.type==='slide' && DECKS[step.id]; return (d && Array.isArray(d.slides) && d.slides.length && (d.use || SCENES_PREVIEW)) ? d : null; }
 let sceneIdx=0;
 const escH=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const CH_ICON={ 'Who we are':'school', 'Our values':'heart', 'Passions':'spark', 'NEXUS@BTY':'globe', 'Your pathway':'explorer', 'Your journey':'wave' };
+const CH_ICON={ 'A day at Beatty':'smile', 'Who we are':'school', 'Our values':'heart', 'Passions':'spark', 'NEXUS@BTY':'globe', 'Your pathway':'explorer', 'Your journey':'wave' };
 const askId=s=>s.id||('q_'+String(s.question||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').slice(0,30));   // an ask without an id still gets a stable one
 function stepGone(st){ return st && st.type==='slide' && !deckFor(st) && !st.url; }   // nothing to show: the journey skips it
 function curSlide(){ const st=journeySteps[currentStep], d=deckFor(st); return d ? d.slides[Math.min(sceneIdx,d.slides.length-1)] : null; }
@@ -2268,27 +2528,43 @@ const D_=(ms)=>` style="--d:${Math.round(Math.min(ms,1200)/3)}ms"`;   // text is
 const IMG=p=>'deck/img/'+String(p||'').replace(/^\/+/,'');
 const AR=p=>{ const z=(window.BTY_IMG_SIZES||{})[String(p||'').replace(/^\/+/,'')]; return z ? z[0]/z[1] : 1.5; };
 // A whole photo: laid out by fitPhotos() at its true proportions, so no one is ever cropped out.
-const FIG=x=>{ x=typeof x==='string'?{src:x}:x; return `<figure data-ar="${AR(x.src).toFixed(4)}"><img src="${IMG(x.src)}" alt="${escH(x.cap||'')}">${x.cap?`<figcaption>${escH(x.cap)}</figcaption>`:''}</figure>`; };
-/* Lay photos out whole inside a box: try every way of splitting them into 1 to 4 rows (in order),
-   size each row so its photos fill the width at their own aspect ratios, scale to fit the height,
-   and keep the arrangement that covers the most area. Centred, nothing cropped. */
+const FIG=x=>{ x=typeof x==='string'?{src:x}:x; return `<figure data-ar="${AR(x.src).toFixed(4)}"${x.fit==='contain'||x.whole?' class="whole"':''}${x.pos?` style="--pos:${escH(x.pos)}"`:''}><img src="${IMG(x.src)}" alt="${escH(x.cap||'')}">${x.cap?`<figcaption>${escH(x.cap)}</figcaption>`:''}</figure>`; };
+/* Lay photos out inside a box: try every way of splitting them into 1 to 4 rows (in order); size each row so
+   its photos fill the width at their own proportions; then let rows stretch a little (a photo may lose up to
+   about 15% of its width or height) so the set fills the box instead of floating in it. A box marked whole,
+   or holding a photo marked whole (screenshots, clippings, group photos), is never cropped.
+   Rows with a caption get a line under the photos for it. */
 function fitPhotos(box){
   const figs=[...box.children].filter(e=>e.tagName==='FIGURE'); if(!figs.length) return;
   const W=box.clientWidth, H=box.clientHeight; if(!W||!H) return;
-  const g=Math.max(8,Math.round(W*.008)), A=figs.map(f=>+f.dataset.ar||1.5), n=A.length;
+  const g=Math.max(10,Math.round(W*.009)), n=figs.length, A=figs.map(f=>+f.dataset.ar||1.5), C=figs.map(f=>!!f.querySelector('figcaption'));
+  const allWhole=box.classList.contains('whole'), Wh=figs.map(f=>allWhole||f.classList.contains('whole')), anyWhole=Wh.some(Boolean);
+  if(allWhole) figs.forEach(f=>f.classList.add('whole'));
+  const capH=Math.round(Math.max(30,Math.min(44,H*.055))), CROP=1.12;
+  // A row's photos at height h: whole ones keep their shape; the others may widen (cropping top and bottom) to fill the row.
+  const rowW=(x,y,h)=>{ const gaps=g*(y-x-1); let nat=0, cap=0; for(let i=x;i<y;i++){ nat+=A[i]*h; if(!Wh[i]) cap+=A[i]*h*(CROP-1); }
+    const f=cap>0?Math.max(0,Math.min(1,(W-gaps-nat)/cap)):0; return { f, w:nat+cap*f+gaps }; };
   let best=null;
-  const tryRows=(cuts)=>{ const rows=[]; let a=0; for(const c of [...cuts,n]){ rows.push(A.slice(a,c)); a=c; }
-    const hs=rows.map(r=>(W-g*(r.length-1))/r.reduce((x,y)=>x+y,0)), tot=hs.reduce((x,y)=>x+y,0)+g*(rows.length-1);
-    const k=Math.min(1,H/tot), area=k*k*rows.reduce((sum,r,i)=>sum+hs[i]*hs[i]*r.reduce((x,y)=>x+y,0),0);
-    if(!best || area>best.area*1.001) best={rows,hs,k,tot,area}; };
+  const tryRows=cuts=>{ const rows=[]; let a=0; for(const c of [...cuts,n]){ rows.push([a,c]); a=c; }
+    const hs=rows.map(([x,y])=>(W-g*(y-x-1))/A.slice(x,y).reduce((p,q)=>p+q,0));
+    const caps=rows.map(([x,y])=>C.slice(x,y).some(Boolean)?capH:0);
+    const fixed=g*(rows.length-1)+caps.reduce((p,q)=>p+q,0), sumH=hs.reduce((p,q)=>p+q,0);
+    if(H-fixed<40) return;
+    const k=Math.min(1,(H-fixed)/sumH), sy=anyWhole?1:Math.min(CROP,(H-fixed)/(k*sumH));   // spare height: rows grow taller, photos lose a little at the sides
+    const area=rows.reduce((t,[x,y],i)=>t+hs[i]*k*sy*Math.min(W,rowW(x,y,hs[i]*k).w),0);
+    if(!best || area>best.area*1.001) best={rows,hs,caps,k,sy,fixed,area}; };
   const comb=(start,left,cuts)=>{ if(left===0){ tryRows(cuts); return; } for(let c=start;c<=n-left;c++) comb(c+1,left-1,[...cuts,c]); };
   for(let r=1;r<=Math.min(4,n);r++) comb(1,r-1,[]);
-  const {rows,hs,k,tot}=best; let y=(H-k*tot)/2, idx=0;
-  rows.forEach((r,ri)=>{ const h=hs[ri]*k, rw=r.reduce((s2,a)=>s2+a*h,0)+g*(r.length-1); let x=(W-rw)/2;
-    r.forEach(a=>{ const f=figs[idx++]; Object.assign(f.style,{position:'absolute',left:x+'px',top:y+'px',width:(a*h)+'px',height:h+'px'}); x+=a*h+g; });
-    y+=h+g; });
+  if(!best) return;
+  const {rows,hs,caps,k,sy,fixed}=best, tot=rows.reduce((t,_,i)=>t+hs[i]*k*sy,0)+fixed; let y=(H-tot)/2;
+  const al=box.dataset.align;   // a feature's photos sit toward its words
+  rows.forEach(([x0,x1],ri)=>{ const h0=hs[ri]*k, h=h0*sy, {f,w:rw}=rowW(x0,x1,h0), spare=W-Math.min(W,rw); let x=al==='end'?spare:al==='start'?0:spare/2;
+    for(let i=x0;i<x1;i++){ const el=figs[i], w=A[i]*h0*(Wh[i]?1:1+(CROP-1)*f); Object.assign(el.style,{position:'absolute',left:x+'px',top:y+'px',width:w+'px',height:(h+caps[ri])+'px'}); el.style.setProperty('--cap',caps[ri]+'px'); x+=w+g; }
+    y+=h+caps[ri]+g; });
   box.classList.add('fitted');
 }
+// Refit whenever a box changes size (the page turning cream animates its size, so a one off measure was wrong).
+const fitObserver=('ResizeObserver' in window) ? new ResizeObserver(es=>es.forEach(e=>fitPhotos(e.target))) : null;
 addEventListener('resize',()=>document.querySelectorAll('#scBody .fit-box').forEach(fitPhotos));
 const DREAM_TINTS=['#5B7BFF','#FF8A3D','#FF4D52','#3FBF5A','#FFD23F','#FF9A3D'];
 function rainbowText(t, tints){ const c=tints||DREAM_TINTS; let k=0; return [...String(t||'')].map(ch=>ch===' '?' ':`<span style="color:${c[(k++)%c.length]}">${escH(ch)}</span>`).join(''); }
@@ -2303,9 +2579,33 @@ const TIE_STAGES=[
   {head:'Tie breaker 2: Choice order', boxes:[{row:'2', text:'Bryan ranked School B higher than Mary.', to:[['bryan','B']]},{row:'3', text:'School B is now full.', to:[['mary','C']]},{row:'4 / span 2', text:'Alan and Rina both ranked School D third.'}]},
   {head:'Tie breaker 3: Computerised balloting', boxes:[{row:'4', text:'The ballot gives Alan the last place.', to:[['alan','D']]},{row:'5', text:'School D is now full.', to:[['rina','E']]}]}];
 /* Motion that explains, run once when a slide paints (nothing waits for a press). */
+function layoutPins(s, body){
+  const map=body.querySelector('.pn-map'), svg=map&&map.querySelector('.pn-arcs'); if(!map||!svg) return;
+  const W=map.clientWidth, H=map.clientHeight; if(!W||!H) return;
+  const X=v=>v*W/100, Y=v=>v*H/100, hm=s.home, mr=map.getBoundingClientRect();
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.removeAttribute('preserveAspectRatio');
+  let out='';
+  (s.pins||[]).forEach((p,i)=>{
+    if(hm){ const mx=(hm.x+p.x)/2, my=Math.min(hm.y,p.y)-Math.max(8,Math.abs(p.x-hm.x)*.35);
+      out+=`<path class="pn-arc" style="--d:${300+i*700}ms" d="M${X(hm.x)} ${Y(hm.y)} Q ${X(mx)} ${Y(my)} ${X(p.x)} ${Y(p.y)}" pathLength="100"/>`; }
+    const lab=map.querySelectorAll('.pn-l')[i]; if(!lab) return;
+    const r=lab.getBoundingClientRect(), L=r.left-mr.left, Tp=r.top-mr.top, R=L+r.width, B=Tp+r.height, px=X(p.x), py=Y(p.y)-12;
+    const qx=Math.max(L,Math.min(px,R)), qy=Math.max(Tp,Math.min(py,B));
+    if(Math.hypot(qx-px,qy-py)>18) out+=`<line class="pn-lead" style="--d:${(hm?1000+i*700:300+i*170)+120}ms" x1="${px}" y1="${py}" x2="${qx}" y2="${qy}"/>`; });
+  svg.innerHTML=out;
+}
+function layoutCrest(body){
+  const box=body.querySelector('.cr-img'), svg=box&&box.querySelector('.cr-rings'); if(!svg) return;
+  const W=box.clientWidth, H=box.clientHeight; if(!W||!H) return;
+  if(!svg.dataset.px){ svg.querySelectorAll('ellipse').forEach(e=>['cx','rx'].forEach(a=>e.dataset[a]=e.getAttribute(a))); svg.querySelectorAll('ellipse').forEach(e=>['cy','ry'].forEach(a=>e.dataset[a]=e.getAttribute(a))); svg.dataset.px=1; }
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.removeAttribute('preserveAspectRatio');
+  svg.querySelectorAll('ellipse').forEach(e=>{ e.setAttribute('cx',e.dataset.cx*W/100); e.setAttribute('rx',e.dataset.rx*W/100); e.setAttribute('cy',e.dataset.cy*H/100); e.setAttribute('ry',e.dataset.ry*H/100); });
+}
 function animateSlide(s, body){
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const T=(fn,ms)=>setTimeout(()=>{ if(body.isConnected) fn(); }, reduce?0:ms);
+  if(s.kind==='pins'){ layoutPins(s, body); requestAnimationFrame(()=>layoutPins(s, body)); }
+  if(s.kind==='crest'){ layoutCrest(body); requestAnimationFrame(()=>layoutCrest(body)); }
   if(s.kind==='crest'){ const n=(s.items||[]).length;
     for(let i=0;i<n;i++) T(()=>{ body.querySelectorAll('.cr-list li').forEach((li,k)=>{ li.classList.toggle('now',k===i); if(k<=i) li.classList.add('lit'); });
       body.querySelectorAll('.cr-ring').forEach((r,k)=>{ r.classList.toggle('now',k===i); if(k<=i) r.classList.add('lit'); }); }, 400+i*1400);
@@ -2318,7 +2618,7 @@ function animateSlide(s, body){
       const p0=path.getPointAtLength(0); dot.setAttribute('cx',p0.x); dot.setAttribute('cy',p0.y);
       if(reduce){ const p=path.getPointAtLength(len); dot.setAttribute('cx',p.x); dot.setAttribute('cy',p.y); } else setTimeout(()=>requestAnimationFrame(tick), 400+si*150); }); }
   if(s.kind==='mix'){ const box=body.querySelector('.sc-mixer'); if(!box) return; const W=box.clientWidth, H=box.clientHeight, nC=+box.dataset.classes, nL=+box.dataset.levels, dots=[...box.querySelectorAll('.mx-dot')];
-      const R=Math.max(14,Math.min(26,W/70)), gap=W*.02;
+      const R=Math.max(14,Math.min(32,W/56)), gap=W*.02;
       const place=(phase)=>{ const groups=phase===1?nL:nC, key=phase===1?'li':'ci', bw=(W-gap*(groups-1))/groups;
         box.querySelectorAll(phase===1?'.mx-lvl':'.mx-box').forEach((b,i)=>Object.assign(b.style,{left:i*(bw+gap)+'px',width:bw+'px',opacity:1}));
         box.querySelectorAll(phase===1?'.mx-box':'.mx-lvl').forEach(b=>b.style.opacity=0);
@@ -2335,16 +2635,16 @@ function animateSlide(s, body){
 }
 function nexusLogo(){ return `<svg class="nx-logo" viewBox="0 0 300 300" aria-label="NEXUS@BTY"><defs><path id="nxTop" d="M40 150 A110 110 0 0 1 260 150"/><path id="nxBot" d="M30 150 A120 120 0 0 0 270 150"/></defs>
   <circle cx="150" cy="150" r="92" fill="none" stroke="#EC3237" stroke-width="5" pathLength="100" class="nx-ring"/>
-  <path d="M95 95 L205 205 M205 95 L95 205" stroke="#EC3237" stroke-width="12" stroke-linecap="round" pathLength="100" class="nx-x"/>
+  <path d="M114 126 L72 174" stroke="#8E1F24" stroke-width="9" stroke-linecap="round" pathLength="100" class="nx-x nx-x2"/><path d="M72 126 L114 174" stroke="#EC3237" stroke-width="9" stroke-linecap="round" pathLength="100" class="nx-x"/>
   <text font-family="Georgia,serif" font-size="22" fill="currentColor"><textPath href="#nxTop" startOffset="50%" text-anchor="middle">Navigation &amp; Exploration</textPath></text>
   <text font-family="Georgia,serif" font-size="22" fill="currentColor"><textPath href="#nxBot" startOffset="50%" text-anchor="middle">Understandings &amp; Synergies</textPath></text>
-  <text x="150" y="157" font-family="Georgia,serif" font-size="20" font-weight="700" fill="var(--gold)" text-anchor="middle">Disciplinary</text></svg>`; }
+  <text x="176" y="158" font-family="Georgia,serif" font-size="21" font-weight="700" text-anchor="middle" class="nx-word">Disciplinary</text></svg>`; }
 function slideHTML(s){
   const T=(t,cls='')=>t?`<h2 class="sc-t${cls} bi"${D_(60)}>${escH(t)}</h2>`:'';
   const cols=n=>` style="grid-template-columns:repeat(${n},1fr)"`;
   switch(s.kind){
     case 'statement': return `<div class="sc-stmt">
-        ${s.logo==='nexus'?`<div class="sc-logo bi">${nexusLogo()}</div>`:s.icon?`<div class="sc-ic bi">${BTY.icon(s.icon,'',1.3)}</div>`:''}
+        ${s.logo==='nexus'?`<div class="sc-logo bi">${nexusLogo()}</div>`:''}
         ${s.eyebrow?`<p class="eyebrow bi"${D_(90)}>${escH(s.eyebrow)}</p>`:''}
         <h2 class="sc-h${s.latin?' latin':''} bi"${D_(170)}>${escH(s.title)}</h2>
         ${s.sub?`<p class="sc-sub bi"${D_(420)}>${escH(s.sub)}</p>`:''}
@@ -2352,7 +2652,10 @@ function slideHTML(s){
       </div>`;
     case 'duo': return `${T(s.title)}<div class="sc-duo">${(s.items||[]).map((x,i)=>`<div class="sc-card bi"${D_(140+i*220)}>
         ${x.label?`<p class="eyebrow">${escH(x.label)}</p>`:''}<h3>${escH(x.title)}</h3>${x.body?`<p class="b">${escH(x.body)}</p>`:''}${(x.list||[]).length?`<ul class="dl">${x.list.map(t=>`<li>${escH(t)}</li>`).join('')}</ul>`:''}</div>`).join('')}</div>`;
-    case 'pillars': { const n=(s.items||[]).length; return `${T(s.title)}<div class="sc-pills n${n}"${cols(n)}>${s.items.map((x,i)=>`<div class="sc-pill bi"${D_(200+i*130)}>
+    case 'pillars': { const n=(s.items||[]).length;
+      if(s.layout==='rows'){ const two=s.only==='more', H=s.heads||(two?['','To become']:['','To be','To become']);
+        return `${T(s.title)}<div class="sc-rowsx${two?' two':''}${s.logo?' logo':''}">${s.logo==='nexus'?`<div class="rx-logo bi">${nexusLogo()}</div>`:''}${H.map(h=>`<span class="rx-h bi"${D_(120)}>${escH(h)}</span>`).join('')}${s.items.map((x,i)=>`<div class="rx-k bi"${D_(220+i*160)}>${x.icon?BTY.icon(x.icon,'',1.4):''}<b>${escH(x.title)}</b></div>${two?'':`<div class="rx-c bi"${D_(260+i*160)}>${escH(x.body||'')}</div>`}<div class="rx-c${two?'':' dim'} bi"${D_(300+i*160)}>${escH(x.more||'')}</div>`).join('')}</div>`; }
+      return `${T(s.title)}<div class="sc-pills n${n}"${cols(n)}>${s.items.map((x,i)=>`<div class="sc-pill bi"${D_(200+i*130)}>
         ${x.icon?`<span class="pi">${BTY.icon(x.icon,'',1.4)}</span>`:''}<h3>${escH(x.title)}</h3>${x.body?`<p>${escH(x.body)}</p>`:''}${x.more?`<p class="more">${escH(x.more)}</p>`:''}</div>`).join('')}</div>`; }
     case 'stats': return `${T(s.title)}<div class="sc-stats">${(s.items||[]).map((x,i)=>{
         const num=`<span class="n${String(x.n).length>4?' sm':''}" data-count="${escH(x.n)}">${escH(x.n)}${x.suffix?`<small>${escH(x.suffix)}</small>`:''}</span>`;
@@ -2365,14 +2668,15 @@ function slideHTML(s){
     case 'quote': { const long=String(s.quote||'').length>200 ? ' long' : '';
       const q=`<div class="sc-quote${long}">${s.title?`<p class="eyebrow bi">${escH(s.title)}</p>`:''}<div class="qm bi">“</div><blockquote class="bi"${D_(140)}>${escH(s.quote)}</blockquote>${s.by?`<cite class="bi"${D_(420)}>${escH(s.by)}</cite>`:''}
         ${s.also?`<div class="q2 bi"${D_(700)}><blockquote>${escH(s.also.quote)}</blockquote>${s.also.by?`<cite>${escH(s.also.by)}</cite>`:''}</div>`:''}</div>`;
-      return s.img ? `<div class="sc-qimg"><div class="q-media fit-box bi"${D_(100)}>${FIG(s.img)}</div>${q}</div>` : q; }
-    case 'bars': { const g=s.groups||[]; const max=Math.max(1,...g.flatMap(x=>x.rows.map(r=>+r[1]||0)));
+      const qi=s.img && (typeof s.img==='string'?{src:s.img}:s.img); if(qi && s.fit && !qi.fit) qi.fit=s.fit;
+      return qi ? `<div class="sc-qimg"><div class="q-media fit-box bi"${D_(100)}>${FIG(qi)}</div>${q}</div>` : q; }
+    case 'bars': { const g=s.groups||[]; const max=s.suffix==='%' ? 100 : Math.max(1,...g.flatMap(x=>x.rows.map(r=>+r[1]||0)));
       return `${T(s.title)}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<div class="sc-charts" style="--cols:${g.length}">${g.map((x,gi)=>`<div class="sc-chart bi"${D_(240+gi*200)}>
         <h4>${escH(x.label)}</h4><div class="sc-rows">${x.rows.map(r=>`<div class="sc-row${(+r[1]||0)===Math.max(...x.rows.map(q=>+q[1]||0))?' win':''}" title="${escH(r[0])}: ${+r[1]} ${escH(s.unit||'')}"><span class="l">${escH(r[0])}</span><span class="trk"><i data-w="${((+r[1]||0)/max*100).toFixed(1)}"></i></span><b class="v">${+r[1]}${escH(s.suffix||'')}</b></div>`).join('')}</div></div>`).join('')}</div>`; }
     /* ---------- photos and pages (Phase 11) ---------- */
     case 'cover': { const tl=s.rainbow ? rainbowText(s.title, s.tints) : escH(s.title);
       const bg = !s.img ? '' : s.whole
-        ? `<img class="ph-blur" src="${IMG(s.img)}" alt=""><div class="cv-area fit-box">${FIG(s.img)}</div><div class="cv-wash side"></div>`
+        ? `<img class="ph-blur" src="${IMG(s.img)}" alt=""><div class="cv-area fit-box whole">${FIG(s.img)}</div><div class="cv-wash side"></div>`
         : `<div class="cv-bg"><img src="${IMG(s.img)}" alt="" style="object-position:${escH(s.pos||'50% 50%')}"></div><div class="cv-wash"></div>`;
       return `<div class="sc-bleed sc-cover${s.img?'':' plain'}${s.whole?' whole':''}${s.day?' has-day':''}${s.align==='center'?' center':''}">
         ${bg}${s.day?dayBar(s.day):''}
@@ -2382,30 +2686,30 @@ function slideHTML(s){
           ${s.sub?`<p class="cv-sub bi"${D_(520)}>${escH(s.sub)}</p>`:''}</div></div>`; }
     case 'photo': { const cap=(s.title||s.caption);
       return `<div class="sc-bleed sc-photo${cap?' has-band':''}"><img class="ph-blur" src="${IMG(s.img)}" alt="">
-        <div class="ph-area fit-box">${FIG(s.img)}</div>
+        <div class="ph-area fit-box whole">${FIG(s.img)}</div>
         ${cap?`<div class="ph-band bi"${D_(200)}>${s.eyebrow?`<p class="eyebrow">${escH(s.eyebrow)}</p>`:''}${s.title?`<h3>${escH(s.title)}</h3>`:''}${s.caption?`<p>${escH(s.caption)}</p>`:''}</div>`:''}</div>`; }
     case 'gallery': { const im=(s.imgs||[]).map(x=>typeof x==='string'?{src:x}:x), n=im.length;
       return `${T(s.title, s.sub?' sm tight':' sm')}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}
-        <div class="sc-gal fit-box bi"${D_(160)}>${im.map(FIG).join('')}</div>
+        <div class="sc-gal fit-box${s.whole?' whole':''} bi"${D_(160)}>${im.map(FIG).join('')}</div>
         ${s.note?`<p class="sc-note bi"${D_(300)}>${escH(s.note)}</p>`:''}`; }
-    case 'feature': { const im=(s.imgs||(s.img?[s.img]:[])).map(x=>typeof x==='string'?{src:x}:x);
+    case 'feature': { const im=(s.imgs||(s.img?[s.img]:[])).map(x=>typeof x==='string'?{src:x}:x).map(x=>s.fit&&!x.fit?{...x,fit:s.fit}:x);
       const media = s.round
         ? `<div class="ft-media round bi"${D_(140)}>${im.slice(0,1).map(x=>`<figure><img src="${IMG(x.src)}" alt="" style="object-position:${escH(x.pos||s.pos||'50% 30%')}"></figure>`).join('')}</div>`
-        : `<div class="ft-media fit-box bi"${D_(140)}>${im.slice(0,4).map(FIG).join('')}</div>`;
+        : `<div class="ft-media fit-box bi" data-align="${s.side==='right'?'start':'end'}"${D_(140)}>${im.slice(0,4).map(FIG).join('')}</div>`;
       const items=(s.items||[]).map((x,i)=>{ const o=typeof x==='string'?{body:x}:x; return `<li class="bi"${D_(320+i*140)}>${o.icon?`<span class="fi">${BTY.icon(o.icon)}</span>`:''}<div>${o.title?`<b>${escH(o.title)}</b>`:''}${o.body?`<span>${escH(o.body)}</span>`:''}</div></li>`; }).join('');
-      const txt = `<div class="ft-txt">${s.eyebrow?`<p class="eyebrow bi"${D_(80)}>${escH(s.eyebrow)}</p>`:''}${s.title?`<h2 class="sc-t sm left bi"${D_(100)}>${escH(s.title)}</h2>`:''}${s.sub?`<p class="ft-sub bi"${D_(200)}>${escH(s.sub)}</p>`:''}
+      const txt = `<div class="ft-txt">${s.sub?`<p class="ft-sub bi"${D_(200)}>${escH(s.sub)}</p>`:''}
         ${items?`<ul class="ft-list">${items}</ul>`:''}${(s.tags||[]).length?`<div class="ft-tags bi"${D_(500)}>${s.tags.map(t=>`<span>${escH(t)}</span>`).join('')}</div>`:''}${s.note?`<p class="sc-note left bi"${D_(600)}>${escH(s.note)}</p>`:''}</div>`;
-      return `<div class="sc-feat${s.side==='right'?' flip':''}${im.length?'':' solo'}">${im.length?media:''}${txt}</div>`; }
-    case 'people': return `${T(s.title,' sm')}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<div class="sc-people">${(s.items||[]).map((x,i)=>`<div class="pp bi"${D_(220+i*160)}>
-        <span class="face"><img src="${IMG(x.img)}" alt="${escH(x.name||'')}" style="object-position:${escH(x.pos||'50% 30%')}"></span>${x.name?`<b>${escH(x.name)}</b>`:''}${x.role?`<span>${escH(x.role)}</span>`:''}</div>`).join('')}</div>`;
+      return `${T(s.title)}<div class="sc-feat${s.side==='right'?' flip':''}${im.length?'':' solo'}">${im.length?media:''}${txt}</div>`; }
+    case 'people': return `${T(s.title,' sm')}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<div class="sc-people">${(s.items||[]).map((x,i)=>`<div class="pp${x.you?' you':''} bi"${D_(220+i*160)}>
+        <span class="face">${x.you?BTY.icon(x.icon||'smile','',1.4):`<img src="${IMG(x.img)}" alt="${escH(x.name||'')}" style="object-position:${escH(x.pos||'50% 30%')}">`}</span>${x.name?`<b>${escH(x.name)}</b>`:''}${x.role?`<span>${escH(x.role)}</span>`:''}</div>`).join('')}</div>`;
     case 'columns': { const mark=new Set((s.mark||[]).map(m=>m.toLowerCase()));
       return `${T(s.title,' sm')}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<div class="sc-cols"${cols((s.cols||[]).length)}>${(s.cols||[]).map((c,i)=>`<div class="cl bi"${D_(220+i*240)}><h4>${escH(c.head)}</h4><ol>${c.items.map(t=>`<li${mark.has(t.toLowerCase())?' class="mk"':''}>${escH(t)}</li>`).join('')}</ol></div>`).join('')}</div>
         ${s.note?`<p class="sc-note bi"${D_(900)}>${escH(s.note)}</p>`:''}`; }
     case 'venn': { const it=s.items||[];
       return `${T(s.title,' sm')}<div class="sc-venn">
-        <div class="vn-c">${it.slice(0,4).map((x,i)=>`<span class="ring r${i} fly" style="--d:${250+i*650}ms; --c:${x.color||['#4F7BD9','#E07B39','#E3B341','#8A8F9E'][i]}"><b>${escH(x.tag||'')}</b></span>`).join('')}<span class="core arrive" style="--d:${250+4*650}ms">${escH(s.centre||'BTY')}</span></div>
-        ${it.slice(0,4).map((x,i)=>`<div class="vn-q q${i} arrive" style="--d:${450+i*650}ms"><h4>${escH(x.title)}</h4><p>${escH(x.q||'')}</p></div>`).join('')}
-      </div>${s.foot?`<p class="vn-foot arrive" style="--d:${450+4*650}ms">${escH(s.foot)}</p>`:''}`; }
+        <div class="vn-c">${it.slice(0,4).map((x,i)=>`<span class="ring r${i} fly" style="--d:${250+i*420}ms; --c:${x.color||['#4F7BD9','#E07B39','#E3B341','#8A8F9E'][i]}"><b>${escH(x.tag||'')}</b></span>`).join('')}<span class="core arrive" style="--d:${250+4*420}ms">${escH(s.centre||'BTY')}</span></div>
+        ${it.slice(0,4).map((x,i)=>`<div class="vn-q q${i} arrive" style="--d:${400+i*420}ms"><h4>${escH(x.title)}</h4><p>${escH(x.q||'')}</p></div>`).join('')}
+      </div>${s.foot?`<p class="vn-foot arrive" style="--d:${400+4*420}ms">${escH(s.foot)}</p>`:''}`; }
     case 'table': return `${T(s.title,' sm')}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<table class="sc-table bi"${D_(260)}>
         ${s.head?`<thead><tr>${s.head.map(h=>`<th>${escH(h)}</th>`).join('')}</tr></thead>`:''}<tbody>${(s.rows||[]).map(r=>`<tr>${r.map((c,ci)=>`<td${ci===0&&c===''?' class="cont"':''}>${escH(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>
         ${s.note?`<p class="sc-note bi"${D_(500)}>${escH(s.note)}</p>`:''}`;
@@ -2413,25 +2717,25 @@ function slideHTML(s){
         <span class="qr">${BTY.qrSVG(x.url,{label:x.label})}</span>${x.icon?`<span class="li">${BTY.icon(x.icon)}</span>`:''}<b>${escH(x.label||'')}</b><span>${escH(String(x.url).replace(/^https?:\/\//,''))}</span></div>`).join('')}</div>`;
     case 'logos': return `${T(s.title,' sm')}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<div class="sc-logos">${(s.items||[]).map((x,i)=>`<div class="lg bi"${D_(200+i*110)} title="${escH(x.name||'')}"><img src="${IMG(x.img)}" alt="${escH(x.name||'')}"></div>`).join('')}</div>`;
     case 'pins': { const hm=s.home; const arcs=hm?(s.pins||[]).map((p,i)=>{ const mx=(hm.x+p.x)/2, my=Math.min(hm.y,p.y)-Math.max(8,Math.abs(p.x-hm.x)*.35); return `<path class="pn-arc" style="--d:${300+i*700}ms" d="M${hm.x} ${hm.y} Q ${mx} ${my} ${p.x} ${p.y}" pathLength="100"/>`; }).join(''):'';
-      return `<div class="sc-pins">${s.title?`<h2 class="sc-t sm pins-t bi"${D_(60)}>${escH(s.title)}</h2>`:''}<div class="pn-map" style="aspect-ratio:${AR(s.img).toFixed(4)}"><img src="${IMG(s.img)}" alt="">
+      return `${T(s.title)}<div class="sc-pins"><div class="pn-map" style="aspect-ratio:${AR(s.img).toFixed(4)}"><img src="${IMG(s.img)}" alt="">
         ${hm?`<svg class="pn-arcs" viewBox="0 0 100 100" preserveAspectRatio="none">${arcs}</svg><span class="pn-home" style="left:${hm.x}%; top:${hm.y}%"><i></i><b>${escH(hm.label||'Beatty, Singapore')}</b></span>`:''}
         ${(s.pins||[]).map((p,i)=>{ const t=hm?1000+i*700:300+i*170; return `<span class="pn arrive" style="left:${p.x}%; top:${p.y}%; --d:${t}ms">${BTY.icon('pin','',2)}</span><div class="pn-l arrive" style="left:${p.lx}%; top:${p.ly}%; --d:${t+120}ms"><b>${escH(p.label)}</b>${p.sub?`<span>${escH(p.sub)}</span>`:''}</div>`; }).join('')}</div></div>`; }
     /* ---------- Phase 12: diagrams that explain, played once, automatically ---------- */
     case 'crest': { const it=s.items||[];
-      return `<div class="sc-crest"><div class="cr-img bi"><img src="${IMG(s.img||'a/crest.png')}" alt="The Beatty crest">
+      return `${T(s.title)}<div class="sc-crest"><div class="cr-img bi"><img src="${IMG(s.img||'a/crest.png')}" alt="The Beatty crest">
           <svg class="cr-rings" viewBox="0 0 100 100" preserveAspectRatio="none">${it.map((x,i)=>{ const a=x.area||[50,50,20,20]; return `<ellipse class="cr-ring" data-i="${i}" cx="${a[0]}" cy="${a[1]}" rx="${a[2]}" ry="${a[3]}" pathLength="100"/>`; }).join('')}</svg></div>
-        <div class="cr-txt">${s.title?`<h2 class="sc-t sm left bi">${escH(s.title)}</h2>`:''}<ul class="cr-list">${it.map((x,i)=>`<li data-i="${i}"><b>${escH(x.title)}</b><span>${escH(x.body||'')}</span></li>`).join('')}</ul></div></div>`; }
+        <div class="cr-txt"><ul class="cr-list">${it.map((x,i)=>`<li data-i="${i}"><b>${escH(x.title)}</b><span>${escH(x.body||'')}</span></li>`).join('')}</ul></div></div>`; }
     case 'slope': { const C=s.cols||[], n=C.length, rows=Math.max(...C.map(c=>c.items.length)); const W=1640, H=Math.min(720, 62*rows+80), x0=10, cw=(W-20)/n, lw=Math.min(410,cw-120);
       const ys=i=>70+i*((H-80)/Math.max(1,rows-1||1)) - (rows>1?0:0), hi=new Map((s.mark||[]).map((m,i)=>[m.toLowerCase(),i]));
       const lines=[]; for(let c=0;c<n-1;c++) C[c].items.forEach((t,i)=>{ const j=C[c+1].items.findIndex(u=>u.toLowerCase()===t.toLowerCase()); if(j<0) return; const k=hi.get(t.toLowerCase());
         lines.push(`<path class="sl-line${k!=null?' hi h'+k:''}" style="--c:${c}" d="M${x0+c*cw+lw+14} ${ys(i)} C ${x0+c*cw+lw+14+(cw-lw-28)/2} ${ys(i)}, ${x0+(c+1)*cw-14-(cw-lw-28)/2} ${ys(j)}, ${x0+(c+1)*cw-14} ${ys(j)}" pathLength="100"/>`); });
       const labels=C.map((col,c)=>`<g class="sl-col" style="--c:${c}"><text class="sl-head" x="${x0+c*cw}" y="30">${escH(col.head)}</text>${col.items.map((t,i)=>{ const k=hi.get(t.toLowerCase()); return `<text class="sl-item${k!=null?' hi h'+k:''}" x="${x0+c*cw}" y="${ys(i)+8}"><tspan class="sl-n">${i+1}</tspan> ${escH(t)}</text>`; }).join('')}</g>`).join('');
-      return `${T(s.title,' sm tight')}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<svg class="sc-slope" viewBox="0 0 ${W} ${H}">${lines.join('')}${labels}</svg>${s.note?`<p class="sc-note">${escH(s.note)}</p>`:''}`; }
+      return `${T(s.title,' sm tight')}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<svg class="sc-slope" preserveAspectRatio="xMinYMid meet" viewBox="0 0 ${W} ${H}">${lines.join('')}${labels}</svg>${s.note?`<p class="sc-note">${escH(s.note)}</p>`:''}`; }
     case 'stairs': { const L=s.left||{}, R=s.right||{};
       const stair=(n,w,h)=>{ let d=`M10 ${h-10}`, x=10, y=h-10; const sx=(w-20)/n, sy=(h-30)/n; for(let i=0;i<n;i++){ y-=sy; d+=` L${x} ${y}`; x+=sx; d+=` L${x} ${y}`; } return d; };
       return `${T(s.title,' sm')}<div class="sc-stairs">
-        <div class="st"><svg viewBox="0 0 600 380"><path class="small" d="${stair(R.steps||12,600,380)}"/><circle class="climber" r="11"/></svg>${(R.labels||[]).map((t,i)=>`<span class="sl s${i}">${escH(t)}</span>`).join('')}<p>${escH(R.caption||'')}</p></div>
-        <div class="st"><svg viewBox="0 0 600 380"><path class="big" d="${stair(L.steps||3,600,380)}"/><circle class="climber" r="11"/></svg>${Array.from({length:L.steps||3},(_,i)=>`<span class="ins i${i}">“${escH(L.label||'Inspiration')}”</span>`).join('')}<p>${escH(L.caption||'')}</p></div>
+        <div class="st"><div class="st-art"><svg viewBox="0 0 600 380"><path class="small" d="${stair(R.steps||12,600,380)}"/><circle class="climber" r="11"/></svg>${(R.labels||[]).map((t,i)=>`<span class="sl s${i}">${escH(t)}</span>`).join('')}</div><p>${escH(R.caption||'')}</p></div>
+        <div class="st"><div class="st-art"><svg viewBox="0 0 600 380"><path class="big" d="${stair(L.steps||3,600,380)}"/><circle class="climber" r="11"/></svg>${Array.from({length:L.steps||3},(_,i)=>`<span class="ins i${i}">“${escH(L.label||'Inspiration')}”</span>`).join('')}</div><p>${escH(L.caption||'')}</p></div>
       </div>`; }
     case 'mix': { const lv=s.levels||[['G3','#3B6FD8'],['G2','#E2463F'],['G1','#F2C94C']], cls=s.classes||[[6,3,1],[5,3,1],[5,2,2],[6,2,1]];
       let dots=[]; cls.forEach((c,ci)=>c.forEach((cnt,li)=>{ for(let k=0;k<cnt;k++) dots.push({ci,li}); }));
@@ -2439,19 +2743,18 @@ function slideHTML(s){
         <div class="sc-mixer" data-classes="${cls.length}" data-levels="${lv.length}">${cls.map((_,ci)=>`<div class="mx-box" data-ci="${ci}"></div>`).join('')}${lv.map((l,li)=>`<div class="mx-lvl" data-li="${li}"><b style="background:${l[1]}"></b>${escH(l[0])}</div>`).join('')}
           ${dots.map((d,i)=>`<i class="mx-dot" data-ci="${d.ci}" data-li="${d.li}" style="background:${lv[d.li][1]}"></i>`).join('')}</div>
         <div class="mx-legend bi">${lv.map(l=>`<span><b style="background:${l[1]}"></b>${escH(l[0])}</span>`).join('')}<em>${escH(s.legend||'subject levels')}</em></div>
-        ${s.foot?`<p class="mx-foot">${escH(s.foot)}</p>`:''}`; }
+        ${s.foot?`<p class="mx-foot">${s.chip?`<b>${escH(s.chip)}</b>`:''}${escH(s.foot)}</p>`:''}`; }
     case 'tiebreak': { const st=s.students||TIE_STUDENTS, cols=s.stages||TIE_STAGES;
       const gr=r=>String(r).replace(/^(\d+)/,(m,n)=>String(+n+1));   // row 1 is the headings
       return `${T(s.title,' sm tight wide')}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<div class="sc-tie">
         <div class="tb-kids">${st.map(k=>`<div class="tb-kid" data-k="${k.id}"><b>${escH(k.name)}</b><span>${escH(k.cit)} · ${escH(k.pts)}</span><small>${escH(k.choices)}</small><i class="tb-to"></i></div>`).join('')}</div>
-        ${cols.map((c,ci)=>`<div class="tb-col" data-ci="${ci}"><h4>${escH(c.head)}</h4>${c.boxes.map(b=>`<div class="tb-box" style="grid-row:${gr(b.row)}"><p>${escH(b.text)}</p>${b.to?b.to.map(t=>`<span class="tb-res" data-k="${t[0]}">${escH(t[0][0].toUpperCase()+t[0].slice(1))} → School ${escH(t[1])}</span>`).join(''):''}</div>`).join('')}</div>`).join('')}
+        ${cols.map((c,ci)=>{ const hd=String(c.head).split(': '); return `<div class="tb-col" data-ci="${ci}"><h4>${hd.length>1?`<small>${escH(hd[0])}</small>${escH(hd.slice(1).join(': '))}`:escH(c.head)}</h4>${c.boxes.map(b=>`<div class="tb-box" style="grid-row:${gr(b.row)}"><p>${escH(b.text)}</p>${b.to?b.to.map(t=>`<span class="tb-res" data-k="${t[0]}">${escH(t[0][0].toUpperCase()+t[0].slice(1))} → School ${escH(t[1])}</span>`).join(''):''}</div>`).join('')}</div>`; }).join('')}
       </div>`; }
     case 'quotes': { const it=s.items||[];
-      return `${T(s.title,' sm tight')}<div class="sc-quotes">${s.img?`<div class="qs-media fit-box bi">${FIG(s.img)}</div>`:''}<div class="qs-grid">${it.map((x,i)=>`<blockquote class="qs-card bi"${D_(150+i*120)}><span class="qm">“</span><p>${escH(x.q)}</p>${x.by?`<cite>${escH(x.by)}</cite>`:''}</blockquote>`).join('')}</div></div>`; }
+      return `${T(s.title,' sm tight')}<div class="sc-quotes">${s.img?`<div class="qs-media fit-box whole bi">${FIG(s.img)}</div>`:''}<div class="qs-grid">${it.map((x,i)=>`<blockquote class="qs-card bi"${D_(150+i*120)}><span class="qm">“</span><p>${escH(x.q)}</p>${x.by?`<cite>${escH(x.by)}</cite>`:''}</blockquote>`).join('')}</div></div>`; }
     case 'live': return liveHTML(s);
-    case 'ask': return `<div class="sc-ask" style="width:min(100%,1500px); display:flex; flex-direction:column; align-items:center">
-        <span class="sc-hint bi">${BTY.icon('phone')}Answer on your phone</span>${T(s.question,' sm')}
-        <div class="sc-big" style="width:100%"><div class="sc-rows bi"${D_(220)} id="scLive">${(s.options||[]).map((o,i)=>row('o'+i,o)).join('')}</div></div>
+    case 'ask': return `<span class="sc-hint bi">${BTY.icon('phone')}Answer on your phone</span>${T(s.question,' sm')}
+        <div class="sc-big sc-ask"><div class="sc-rows bi"${D_(220)} id="scLive">${(s.options||[]).map((o,i)=>row('o'+i,o)).join('')}</div>
         <div class="sc-meta bi"${D_(360)}>${BTY.icon('check')}<b id="scN">0</b><span id="scNl">answers so far</span></div></div>`;
   }
   return '';
@@ -2509,7 +2812,7 @@ function paintSceneLive(){
     const p=(journeySteps.find(x=>x.pollData && x.pollData.id===s.poll)||{}).pollData; if(!p) return;
     const t=live.polls[p.id]||{total:0,breakdown:{}}, n=t.total||0;
     fillRows(document.getElementById('scLive'), p.options.map((o,i)=>({k:'o'+i,label:o,icon:i===p.correctAnswer?'check':'',v:t.breakdown[i]||0,win:i===p.correctAnswer,dim:i!==p.correctAnswer})), Math.max(0,...p.options.map((_,i)=>t.breakdown[i]||0)), r=>n?Math.round(r.v/n*100)+'%':'0%');
-    setTxt('scN', n?Math.round((t.breakdown[p.correctAnswer]||0)/n*100)+'%':'—'); setTxt('scNl', n?`of ${n} got it right`:'no votes yet');
+    setTxt('scN', n?Math.round((t.breakdown[p.correctAnswer]||0)/n*100)+'%':'0%'); setTxt('scNl', n?`of ${n} got it right`:'no votes yet');
   } else if(s.show==='picks'){
     const name=(ty,id)=>{ const st=journeySteps.find(x=>x.nexusData && x.nexusData.type===ty); const o=st && st.nexusData.options.find(o=>o.id===id); return o?o.text.replace(/\s*\((.+)\)\s*$/,' · $1'):id; };
     let tot=0, mx=0; const sets={};
@@ -2538,7 +2841,7 @@ function paintSceneLive(){
 function countUp(el, from, to, ms, suffixHTML=''){ const t0=performance.now();
   if(matchMedia('(prefers-reduced-motion: reduce)').matches){ el.innerHTML=to+suffixHTML; return; }
   (function tick(now){ const p=Math.min(1,(now-t0)/ms), e=1-Math.pow(1-p,3); el.innerHTML=Math.round(from+(to-from)*e)+suffixHTML; if(p<1 && el.isConnected) requestAnimationFrame(tick); })(t0); }
-function slideImgs(s){ if(!s) return []; return [s.img, ...(s.imgs||[]).map(x=>typeof x==='string'?x:x.src), ...((s.items||[]).map(x=>x&&x.img))].filter(Boolean); }
+function slideImgs(s){ if(!s) return []; return [s.img && (typeof s.img==='string'?s.img:s.img.src), ...(s.imgs||[]).map(x=>typeof x==='string'?x:x.src), ...((s.items||[]).map(x=>x&&x.img))].filter(Boolean); }
 const preloaded=new Set();
 function preloadSlide(s){ slideImgs(s).forEach(p=>{ const u=IMG(p); if(preloaded.has(u)) return; preloaded.add(u); const im=new Image(); im.src=u; }); }
 function paintScene(){
@@ -2546,19 +2849,21 @@ function paintScene(){
   sceneIdx=Math.max(0,Math.min(sceneIdx,d.slides.length-1));
   const s=d.slides[sceneIdx];
   body.classList.remove('sc-leave');
+  const scEl=document.getElementById('scene');
+  journeyContent.classList.toggle('respond', s.kind==='ask');            // gold frame = "phones, it's your turn"
+  scEl?.classList.toggle('cream', s.tone==='cream' && s.kind!=='ask');   // a cream page: navy words, red accents
+  scEl?.classList.toggle('bleed', s.kind==='cover' || s.kind==='photo');
+  const chEl=scEl?.querySelector('.sc-ch'); if(chEl){ const ch=s.ch||d.chapter||st.ch||''; if(chEl.dataset.ch!==ch){ chEl.dataset.ch=ch; chEl.innerHTML=BTY.icon(CH_ICON[ch]||'hex')+escH(ch); } }
   body.innerHTML=slideHTML(s);
   sizeRows(body);
-  body.querySelectorAll('.fit-box').forEach(fitPhotos);
+  body.querySelectorAll('.fit-box').forEach(b=>{ fitPhotos(b); fitObserver?.observe(b); });
   setTxt('scNum', `${String(sceneIdx+1).padStart(2,'0')} / ${String(d.slides.length).padStart(2,'0')}`);
   document.querySelectorAll('#scDots i').forEach((el,i)=>{ el.classList.toggle('on',i===sceneIdx); el.classList.toggle('done',i<sceneIdx); });
-  journeyContent.classList.toggle('respond', s.kind==='ask');            // gold frame = "phones, it's your turn"
-  document.getElementById('scene')?.classList.toggle('cream', s.tone==='cream' && s.kind!=='ask');   // a cream page: navy words, red accents
   // School-data motion: numbers count up, rings and bars draw in.
   body.querySelectorAll('.sc-stat .n[data-count]').forEach((el,i)=>{ const raw=el.dataset.count, n=parseInt(raw,10); if(isNaN(n) || String(n)!==raw) return; const suf=el.querySelector('small')?.outerHTML||''; el.innerHTML='0'+suf; setTimeout(()=>countUp(el,0,n,1500,suf), 260+i*200); });
   setTimeout(()=>{ body.querySelectorAll('[data-ring]').forEach(c=>c.style.strokeDashoffset=String(100-(+c.dataset.ring||0))); body.querySelectorAll('.sc-row .trk i[data-w]').forEach((el,i)=>setTimeout(()=>el.style.width=el.dataset.w+'%', i*60)); }, 420);
   if(s.kind==='live' || s.kind==='ask') setTimeout(paintSceneLive, 40);
   animateSlide(s, body);
-  document.getElementById('scene')?.classList.toggle('bleed', s.kind==='cover' || s.kind==='photo');
   preloadSlide(d.slides[sceneIdx+1]) ; preloadSlide(journeySteps[currentStep+1] && deckFor(journeySteps[currentStep+1])?.slides[0]);
   if(isPresenter) updatePPStep();
   const lastOne=currentStep===journeySteps.length-1 && sceneIdx===d.slides.length-1; if(!(st.type==='poll' && !st.revealed)) nextBtn.textContent=lastOne?'Finish':'Next ❯';
@@ -2574,7 +2879,7 @@ function gotoScene(i){
 }
 
 /* =====================================================================
-   PRESENTER VIEW — notes.html, in a second window on the laptop
+   PRESENTER VIEW: notes.html, in a second window on the laptop
    Same machine, no database: the two windows talk over a BroadcastChannel.
    It shows the slide now, the one next, what to say and the clock, and its
    Back / Next buttons drive this screen.
@@ -2640,12 +2945,13 @@ function renderStep(){
   const immersive = ['slide','video','globe','industry_map','funfact','finale','fleet','bloom','fold'].includes(step.type);
   const shownTitle = step.type==='poll' ? String(step.title||'').replace(/^Live Poll\s*·\s*/,'') : step.title;
   const selfTitled = ['chart','memento'].includes(step.type);          // these screens lay out their own titles
-  const titleHTML = (!immersive && !selfTitled && step.title)?`<p class="eyebrow">${step.id.includes('poll')?'Live Poll':'Beatty'}</p><h2 class="stage-title${step.type==='poll'?' poll-title':''}">${shownTitle}</h2>`:'';
+  // A poll's question is its headline (the step's name becomes a small label); other steps show their title alone.
+  const titleHTML = (!immersive && !selfTitled && step.title)?(step.type==='poll' ? `<p class="eyebrow poll-eyebrow">Live poll · ${shownTitle}</p>` : `<h2 class="stage-title">${shownTitle}</h2>`):'';
   const descHTML  = (!immersive && !selfTitled && step.desc)?`<p class="stage-sub" style="margin:0 auto 26px">${step.desc}</p>`:'';
   const inner = renderContent(step);
 
   if(immersive){ journeyContent.innerHTML=`<div style="width:100%;height:100%">${inner}</div>`; }
-  else { journeyContent.innerHTML=`<div class="wrap" style="text-align:center; width:100%"><div style="margin-bottom:8px">${titleHTML}${descHTML}</div><div style="width:100%">${inner}</div></div>`; }
+  else { journeyContent.innerHTML=`<div class="wrap${step.type==='poll'?' poll-page':''}" style="text-align:${step.type==='poll'?'left':'center'}; width:100%"><div style="margin-bottom:8px">${titleHTML}${descHTML}</div><div style="width:100%">${inner}</div></div>`; }
 
   if(step.type==='values'){ journeyContent.querySelectorAll('.dcard').forEach(c=>{
     const flip=()=>{ c.classList.toggle('flip'); sfx('flip'); };
@@ -2724,7 +3030,7 @@ document.addEventListener('keydown',e=>{
   e.preventDefault();
   if(deckOnScreen()){                     // a deck is showing — page inside it by clicking it; a second press within 1.5 s moves the journey on
     const now=Date.now();
-    if(now-deckKeyArmed>1500){ deckKeyArmed=now; showToast(fwd?'Deck on screen · click the deck to page through it — press → again (or NEXT ❯) to move on':'Deck on screen · press ← again to go back a step'); return; }
+    if(now-deckKeyArmed>1500){ deckKeyArmed=now; showToast(fwd?'Deck on screen · click the deck to page through it: press → again (or NEXT ❯) to move on':'Deck on screen · press ← again to go back a step'); return; }
     deckKeyArmed=0;
   }
   if(fwd) nextBtn.click(); else prevBtn.click();
@@ -2769,7 +3075,7 @@ document.getElementById('resetConfirm').onclick=async()=>{
     try{ const s=await getDocs(collection(db,c)); for(let i=0;i<s.docs.length;i+=450){ const b=writeBatch(db); s.docs.slice(i,i+450).forEach(d=>b.delete(d.ref)); await b.commit(); } }   // a batch holds 500 ops at most
     catch(e){ console.warn('tidy '+c+' skipped:',e && e.code); }
   }
-  document.getElementById('resetModal').classList.add('hidden'); showToast('New show started — reloading…'); setTimeout(()=>location.reload(),1400);
+  document.getElementById('resetModal').classList.add('hidden'); showToast('New show started: reloading…'); setTimeout(()=>location.reload(),1400);
 };
 
 /* =====================================================================
@@ -2819,7 +3125,7 @@ setInterval(()=>{ const now=Date.now(); reactTimes=reactTimes.filter(t=>now-t<10
 })();
 
 /* =====================================================================
-   SOUND — WebAudio generated (no external files). Presenter only by default.
+   SOUND: WebAudio generated (no external files). Presenter only by default.
    ===================================================================== */
 let audioCtx=null, soundOn=true;
 function startAudio(){ if(!soundOn) return; try{ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended') audioCtx.resume(); }catch(e){} }
