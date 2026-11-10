@@ -2891,12 +2891,18 @@ function animateSlide(s, body){
     T(()=>{ body.querySelectorAll('.cr-list li, .cr-ring').forEach(e=>{ e.classList.remove('now'); e.classList.add('lit','done'); }); }, 400+n*1400); }
   if(s.kind==='stairs') runStairs(body, live, reduce);
   if(s.kind==='mix'){ const box=body.querySelector('.sc-mixer'); if(!box) return; const W=box.clientWidth, H=box.clientHeight, nC=+box.dataset.classes, nL=+box.dataset.levels, dots=[...box.querySelectorAll('.mx-dot')];
-      const R=Math.max(14,Math.min(32,W/56)), gap=W*.02;
+      const gap=W*.02;
+      // One box height for both phases (the tallest), and the biggest dots that fit it, so the boxes fill the
+      // space and nothing jumps when the classes regroup.
+      const need=(r,phase)=>{ const groups=phase===1?nL:nC, key=phase===1?'li':'ci', bw=(W-gap*(groups-1))/groups, colsN=Math.max(3,Math.floor((bw-36)/(r*2.6))), cnt={};
+        dots.forEach(d=>{ const g=+d.dataset[key]; cnt[g]=(cnt[g]||0)+1; }); return (phase===1?58:26)+Math.max(...Object.values(cnt).map(c=>Math.ceil(c/colsN)))*r*2.6+16; };
+      let R=Math.min(44,W/40); while(R>14 && Math.max(need(R,1),need(R,2))>H) R-=1;
+      const BH=Math.min(H,Math.max(need(R,1),need(R,2)));
       const place=(phase)=>{ const groups=phase===1?nL:nC, key=phase===1?'li':'ci', bw=(W-gap*(groups-1))/groups;
         box.querySelectorAll(phase===1?'.mx-lvl':'.mx-box').forEach((b,i)=>Object.assign(b.style,{left:i*(bw+gap)+'px',width:bw+'px',opacity:1}));
         box.querySelectorAll(phase===1?'.mx-box':'.mx-lvl').forEach(b=>b.style.opacity=0);
         const colsN=Math.max(3,Math.floor((bw-36)/(R*2.6))), cnt={}; dots.forEach(d=>{ const g=+d.dataset[key]; cnt[g]=(cnt[g]||0)+1; });
-        const rowsMax=Math.max(...Object.values(cnt).map(c=>Math.ceil(c/colsN))), top0=phase===1?58:26, bh=top0+rowsMax*R*2.6+16, y0=Math.max(0,(H-bh)/2);
+        const rowsMax=Math.max(...Object.values(cnt).map(c=>Math.ceil(c/colsN))), lab=phase===1?58:26, top0=lab+(BH-(lab+rowsMax*R*2.6+16))/2, bh=BH, y0=Math.max(0,(H-bh)/2);
         box.querySelectorAll(phase===1?'.mx-lvl':'.mx-box').forEach(b=>Object.assign(b.style,{top:y0+'px',height:bh+'px'}));
         const per={}; dots.forEach(d=>{ const g=+d.dataset[key]; const k=per[g]=(per[g]||0)+1, c=(k-1)%colsN, r=Math.floor((k-1)/colsN), rowN=Math.min(colsN, cnt[g]-r*colsN), off=(bw-rowN*R*2.6+R*.6)/2;
           Object.assign(d.style,{width:R*2+'px',height:R*2+'px',left:(g*(bw+gap)+off+c*R*2.6)+'px',top:(y0+top0+r*R*2.6)+'px'}); });
