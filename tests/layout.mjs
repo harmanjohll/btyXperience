@@ -32,7 +32,7 @@ const measure = () => pr.evaluate(() => {
   const heads = [...body.querySelectorAll(':scope > .sc-t, :scope > .sc-sub2, :scope > .sc-hint, :scope > .eyebrow, :scope > .mx-phase, .stage > .sc-t')].filter(el => vis(el));
   const title = heads[0] || null;
   const T = heads.length && !side ? { bottom: Math.max(...heads.map(h => h.getBoundingClientRect().bottom)) } : null;
-  const parts = [...body.querySelectorAll('h2.sc-h,h2.cv-h,.sc-logo,.qm,.lp-core,.lp-bar,.mx-lvl,.mx-dot,.sc-meta,.mx-foot,h3,h4,p,li,blockquote,cite,figure,.lp-ring,.ms-disc,.ms-ico,.ms-row,.st2-svg path,.st2-svg rect,.st2-svg text,.sc-row,.pp,.lg,.lk,.qs-card,.tb-kid,.tb-box,.mx-box,.sc-stat,.sc-let,.sc-step,.rx-k,.rx-c,.vn-c,.vn-q,table,.sc-slope,.pn-map,.cr-img,.sc-card,.sc-pill,svg.sc-slope text,.day-bar')]
+  const parts = [...body.querySelectorAll('h2.sc-h,h2.cv-h,.sc-logo,.qm,.lp-core,.lp-bar,.mx-lvl,.mx-dot,.sc-meta,.mx-foot,.rx-h,h3,h4,p,li,blockquote,cite,figure,.lp-ring,.ms-disc,.ms-ico,.ms-row,.st2-svg path,.st2-svg rect,.st2-svg text,.sc-row,.pp,.lg,.lk,.qs-card,.tb-kid,.tb-box,.mx-box,.sc-stat,.sc-let,.sc-step,.rx-k,.rx-c,.vn-c,.vn-q,table,.sc-slope,.pn-map,.cr-img,.sc-card,.sc-pill,svg.sc-slope text,.day-bar')]
     .filter(el => !heads.some(h => h === el || h.contains(el)) && vis(el)).map(el => el.getBoundingClientRect()).filter(r => r.width > 2 && r.height > 2);
   const text = [...body.querySelectorAll('h2,h3,h4,p,li,b,span,em,cite,figcaption,text,td,th')].filter(el => el.textContent.trim() && vis(el) && !el.children.length);
   const minFont = text.length ? Math.min(...text.map(el => parseFloat(getComputedStyle(el).fontSize) * (el.closest('.stage') ? (el.closest('.stage').getBoundingClientRect().width / el.closest('.stage').offsetWidth) : 1))) : 0;

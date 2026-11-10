@@ -51,7 +51,8 @@ for (const [id, n] of Object.entries(decks)) for (let i = 0; i < n; i++) {
     const t = body.querySelector(':scope > .sc-t, :scope .stage > .sc-t'), edge = t ? Math.abs(t.getBoundingClientRect().left - L) : 0;
     const vis = el => { const cs = getComputedStyle(el); return cs.display !== 'none' && cs.visibility !== 'hidden' && +cs.opacity > .05 && el.getClientRects().length; };
     const over = [...body.querySelectorAll('h2,h3,h4,p,li,b,figure,img,blockquote,.sc-row,.pp,.lg,.lk')].filter(el => vis(el) && !el.closest('.sc-bleed')).filter(el => el.getBoundingClientRect().bottom > D + 2).map(el => el.tagName + ' ' + (el.textContent || el.getAttribute('src') || '').trim().slice(0, 30));
-    const tt = t && getComputedStyle(t).position !== 'absolute' ? t.getBoundingClientRect().top : null;
+    const hd = body.querySelector(':scope > .sc-hint, :scope > .eyebrow, :scope > .sc-t');   // the header starts with the phone chip when there is one
+    const tt = hd && getComputedStyle(hd).position !== 'absolute' ? hd.getBoundingClientRect().top : null;
     return { edge, over, dash: /\u2014/.test(body.innerText), L: t ? t.getBoundingClientRect().left : null, T: tt };
   });
   if (!r) continue;
@@ -64,7 +65,7 @@ for (const [id, n] of Object.entries(decks)) for (let i = 0; i < n; i++) {
 }
 c.ok(!bad.edge.length, 'every title starts on the slide\'s left edge ' + bad.edge.slice(0, 6).join(', '));
 c.ok(!bad.left.length, 'titles keep one left edge on dark and cream pages ' + bad.left.slice(0, 6).join(', '));
-c.ok(!bad.top.length, 'titles sit at one height on dark and cream pages ' + bad.top.slice(0, 6).join(', '));
+c.ok(!bad.top.length, 'every header starts at one height on dark and cream pages ' + bad.top.slice(0, 6).join(', '));
 c.ok(!bad.dots.length, 'nothing runs into the chapter roadmap ' + bad.dots.slice(0, 6).join(' | '));
 c.ok(!bad.dash.length, 'no em dash on any slide ' + bad.dash.slice(0, 6).join(', '));
 
