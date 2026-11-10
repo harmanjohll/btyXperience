@@ -54,7 +54,7 @@ const check = () => pr.evaluate(() => {
   return out;
 });
 const lateCheck = () => pr.evaluate(() => { const root = document.getElementById('scBody'); if (!root) return [];
-  const step = '.cr-list li,.tb-col,.tb-col *,.tb-kid *,.mx-p,.mx-phase *,.arrive,.arrive *,.sl-col,.sl-col *,.st-marker,.sc-step,.sc-step *,.pn-l,.pn-l *,.vn-q,.vn-q *,.fly,.core';
+  const step = '.cr-list li,.tb-col,.tb-col *,.tb-kid *,.mx-p,.mx-phase *,.arrive,.arrive *,.sl-col,.sl-col *,.st-marker,.sc-step,.sc-step *,.pn-l,.pn-l *,.vn-q,.vn-q *,.fly,.core,.ms-row,.ms-row *,.ms-belief *,.lp-txt,.lp-txt *,.lp-foot,.st2-stage *';
   return [...root.querySelectorAll('h2,h3,p,li,b,span')].filter(el => el.textContent.trim() && !el.matches(step) && !el.closest(step)).filter(el => { let o = 1, n = el; while (n && n !== root) { o *= +getComputedStyle(n).opacity; n = n.parentElement; } return o < .5; }).map(el => ({ k: 'late', t: el.textContent.trim().slice(0, 40) })); });
 
 let n = 0;

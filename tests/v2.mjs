@@ -48,7 +48,7 @@ for (const [id, n] of Object.entries(decks)) for (let i = 0; i < n; i++) {
   const r = await pr.evaluate(() => {
     const body = document.getElementById('scBody'), ch = document.querySelector('#scene .sc-ch'), dots = document.getElementById('scDots'); if (!body || !ch || !dots) return null;
     const L = ch.getBoundingClientRect().left, D = dots.getBoundingClientRect().top;
-    const t = body.querySelector(':scope > .sc-t'), edge = t ? Math.abs(t.getBoundingClientRect().left - L) : 0;
+    const t = body.querySelector(':scope > .sc-t, :scope .stage > .sc-t'), edge = t ? Math.abs(t.getBoundingClientRect().left - L) : 0;
     const vis = el => { const cs = getComputedStyle(el); return cs.display !== 'none' && cs.visibility !== 'hidden' && +cs.opacity > .05 && el.getClientRects().length; };
     const over = [...body.querySelectorAll('h2,h3,h4,p,li,b,figure,img,blockquote,.sc-row,.pp,.lg,.lk')].filter(el => vis(el) && !el.closest('.sc-bleed')).filter(el => el.getBoundingClientRect().bottom > D + 2).map(el => el.tagName + ' ' + (el.textContent || el.getAttribute('src') || '').trim().slice(0, 30));
     return { edge, over, dash: /\u2014/.test(body.innerText) };
@@ -62,6 +62,24 @@ for (const [id, n] of Object.entries(decks)) for (let i = 0; i < n; i++) {
 c.ok(!bad.edge.length, 'every title starts on the chapter line\'s left edge ' + bad.edge.slice(0, 6).join(', '));
 c.ok(!bad.dots.length, 'nothing runs into the slide dots ' + bad.dots.slice(0, 6).join(' | '));
 c.ok(!bad.dash.length, 'no em dash on any slide ' + bad.dash.slice(0, 6).join(', '));
+
+// A slide's motion starts over every time it is shown: timers from an earlier visit never fire on a later one.
+const revisit = async (id, i, ms, probe) => { await pr.evaluate(([id, i]) => window.__jump(id, i), [id, i]); await sleep(1000);
+  await pr.click('#nextBtn'); await sleep(900); await pr.click('#prevBtn'); await sleep(ms); return pr.evaluate(probe); };
+const crest = await revisit('deck_a', 1, 1300, () => [...document.querySelectorAll('#scBody .cr-list li')].findIndex(l => l.classList.contains('now')));
+const fsbb = await revisit('deck_b', 4, 1500, () => document.querySelector('#scBody .mx-phase')?.dataset.p);
+const ties = await revisit('deck_f', 6, 1500, () => document.querySelectorAll('#scBody .tb-col.on').length);
+const stairs = await revisit('deck_b', 1, 800, () => document.querySelectorAll('#scBody .st2-bar.on').length);
+c.ok(crest === 0 && fsbb === '1' && ties === 1 && stairs === 0, `coming back to a slide replays its motion from the start (crest ${crest}, FSBB ${fsbb}, tie breakers ${ties}, stairs ${stairs})`);
+// A poll's reveal arms again whenever the show comes back to it.
+await pr.evaluate(() => window.__jump('poll_dream', 0)); await sleep(700); await pr.click('#nextBtn'); await sleep(500); await pr.click('#nextBtn'); await sleep(900);
+await pr.evaluate(() => window.__jump('poll_dream', 0)); await sleep(700);
+c.ok(/reveal/i.test(await pr.$eval('#nextBtn', e => e.textContent)), 'a poll shown again offers its reveal again');
+// Perspective: every "Inspiration" sits in its own stair pocket (right of its riser, between its treads).
+await pr.evaluate(() => window.__jump('deck_b', 1)); await sleep(1200);
+const pockets = await pr.evaluate(() => [...document.querySelectorAll('#scBody .st2-insp')].map(t => { const b = t.getBBox(), d = t.dataset;
+  return b.x >= +d.x0 && b.x + b.width <= +d.x1 && b.y >= +d.y0 - 2 && b.y + b.height <= +d.y1 + 2; }));
+c.ok(pockets.length === 4 && pockets.every(Boolean), `each "Inspiration" label sits in its stair pocket ${JSON.stringify(pockets)}`);
 
 const errs = [v1, pr, ...phones].flatMap(p => p.errs);
 c.ok(errs.length === 0, 'no page errors ' + JSON.stringify(errs.slice(0, 5)));
