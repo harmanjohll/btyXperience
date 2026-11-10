@@ -28,7 +28,7 @@ async function walk(reducedMotion, query = '') {
       samples.push(await p.evaluate(() => {
         const body = document.getElementById('scBody'); if (!body) return null;
         const eff = el => { let o = 1, n = el; while (n) { o *= +getComputedStyle(n).opacity; n = n.parentElement; } return o; };
-        const first = body.querySelector('.bi, .fit-box > figure, .lp-ring, .ms-disc, .st2-climber');
+        const first = body.querySelector('.bi:not(.fit-box), .fit-box > figure, .lp-ring, .ms-disc, .st2-climber');   // a photo box never fades; its photos do
         return { id: document.getElementById('scene')?.dataset.deck + ' ' + document.getElementById('scNum')?.textContent, c: eff(body), e: first ? eff(first) : null };
       }));
       await sleep(70);

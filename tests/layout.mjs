@@ -26,17 +26,22 @@ const measure = () => pr.evaluate(() => {
   if (!body) return null;
   const B = body.getBoundingClientRect(), S = scene.getBoundingClientRect(), F = foot.getBoundingClientRect();
   const vis = el => { const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || cs.display === 'none') return false; let o = 1, n = el; while (n && n !== body.parentElement) { o *= +getComputedStyle(n).opacity; n = n.parentElement; } return o > .5 && el.getClientRects().length; };
-  const title = body.querySelector('.sc-t');
-  const T = title && vis(title) ? title.getBoundingClientRect() : null;
-  const parts = [...body.querySelectorAll('h2.sc-h,h2.cv-h,.sc-logo,h3,h4,p,li,blockquote,cite,figure,.lp-ring,.ms-disc,.ms-ico,.ms-row,.st2-svg path,.st2-svg rect,.st2-svg text,.sc-row,.pp,.lg,.lk,.qs-card,.tb-kid,.tb-box,.mx-box,.sc-stat,.sc-let,.sc-step,.rx-k,.rx-c,.vn-c,.vn-q,table,.sc-slope,.pn-map,.cr-img,.sc-card,.sc-pill,svg.sc-slope text,.day-bar')]
-    .filter(el => el !== title && !(title && title.contains(el)) && vis(el)).map(el => el.getBoundingClientRect()).filter(r => r.width > 2 && r.height > 2);
+  // The header: the title and what sits with it (subtitle, the phone chip, an eyebrow). Content is measured below it,
+  // or from the top when the title has moved to a side column (a gallery that uses the full height).
+  const side = body.classList.contains('gal-side');
+  const heads = [...body.querySelectorAll(':scope > .sc-t, :scope > .sc-sub2, :scope > .sc-hint, :scope > .eyebrow, .stage > .sc-t')].filter(el => vis(el));
+  const title = heads[0] || null;
+  const T = heads.length && !side ? { bottom: Math.max(...heads.map(h => h.getBoundingClientRect().bottom)) } : null;
+  const parts = [...body.querySelectorAll('h2.sc-h,h2.cv-h,.sc-logo,.qm,.lp-core,.lp-bar,.mx-lvl,.mx-dot,h3,h4,p,li,blockquote,cite,figure,.lp-ring,.ms-disc,.ms-ico,.ms-row,.st2-svg path,.st2-svg rect,.st2-svg text,.sc-row,.pp,.lg,.lk,.qs-card,.tb-kid,.tb-box,.mx-box,.sc-stat,.sc-let,.sc-step,.rx-k,.rx-c,.vn-c,.vn-q,table,.sc-slope,.pn-map,.cr-img,.sc-card,.sc-pill,svg.sc-slope text,.day-bar')]
+    .filter(el => !heads.some(h => h === el || h.contains(el)) && vis(el)).map(el => el.getBoundingClientRect()).filter(r => r.width > 2 && r.height > 2);
   const text = [...body.querySelectorAll('h2,h3,h4,p,li,b,span,em,cite,figcaption,text,td,th')].filter(el => el.textContent.trim() && vis(el) && !el.children.length);
   const minFont = text.length ? Math.min(...text.map(el => parseFloat(getComputedStyle(el).fontSize) * (el.closest('.stage') ? (el.closest('.stage').getBoundingClientRect().width / el.closest('.stage').offsetWidth) : 1))) : 0;
   if (!parts.length) return { empty: true };
   const U = { top: Math.min(...parts.map(r => r.top)), bottom: Math.max(...parts.map(r => r.bottom)), left: Math.min(...parts.map(r => r.left)), right: Math.max(...parts.map(r => r.right)) };
-  const top0 = T ? T.bottom : B.top, free = B.bottom - top0;
+  const bcs = getComputedStyle(body), bot0 = B.bottom - parseFloat(bcs.paddingBottom);
+  const top0 = T ? T.bottom : B.top + parseFloat(bcs.paddingTop), free = bot0 - top0;
   let band = 0, run = 0; for (let y = U.top; y < U.bottom; y += 4) { const hit = parts.some(r => r.top <= y && r.bottom >= y); run = hit ? 0 : run + 4; band = Math.max(band, run); }
-  return { gapTop: Math.round(U.top - top0), gapBottom: Math.round(B.bottom - U.bottom), fill: +((U.bottom - U.top) / free).toFixed(2), width: +((U.right - U.left) / B.width).toFixed(2), band,
+  return { gapTop: Math.round(U.top - top0), gapBottom: Math.round(bot0 - U.bottom), fill: +((U.bottom - U.top) / free).toFixed(2), width: +((U.right - U.left) / B.width).toFixed(2), band,
     edge: Math.round(Math.min(U.left - S.left, S.right - U.right, F.top - U.bottom)), minFont: Math.round(minFont) };
 });
 

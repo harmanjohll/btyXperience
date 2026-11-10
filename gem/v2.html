@@ -1509,13 +1509,15 @@ body.nav-on footer #prevBtn, body.nav-on footer #nextBtn, footer #prevBtn:focus-
 /* No orphan words: lines break evenly in every block of words. */
 .lp-txt h4{text-wrap:balance}
 .ft-list span, .ft-list b, .ft-sub, .sc-note, .sc-quote blockquote, .sc-quote cite, .q2 blockquote, .sc-text, .cr-list span, .sc-people span, .sc-step p{text-wrap:pretty}
-.sc-body .eyebrow, .sc-quote .eyebrow{text-wrap:balance}
+.sc-body .eyebrow, .sc-quote .eyebrow, .sc-sub2, .stage-sub{text-wrap:balance}
 .sc-feat:not(.flip) .ft-media.round{justify-items:end} .sc-feat.flip .ft-media.round{justify-items:start}   /* the portrait sits toward its words */
 /* The roadmap holds still: Back and Next sit at the ends of the footer, out of its way. */
 footer .nav-row{position:relative}
 footer .nav-row > #prevBtn{position:absolute; left:0; top:50%; transform:translateY(-50%); z-index:2}
 footer .nav-row > #nextBtn{position:absolute; right:0; top:50%; transform:translateY(-50%); z-index:2}
 footer .nav-row > .progress-wrap{flex:1 1 auto; width:100%}
+.vis-title .vs{font-size:max(20px, 1.05vw); font-weight:500; line-height:1.35; margin-top:6px}
+#journeyContent.respond > div > .split{margin:16px 28px; width:calc(100% - 56px); height:calc(100% - 32px); border-radius:22px; overflow:hidden}   /* the globe and map sit inside the live frame */
 #journeyContent.respond::after{content:""; position:absolute; inset:16px 28px; border-radius:22px; box-shadow:inset 0 0 0 3px rgba(255,226,0,.85); pointer-events:none; z-index:5}
 </style>
 </head>
@@ -2807,7 +2809,9 @@ function autoFill(body){
   const h0=span(); if(!h0 || free<=0 || h0>=free*.8) return;
   // Headings and labels must not break onto an extra line as they grow.
   const heads=kids.flatMap(k=>[...k.querySelectorAll('h3,h4,b,.tag,.who,.l,cite')]).map(el=>({el,h:el.getBoundingClientRect().height})).filter(x=>x.h>0);
-  const ok=z=>{ kids.forEach(k=>k.style.zoom=z.toFixed(3)); return span()<=free*.92 && heads.every(x=>x.el.getBoundingClientRect().height<=x.h*z*1.15); };
+  const inside=()=>{ const L=B.left+parseFloat(cs.paddingLeft)-1, R=B.right-parseFloat(cs.paddingRight)+1;
+    return kids.every(k=>[k,...k.querySelectorAll('*')].every(el=>{ const r=el.getBoundingClientRect(); return !r.width || (r.left>=L && r.right<=R); })); };
+  const ok=z=>{ kids.forEach(k=>k.style.zoom=z.toFixed(3)); return span()<=free*.92 && inside() && heads.every(x=>x.el.getBoundingClientRect().height<=x.h*z*1.15); };
   let z=Math.min(1.4, free*.86/h0);
   while(z>1.02 && !ok(z)) z-=.04;
   if(z<=1.02) kids.forEach(k=>k.style.zoom='');
