@@ -1332,6 +1332,116 @@ footer{padding:clamp(6px,.9vh,10px) clamp(16px,2.5vw,36px)}
 
 .pn-l b{font-size:var(--t-label); line-height:1.22} .pn-l span{font-size:clamp(.8rem,.95vw,1.12rem)}
 .pn-l{max-width:21%; padding:7px 12px}
+
+/* ---------- v2 round 2: the mission slide, in its original form ---------- */
+.sc-mission{position:relative; width:100%; flex:1 1 0; min-height:0}
+.ms-stage{position:absolute; left:0; top:0; transform-origin:0 0}
+.ms-stage .ms-title{position:absolute; left:0; top:0; margin:0; font-size:72px; line-height:1.06; white-space:nowrap; max-width:none}
+.ms-lines{position:absolute; left:0; top:0; overflow:visible; pointer-events:none}
+.ms-arc{fill:none; stroke:#B8C7E6; stroke-width:5; stroke-dasharray:360; stroke-dashoffset:360; animation:msArc 3s linear .4s forwards}
+@keyframes msArc{0%{stroke-dashoffset:360} 17%{stroke-dashoffset:308.7} 37%{stroke-dashoffset:270} 57%{stroke-dashoffset:231.3} 100%{stroke-dashoffset:0}}
+.ms-streak{fill:none; stroke:var(--red); stroke-width:7; stroke-linecap:round; stroke-dasharray:28 332; stroke-dashoffset:28; opacity:0; animation:msStreak 1.7s var(--ease) 3.5s forwards}
+@keyframes msStreak{0%{opacity:0; stroke-dashoffset:28} 12%{opacity:.9} 88%{opacity:.9} 100%{opacity:0; stroke-dashoffset:-332}}
+.ms-link{stroke:#B8C7E6; stroke-width:3; stroke-dasharray:1; stroke-dashoffset:1; animation:msLink .3s ease-out var(--t) forwards}
+@keyframes msLink{to{stroke-dashoffset:0}}
+.ms-disc{position:absolute; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  background:radial-gradient(circle at 38% 30%, #fff 0%, #F2F3F7 55%, #DCE0E9 100%);
+  box-shadow:0 30px 60px rgba(0,12,83,.18), 0 6px 14px rgba(0,12,83,.10), inset 0 -10px 24px rgba(0,12,83,.06);
+  opacity:0; transform:scale(.6); animation:msDisc .8s cubic-bezier(.34,1.56,.64,1) .05s forwards}
+@keyframes msDisc{to{opacity:1; transform:none}}
+.ms-disc.logo{background:radial-gradient(circle at 40% 34%, #0B1C7E, #000C53 72%)}
+.ms-disc .nx-logo{width:440px; height:auto}
+.ms-disc .nx-logo text{paint-order:stroke; stroke:#000C53; stroke-width:4px; stroke-linejoin:round}
+.ms-disc.logo .nx-logo .nx-word{fill:var(--gold)}
+.ms-belief{width:384px}
+.ms-belief h4{position:relative; margin:0 0 18px; padding-bottom:10px; text-align:center; font-family:var(--sans); font-weight:800; font-size:32px; letter-spacing:.03em; text-transform:uppercase; color:var(--paper-ink)}
+.ms-belief h4::after{content:""; position:absolute; left:50%; bottom:0; width:0; height:3px; background:var(--paper-ink); transform:translateX(-50%); animation:msLine .6s var(--ease) .6s forwards}
+@keyframes msLine{to{width:100%}}
+.ms-belief p{margin:0; font-family:var(--sans); font-weight:700; font-size:31px; line-height:1.36; color:var(--paper-ink); text-align:left; text-wrap:pretty; opacity:0; animation:msSlide .5s var(--ease) .7s forwards}
+.ms-node{position:absolute; width:28px; height:28px; margin:-14px 0 0 -14px; border-radius:50%; background:#fff; box-shadow:0 4px 10px rgba(0,12,83,.25); transform:scale(0); animation:msPop .5s cubic-bezier(.34,1.56,.64,1) var(--t) forwards}
+.ms-node::before{content:""; position:absolute; inset:7px; border-radius:50%; background:var(--gold); box-shadow:inset 0 0 0 1.5px rgba(0,12,83,.35)}
+.ms-node::after{content:""; position:absolute; inset:0; border-radius:50%; border:3px solid var(--red); opacity:0; animation:msRipple 1s ease-out var(--t) forwards}
+@keyframes msPop{to{transform:scale(1)}}
+@keyframes msRipple{0%{opacity:.85; transform:scale(1)} 100%{opacity:0; transform:scale(3.4)}}
+.ms-ico{position:absolute; width:124px; height:124px; margin:-62px 0 0 -62px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--paper-ink);
+  background:radial-gradient(circle at 38% 30%, #fff, #EBEDF2 60%, #D7DBE5); box-shadow:0 16px 30px rgba(0,12,83,.18), inset 0 -6px 14px rgba(0,12,83,.06);
+  opacity:0; transform:scale(.3) rotate(-16deg); animation:msIco .7s cubic-bezier(.34,1.56,.64,1) calc(var(--t) + .05s) forwards}
+.ms-ico .ico{width:76px; height:76px}
+@keyframes msIco{to{opacity:1; transform:none}}
+.ms-row{position:absolute; text-align:center; color:var(--paper-ink)}
+.ms-row h3{margin:0 0 12px; white-space:nowrap; line-height:1; color:var(--paper-ink)}
+.ms-row h3 b{display:inline-block; font-family:"Arial Black","Segoe UI Black","Helvetica Neue",var(--sans); font-weight:900; font-size:84px; letter-spacing:-.01em;
+  opacity:0; transform:translateX(80px) skewX(-10deg); filter:blur(6px); animation:msSlam .6s cubic-bezier(.2,1.3,.4,1) calc(var(--t) + .12s) forwards}
+.ms-row h3 span{display:inline-block; margin-left:.28em; font-family:var(--sans); font-weight:700; font-size:62px; letter-spacing:.02em; text-transform:uppercase; opacity:0; transform:translateX(40px); animation:msSlide .5s var(--ease) calc(var(--t) + .28s) forwards}
+.ms-row h3 b{text-transform:uppercase}
+@keyframes msSlam{60%{opacity:1; filter:blur(0); transform:translateX(-6px) skewX(2deg)} to{opacity:1; filter:none; transform:none}}
+@keyframes msSlide{to{opacity:1; transform:none}}
+.ms-row p{margin:0; font-family:var(--sans); font-style:italic; font-size:31px; line-height:1.3; color:var(--paper-ink); text-wrap:balance; opacity:0; transform:translateY(10px); animation:msSlide .45s var(--ease) calc(var(--t) + .42s) forwards}
+.ms-row p.become{margin-top:4px; color:#D3242B; animation-delay:calc(var(--t) + .6s)}
+.ms-row p b{font-weight:800}
+@media (prefers-reduced-motion:reduce){ .ms-stage *, .ms-stage *::before, .ms-stage *::after{animation:none !important} .ms-disc, .ms-ico, .ms-row h3 b, .ms-row h3 span, .ms-row p, .ms-belief p{opacity:1; transform:none; filter:none} .ms-arc, .ms-link{stroke-dashoffset:0} .ms-node{transform:none} .ms-belief h4::after{width:100%} .ms-streak{display:none} }
+/* the NEXUS mark: the ring draws, the blades sweep out, the word arrives */
+.nx-blade{transform-box:fill-box; transform-origin:center; transform:scale(0); animation:nxBlade .7s cubic-bezier(.34,1.56,.64,1) forwards}
+.nx-b2{animation-delay:.8s} .nx-b1{animation-delay:1s}
+@keyframes nxBlade{to{transform:none}}
+.nx-arc{font-family:var(--sans); fill:var(--gold)} .nx-amp{font-size:1.25em; font-weight:700}
+.nx-logo .nx-word{font-family:var(--sans); font-weight:600}
+@media (prefers-reduced-motion:reduce){ .nx-blade{animation:none; transform:none} }
+
+/* ---------- v2 round 2: cycles of coloured rings (GROW, ACT, Learning Practice) ---------- */
+.sc-loop{position:relative; width:100%; flex:1 1 0; min-height:0}
+.lp-stage{position:absolute; left:0; top:0; transform-origin:0 0}
+.lp-stage .lp-title{position:absolute; left:0; top:0; margin:0; font-size:72px; line-height:1.06; white-space:nowrap; max-width:none}
+.lp-lines{position:absolute; left:0; top:0; overflow:visible; pointer-events:none}
+.lp-bar{stroke-width:16; stroke-linecap:round; stroke-dasharray:1; stroke-dashoffset:1; animation:lpBar .3s ease-out var(--t) forwards}
+@keyframes lpBar{to{stroke-dashoffset:0}}
+.lp-ring{position:absolute; width:190px; height:190px; margin:-95px 0 0 -95px; border-radius:50%; background:#fff; box-shadow:inset 0 0 0 16px var(--c), 0 18px 36px rgba(0,12,83,.16);
+  display:flex; align-items:center; justify-content:center; color:var(--c); transform:scale(0);
+  animation:lpPop .6s cubic-bezier(.34,1.56,.64,1) var(--t) forwards, lpFlash .6s ease-in-out var(--f) 1}
+.lp-ring span{font-family:var(--serif); font-weight:700; font-size:96px; line-height:1; transform:translateY(4px)}
+.lp-ring .ico{width:84px; height:84px}
+@keyframes lpPop{to{transform:scale(1)}}
+@keyframes lpFlash{0%,100%{box-shadow:inset 0 0 0 16px var(--c), 0 18px 36px rgba(0,12,83,.16)} 50%{box-shadow:inset 0 0 0 16px var(--c), 0 0 0 14px color-mix(in srgb, var(--c) 30%, transparent), 0 18px 36px rgba(0,12,83,.16)}}
+.lp-core{position:absolute; width:140px; height:140px; margin:-70px 0 0 -70px; border-radius:50%; background:var(--paper-ink); color:var(--cream); display:flex; align-items:center; justify-content:center; text-align:center;
+  font-family:var(--serif); font-style:italic; font-weight:700; font-size:27px; line-height:1.1; padding:14px; opacity:0; transform:scale(.4); animation:lpPop2 .6s cubic-bezier(.34,1.56,.64,1) .2s forwards}
+@keyframes lpPop2{to{opacity:1; transform:none}}
+.lp-txt{position:absolute; color:var(--paper-ink)}
+.lp-txt h4{margin:0 0 8px; font-family:var(--sans); font-weight:800; font-size:40px; line-height:1.05; letter-spacing:.02em; text-transform:uppercase; color:var(--h);
+  opacity:0; transform:translateX(-30px); animation:lpOut .5s var(--ease) calc(var(--t) + .15s) forwards}
+.lp-txt p{margin:0 0 6px; font-family:var(--sans); font-size:30px; line-height:1.28; color:var(--paper-ink); text-wrap:balance; opacity:0; transform:translateX(-24px); animation:lpOut .5s var(--ease) calc(var(--t) + .3s) forwards}
+.lp-txt.left h4, .lp-txt.left p{transform:translateX(30px)}
+.lp-txt p b{font-weight:800}
+@keyframes lpOut{to{opacity:1; transform:none}}
+.lp-dot{position:absolute; left:0; top:0; width:30px; height:30px; margin:0; border-radius:50%; background:var(--paper-ink); box-shadow:0 0 0 6px rgba(255,255,255,.85), 0 6px 14px rgba(0,12,83,.35);
+  offset-rotate:0deg; offset-distance:0%; opacity:0; animation:lpRun var(--dur) linear var(--t0) 1 forwards; z-index:3}
+@keyframes lpRun{0%{opacity:1; offset-distance:0%} 96%{opacity:1} 100%{opacity:0; offset-distance:100%}}
+.lp-foot{position:absolute; left:0; bottom:0; margin:0; font-family:var(--sans); font-style:italic; font-size:30px; color:var(--paper-dim); opacity:0; animation:lpOut .5s var(--ease) 2.4s forwards}
+@media (prefers-reduced-motion:reduce){ .lp-stage *{animation:none !important} .lp-ring, .lp-core, .lp-txt h4, .lp-txt p, .lp-foot{opacity:1; transform:none} .lp-bar{stroke-dashoffset:0} .lp-dot{display:none} }
+
+/* ---------- v2 round 2: Perspective (habits vs inspiration) ---------- */
+.sc-stairs2{position:relative; width:100%; flex:1 1 0; min-height:0}
+.st2-stage{position:absolute; left:0; top:0; transform-origin:0 0}
+.st2-stage .st2-title{position:absolute; left:0; top:0; margin:0; font-size:72px; line-height:1.06; white-space:nowrap; max-width:none}
+.st2-sub{position:absolute; left:0; top:92px; margin:0; font-family:var(--sans); font-size:32px; color:var(--paper-dim)}
+.st2-svg{position:absolute; left:0; top:0; overflow:visible}
+.st2-line{fill:none; stroke:var(--paper-ink); stroke-width:7; stroke-linejoin:round; stroke-linecap:round}
+.st2-trail{fill:none; stroke:#1E8C4E; stroke-width:18; stroke-linejoin:round; stroke-linecap:round; opacity:.22; stroke-dasharray:1000; stroke-dashoffset:1000}
+.st2-spiral-bg{fill:none; stroke:rgba(0,12,83,.14); stroke-width:4}
+.st2-spiral{fill:none; stroke:#1E8C4E; stroke-width:6; stroke-linecap:round; stroke-dasharray:1000; stroke-dashoffset:1000}
+.st2-sdot{fill:#1E8C4E; stroke:#fff; stroke-width:4}
+.st2-spiral-back{fill:none; stroke:rgba(246,239,225,.62); stroke-width:9; stroke-linecap:round}
+.st2-insp{font-family:var(--serif); font-weight:700; font-size:28px; opacity:.28; transition:opacity .4s}
+.st2-insp.on{opacity:1}
+.st2-word{font-family:var(--serif); font-style:italic; font-weight:700; font-size:40px; fill:var(--paper-ink); opacity:.25; transition:opacity .5s}
+.st2-word.on{opacity:1}
+.st2-bar{transform-box:fill-box; transform-origin:bottom; transform:scaleY(0); transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
+.st2-bar.on{transform:none}
+.st2-cap{font-family:var(--sans); font-size:28px; fill:var(--paper-dim)}
+.st2-cap.good{fill:#1E8C4E; font-weight:800} .st2-cap.bad{fill:#D3242B; font-weight:800}
+.st2-climber circle{fill:var(--red); stroke:#fff; stroke-width:4; filter:drop-shadow(0 3px 5px rgba(0,12,83,.3))}
+.st2-climber.hab circle{fill:#1E8C4E}
+.st2-climber.leap.strain circle{animation:strain .5s ease-in-out 3}
+@keyframes strain{0%,100%{transform:none} 25%{transform:translateX(-3px)} 75%{transform:translateX(3px)}}
 </style>
 </head>
 <body>
@@ -2503,9 +2613,11 @@ function phoneFor(s){
     case 'links':     return { t:'links', title:s.title||'', line:s.sub||'', links:(s.items||[]).map(x=>({ label:x.label||'', url:x.url })) };
     case 'logos':     return { t:'keys', title:s.title||'', keys:(s.items||[]).map(x=>x.name).filter(Boolean).slice(0,8) };
     case 'pins':      return { t:'keys', title:s.title||'', keys:(s.pins||[]).map(p=>p.label).slice(0,7) };
-    case 'stairs':    return { t:'point', icon:'arrow', title:s.title||'', line:(s.right&&s.right.caption)||'' };
+    case 'stairs':    return { t:'point', icon:'arrow', title:s.title||'', line:s.sub||'' };
     case 'mix':       return { t:'point', icon:'school', title:s.title||'', line:s.foot||'' };
     case 'crest':     return { t:'keys', title:s.title||'', keys:(s.items||[]).map(x=>x.title) };
+    case 'loop':      return { t:'chips', title:s.title||'', chips:(s.items||[]).map(x=>({ l:x.letter||String(x.head||'?')[0], w:x.head||'' })) };
+    case 'mission':   return { t:'keys', title:s.title||'', keys:(s.items||[]).map(x=>[x.strong,x.word].filter(Boolean).join(' ')) };
     case 'slope':     return { t:'keys', title:s.title||'', keys:(s.mark||[]).map(m=>{ const c=s.cols||[]; const r=c.map(col=>col.items.findIndex(t=>t.toLowerCase()===m.toLowerCase())+1); return m+': '+r.map((n,i)=>(c[i].head.replace(/^In /,''))+' #'+(n||'–')).join(', '); }) };
     case 'tiebreak':  return { t:'keys', title:'Tie breakers', keys:['1 · Citizenship','2 · Choice order of schools','3 · Computerised balloting'] };
     case 'quotes':    return { t:'point', icon:'', title:s.title||'', line:'' };
@@ -2601,22 +2713,17 @@ function layoutCrest(body){
   svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.removeAttribute('preserveAspectRatio');
   svg.querySelectorAll('ellipse').forEach(e=>{ e.setAttribute('cx',e.dataset.cx*W/100); e.setAttribute('rx',e.dataset.rx*W/100); e.setAttribute('cy',e.dataset.cy*H/100); e.setAttribute('ry',e.dataset.ry*H/100); });
 }
+let paintSeq=0;   // one number per slide drawn: a timer left over from an earlier visit checks it and does nothing
 function animateSlide(s, body){
-  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const T=(fn,ms)=>setTimeout(()=>{ if(body.isConnected) fn(); }, reduce?0:ms);
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches, seq=paintSeq, live=()=>body.isConnected && seq===paintSeq;
+  const T=(fn,ms)=>setTimeout(()=>{ if(live()) fn(); }, reduce?0:ms);
   if(s.kind==='pins'){ layoutPins(s, body); requestAnimationFrame(()=>layoutPins(s, body)); }
   if(s.kind==='crest'){ layoutCrest(body); requestAnimationFrame(()=>layoutCrest(body)); }
   if(s.kind==='crest'){ const n=(s.items||[]).length;
     for(let i=0;i<n;i++) T(()=>{ body.querySelectorAll('.cr-list li').forEach((li,k)=>{ li.classList.toggle('now',k===i); if(k<=i) li.classList.add('lit'); });
       body.querySelectorAll('.cr-ring').forEach((r,k)=>{ r.classList.toggle('now',k===i); if(k<=i) r.classList.add('lit'); }); }, 400+i*1400);
     T(()=>{ body.querySelectorAll('.cr-list li, .cr-ring').forEach(e=>{ e.classList.remove('now'); e.classList.add('lit','done'); }); }, 400+n*1400); }
-  if(s.kind==='stairs'){ body.querySelectorAll('.sc-stairs .st').forEach((st,si)=>{ const path=st.querySelector('path'), dot=st.querySelector('.climber'); if(!path||!dot) return;
-      const len=path.getTotalLength(), big=path.classList.contains('big'), t0=performance.now(), dur=big?5200:5200;
-      // Small stairs: one steady pace. Big stairs: a burst up each riser, then a long stall on the flat.
-      const prog=t=>{ if(!big) return t; const steps=(s.left&&s.left.steps)||3, seg=1/steps, k=Math.min(steps-1,Math.floor(t/seg)), f=(t-k*seg)/seg; const rise=.5/steps; return k*seg + (f<.12 ? (f/.12)*rise : rise + Math.max(0,(f-.7)/.3)*(seg-rise)); };
-      const tick=now=>{ if(!st.isConnected) return; const t=Math.min(1,(now-t0)/dur), p=path.getPointAtLength(prog(t)*len); dot.setAttribute('cx',p.x); dot.setAttribute('cy',p.y); if(t<1) requestAnimationFrame(tick); };
-      const p0=path.getPointAtLength(0); dot.setAttribute('cx',p0.x); dot.setAttribute('cy',p0.y);
-      if(reduce){ const p=path.getPointAtLength(len); dot.setAttribute('cx',p.x); dot.setAttribute('cy',p.y); } else setTimeout(()=>requestAnimationFrame(tick), 400+si*150); }); }
+  if(s.kind==='stairs') runStairs(body, live, reduce);
   if(s.kind==='mix'){ const box=body.querySelector('.sc-mixer'); if(!box) return; const W=box.clientWidth, H=box.clientHeight, nC=+box.dataset.classes, nL=+box.dataset.levels, dots=[...box.querySelectorAll('.mx-dot')];
       const R=Math.max(14,Math.min(32,W/56)), gap=W*.02;
       const place=(phase)=>{ const groups=phase===1?nL:nC, key=phase===1?'li':'ci', bw=(W-gap*(groups-1))/groups;
@@ -2633,12 +2740,150 @@ function animateSlide(s, body){
     cols.forEach((c,i)=>T(()=>{ c.classList.add('on'); c.querySelectorAll('.tb-res').forEach(r=>{ const k=body.querySelector(`.tb-kid[data-k="${r.dataset.k}"]`); if(k){ k.classList.add('done'); k.querySelector('.tb-to').textContent=r.textContent.split('→')[1].trim(); } }); }, 600+i*2400)); }
   if(s.kind==='cover' && s.day){ T(()=>body.querySelector('.day-bar')?.classList.add('go'), 500); }
 }
-function nexusLogo(){ return `<svg class="nx-logo" viewBox="0 0 300 300" aria-label="NEXUS@BTY"><defs><path id="nxTop" d="M40 150 A110 110 0 0 1 260 150"/><path id="nxBot" d="M30 150 A120 120 0 0 0 270 150"/></defs>
-  <circle cx="150" cy="150" r="92" fill="none" stroke="#EC3237" stroke-width="5" pathLength="100" class="nx-ring"/>
-  <path d="M114 126 L72 174" stroke="#8E1F24" stroke-width="9" stroke-linecap="round" pathLength="100" class="nx-x nx-x2"/><path d="M72 126 L114 174" stroke="#EC3237" stroke-width="9" stroke-linecap="round" pathLength="100" class="nx-x"/>
-  <text font-family="Georgia,serif" font-size="22" fill="currentColor"><textPath href="#nxTop" startOffset="50%" text-anchor="middle">Navigation &amp; Exploration</textPath></text>
-  <text font-family="Georgia,serif" font-size="22" fill="currentColor"><textPath href="#nxBot" startOffset="50%" text-anchor="middle">Understandings &amp; Synergies</textPath></text>
-  <text x="176" y="158" font-family="Georgia,serif" font-size="21" font-weight="700" text-anchor="middle" class="nx-word">Disciplinary</text></svg>`; }
+/* The NEXUS@BTY mark, in the school's own form: a red ring, two tapered blades crossing (one bright, one deep),
+   "Disciplinary" across the centre, and the four words around the ring. */
+function nexusLogo(){ return `<svg class="nx-logo" viewBox="0 0 300 300" aria-label="NEXUS@BTY"><defs><path id="nxTop" d="M42 150 A108 108 0 0 1 258 150"/><path id="nxBot" d="M30 150 A120 120 0 0 0 270 150"/></defs>
+  <circle cx="150" cy="150" r="92" fill="none" stroke="#EC3237" stroke-width="6" pathLength="100" class="nx-ring"/>
+  <path class="nx-blade nx-b2" d="M96 86 Q 164 137 204 214 Q 136 163 96 86 Z" fill="#8E1F24"/>
+  <path class="nx-blade nx-b1" d="M96 214 Q 136 137 204 86 Q 164 163 96 214 Z" fill="#EC3237"/>
+  <text class="nx-arc" font-size="21" letter-spacing="1"><textPath href="#nxTop" startOffset="50%" text-anchor="middle">Navigation <tspan class="nx-amp">&amp;</tspan> Exploration</textPath></text>
+  <text class="nx-arc" font-size="21" letter-spacing="1"><textPath href="#nxBot" startOffset="50%" text-anchor="middle">Understandings <tspan class="nx-amp">&amp;</tspan> Synergies</textPath></text>
+  <text x="182" y="158" font-size="22" text-anchor="middle" class="nx-word">Disciplinary</text></svg>`; }
+/* Three outcomes radiating from one centre (the mission slide, in its original form). Drawn on a fixed
+   1760×820 stage and scaled to fit, so the arc, the nodes and the words always line up. */
+const MS_ICON={
+  thinker:'<circle cx="13.4" cy="4.4" r="2.3"/><path d="M11.4 6.9C8.9 8.6 8 12 8.7 15.4"/><path d="M8.7 15.4h7.2l.5 5.3h2.3"/><path d="M11.9 8.4l3.9 6.3-1.9-7.4"/><path d="M10.9 10.6l1.2 4.8"/><path d="M5.6 15.4v5.3M3.6 20.7h17"/>',
+  mind:'<path d="M15.6 21v-3.4c1.9-1.3 3.1-3.5 3.1-5.9A7 7 0 0 0 5 9.8L3.8 13.2h1.8v2.4a2 2 0 0 0 2 2h2.3V21"/><circle cx="12" cy="10" r="1.7"/><path d="M12 6.5v1.3M12 12.2v1.3M8.5 10h1.3M14.2 10h1.3M9.5 7.5l.9.9M13.6 11.6l.9.9M9.5 12.5l.9-.9M13.6 8.4l.9-.9"/>',
+  community:'<circle cx="6.3" cy="7.2" r="1.9"/><circle cx="12" cy="5.4" r="2.1"/><circle cx="17.7" cy="7.2" r="1.9"/><path d="M2.8 14.6a3.4 3.4 0 0 1 5.3-2.8M21.2 14.6a3.4 3.4 0 0 0-5.3-2.8M8.4 11.1a4 4 0 0 1 7.2 0"/><path d="M12 21s-4.1-2.4-4.1-5.3A2.1 2.1 0 0 1 12 14.9a2.1 2.1 0 0 1 4.1.8c0 2.9-4.1 5.3-4.1 5.3Z"/>'
+};
+const msIcon=k=>`<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${MS_ICON[k]||''}</svg>`;
+const MS={ W:1760, H:820, cx:320, cy:395, disc:260, arc:305, icon:400, r:62, ang:[-38.7,0,38.7], rowTop:[100,350,600], t:[.91,1.51,2.11] };
+function missionHTML(s){
+  const it=(s.items||[]).slice(0,3), P=(a,d)=>[MS.cx+d*Math.cos(a*Math.PI/180), MS.cy+d*Math.sin(a*Math.PI/180)];
+  const dS=`style="left:${MS.cx-MS.disc}px; top:${MS.cy-MS.disc}px; width:${MS.disc*2}px; height:${MS.disc*2}px"`;
+  const disc = s.logo==='nexus' ? `<div class="ms-disc logo" ${dS}>${nexusLogo()}</div>`
+    : `<div class="ms-disc" ${dS}><div class="ms-belief"><h4>${escH((s.belief&&s.belief.head)||'Fundamental belief')}</h4><p>${escH((s.belief&&s.belief.text)||'')}</p></div></div>`;
+  const svg=`<svg class="ms-lines" viewBox="0 0 ${MS.W} ${MS.H}" width="${MS.W}" height="${MS.H}">
+      <circle class="ms-arc" cx="${MS.cx}" cy="${MS.cy}" r="${MS.arc}" pathLength="360" transform="rotate(-90 ${MS.cx} ${MS.cy})"/>
+      <circle class="ms-streak" cx="${MS.cx}" cy="${MS.cy}" r="${MS.arc}" pathLength="360" transform="rotate(-90 ${MS.cx} ${MS.cy})"/>
+      ${it.map((_,i)=>{ const [x1,y1]=P(MS.ang[i],MS.arc), [x2,y2]=P(MS.ang[i],MS.icon-MS.r); return `<line class="ms-link" style="--t:${MS.t[i]}s" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" pathLength="1"/>`; }).join('')}</svg>`;
+  const nodes=it.map((_,i)=>{ const [x,y]=P(MS.ang[i],MS.arc); return `<i class="ms-node" style="left:${x}px; top:${y}px; --t:${MS.t[i]}s"></i>`; }).join('');
+  const rows=it.map((x,i)=>{ const [ix,iy]=P(MS.ang[i],MS.icon), left=ix+MS.r+30;
+    return `<span class="ms-ico" style="left:${ix}px; top:${iy}px; --t:${MS.t[i]}s">${msIcon(x.icon)}</span>
+      <div class="ms-row" style="left:${left}px; top:${MS.rowTop[i]}px; width:${MS.W-left}px; --t:${MS.t[i]}s">
+        <h3><b>${escH(x.strong||'')}</b> <span>${escH(x.word||'')}</span></h3>
+        ${x.toLine?`<p class="be">${escH(x.toLine)}</p>`:x.be?`<p class="be">To <b>be</b> ${escH(x.be)}</p>`:''}${x.become?`<p class="become">To <b>become</b> ${escH(x.become)}</p>`:''}</div>`; }).join('');
+  return `<div class="sc-mission stage-box"><div class="ms-stage stage" style="width:${MS.W}px; height:${MS.H}px">
+      ${s.title?`<h2 class="sc-t ms-title">${escH(s.title)}</h2>`:''}${svg}${disc}${nodes}${rows}</div></div>`;
+}
+/* A cycle of coloured rings (GROW, ACT, the Learning Practice), in the form of the school's own diagrams.
+   Rings pop in order, each bar draws on to the next, the words slide out, then a dot runs the loop once. */
+const LP_AT={ sq:{tl:[745,300],tr:[1015,300],br:[1015,570],bl:[745,570], c:[880,435]}, tri:{top:[880,265],br:[1075,590],bl:[685,590], c:[880,482]} };
+function loopHTML(s){
+  const it=s.items||[], n=it.length, geo=n===4?LP_AT.sq:LP_AT.tri, R=95, W=1760, H=820;
+  const def4=['tr','br','bl','tl'], def3=['top','br','bl'];
+  const pos=it.map((x,i)=>geo[x.at||(n===4?def4:def3)[i]]||geo.top), t=it.map((_,i)=>.5+.6*i), T0=t[n-1]+.9;
+  const rich=q=>escH(q).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+  const bars=it.map((x,i)=>{ const a=pos[i], b=pos[(i+1)%n], dx=b[0]-a[0], dy=b[1]-a[1], L=Math.hypot(dx,dy), ux=dx/L, uy=dy/L;
+    return `<line class="lp-bar" style="--t:${(i===n-1?t[i]+.35:t[i]+.35).toFixed(2)}s; stroke:${x.color}" x1="${a[0]+ux*R}" y1="${a[1]+uy*R}" x2="${b[0]-ux*R}" y2="${b[1]-uy*R}" pathLength="1"/>`; }).join('');
+  const rings=it.map((x,i)=>{ const [cx,cy]=pos[i]; return `<div class="lp-ring" style="left:${cx}px; top:${cy}px; --c:${x.color}; --t:${t[i]}s; --f:${(T0+.6*i).toFixed(2)}s">${x.icon?BTY.icon(x.icon,'',1.6):`<span>${escH(x.letter||'')}</span>`}</div>`; }).join('');
+  const txt=it.map((x,i)=>{ const [cx,cy]=pos[i], at=x.at||(n===4?def4:def3)[i], left=/l$/.test(at);
+    const box = left ? `right:${W-(cx-R-44)}px; width:${Math.min(640,cx-R-44)}px; text-align:right` : `left:${cx+R+44}px; width:${Math.min(640,W-(cx+R+44))}px`;
+    return `<div class="lp-txt${left?' left':''}" style="${box}; top:${cy-R+4}px; --t:${t[i]}s; --h:${x.ink||x.color}"><h4>${escH(x.head||'')}</h4>${(x.qs||[]).map(q=>`<p>${rich(q)}</p>`).join('')}</div>`; }).join('');
+  const path='M'+pos.map(p=>p.join(' ')).join(' L')+' Z', c=geo.c;
+  return `<div class="sc-loop stage-box"><div class="lp-stage stage" style="width:${W}px; height:${H}px">
+      ${s.title?`<h2 class="sc-t lp-title">${escH(s.title)}</h2>`:''}
+      <svg class="lp-lines" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">${bars}</svg>
+      ${s.centre?`<div class="lp-core" style="left:${c[0]}px; top:${c[1]}px">${escH(s.centre)}</div>`:''}
+      ${rings}${txt}
+      <i class="lp-dot" style="offset-path:path('${path}'); --t0:${T0.toFixed(2)}s; --dur:${(.6*n).toFixed(2)}s"></i>
+      ${s.foot?`<p class="lp-foot">${rich(s.foot)}</p>`:''}</div></div>`;
+}
+/* PERSPECTIVE: two ways up. Habits: one burst of inspiration, then small steps that get easier and quicker,
+   like a spiral that rises faster as it turns. Inspiration alone: three big leaps, each harder than the last
+   (longer to gather, failed attempts, a strained finish). Effort bars under each stair keep the point on screen.
+   Every label is placed from the stair's own geometry, so it always sits where it belongs. */
+const STG={ W:1760, H:820, base:640,
+  hab:{ x0:360, rise0:120, run0:110, n:10, rise:30, run:50 }, leap:{ x0:1090, rise:140, run:220, n:3 },
+  spiral:{ cx:165, y0:610, y1:250, turns:4, r0:34, r1:118 } };
+function stairsGeo(){
+  const g=STG, H=g.hab, L=g.leap, hab=[], leap=[];
+  let x=H.x0, y=g.base; let d=`M${x-60} ${y} H${x} V${y-H.rise0} H${x+H.run0}`; y-=H.rise0; x+=H.run0;
+  hab.push({ land:[H.x0+H.run0/2, y], riser:H.x0, top:y, bot:g.base, next:x });
+  for(let k=0;k<H.n;k++){ const rx=x; d+=` V${y-H.rise} H${x+H.run}`; y-=H.rise; x+=H.run; hab.push({ land:[rx+H.run/2, y], riser:rx, top:y, bot:y+H.rise, next:x }); }
+  let lx=L.x0, ly=g.base, ld=`M${lx-60} ${ly} H${lx}`;
+  for(let k=0;k<L.n;k++){ const rx=lx; ld+=` V${ly-L.rise} H${lx+L.run}`; ly-=L.rise; lx+=L.run; leap.push({ land:[rx+L.run/2, ly], riser:rx, top:ly, bot:ly+L.rise, next:lx }); }
+  const S=g.spiral, pts=[]; let back=''; for(let i=0;i<=240;i++){ const t=i/240, a=t*S.turns*2*Math.PI, r=S.r0+(S.r1-S.r0)*t, p=[S.cx+r*Math.cos(a), S.y0+(S.y1-S.y0)*t+r*.3*Math.sin(a)]; pts.push(p);
+    if(Math.sin(a)<0 && i>0){ const q=pts[i-1]; back+=`M${q[0].toFixed(1)} ${q[1].toFixed(1)} L${p[0].toFixed(1)} ${p[1].toFixed(1)} `; } }
+  return { habD:d, leapD:ld, hab, leap, spiralD:'M'+pts.map(p=>p.map(v=>v.toFixed(1)).join(' ')).join(' L'), spiralBack:back };
+}
+function stairsHTML(s){
+  const g=STG, G=stairsGeo(), hab=G.hab, leap=G.leap, slope=Math.atan2(g.hab.rise,g.hab.run)*180/Math.PI;
+  const along=(k,txt,cls)=>{ const a=hab[k], b=hab[k+1]; const mx=(a.riser+b.next)/2, my=(a.top+b.top)/2; const nx=Math.sin(slope*Math.PI/180), ny=Math.cos(slope*Math.PI/180);
+    return `<text class="st2-word ${cls}" text-anchor="middle" transform="translate(${(mx+nx*58).toFixed(1)} ${(my+ny*58).toFixed(1)}) rotate(${-slope.toFixed(1)})">${txt}</text>`; };
+  const insp=(st,i,col)=>`<text class="st2-insp" data-i="${i}" fill="${col}" x="${st.riser+16}" y="${((st.top+st.bot)/2+10).toFixed(1)}" data-x0="${st.riser}" data-x1="${st.next}" data-y0="${st.top}" data-y1="${st.bot}">“Inspiration”</text>`;
+  const LC=['#1E8C4E','#B86A00','#D3242B'];
+  const hb=[60,40,34,28,23,19,15,12,9,7,5], lb=[38,76,112];
+  const bars=(arr,x0,w,gap,cls,col)=>arr.map((h,i)=>`<rect class="st2-bar ${cls}" data-i="${i}" x="${x0+i*(w+gap)}" y="${800-h}" width="${w}" height="${h}" rx="3" fill="${typeof col==='function'?col(i):col}"/>`).join('');
+  const habCol=i=>i===0?'#1E8C4E':`rgba(30,140,78,${(1-i*.06).toFixed(2)})`, leapCol=i=>LC[i];
+  return `<div class="sc-stairs2 stage-box"><div class="st2-stage stage" style="width:${g.W}px; height:${g.H}px">
+    <h2 class="sc-t st2-title">${escH(s.title||'Perspective')}</h2>${s.sub?`<p class="st2-sub">${escH(s.sub)}</p>`:''}
+    <svg class="st2-svg" viewBox="0 0 ${g.W} ${g.H}" width="${g.W}" height="${g.H}">
+      <path class="st2-spiral-bg" d="${G.spiralD}"/><path class="st2-spiral" d="${G.spiralD}" pathLength="1000"/><path class="st2-spiral-back" d="${G.spiralBack}"/><circle class="st2-sdot" r="13" cx="${g.spiral.cx+g.spiral.r0}" cy="${g.spiral.y0}"/>
+      <text class="st2-cap" x="0" y="770">A virtuous spiral:</text><text class="st2-cap good" x="0" y="806">quicker each turn</text>
+      <path class="st2-line" d="${G.habD}"/><path class="st2-trail" d="${G.habD}" pathLength="1000"/>
+      <path class="st2-line" d="${G.leapD}"/>
+      ${insp({...hab[0], next:hab[hab.length-1].next},0,LC[0])}${along(2,'Routines','r')}${along(7,'Habits','h')}
+      ${leap.map((st,i)=>insp(st,i,LC[i]).replace('class="st2-insp"','class="st2-insp lp"')).join('')}
+      ${bars(hb,360,22,9,'hb',habCol)}<text class="st2-cap" x="720" y="770">Effort per step:</text><text class="st2-cap good" x="720" y="806">easier each time</text>
+      ${bars(lb,1090,56,22,'lb',leapCol)}<text class="st2-cap" x="1340" y="770">Effort per leap:</text><text class="st2-cap bad" x="1340" y="806">harder each time</text>
+      <g class="st2-climber hab" transform="translate(${hab[0].riser-30} ${g.base})"><circle cx="0" cy="-14" r="14"/></g>
+      <g class="st2-climber leap" transform="translate(${leap[0].riser-35} ${g.base})"><circle cx="0" cy="-14" r="14"/></g>
+    </svg></div></div>`;
+}
+function runStairs(body, live, reduce){
+  const svg=body.querySelector('.st2-svg'); if(!svg) return; const G=stairsGeo(), base=STG.base;
+  const habC=svg.querySelector('.st2-climber.hab'), leapC=svg.querySelector('.st2-climber.leap'), trail=svg.querySelector('.st2-trail'), spiral=svg.querySelector('.st2-spiral'), sdot=svg.querySelector('.st2-sdot'), sp=svg.querySelector('.st2-spiral-bg');
+  const on=(sel,i)=>{ const el=svg.querySelector(`${sel}[data-i="${i}"]`); if(el) el.classList.add('on'); };
+  const place=(c,x,y,sx=1,sy=1)=>c.setAttribute('transform',`translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${sx} ${sy})`);
+  const spLen=sp.getTotalLength();
+  const spiralAt=p=>{ const q=sp.getPointAtLength(Math.max(0,Math.min(1,p))*spLen); sdot.setAttribute('cx',q.x); sdot.setAttribute('cy',q.y); spiral.style.strokeDashoffset=String(1000*(1-p)); };
+  if(reduce){ const h=G.hab[G.hab.length-1].land, l=G.leap[G.leap.length-1].land; place(habC,h[0],h[1]); place(leapC,l[0],l[1]); trail.style.strokeDashoffset='0'; spiralAt(1);
+    svg.querySelectorAll('.st2-insp,.st2-word,.st2-bar').forEach(e=>e.classList.add('on')); return; }
+  // A timeline per climber: crouch (gather), hop (an arc to a point), fail (up and back down), with events on landing.
+  const play=(c,steps,onFrame)=>{ let i=0, t0=null, from=null;
+    const cur={ x:+c.transform.baseVal[0].matrix.e, y:+c.transform.baseVal[0].matrix.f };
+    const tick=now=>{ if(!live()) return; if(t0===null){ t0=now; from={...cur}; }
+      const st=steps[i]; if(!st) return; const p=Math.min(1,(now-t0)/(st.d*1000));
+      if(st.k==='wait'){ place(c,cur.x,cur.y); }
+      else if(st.k==='crouch'){ const sq=Math.sin(Math.min(1,p*1.6)*Math.PI/2)*(st.deep||.28), tr=st.tremble?Math.sin(now/28)*st.tremble:0; place(c,cur.x+tr,cur.y,1+sq*.6,1-sq); }
+      else if(st.k==='hop'||st.k==='fail'){ const to=st.k==='fail'?[from.x+st.dx,from.y]:st.to, peak=st.k==='fail'?st.peak:Math.min(from.y,to[1])-(st.h||40);
+        const e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2, x=from.x+(to[0]-from.x)*e;
+        const y0=from.y, y1=to[1], yy=(1-p)*(1-p)*y0+2*(1-p)*p*(st.k==='fail'?peak*2-(y0+y1)/2:peak*2-(y0+y1)/2)+p*p*y1;
+        place(c,x,yy,1-.08*Math.sin(p*Math.PI),1+.12*Math.sin(p*Math.PI)); cur.x=x; cur.y=yy; }
+      if(onFrame) onFrame(i,p);
+      if(p>=1){ if(st.k==='hop'||st.k==='fail'){ const to=st.k==='fail'?[from.x+st.dx,from.y]:st.to; cur.x=to[0]; cur.y=to[1]; place(c,cur.x,cur.y); }
+        st.on&&st.on(); i++; t0=now; from={...cur}; }
+      if(i<steps.length) requestAnimationFrame(tick); };
+    requestAnimationFrame(tick); };
+  // Habits: one burst of inspiration, then small steps, each quicker than the last.
+  const H=G.hab, hs=[{k:'wait',d:.6},{k:'crouch',d:.3},{k:'hop',d:.55,to:H[0].land,h:50,on:()=>{ on('.st2-insp',0); on('.st2-bar.hb',0); }}];
+  let dur=.5; for(let k=1;k<H.length;k++){ const kk=k; hs.push({k:'hop',d:dur,to:H[k].land,h:16,on:()=>{ on('.st2-bar.hb',kk); if(kk===2) on('.st2-word.r',''); if(kk===6) on('.st2-word.h',''); }}); dur*=.8; }
+  svg.querySelectorAll('.st2-word').forEach(w=>w.setAttribute('data-i',''));
+  const total=H.length-1;
+  play(habC,hs,(i,p)=>{ if(i>=3){ const k=i-3+p; const f=Math.min(1,k/total); spiralAt(f); trail.style.strokeDashoffset=String(1000*(1-(.16+.84*f))); } else if(i===2){ trail.style.strokeDashoffset=String(1000*(1-.16*p)); } });
+  // Inspiration alone: each leap takes longer to gather, fails more often, and lands harder.
+  const L=G.leap, ls=[{k:'wait',d:.5},{k:'crouch',d:.25},{k:'hop',d:.5,to:L[0].land,h:60,on:()=>{ on('.st2-insp.lp',0); on('.st2-bar.lb',0); }},
+    {k:'wait',d:.25},{k:'crouch',d:.6,tremble:2},{k:'fail',d:.45,dx:24,peak:L[0].land[1]-95},{k:'wait',d:.2},{k:'crouch',d:.45,tremble:2.5,deep:.32},
+    {k:'hop',d:.6,to:L[1].land,h:40,on:()=>{ on('.st2-insp.lp',1); on('.st2-bar.lb',1); }},
+    {k:'wait',d:.3},{k:'crouch',d:.8,tremble:3},{k:'fail',d:.45,dx:20,peak:L[1].land[1]-100},{k:'wait',d:.2},{k:'crouch',d:.6,tremble:3.5},{k:'fail',d:.4,dx:14,peak:L[1].land[1]-70},
+    {k:'wait',d:.25},{k:'crouch',d:.7,tremble:4,deep:.36},{k:'hop',d:.75,to:L[2].land,h:22,on:()=>{ on('.st2-insp.lp',2); on('.st2-bar.lb',2); leapC.classList.add('strain'); }}];
+  play(leapC,ls);
+}
+// Scale a fixed design stage to fit its box (left aligned, so its title keeps the slide's left edge).
+function fitStage(box){ const st=box.querySelector(':scope > .stage'); if(!st) return; const W=box.clientWidth, H=box.clientHeight; if(!W||!H) return;
+  const k=Math.min(W/parseFloat(st.style.width), H/parseFloat(st.style.height)); st.style.transform=`scale(${k})`; box.style.setProperty('--stage-h', (parseFloat(st.style.height)*k)+'px'); }
+const stageObserver=('ResizeObserver' in window) ? new ResizeObserver(es=>es.forEach(e=>fitStage(e.target))) : null;
 function slideHTML(s){
   const T=(t,cls='')=>t?`<h2 class="sc-t${cls} bi"${D_(60)}>${escH(t)}</h2>`:'';
   const cols=n=>` style="grid-template-columns:repeat(${n},1fr)"`;
@@ -2731,12 +2976,7 @@ function slideHTML(s){
         lines.push(`<path class="sl-line${k!=null?' hi h'+k:''}" style="--c:${c}" d="M${x0+c*cw+lw+14} ${ys(i)} C ${x0+c*cw+lw+14+(cw-lw-28)/2} ${ys(i)}, ${x0+(c+1)*cw-14-(cw-lw-28)/2} ${ys(j)}, ${x0+(c+1)*cw-14} ${ys(j)}" pathLength="100"/>`); });
       const labels=C.map((col,c)=>`<g class="sl-col" style="--c:${c}"><text class="sl-head" x="${x0+c*cw}" y="30">${escH(col.head)}</text>${col.items.map((t,i)=>{ const k=hi.get(t.toLowerCase()); return `<text class="sl-item${k!=null?' hi h'+k:''}" x="${x0+c*cw}" y="${ys(i)+8}"><tspan class="sl-n">${i+1}</tspan> ${escH(t)}</text>`; }).join('')}</g>`).join('');
       return `${T(s.title,' sm tight')}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<svg class="sc-slope" preserveAspectRatio="xMinYMid meet" viewBox="0 0 ${W} ${H}">${lines.join('')}${labels}</svg>${s.note?`<p class="sc-note">${escH(s.note)}</p>`:''}`; }
-    case 'stairs': { const L=s.left||{}, R=s.right||{};
-      const stair=(n,w,h)=>{ let d=`M10 ${h-10}`, x=10, y=h-10; const sx=(w-20)/n, sy=(h-30)/n; for(let i=0;i<n;i++){ y-=sy; d+=` L${x} ${y}`; x+=sx; d+=` L${x} ${y}`; } return d; };
-      return `${T(s.title,' sm')}<div class="sc-stairs">
-        <div class="st"><div class="st-art"><svg viewBox="0 0 600 380"><path class="small" d="${stair(R.steps||12,600,380)}"/><circle class="climber" r="11"/></svg>${(R.labels||[]).map((t,i)=>`<span class="sl s${i}">${escH(t)}</span>`).join('')}</div><p>${escH(R.caption||'')}</p></div>
-        <div class="st"><div class="st-art"><svg viewBox="0 0 600 380"><path class="big" d="${stair(L.steps||3,600,380)}"/><circle class="climber" r="11"/></svg>${Array.from({length:L.steps||3},(_,i)=>`<span class="ins i${i}">“${escH(L.label||'Inspiration')}”</span>`).join('')}</div><p>${escH(L.caption||'')}</p></div>
-      </div>`; }
+    case 'stairs': return stairsHTML(s);
     case 'mix': { const lv=s.levels||[['G3','#3B6FD8'],['G2','#E2463F'],['G1','#F2C94C']], cls=s.classes||[[6,3,1],[5,3,1],[5,2,2],[6,2,1]];
       let dots=[]; cls.forEach((c,ci)=>c.forEach((cnt,li)=>{ for(let k=0;k<cnt;k++) dots.push({ci,li}); }));
       return `${T(s.title,' sm tight')}<div class="mx-phase bi"><span class="mx-p p1">${escH(s.phase1||'Subject classes: each at their own level')}</span><span class="mx-p p2">${escH(s.phase2||'Form classes: together for the Common Core')}</span></div>
@@ -2752,6 +2992,8 @@ function slideHTML(s){
       </div>`; }
     case 'quotes': { const it=s.items||[];
       return `${T(s.title,' sm tight')}<div class="sc-quotes">${s.img?`<div class="qs-media fit-box whole bi">${FIG(s.img)}</div>`:''}<div class="qs-grid">${it.map((x,i)=>`<blockquote class="qs-card bi"${D_(150+i*120)}><span class="qm">“</span><p>${escH(x.q)}</p>${x.by?`<cite>${escH(x.by)}</cite>`:''}</blockquote>`).join('')}</div></div>`; }
+    case 'mission': return missionHTML(s);
+    case 'loop': return loopHTML(s);
     case 'live': return liveHTML(s);
     case 'ask': return `<span class="sc-hint bi">${BTY.icon('phone')}Answer on your phone</span>${T(s.question,' sm')}
         <div class="sc-big sc-ask"><div class="sc-rows bi"${D_(220)} id="scLive">${(s.options||[]).map((o,i)=>row('o'+i,o)).join('')}</div>
@@ -2848,7 +3090,7 @@ function paintScene(){
   const st=journeySteps[currentStep], d=deckFor(st); const body=document.getElementById('scBody'); if(!d || !body) return;
   sceneIdx=Math.max(0,Math.min(sceneIdx,d.slides.length-1));
   const s=d.slides[sceneIdx];
-  body.classList.remove('sc-leave');
+  body.classList.remove('sc-leave'); const seq=++paintSeq, live=()=>seq===paintSeq;
   const scEl=document.getElementById('scene');
   journeyContent.classList.toggle('respond', s.kind==='ask');            // gold frame = "phones, it's your turn"
   scEl?.classList.toggle('cream', s.tone==='cream' && s.kind!=='ask');   // a cream page: navy words, red accents
@@ -2857,11 +3099,12 @@ function paintScene(){
   body.innerHTML=slideHTML(s);
   sizeRows(body);
   body.querySelectorAll('.fit-box').forEach(b=>{ fitPhotos(b); fitObserver?.observe(b); });
+  body.querySelectorAll('.stage-box').forEach(b=>{ fitStage(b); stageObserver?.observe(b); });
   setTxt('scNum', `${String(sceneIdx+1).padStart(2,'0')} / ${String(d.slides.length).padStart(2,'0')}`);
   document.querySelectorAll('#scDots i').forEach((el,i)=>{ el.classList.toggle('on',i===sceneIdx); el.classList.toggle('done',i<sceneIdx); });
   // School-data motion: numbers count up, rings and bars draw in.
-  body.querySelectorAll('.sc-stat .n[data-count]').forEach((el,i)=>{ const raw=el.dataset.count, n=parseInt(raw,10); if(isNaN(n) || String(n)!==raw) return; const suf=el.querySelector('small')?.outerHTML||''; el.innerHTML='0'+suf; setTimeout(()=>countUp(el,0,n,1500,suf), 260+i*200); });
-  setTimeout(()=>{ body.querySelectorAll('[data-ring]').forEach(c=>c.style.strokeDashoffset=String(100-(+c.dataset.ring||0))); body.querySelectorAll('.sc-row .trk i[data-w]').forEach((el,i)=>setTimeout(()=>el.style.width=el.dataset.w+'%', i*60)); }, 420);
+  body.querySelectorAll('.sc-stat .n[data-count]').forEach((el,i)=>{ const raw=el.dataset.count, n=parseInt(raw,10); if(isNaN(n) || String(n)!==raw) return; const suf=el.querySelector('small')?.outerHTML||''; el.innerHTML='0'+suf; setTimeout(()=>{ if(live()) countUp(el,0,n,1500,suf); }, 260+i*200); });
+  setTimeout(()=>{ if(!live()) return; body.querySelectorAll('[data-ring]').forEach(c=>c.style.strokeDashoffset=String(100-(+c.dataset.ring||0))); body.querySelectorAll('.sc-row .trk i[data-w]').forEach((el,i)=>setTimeout(()=>el.style.width=el.dataset.w+'%', i*60)); }, 420);
   if(s.kind==='live' || s.kind==='ask') setTimeout(paintSceneLive, 40);
   animateSlide(s, body);
   preloadSlide(d.slides[sceneIdx+1]) ; preloadSlide(journeySteps[currentStep+1] && deckFor(journeySteps[currentStep+1])?.slides[0]);
@@ -2874,7 +3117,7 @@ function gotoScene(i){
   broadcastSession(); postNotes();
   const body=document.getElementById('scBody');
   if(!body){ renderStep(); return; }
-  body.classList.add('sc-leave'); sfx && sfx('flip');
+  body.classList.add('sc-leave');
   clearTimeout(gotoScene.t); gotoScene.t=setTimeout(paintScene, 220);
 }
 
@@ -2931,8 +3174,10 @@ function openNotes(){ const w=window.open('notes.html?v=2','btxNotesV2','width=1
 /* =====================================================================
    STEP ENGINE
    ===================================================================== */
+let shownStep=-1;   // the step on screen: arriving at a poll from another step arms its reveal again
 function renderStep(){
   if(heartbeat){ clearInterval(heartbeat); heartbeat=null; }
+  if(currentStep!==shownStep){ const st0=journeySteps[currentStep]; if(st0 && st0.type==='poll') st0.revealed=false; shownStep=currentStep; }
   if(animId){ cancelAnimationFrame(animId); animId=null; }
   if(currentStep>=journeySteps.length) return;
   const step=journeySteps[currentStep];
