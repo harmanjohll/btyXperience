@@ -5,7 +5,7 @@
 //   overlap    two pieces of text on top of each other
 //   crop       a photo shown cropped (object-fit: cover at the wrong proportions)
 //   goldcream  gold text on a cream page
-//   late       text still invisible at 0.6 s (diagrams that explain step by step are exempt)
+//   late       text still invisible at 1.8 s: builds are visible and done by about 1.4 s (diagrams that explain step by step are exempt)
 // Usage: node tests/audit.mjs            (prints the flags; exits 1 if any)
 //        V=2 node tests/audit.mjs        version 2 (v2.html, /x/v2.html) into tests/out/audit-v2/
 //        ONLY=deck_b,deck_c node tests/audit.mjs   just those steps; TAG=after writes to audit-v2-after/
@@ -67,8 +67,8 @@ for (let k = 0; k < plan.length; k++) {
     const t0 = Date.now(); const at = async ms => { const w = ms - (Date.now() - t0); if (w > 0) await sleep(w); };
     await at(100); await pr.screenshot({ path: path.join(DIR, name + '-0100.png') });
     await at(500); await pr.screenshot({ path: path.join(DIR, name + '-0500.png') });
-    await at(600); const late = await lateCheck();
     await at(1500); await pr.screenshot({ path: path.join(DIR, name + '-1500.png') });
+    await at(1800); const late = await lateCheck();
     await at(3000); await pr.screenshot({ path: path.join(DIR, name + '-3000.png') });
     if (/^(deck_|values|funfact|chart|poll|memento|card)/.test(id) || decks[id]) { await sleep(id === 'deck_f' || id === 'deck_d' ? 6000 : 3500); }
     await pr.screenshot({ path: path.join(DIR, name + '-settled.png') });   // after every build and diagram has played

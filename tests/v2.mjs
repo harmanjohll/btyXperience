@@ -42,25 +42,30 @@ c.ok(!s1().cue && s1().currentView !== 'memento', 'version 1\'s saved state neve
 // The version 2 design rules, on every slide: one left edge for the chapter line and every title,
 // nothing runs into the slide dots or off the page, and no em dash on screen.
 const decks = await pr.evaluate(() => Object.fromEntries(Object.entries(window.BTY_DECKS).map(([k, d]) => [k, d.slides.length])));
-const bad = { edge: [], dots: [], dash: [] };
+const bad = { edge: [], dots: [], dash: [], left: [], top: [] }; let L0 = null, T0 = null;
 for (const [id, n] of Object.entries(decks)) for (let i = 0; i < n; i++) {
   await pr.evaluate(([id, i]) => window.__jump(id, i), [id, i]); await sleep(i ? 1700 : 2200);
   const r = await pr.evaluate(() => {
-    const body = document.getElementById('scBody'), ch = document.querySelector('#scene .sc-ch'), dots = document.getElementById('scDots'); if (!body || !ch || !dots) return null;
-    const L = ch.getBoundingClientRect().left, D = dots.getBoundingClientRect().top;
+    const body = document.getElementById('scBody'), foot = document.querySelector('footer'); if (!body || !foot) return null;
+    const L = body.getBoundingClientRect().left, D = foot.getBoundingClientRect().top - 8;
     const t = body.querySelector(':scope > .sc-t, :scope .stage > .sc-t'), edge = t ? Math.abs(t.getBoundingClientRect().left - L) : 0;
     const vis = el => { const cs = getComputedStyle(el); return cs.display !== 'none' && cs.visibility !== 'hidden' && +cs.opacity > .05 && el.getClientRects().length; };
     const over = [...body.querySelectorAll('h2,h3,h4,p,li,b,figure,img,blockquote,.sc-row,.pp,.lg,.lk')].filter(el => vis(el) && !el.closest('.sc-bleed')).filter(el => el.getBoundingClientRect().bottom > D + 2).map(el => el.tagName + ' ' + (el.textContent || el.getAttribute('src') || '').trim().slice(0, 30));
-    return { edge, over, dash: /\u2014/.test(body.innerText) };
+    const tt = t && getComputedStyle(t).position !== 'absolute' ? t.getBoundingClientRect().top : null;
+    return { edge, over, dash: /\u2014/.test(body.innerText), L: t ? t.getBoundingClientRect().left : null, T: tt };
   });
   if (!r) continue;
   const k = `${id} ${i + 1}`;
   if (r.edge > 4) bad.edge.push(`${k} (${Math.round(r.edge)}px)`);
   if (r.over.length) bad.dots.push(`${k}: ${r.over[0]}`);
   if (r.dash) bad.dash.push(k);
+  if (r.L !== null) { L0 ??= r.L; if (Math.abs(r.L - L0) > 4) bad.left.push(`${k} (${Math.round(r.L)} vs ${Math.round(L0)})`); }
+  if (r.T !== null) { T0 ??= r.T; if (Math.abs(r.T - T0) > 6) bad.top.push(`${k} (${Math.round(r.T)} vs ${Math.round(T0)})`); }
 }
-c.ok(!bad.edge.length, 'every title starts on the chapter line\'s left edge ' + bad.edge.slice(0, 6).join(', '));
-c.ok(!bad.dots.length, 'nothing runs into the slide dots ' + bad.dots.slice(0, 6).join(' | '));
+c.ok(!bad.edge.length, 'every title starts on the slide\'s left edge ' + bad.edge.slice(0, 6).join(', '));
+c.ok(!bad.left.length, 'titles keep one left edge on dark and cream pages ' + bad.left.slice(0, 6).join(', '));
+c.ok(!bad.top.length, 'titles sit at one height on dark and cream pages ' + bad.top.slice(0, 6).join(', '));
+c.ok(!bad.dots.length, 'nothing runs into the chapter roadmap ' + bad.dots.slice(0, 6).join(' | '));
 c.ok(!bad.dash.length, 'no em dash on any slide ' + bad.dash.slice(0, 6).join(', '));
 
 // A slide's motion starts over every time it is shown: timers from an earlier visit never fire on a later one.
@@ -80,6 +85,13 @@ await pr.evaluate(() => window.__jump('deck_b', 1)); await sleep(1200);
 const pockets = await pr.evaluate(() => [...document.querySelectorAll('#scBody .st2-insp')].map(t => { const b = t.getBBox(), d = t.dataset;
   return b.x >= +d.x0 && b.x + b.width <= +d.x1 && b.y >= +d.y0 - 2 && b.y + b.height <= +d.y1 + 2; }));
 c.ok(pockets.length === 4 && pockets.every(Boolean), `each "Inspiration" label sits in its stair pocket ${JSON.stringify(pockets)}`);
+
+// The roadmap lights the chapter the room is in.
+await pr.evaluate(() => window.__jump('deck_b', 6)); await sleep(600);
+const lit = await pr.evaluate(() => [...document.querySelectorAll('#roadmap .rm.on b')].map(b => b.textContent));
+await pr.evaluate(() => window.__jump('nexus_global', 0)); await sleep(600);
+const lit2 = await pr.evaluate(() => [...document.querySelectorAll('#roadmap .rm.on b')].map(b => b.textContent));
+c.ok(lit.join() === 'A day at Beatty' && lit2.join() === 'NEXUS@BTY', `the roadmap lights the chapter (${lit} · ${lit2})`);
 
 const errs = [v1, pr, ...phones].flatMap(p => p.errs);
 c.ok(errs.length === 0, 'no page errors ' + JSON.stringify(errs.slice(0, 5)));

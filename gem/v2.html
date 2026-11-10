@@ -7,6 +7,8 @@
 <meta name="description" content="Beatty Secondary Open House: Harmonising Hearts, Thriving Together.">
 
 <!-- Coastlines for the globe (Natural Earth, local file — no CDN). If it fails to load the flat SVG chart is used. -->
+<script>/* The big screen always moves (it is for the audience, not the operator). ?calm=1 turns motion down. */
+window.CALM=/[?&]calm=1\b/.test(location.search); if(window.CALM) document.documentElement.classList.add('calm');</script>
 <script src="land.js"></script>
 <script src="qrcode.js"></script>
 <script src="bty-ui.js"></script>
@@ -266,7 +268,7 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .sail-ov-call em{color:var(--gold)}
 .sail-ov-call.pop{animation:sailPop .5s var(--ease) both}
 .sail-ov-swatch{display:inline-block; width:.9em; height:.9em; border-radius:50%; box-shadow:0 0 18px currentColor}
-@media (prefers-reduced-motion:reduce){ .set-sail-btn{animation:none} .sail-ov-word.pop,.sail-ov-call.pop{animation:none} }
+/* calm mode (?calm=1) */  html.calm .set-sail-btn{animation:none} html.calm .sail-ov-word.pop, html.calm .sail-ov-call.pop{animation:none} 
 .finale-scene{position:absolute; inset:0}
 .finale-sea{position:absolute; inset:0; width:100%; height:100%; border:0; display:block}
 .finale-hive{position:absolute; left:0; right:0; top:0; height:70%; pointer-events:none}
@@ -316,7 +318,7 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .fold-harbour .ico{width:28px; height:28px; animation:boatIn .6s var(--ease) both}
 .fold-harbour .more{font-family:var(--serif); color:var(--gold); font-size:1.1rem; align-self:center; margin-left:4px}
 @keyframes boatIn{from{opacity:0; transform:translateY(10px) scale(.6)} to{opacity:1; transform:none}}
-@media (prefers-reduced-motion:reduce){ .fd-layer,.fold-harbour .ico{transition:none; animation:none} .fd-table.hint .fd-hint .dot{animation:none} }
+/* calm mode (?calm=1) */  html.calm .fd-layer, html.calm .fold-harbour .ico{transition:none; animation:none} html.calm .fd-table.hint .fd-hint .dot{animation:none} 
 .votes-chip{font-family:var(--serif); font-weight:700; color:var(--navy); background:var(--gold); border-radius:12px; padding:.5rem 1.2rem; font-size:clamp(1rem,1.7vw,1.5rem)}
 
 /* --- Fun fact --- */
@@ -373,7 +375,7 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .dcard.flip .dback li:nth-child(2){animation-delay:.53s}
 .dcard.flip .dback li:nth-child(3){animation-delay:.66s}
 @keyframes dliIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-@media (prefers-reduced-motion:reduce){ .dream-grid .dcard,.dcard.flip .dback h4,.dcard.flip .dback li{animation:none} }
+/* calm mode (?calm=1) */  html.calm .dream-grid .dcard, html.calm .dcard.flip .dback h4, html.calm .dcard.flip .dback li{animation:none} 
 
 /* --- Globe & map --- */
 .split{display:flex; width:100%; height:100%}
@@ -568,10 +570,10 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
   .dream-grid{grid-template-columns:repeat(3,1fr); grid-auto-rows:clamp(220px,38vh,340px)}
   .split,.map-host{flex-direction:column}
 }
-@media (prefers-reduced-motion:reduce){
-  *{animation-duration:.001s !important; animation-iteration-count:1 !important; transition-duration:.08s !important}
-  #pollenCanvas{display:none}
-}
+/* calm mode (?calm=1) */ 
+  html.calm *{animation-duration:.001s !important; animation-iteration-count:1 !important; transition-duration:.08s !important}
+  html.calm #pollenCanvas{display:none}
+
 
 /* ============================================================
    NATIVE DECKS: the slides, drawn here (content in deck/content.js)
@@ -587,9 +589,9 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 .sc-dots i{display:block; width:30px; height:4px; border-radius:2px; background:rgba(255,255,255,.16); transition:background .45s var(--ease), width .45s var(--ease)}
 .sc-dots i.done{background:rgba(255,226,0,.42)}
 .sc-dots i.on{background:var(--gold); width:64px}
-.bi{animation:biUp .45s var(--ease) both; animation-delay:var(--d,0ms)}
-@keyframes biUp{from{opacity:0; transform:translateY(26px)} to{opacity:1; transform:none}}
-@media (prefers-reduced-motion:reduce){ .bi{animation:none} .sc-body{transition:none} }
+.bi{animation:biUp .6s var(--ease) both; animation-delay:var(--d,0ms)}
+@keyframes biUp{from{opacity:0; transform:translateY(28px)} to{opacity:1; transform:none}}
+/* calm mode (?calm=1) */  html.calm .bi{animation:none} html.calm .sc-body{transition:none} 
 
 .sc-t{font-size:clamp(2.2rem,4.1vw,4.4rem); color:#fff; line-height:1.06; text-align:center; text-wrap:balance; margin-bottom:clamp(26px,5vh,64px); max-width:24ch}
 .sc-t.sm{font-size:clamp(1.9rem,3.3vw,3.5rem); max-width:30ch; margin-bottom:clamp(20px,4vh,48px)}
@@ -753,7 +755,7 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
   background-size:auto, auto, 56px 98px, 56px 98px, 56px 98px, 56px 98px;
   background-position:0 0, 0 0, 0 0, 0 0, 28px 49px, 28px 49px;
   box-shadow:0 34px 90px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.7)}
-@media (prefers-reduced-motion:reduce){ .scene{transition:none} }
+/* calm mode (?calm=1) */  html.calm .scene{transition:none} 
 .scene.cream .sc-ch, .scene.cream .sc-body .eyebrow, .scene.cream .sc-chart h4{color:var(--paper-ink)}
 .scene.cream .sc-num{color:var(--paper-dim)}
 .scene.cream .sc-dots i{background:rgba(0,12,83,.14)} .scene.cream .sc-dots i.done{background:rgba(236,50,55,.42)} .scene.cream .sc-dots i.on{background:var(--red)}
@@ -789,7 +791,7 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 .sc-bleed{position:absolute; inset:0; z-index:1; overflow:hidden; border-radius:0}
 .kb{animation:kb 16s ease-out both}
 @keyframes kb{from{transform:scale(1.1) translate(1.2%,1%)} to{transform:scale(1.0) translate(0,0)}}
-@media (prefers-reduced-motion:reduce){ .kb{animation:none} }
+/* calm mode (?calm=1) */  html.calm .kb{animation:none} 
 /* cover: a chapter opener */
 .sc-cover .cv-bg, .sc-cover .cv-bg img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
 .sc-cover .cv-wash{position:absolute; inset:0; background:linear-gradient(90deg, rgba(0,6,31,.92) 0%, rgba(0,12,83,.72) 38%, rgba(0,12,83,.15) 75%), linear-gradient(0deg, rgba(0,6,31,.7), transparent 45%)}
@@ -817,7 +819,7 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 .sc-gal figure{position:relative; margin:0; overflow:hidden; border-radius:14px; background:#0a1650; box-shadow:0 14px 34px rgba(0,0,0,.35)}
 .sc-gal figure img{width:100%; height:100%; object-fit:cover; display:block; animation:kbs 18s ease-out both}
 @keyframes kbs{from{transform:scale(1.06)} to{transform:scale(1)}}
-@media (prefers-reduced-motion:reduce){ .sc-gal figure img{animation:none} }
+/* calm mode (?calm=1) */  html.calm .sc-gal figure img{animation:none} 
 .sc-gal figure.contain{background:#fff} .sc-gal figure.contain img{object-fit:contain; animation:none}
 .sc-gal figcaption{position:absolute; left:10px; bottom:10px; background:rgba(0,6,31,.82); color:#fff; border-left:4px solid var(--red); padding:6px 12px; border-radius:8px; font-weight:700; font-size:clamp(.85rem,1.05vw,1.1rem); letter-spacing:.02em}
 .sc-gal.g1{grid-template-columns:1fr}
@@ -907,7 +909,7 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 .sc-stairs path{fill:none; stroke-width:6; stroke-linejoin:round; stroke-dasharray:100; stroke-dashoffset:100; animation:draw 2.2s var(--ease) .5s forwards}
 .sc-stairs path.small{stroke:var(--gold)} .sc-stairs path.big{stroke:rgba(246,239,225,.6)}
 @keyframes draw{to{stroke-dashoffset:0}}
-@media (prefers-reduced-motion:reduce){ .sc-stairs path{animation:none; stroke-dashoffset:0} }
+/* calm mode (?calm=1) */  html.calm .sc-stairs path{animation:none; stroke-dashoffset:0} 
 .sc-stairs .sl{position:absolute; font-family:var(--serif); font-style:italic; color:var(--gold); font-size:clamp(1.3rem,2vw,2.2rem); transform:rotate(-31deg)}
 .sc-stairs .sl.s0{left:16%; top:40%} .sc-stairs .sl.s1{left:50%; top:8%}
 .sc-stairs .ins{position:absolute; color:var(--red); font-family:var(--serif); font-size:clamp(1rem,1.5vw,1.6rem); font-weight:700}
@@ -976,7 +978,7 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 
 /* ---------- Phase 12: explanatory motion ---------- */
 .arrive{opacity:0; animation:biUp .5s var(--ease) both; animation-delay:var(--d,0ms)}
-@media (prefers-reduced-motion:reduce){ .arrive{animation:none; opacity:1} }
+/* calm mode (?calm=1) */  html.calm .arrive{animation:none; opacity:1} 
 /* crest: each meaning lights its part of the crest */
 .sc-crest{display:grid; grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr); gap:clamp(30px,5vw,100px); align-items:center; width:min(100%,1500px)}
 .cr-img{position:relative; height:min(64vh,680px); aspect-ratio:849/1200; justify-self:center}
@@ -996,7 +998,7 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 .cr-list li.now{transform:scale(1.02); transform-origin:left center}
 .cr-list b{display:block; font-family:var(--serif); font-size:clamp(1.6rem,2.6vw,2.8rem); color:var(--paper-ink); line-height:1.1}
 .cr-list span{display:block; color:var(--paper-dim); font-size:clamp(1.05rem,1.55vw,1.65rem); margin-top:6px; line-height:1.35}
-@media (prefers-reduced-motion:reduce){ .cr-list li{opacity:1; transform:none} }
+/* calm mode (?calm=1) */  html.calm .cr-list li{opacity:1; transform:none} 
 /* slope chart: how the top skills moved */
 .sc-slope{width:min(100%,1640px); height:auto; max-height:62vh; overflow:visible}
 .sl-head{font-family:var(--serif); font-weight:700; font-size:40px; fill:var(--gold)}
@@ -1008,7 +1010,7 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 .sl-line.h0{stroke:var(--red)} .sl-line.h1{stroke:var(--gold)}
 .sl-col{opacity:0; animation:biUp .5s var(--ease) forwards; animation-delay:calc(.2s + var(--c) * 1.5s)}
 .sl-item.h0{fill:#ff8a8d} .sl-item.h0 .sl-n{fill:var(--red)}
-@media (prefers-reduced-motion:reduce){ .sl-line{animation:none; stroke-dashoffset:0} .sl-col{animation:none; opacity:1} }
+/* calm mode (?calm=1) */  html.calm .sl-line{animation:none; stroke-dashoffset:0} html.calm .sl-col{animation:none; opacity:1} 
 /* stairs: a climber shows steady habits against bursts of inspiration */
 .sc-stairs path{stroke-dasharray:none; stroke-dashoffset:0; animation:none}
 .sc-stairs .climber{fill:var(--red); stroke:#fff; stroke-width:3; filter:drop-shadow(0 3px 6px rgba(0,0,0,.3))}
@@ -1042,7 +1044,7 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 .tb-res{align-self:flex-start; background:var(--gold); color:var(--navy); font-weight:800; border-radius:8px; padding:4px 10px; font-size:clamp(.8rem,1vw,1.05rem)}
 .tb-col{opacity:.12; transition:opacity .6s} .tb-col.on{opacity:1}
 .tb-col.on .tb-box{animation:biUp .5s var(--ease) both}
-@media (prefers-reduced-motion:reduce){ .tb-col{opacity:1} }
+/* calm mode (?calm=1) */  html.calm .tb-col{opacity:1} 
 /* quotes: the graduates in their own words */
 .sc-quotes{display:grid; grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr); gap:clamp(24px,3vw,60px); width:min(100%,1680px); align-items:center}
 .qs-media{height:min(62vh,660px)}
@@ -1055,7 +1057,7 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 .sc-steps.travel::before{animation:lineGrow 2.6s linear .2s both}
 .st-marker{position:absolute; top:clamp(13px,1.7vh,19px); left:4%; width:clamp(14px,1.2vw,20px); height:clamp(14px,1.2vw,20px); border-radius:50%; background:var(--red); box-shadow:0 0 0 6px rgba(236,50,55,.25); z-index:2; animation:stMarch 2.6s linear .2s both}
 @keyframes stMarch{from{left:4%} to{left:calc(96% - 20px)}}
-@media (prefers-reduced-motion:reduce){ .st-marker{display:none} }
+/* calm mode (?calm=1) */  html.calm .st-marker{display:none} 
 /* flight paths from Singapore */
 .pn-arcs{position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none}
 .pn-arc{fill:none; stroke:var(--red); stroke-width:2.5px; vector-effect:non-scaling-stroke; stroke-dasharray:100; stroke-dashoffset:100; animation:ringDraw .8s var(--ease) forwards; animation-delay:var(--d,0ms); opacity:.75}
@@ -1063,7 +1065,7 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 .pn-home i{display:block; width:16px; height:16px; border-radius:50%; background:var(--paper-ink); box-shadow:0 0 0 5px rgba(0,12,83,.2); animation:pinPulse 2s ease-in-out infinite}
 .pn-home b{position:absolute; left:20px; top:-4px; white-space:nowrap; font-size:clamp(.78rem,1vw,1.05rem); color:var(--paper-ink); background:rgba(255,255,255,.85); padding:2px 8px; border-radius:6px}
 @keyframes pinPulse{50%{box-shadow:0 0 0 12px rgba(0,12,83,0)}}
-@media (prefers-reduced-motion:reduce){ .pn-arc{animation:none; stroke-dashoffset:0} }
+/* calm mode (?calm=1) */  html.calm .pn-arc{animation:none; stroke-dashoffset:0} 
 /* a day at Beatty */
 .day-bar{position:absolute; left:clamp(40px,6vw,120px); right:clamp(40px,6vw,120px); bottom:clamp(22px,4vh,46px); height:clamp(54px,7vh,76px); display:grid; grid-template-columns:1fr 1fr; gap:6px; z-index:3}
 .db-seg{border-radius:12px; background:rgba(246,239,225,.12); border:1px solid rgba(246,239,225,.22); display:flex; flex-direction:column; justify-content:center; padding:0 18px; color:rgba(246,239,225,.6); transition:background .6s, color .6s}
@@ -1199,7 +1201,7 @@ footer{padding:clamp(6px,.9vh,10px) clamp(16px,2.5vw,36px)}
 .mx-phase[data-p="2"] .p2{transition-delay:.32s}
 .sc-mixer{width:100%; flex:1 1 0; min-height:min(34vh,340px); max-height:44vh}
 .mx-foot{text-align:left; max-width:none}
-.mx-phase{text-align:left} .mx-p{text-align:left}
+.mx-phase{text-align:left} .mx-p{text-align:left; font-family:var(--sans); font-size:var(--t-body); color:var(--ink-dim, rgba(246,239,225,.78))}
 .mx-legend{justify-content:flex-start}
 
 /* --- tie breakers: stages wait unseen (headings show the plan), then play --- */
@@ -1212,7 +1214,7 @@ footer{padding:clamp(6px,.9vh,10px) clamp(16px,2.5vw,36px)}
 .tb-kids, .tb-col{grid-template-rows:clamp(58px,7vh,80px) repeat(5,minmax(0,1fr))}
 .sc-tie{width:100%; flex:1 1 0; min-height:0; height:auto; max-height:62vh}
 .tb-kid small{font-size:var(--t-label)}
-@media (prefers-reduced-motion:reduce){ .tb-col h4, .tb-col .tb-box{opacity:1} }
+/* calm mode (?calm=1) */  html.calm .tb-col h4, html.calm .tb-col .tb-box{opacity:1} 
 
 /* --- venn: everything on screen within three seconds --- */
 .sc-venn{flex:1 1 0; min-height:0; height:auto; max-height:60vh}
@@ -1322,7 +1324,7 @@ footer{padding:clamp(6px,.9vh,10px) clamp(16px,2.5vw,36px)}
 .nx-logo .nx-word{fill:var(--gold); opacity:0; animation:leadIn2 .5s var(--ease) 1.5s forwards}
 .scene.cream .nx-logo .nx-word{fill:var(--paper-ink)}
 @keyframes leadIn2{to{opacity:1}}
-@media (prefers-reduced-motion:reduce){ .nx-logo .nx-word{animation:none; opacity:1} }
+/* calm mode (?calm=1) */  html.calm .nx-logo .nx-word{animation:none; opacity:1} 
 .sc-rowsx .rx-logo .nx-logo{width:clamp(250px,30vh,330px)}
 .sc-feat .ft-media.round{justify-items:center}
 .ft-media.round figure{width:min(44vh,440px)}
@@ -1379,44 +1381,44 @@ footer{padding:clamp(6px,.9vh,10px) clamp(16px,2.5vw,36px)}
 .ms-row p{margin:0; font-family:var(--sans); font-style:italic; font-size:31px; line-height:1.3; color:var(--paper-ink); text-wrap:balance; opacity:0; transform:translateY(10px); animation:msSlide .45s var(--ease) calc(var(--t) + .42s) forwards}
 .ms-row p.become{margin-top:4px; color:#D3242B; animation-delay:calc(var(--t) + .6s)}
 .ms-row p b{font-weight:800}
-@media (prefers-reduced-motion:reduce){ .ms-stage *, .ms-stage *::before, .ms-stage *::after{animation:none !important} .ms-disc, .ms-ico, .ms-row h3 b, .ms-row h3 span, .ms-row p, .ms-belief p{opacity:1; transform:none; filter:none} .ms-arc, .ms-link{stroke-dashoffset:0} .ms-node{transform:none} .ms-belief h4::after{width:100%} .ms-streak{display:none} }
+/* calm mode (?calm=1) */  html.calm .ms-stage *, html.calm .ms-stage *::before, html.calm .ms-stage *::after{animation:none !important} html.calm .ms-disc, html.calm .ms-ico, html.calm .ms-row h3 b, html.calm .ms-row h3 span, html.calm .ms-row p, html.calm .ms-belief p{opacity:1; transform:none; filter:none} html.calm .ms-arc, html.calm .ms-link{stroke-dashoffset:0} html.calm .ms-node{transform:none} html.calm .ms-belief h4::after{width:100%} html.calm .ms-streak{display:none} 
 /* the NEXUS mark: the ring draws, the blades sweep out, the word arrives */
 .nx-blade{transform-box:fill-box; transform-origin:center; transform:scale(0); animation:nxBlade .7s cubic-bezier(.34,1.56,.64,1) forwards}
 .nx-b2{animation-delay:.8s} .nx-b1{animation-delay:1s}
 @keyframes nxBlade{to{transform:none}}
 .nx-arc{font-family:var(--sans); fill:var(--gold)} .nx-amp{font-size:1.25em; font-weight:700}
 .nx-logo .nx-word{font-family:var(--sans); font-weight:600}
-@media (prefers-reduced-motion:reduce){ .nx-blade{animation:none; transform:none} }
+/* calm mode (?calm=1) */  html.calm .nx-blade{animation:none; transform:none} 
 
 /* ---------- v2 round 2: cycles of coloured rings (GROW, ACT, Learning Practice) ---------- */
 .sc-loop{position:relative; width:100%; flex:1 1 0; min-height:0}
 .lp-stage{position:absolute; left:0; top:0; transform-origin:0 0}
 .lp-stage .lp-title{position:absolute; left:0; top:0; margin:0; font-size:72px; line-height:1.06; white-space:nowrap; max-width:none}
 .lp-lines{position:absolute; left:0; top:0; overflow:visible; pointer-events:none}
-.lp-bar{stroke-width:16; stroke-linecap:round; stroke-dasharray:1; stroke-dashoffset:1; animation:lpBar .3s ease-out var(--t) forwards}
+.lp-bar{stroke-width:18; stroke-linecap:round; stroke-dasharray:1; stroke-dashoffset:1; animation:lpBar .3s ease-out var(--t) forwards}
 @keyframes lpBar{to{stroke-dashoffset:0}}
-.lp-ring{position:absolute; width:190px; height:190px; margin:-95px 0 0 -95px; border-radius:50%; background:#fff; box-shadow:inset 0 0 0 16px var(--c), 0 18px 36px rgba(0,12,83,.16);
+.lp-ring{position:absolute; width:220px; height:220px; margin:-110px 0 0 -110px; border-radius:50%; background:#fff; box-shadow:inset 0 0 0 18px var(--c), 0 18px 36px rgba(0,12,83,.16);
   display:flex; align-items:center; justify-content:center; color:var(--c); transform:scale(0);
   animation:lpPop .6s cubic-bezier(.34,1.56,.64,1) var(--t) forwards, lpFlash .6s ease-in-out var(--f) 1}
-.lp-ring span{font-family:var(--serif); font-weight:700; font-size:96px; line-height:1; transform:translateY(4px)}
-.lp-ring .ico{width:84px; height:84px}
+.lp-ring span{font-family:var(--serif); font-weight:700; font-size:112px; line-height:1; transform:translateY(4px)}
+.lp-ring .ico{width:98px; height:98px}
 @keyframes lpPop{to{transform:scale(1)}}
-@keyframes lpFlash{0%,100%{box-shadow:inset 0 0 0 16px var(--c), 0 18px 36px rgba(0,12,83,.16)} 50%{box-shadow:inset 0 0 0 16px var(--c), 0 0 0 14px color-mix(in srgb, var(--c) 30%, transparent), 0 18px 36px rgba(0,12,83,.16)}}
-.lp-core{position:absolute; width:140px; height:140px; margin:-70px 0 0 -70px; border-radius:50%; background:var(--paper-ink); color:var(--cream); display:flex; align-items:center; justify-content:center; text-align:center;
-  font-family:var(--serif); font-style:italic; font-weight:700; font-size:27px; line-height:1.1; padding:14px; opacity:0; transform:scale(.4); animation:lpPop2 .6s cubic-bezier(.34,1.56,.64,1) .2s forwards}
+@keyframes lpFlash{0%,100%{box-shadow:inset 0 0 0 18px var(--c), 0 18px 36px rgba(0,12,83,.16)} 50%{box-shadow:inset 0 0 0 18px var(--c), 0 0 0 14px color-mix(in srgb, var(--c) 30%, transparent), 0 18px 36px rgba(0,12,83,.16)}}
+.lp-core{position:absolute; width:164px; height:164px; margin:-82px 0 0 -82px; border-radius:50%; background:var(--paper-ink); color:var(--cream); display:flex; align-items:center; justify-content:center; text-align:center;
+  font-family:var(--serif); font-style:italic; font-weight:700; font-size:31px; line-height:1.1; padding:14px; opacity:0; transform:scale(.4); animation:lpPop2 .6s cubic-bezier(.34,1.56,.64,1) .2s forwards}
 @keyframes lpPop2{to{opacity:1; transform:none}}
 .lp-txt{position:absolute; color:var(--paper-ink)}
-.lp-txt h4{margin:0 0 8px; font-family:var(--sans); font-weight:800; font-size:40px; line-height:1.05; letter-spacing:.02em; text-transform:uppercase; color:var(--h);
+.lp-txt h4{margin:0 0 10px; font-family:var(--sans); font-weight:800; font-size:46px; line-height:1.05; letter-spacing:.02em; text-transform:uppercase; color:var(--h);
   opacity:0; transform:translateX(-30px); animation:lpOut .5s var(--ease) calc(var(--t) + .15s) forwards}
-.lp-txt p{margin:0 0 6px; font-family:var(--sans); font-size:30px; line-height:1.28; color:var(--paper-ink); text-wrap:balance; opacity:0; transform:translateX(-24px); animation:lpOut .5s var(--ease) calc(var(--t) + .3s) forwards}
+.lp-txt p{margin:0 0 6px; font-family:var(--sans); font-size:34px; line-height:1.28; color:var(--paper-ink); text-wrap:balance; opacity:0; transform:translateX(-24px); animation:lpOut .5s var(--ease) calc(var(--t) + .3s) forwards}
 .lp-txt.left h4, .lp-txt.left p{transform:translateX(30px)}
 .lp-txt p b{font-weight:800}
 @keyframes lpOut{to{opacity:1; transform:none}}
 .lp-dot{position:absolute; left:0; top:0; width:30px; height:30px; margin:0; border-radius:50%; background:var(--paper-ink); box-shadow:0 0 0 6px rgba(255,255,255,.85), 0 6px 14px rgba(0,12,83,.35);
   offset-rotate:0deg; offset-distance:0%; opacity:0; animation:lpRun var(--dur) linear var(--t0) 1 forwards; z-index:3}
 @keyframes lpRun{0%{opacity:1; offset-distance:0%} 96%{opacity:1} 100%{opacity:0; offset-distance:100%}}
-.lp-foot{position:absolute; left:0; bottom:0; margin:0; font-family:var(--sans); font-style:italic; font-size:30px; color:var(--paper-dim); opacity:0; animation:lpOut .5s var(--ease) 2.4s forwards}
-@media (prefers-reduced-motion:reduce){ .lp-stage *{animation:none !important} .lp-ring, .lp-core, .lp-txt h4, .lp-txt p, .lp-foot{opacity:1; transform:none} .lp-bar{stroke-dashoffset:0} .lp-dot{display:none} }
+.lp-foot{position:absolute; left:0; bottom:0; margin:0; font-family:var(--sans); font-style:italic; font-size:32px; color:var(--paper-dim); opacity:0; animation:lpOut .5s var(--ease) 2.4s forwards}
+/* calm mode (?calm=1) */  html.calm .lp-stage *{animation:none !important} html.calm .lp-ring, html.calm .lp-core, html.calm .lp-txt h4, html.calm .lp-txt p, html.calm .lp-foot{opacity:1; transform:none} html.calm .lp-bar{stroke-dashoffset:0} html.calm .lp-dot{display:none} 
 
 /* ---------- v2 round 2: Perspective (habits vs inspiration) ---------- */
 .sc-stairs2{position:relative; width:100%; flex:1 1 0; min-height:0}
@@ -1442,6 +1444,79 @@ footer{padding:clamp(6px,.9vh,10px) clamp(16px,2.5vw,36px)}
 .st2-climber.hab circle{fill:#1E8C4E}
 .st2-climber.leap.strain circle{animation:strain .5s ease-in-out 3}
 @keyframes strain{0%,100%{transform:none} 25%{transform:translateX(-3px)} 75%{transform:translateX(3px)}}
+
+/* ---------- v2 round 3: photos enter one by one and settle; covers drift ---------- */
+.fit-box > figure .fx{display:block; position:relative; width:100%; height:calc(100% - var(--cap,0px)); overflow:hidden; border-radius:var(--r); box-shadow:0 14px 34px rgba(0,0,0,.35)}
+.scene.cream .fit-box > figure .fx{box-shadow:0 14px 34px rgba(0,12,83,.18)}
+.fit-box > figure .fx img{width:100%; height:100%; border-radius:0; box-shadow:none !important; animation:settle 7s cubic-bezier(.2,.7,.2,1) both; animation-delay:var(--d,0ms)}
+.fit-box > figure.whole .fx img{animation:none}
+@keyframes settle{from{transform:scale(1.05)} to{transform:none}}
+.fit-box.fitted > figure{animation:figIn .65s var(--ease) both; animation-delay:var(--d,0ms)}
+@keyframes figIn{from{opacity:0; transform:translateY(26px)} to{opacity:1; transform:none}}
+.fit-box.bi{animation:none !important}
+.sc-cover .cv-bg img{animation:settle 10s cubic-bezier(.2,.7,.2,1) both}
+.sc-photo .ph-blur, .sc-cover.whole .ph-blur{animation:settle 10s ease-out both}
+html.calm .fit-box > figure .fx img, html.calm .sc-cover .cv-bg img, html.calm .ph-blur, html.calm .fit-box.fitted > figure{animation:none}
+
+/* ---------- v2 round 3: the frame: one chapter roadmap; no counter, no dashes, no top line ---------- */
+.scene .sc-top{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0)}   /* kept for the presenter view and tests */
+#scDots{display:none}
+.scene{padding-top:calc(clamp(16px,2.2vh,28px) + 16px); padding-bottom:clamp(8px,1.2vh,16px)}   /* +16: titles sit at the same height on dark and cream pages */
+.sc-body{padding-top:clamp(6px,1vh,12px)}
+.progress-bar{display:none}
+.roadmap{display:flex; justify-content:center; align-items:stretch; gap:clamp(14px,1.6vw,30px)}
+.roadmap .rm{display:flex; flex-direction:column; align-items:center; gap:6px; min-width:0}
+.roadmap .rm b{font-family:var(--sans); font-weight:700; font-size:clamp(.72rem,.9vw,1rem); letter-spacing:.14em; text-transform:uppercase; color:rgba(246,239,225,.42); white-space:nowrap; transition:color .4s}
+.roadmap .rm.done b{color:rgba(246,239,225,.7)}
+.roadmap .rm.on b{color:var(--gold)}
+.roadmap .rm i{display:block; width:100%; height:3px; border-radius:2px; background:rgba(246,239,225,.14); overflow:hidden}
+.roadmap .rm s{display:block; height:100%; width:0; background:var(--gold); border-radius:2px; transition:width .6s var(--ease)}
+.roadmap .rm.done s{background:rgba(255,226,0,.45)}
+footer #prevBtn, footer #nextBtn{opacity:0; transition:opacity .3s}
+body.nav-on footer #prevBtn, body.nav-on footer #nextBtn, footer #prevBtn:focus-visible, footer #nextBtn:focus-visible{opacity:1}
+#hivePulse{display:none}
+#liveBadge.live{display:none}
+/* One inset for every panel: the cream page and the live frame sit 28px clear of the screen edge, the header and
+   the roadmap, and the words inside keep the dark slides' left edge (no 14px jump when the page turns cream). */
+.scene.cream{margin:16px 28px; width:calc(100% - 56px); height:calc(100% - 32px); padding-top:clamp(16px,2.2vh,28px); padding-left:calc(clamp(32px,4.2vw,80px) - 28px); padding-right:calc(clamp(32px,4.2vw,80px) - 28px)}
+#journeyContent.respond, .journey-content.respond{box-shadow:none; position:relative}
+.scene{transition:background-color .5s var(--ease), box-shadow .5s var(--ease)}   /* no size morph: every slide is measured once, at its final size */
+/* A gallery that cannot use the slide's width: title in a column on the left, photos the full height on the right. */
+#scBody.gal-side{display:grid; grid-template-columns:var(--side-w,460px) minmax(0,1fr); grid-template-rows:auto auto minmax(0,1fr); column-gap:var(--side-gap,48px); align-items:start; justify-items:start}
+#scBody.gal-side > .sc-t{grid-column:1; grid-row:1; max-width:none; width:100%; text-align:left; margin:0 0 clamp(10px,1.6vh,18px)}
+#scBody.gal-side > .sc-sub2{grid-column:1; grid-row:2; max-width:none; text-align:left; margin:0}
+#scBody.gal-side > .sc-note{grid-column:1; grid-row:3; align-self:end; text-align:left}
+#scBody.gal-side > .sc-gal{grid-column:2; grid-row:1 / -1; width:100%; height:100%; max-height:none; align-self:stretch; justify-self:stretch}
+/* Nothing on the big screen is smaller than 20px at 1080p: labels, eyebrows, chips and captions. */
+.sc-body .eyebrow, .cv-txt .eyebrow, .sc-chart h4, .sc-hint, .db-seg span, .db-start, .sc-step .who, .pn-l span, .sc-quote cite, .qs-card cite, .ft-tags span, .sc-gal figcaption, .ft-media figcaption, .fx + figcaption{font-size:max(20px, var(--t-label))}
+.db-seg span{font-size:max(21px, var(--t-label))} .db-seg b{font-size:clamp(1.2rem,1.7vw,1.75rem)}
+/* A day at Beatty: the lit part of the day says where we are (no loose sun icon). The photo's right edge lines up
+   with the day bar and the words' left edge, so the cover has one margin all round. */
+.db-sun{display:none}
+.db-start{top:-32px}
+.sc-cover.whole .cv-area{right:clamp(40px,6vw,120px); width:calc(100% - 2 * clamp(40px,6vw,120px) - 38%); left:auto}
+/* A quote beside a photo uses the full height; the photo column is sized by balanceFeature like a feature's. */
+.sc-qimg{flex:1 1 0; min-height:0; width:100%; align-items:stretch}
+.sc-qimg .q-media{height:100%}
+.sc-qimg > .sc-quote{align-self:center; max-width:none; margin:0}
+/* The crest and its meanings, and a single portrait, sized for the taller page. */
+.cr-img{height:min(70vh,760px)}
+.cr-list b{font-size:clamp(1.8rem,2.9vw,3.2rem)} .cr-list span{font-size:clamp(1.15rem,1.75vw,1.9rem)}
+.ft-media.round figure{width:min(54vh,580px)}
+/* Guess-the-answer polls: the same sans labels as every other chart, a size up. */
+.poll-wrap .poll-label, .poll-wrap .poll-n{font-family:var(--sans); font-size:clamp(1.3rem,1.9vw,2.2rem)}
+.poll-wrap .poll-track{height:clamp(40px,5.8vh,64px)}
+/* No orphan words: lines break evenly in every block of words. */
+.lp-txt h4{text-wrap:balance}
+.ft-list span, .ft-list b, .ft-sub, .sc-note, .sc-quote blockquote, .sc-quote cite, .q2 blockquote, .sc-text, .cr-list span, .sc-people span, .sc-step p{text-wrap:pretty}
+.sc-body .eyebrow, .sc-quote .eyebrow{text-wrap:balance}
+.sc-feat:not(.flip) .ft-media.round{justify-items:end} .sc-feat.flip .ft-media.round{justify-items:start}   /* the portrait sits toward its words */
+/* The roadmap holds still: Back and Next sit at the ends of the footer, out of its way. */
+footer .nav-row{position:relative}
+footer .nav-row > #prevBtn{position:absolute; left:0; top:50%; transform:translateY(-50%); z-index:2}
+footer .nav-row > #nextBtn{position:absolute; right:0; top:50%; transform:translateY(-50%); z-index:2}
+footer .nav-row > .progress-wrap{flex:1 1 auto; width:100%}
+#journeyContent.respond::after{content:""; position:absolute; inset:16px 28px; border-radius:22px; box-shadow:inset 0 0 0 3px rgba(255,226,0,.85); pointer-events:none; z-index:5}
 </style>
 </head>
 <body>
@@ -1558,6 +1633,7 @@ footer{padding:clamp(6px,.9vh,10px) clamp(16px,2.5vw,36px)}
         <span class="motto">Non Vi Sed Arte</span>
       </div>
       <div class="progress-bar"><div id="progFill" class="progress-fill"></div></div>
+      <nav class="roadmap" id="roadmap" aria-label="Where we are in the story"></nav>
     </div>
     <button id="nextBtn" class="btn btn-primary" style="min-width:170px">Next ❯</button>
   </div>
@@ -1679,7 +1755,7 @@ const journeySteps=[
      question:"What does D.R.E.A.M. stand for at Beatty?",
      options:["Discipline, Respect, Excellence, Achievement, Mindfulness","Discipline, Resilience, Empathy, Adaptability, Mindfulness","Diligence, Respect, Empathy, Adaptability, Mastery","Determination, Resilience, Excellence, Ambition, Mindfulness"],
      correctAnswer:1, insight:"Correct! DREAM (Discipline, Resilience, Empathy, Adaptability, Mindfulness) guides every Beattyian." } },
-  { id:'values', type:'values', title:"The D.R.E.A.M. We Live By", desc:"Five values that grow a Beattyian. Non Vi Sed Arte: not with force, but with skill." },
+  { id:'values', type:'values', title:"The D.R.E.A.M. We Live By", desc:"Five values that grow a Beattyian. Non\u00A0Vi\u00A0Sed\u00A0Arte: not with force, but with skill." },
   { id:'deck_b', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vSrojJmwv5d-ElzN38A8S1Q_YAYl1_VulE6jPSFy6n8dEjPUnzNltCRstS8VC3fUgSg7Xd0fYN4-NWZ/pubembed?start=false&loop=false&delayms=60000" },
   { id:'funfact_cca', type:'funfact', funfactData:{ number:"17", label:"CCAs to belong to", subtitle:"Across Uniformed Groups, Performing Arts, Sports & Games and Clubs. A hive has a place for every kind of bee." } },
   { id:'fold_a', type:'fold', title:"Fold with us · A", desc:"Applied Learning: the structure.", fold:{letter:'A', name:'Applied Learning', sub:'The Structure', from:1, to:3} },
@@ -2142,7 +2218,7 @@ function renderCompass(){
 }
 /* A bee flies from the join pill to the archetype cell that just gained a member. */
 function landBee(key){
-  if(matchMedia('(prefers-reduced-motion:reduce)').matches || document.hidden) return;
+  if(CALM || document.hidden) return;
   const cell=document.querySelector(`.arch-cell[data-arch="${CSS.escape(key)}"]`); if(!cell) return;
   const from=['qrPill','participantPill','hivePulse'].map(id=>document.getElementById(id)).find(el=>el && el.offsetParent!==null); if(!from) return;
   const a=from.getBoundingClientRect(), b=cell.getBoundingClientRect();
@@ -2422,7 +2498,7 @@ function initGlobe(){
   const host=document.getElementById('globeHost'), cv=document.getElementById('globeCanvas'), pinsEl=document.getElementById('globePins'); if(!host||!cv) return;
   if(animId) cancelAnimationFrame(animId);
   const ctx=cv.getContext('2d'); const D2R=Math.PI/180;
-  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const reduce=CALM;
   gl={ lon:GLOBE_HOME_VIEW.lon, lat:GLOBE_HOME_VIEW.lat, spin:false, drift:!reduce, drag:null, t0:performance.now(), W:0,H:0,R:0,R0:0,cx:0,cy:0,
        zoom:1, zt:1, anchor:null, ptrs:new Map(), pinch:null, fly:null };
   window.__globe=gl;   // a handle for DevTools and the headless checks
@@ -2584,6 +2660,20 @@ let sceneIdx=0;
 const escH=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const CH_ICON={ 'A day at Beatty':'smile', 'Who we are':'school', 'Our values':'heart', 'Passions':'spark', 'NEXUS@BTY':'globe', 'Your pathway':'explorer', 'Your journey':'wave' };
 const askId=s=>s.id||('q_'+String(s.question||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').slice(0,30));   // an ask without an id still gets a stable one
+/* The story's chapters, shown as one roadmap in the footer: where the room is, and how far through it. */
+const ROADMAP=['Who we are','Our values','A day at Beatty','Passions','NEXUS@BTY','Your pathway','Your journey'];
+const STEP_CH={ compass:'Who we are', video_intro:'Who we are', fold_s:'Who we are', poll_dream:'Our values', values:'Our values',
+  funfact_cca:'A day at Beatty', fold_a:'A day at Beatty', poll_cca:'A day at Beatty', poll_nexus_count:'NEXUS@BTY', poll_industry:'NEXUS@BTY', funfact_nexus:'NEXUS@BTY', fold_i:'NEXUS@BTY',
+  nexus_global:'NEXUS@BTY', nexus_local:'NEXUS@BTY', fold_l:'Your pathway', set_sail:'Your journey', finale:'Your journey', card:'Your journey' };
+let roadUnits=null;
+function buildRoad(){ roadUnits=[]; journeySteps.forEach((st,k)=>{ if(stepGone(st)) return; const d=deckFor(st);
+  if(d) d.slides.forEach((sl,i)=>roadUnits.push({k,i,ch:sl.ch||d.chapter||STEP_CH[st.id]||''})); else roadUnits.push({k,i:0,ch:STEP_CH[st.id]||''}); }); }
+function paintRoadmap(){ const nav=document.getElementById('roadmap'); if(!nav) return; if(!roadUnits) buildRoad();
+  if(!nav.children.length) nav.innerHTML=ROADMAP.map(c=>`<span class="rm" data-ch="${escH(c)}"><b>${escH(c)}</b><i><s></s></i></span>`).join('');
+  const u=roadUnits.find(x=>x.k===currentStep && x.i===(deckFor(journeySteps[currentStep])?sceneIdx:0)) || roadUnits.find(x=>x.k===currentStep); const ch=u?u.ch:'';
+  const ci=ROADMAP.indexOf(ch), mine=roadUnits.filter(x=>x.ch===ch), at=u?mine.indexOf(u):0;
+  nav.querySelectorAll('.rm').forEach((el,i)=>{ el.classList.toggle('on',i===ci); el.classList.toggle('done',ci>=0 && i<ci);
+    el.querySelector('s').style.width= i<ci ? '100%' : i===ci ? ((at+1)/Math.max(1,mine.length)*100).toFixed(1)+'%' : '0%'; }); }
 function stepGone(st){ return st && st.type==='slide' && !deckFor(st) && !st.url; }   // nothing to show: the journey skips it
 function curSlide(){ const st=journeySteps[currentStep], d=deckFor(st); return d ? d.slides[Math.min(sceneIdx,d.slides.length-1)] : null; }
 
@@ -2640,19 +2730,19 @@ const D_=(ms)=>` style="--d:${Math.round(Math.min(ms,1200)/3)}ms"`;   // text is
 const IMG=p=>'deck/img/'+String(p||'').replace(/^\/+/,'');
 const AR=p=>{ const z=(window.BTY_IMG_SIZES||{})[String(p||'').replace(/^\/+/,'')]; return z ? z[0]/z[1] : 1.5; };
 // A whole photo: laid out by fitPhotos() at its true proportions, so no one is ever cropped out.
-const FIG=x=>{ x=typeof x==='string'?{src:x}:x; return `<figure data-ar="${AR(x.src).toFixed(4)}"${x.fit==='contain'||x.whole?' class="whole"':''}${x.pos?` style="--pos:${escH(x.pos)}"`:''}><img src="${IMG(x.src)}" alt="${escH(x.cap||'')}">${x.cap?`<figcaption>${escH(x.cap)}</figcaption>`:''}</figure>`; };
+const FIG=x=>{ x=typeof x==='string'?{src:x}:x; return `<figure data-ar="${AR(x.src).toFixed(4)}"${x.fit==='contain'||x.whole?' class="whole"':''}${x.pos?` style="--pos:${escH(x.pos)}"`:''}><span class="fx"><img src="${IMG(x.src)}" alt="${escH(x.cap||'')}"></span>${x.cap?`<figcaption>${escH(x.cap)}</figcaption>`:''}</figure>`; };
 /* Lay photos out inside a box: try every way of splitting them into 1 to 4 rows (in order); size each row so
    its photos fill the width at their own proportions; then let rows stretch a little (a photo may lose up to
    about 15% of its width or height) so the set fills the box instead of floating in it. A box marked whole,
    or holding a photo marked whole (screenshots, clippings, group photos), is never cropped.
    Rows with a caption get a line under the photos for it. */
-function fitPhotos(box){
-  const figs=[...box.children].filter(e=>e.tagName==='FIGURE'); if(!figs.length) return;
-  const W=box.clientWidth, H=box.clientHeight; if(!W||!H) return;
-  const g=Math.max(10,Math.round(W*.009)), n=figs.length, A=figs.map(f=>+f.dataset.ar||1.5), C=figs.map(f=>!!f.querySelector('figcaption'));
-  const allWhole=box.classList.contains('whole'), Wh=figs.map(f=>allWhole||f.classList.contains('whole')), anyWhole=Wh.some(Boolean);
-  if(allWhole) figs.forEach(f=>f.classList.add('whole'));
-  const capH=Math.round(Math.max(30,Math.min(44,H*.055))), CROP=1.12;
+function photoSpec(box){ const figs=[...box.children].filter(e=>e.tagName==='FIGURE'), allWhole=box.classList.contains('whole');
+  return { figs, n:figs.length, A:figs.map(f=>+f.dataset.ar||1.5), C:figs.map(f=>!!f.querySelector('figcaption')), Wh:figs.map(f=>allWhole||f.classList.contains('whole')), allWhole }; }
+// The best arrangement of a set of photos in a W×H box: rows, each photo whole or trimmed a little, biggest total area wins.
+function planPhotos(sp, W, H){
+  if(!sp.n||!W||!H) return null;
+  const {n,A,C,Wh}=sp, anyWhole=Wh.some(Boolean);
+  const g=Math.max(10,Math.round(W*.009)), capH=Math.round(Math.max(30,Math.min(44,H*.055))), CROP=1.12, SIDE=1.25;
   // A row's photos at height h: whole ones keep their shape; the others may widen (cropping top and bottom) to fill the row.
   const rowW=(x,y,h)=>{ const gaps=g*(y-x-1); let nat=0, cap=0; for(let i=x;i<y;i++){ nat+=A[i]*h; if(!Wh[i]) cap+=A[i]*h*(CROP-1); }
     const f=cap>0?Math.max(0,Math.min(1,(W-gaps-nat)/cap)):0; return { f, w:nat+cap*f+gaps }; };
@@ -2662,22 +2752,94 @@ function fitPhotos(box){
     const caps=rows.map(([x,y])=>C.slice(x,y).some(Boolean)?capH:0);
     const fixed=g*(rows.length-1)+caps.reduce((p,q)=>p+q,0), sumH=hs.reduce((p,q)=>p+q,0);
     if(H-fixed<40) return;
-    const k=Math.min(1,(H-fixed)/sumH), sy=anyWhole?1:Math.min(CROP,(H-fixed)/(k*sumH));   // spare height: rows grow taller, photos lose a little at the sides
+    const k=Math.min(1,(H-fixed)/sumH), sy=anyWhole?1:Math.min(SIDE,(H-fixed)/(k*sumH));   // spare height: rows grow taller, photos lose a little at the sides
     const area=rows.reduce((t,[x,y],i)=>t+hs[i]*k*sy*Math.min(W,rowW(x,y,hs[i]*k).w),0);
     if(!best || area>best.area*1.001) best={rows,hs,caps,k,sy,fixed,area}; };
   const comb=(start,left,cuts)=>{ if(left===0){ tryRows(cuts); return; } for(let c=start;c<=n-left;c++) comb(c+1,left-1,[...cuts,c]); };
   for(let r=1;r<=Math.min(4,n);r++) comb(1,r-1,[]);
-  if(!best) return;
-  const {rows,hs,caps,k,sy,fixed}=best, tot=rows.reduce((t,_,i)=>t+hs[i]*k*sy,0)+fixed; let y=(H-tot)/2;
+  if(!best) return null;
+  best.usedW=Math.max(...best.rows.map(([x,y],i)=>Math.min(W,rowW(x,y,best.hs[i]*best.k).w)));
+  best.usedH=best.rows.reduce((t,_,i)=>t+best.hs[i]*best.k*best.sy,0)+best.fixed;
+  Object.assign(best,{g,W,H,rowW,Wh,A});
+  return best;
+}
+// A gallery whose photos cannot use the slide's width moves its title to a column on the left, so the photos
+// get the full height (only when that makes them clearly bigger).
+function galleryToSide(box, sp){
+  const body=box.parentElement, t=body&&body.querySelector(':scope > .sc-t');
+  if(!t || body.id!=='scBody' || body.dataset.galTried) return false; body.dataset.galTried='1';
+  const p1=planPhotos(sp, box.clientWidth, box.clientHeight), bw=body.clientWidth, cs=getComputedStyle(body);
+  const bh=body.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom)-(body.querySelector(':scope > .sc-note')?0:0);
+  const sideW=Math.round(Math.min(620,Math.max(460,bw*.3))), gap=Math.round(Math.max(32,bw*.03));
+  const p2=planPhotos(sp, bw-sideW-gap, bh);
+  if(!p1||!p2||p2.area<p1.area*1.15) return false;
+  body.classList.add('gal-side'); body.style.setProperty('--side-w',sideW+'px'); body.style.setProperty('--side-gap',gap+'px');
+  if(t.scrollWidth>t.clientWidth+2) body.style.setProperty('--side-w',Math.min(680,t.scrollWidth+12)+'px');   // a long word sets the column
+  return true;
+}
+function fitPhotos(box){
+  let sp=photoSpec(box); if(!sp.n) return;
+  if(sp.allWhole) sp.figs.forEach(f=>f.classList.add('whole'));
+  if(box.classList.contains('sc-gal') && galleryToSide(box, sp)) sp=photoSpec(box);
+  const W=box.clientWidth, H=box.clientHeight; if(!W||!H) return;
+  const best=planPhotos(sp, W, H); if(!best) return;
+  const {rows,hs,caps,k,sy,fixed,g,rowW,Wh,A}=best, figs=sp.figs, tot=rows.reduce((t,_,i)=>t+hs[i]*k*sy,0)+fixed; let y=(H-tot)/2;
   const al=box.dataset.align;   // a feature's photos sit toward its words
   rows.forEach(([x0,x1],ri)=>{ const h0=hs[ri]*k, h=h0*sy, {f,w:rw}=rowW(x0,x1,h0), spare=W-Math.min(W,rw); let x=al==='end'?spare:al==='start'?0:spare/2;
-    for(let i=x0;i<x1;i++){ const el=figs[i], w=A[i]*h0*(Wh[i]?1:1+(CROP-1)*f); Object.assign(el.style,{position:'absolute',left:x+'px',top:y+'px',width:w+'px',height:(h+caps[ri])+'px'}); el.style.setProperty('--cap',caps[ri]+'px'); x+=w+g; }
+    for(let i=x0;i<x1;i++){ const el=figs[i], w=A[i]*h0*(Wh[i]?1:1+(.12)*f); Object.assign(el.style,{position:'absolute',left:x+'px',top:y+'px',width:w+'px',height:(h+caps[ri])+'px'}); el.style.setProperty('--cap',caps[ri]+'px'); x+=w+g; }
     y+=h+caps[ri]+g; });
   box.classList.add('fitted');
 }
+// Slides built from words and simple shapes (bars, steps, cards, faces, logos, codes, tables) grow to use the
+// space under the title: everything below the title scales up together (never past 1.4×), so a slide with little
+// on it reads big instead of floating in the middle of an empty page.
+const FILL_KINDS=new Set(['bars','steps','people','stats','logos','links','table','quotes','ask','pillars','crest','mix']);
+function autoFill(body){
+  const head=el=>el.matches('.sc-t, .sc-sub2, .sc-hint, .eyebrow');
+  const kids=[...body.children].filter(el=>!head(el) && getComputedStyle(el).position!=='absolute');
+  if(!kids.length) return;
+  kids.forEach(k=>k.style.zoom='');
+  const cs=getComputedStyle(body), B=body.getBoundingClientRect(), hs=[...body.children].filter(head);
+  const last=hs.length?hs.reduce((a,b)=>a.getBoundingClientRect().bottom>b.getBoundingClientRect().bottom?a:b):null;
+  const top0=last?last.getBoundingClientRect().bottom+parseFloat(getComputedStyle(last).marginBottom||0):B.top+parseFloat(cs.paddingTop);
+  const free=B.bottom-parseFloat(cs.paddingBottom)-top0;
+  const span=()=>{ const r=kids.map(k=>k.getBoundingClientRect()); return Math.max(...r.map(x=>x.bottom))-Math.min(...r.map(x=>x.top)); };
+  const h0=span(); if(!h0 || free<=0 || h0>=free*.8) return;
+  // Headings and labels must not break onto an extra line as they grow.
+  const heads=kids.flatMap(k=>[...k.querySelectorAll('h3,h4,b,.tag,.who,.l,cite')]).map(el=>({el,h:el.getBoundingClientRect().height})).filter(x=>x.h>0);
+  const ok=z=>{ kids.forEach(k=>k.style.zoom=z.toFixed(3)); return span()<=free*.92 && heads.every(x=>x.el.getBoundingClientRect().height<=x.h*z*1.15); };
+  let z=Math.min(1.4, free*.86/h0);
+  while(z>1.02 && !ok(z)) z-=.04;
+  if(z<=1.02) kids.forEach(k=>k.style.zoom='');
+}
+// A feature (photos beside words): the photo column takes exactly the width its photos can use, and grows when
+// the words are short, so there is no dead gap between photos and words and the photos are as big as they can be.
+function balanceFeature(feat){
+  const media=feat.querySelector(':scope > .ft-media.fit-box, :scope > .q-media.fit-box'), txt=feat.querySelector(':scope > .ft-txt, :scope > .sc-quote'); if(!media||!txt) return;
+  const W=feat.clientWidth, H=feat.clientHeight; if(!W||!H) return;
+  if(+feat.dataset.bw===W && +feat.dataset.bh===H) return;
+  feat.dataset.bw=W; feat.dataset.bh=H;
+  const sp=photoSpec(media); if(!sp.n) return;
+  const gap=parseFloat(getComputedStyle(feat).columnGap)||48, minTxt=Math.max(640, W*.36), flip=feat.classList.contains('flip');
+  let best=null;
+  for(let f=.36; f<=.72; f+=.02){
+    const mw=(W-gap)*f, tw=W-gap-mw; if(tw<minTxt) break;
+    txt.style.width=tw+'px'; const th=txt.offsetHeight; if(th>H-8) continue;
+    const p=planPhotos(sp, mw, H); if(!p) continue;
+    if(!best || p.area>best.p.area*1.05) best={mw,p};   // a wider photo column only when it makes the photos clearly bigger
+  }
+  txt.style.width='';
+  if(!best) return;
+  const used=Math.ceil(Math.min(best.mw, best.p.usedW));
+  feat.style.gridTemplateColumns = flip ? `minmax(0,1fr) ${used}px` : `${used}px minmax(0,1fr)`;
+  feat.classList.add('balanced');
+  // Short words in a wide column read small and lost: they scale up a step (never past 1.3×).
+  if(txt.matches('.ft-txt') && txt.querySelector('.ft-list')){ txt.style.zoom=''; const th=txt.getBoundingClientRect().height;
+    if(th && th<H*.5){ txt.style.zoom=Math.min(1.3, H*.62/th).toFixed(3); if(txt.getBoundingClientRect().height>H*.94) txt.style.zoom=''; } }
+}
 // Refit whenever a box changes size (the page turning cream animates its size, so a one off measure was wrong).
-const fitObserver=('ResizeObserver' in window) ? new ResizeObserver(es=>es.forEach(e=>fitPhotos(e.target))) : null;
-addEventListener('resize',()=>document.querySelectorAll('#scBody .fit-box').forEach(fitPhotos));
+const fitObserver=('ResizeObserver' in window) ? new ResizeObserver(es=>es.forEach(e=>e.target.matches('.sc-feat, .sc-qimg')?balanceFeature(e.target):fitPhotos(e.target))) : null;
+addEventListener('resize',()=>{ document.querySelectorAll('#scBody .sc-feat, #scBody .sc-qimg').forEach(balanceFeature); document.querySelectorAll('#scBody .fit-box').forEach(fitPhotos); });
 const DREAM_TINTS=['#5B7BFF','#FF8A3D','#FF4D52','#3FBF5A','#FFD23F','#FF9A3D'];
 function rainbowText(t, tints){ const c=tints||DREAM_TINTS; let k=0; return [...String(t||'')].map(ch=>ch===' '?' ':`<span style="color:${c[(k++)%c.length]}">${escH(ch)}</span>`).join(''); }
 // A day at Beatty: where in the day this part sits (a sun travels along the day).
@@ -2715,7 +2877,7 @@ function layoutCrest(body){
 }
 let paintSeq=0;   // one number per slide drawn: a timer left over from an earlier visit checks it and does nothing
 function animateSlide(s, body){
-  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches, seq=paintSeq, live=()=>body.isConnected && seq===paintSeq;
+  const reduce=CALM, seq=paintSeq, live=()=>body.isConnected && seq===paintSeq;
   const T=(fn,ms)=>setTimeout(()=>{ if(live()) fn(); }, reduce?0:ms);
   if(s.kind==='pins'){ layoutPins(s, body); requestAnimationFrame(()=>layoutPins(s, body)); }
   if(s.kind==='crest'){ layoutCrest(body); requestAnimationFrame(()=>layoutCrest(body)); }
@@ -2757,7 +2919,7 @@ const MS_ICON={
   community:'<circle cx="6.3" cy="7.2" r="1.9"/><circle cx="12" cy="5.4" r="2.1"/><circle cx="17.7" cy="7.2" r="1.9"/><path d="M2.8 14.6a3.4 3.4 0 0 1 5.3-2.8M21.2 14.6a3.4 3.4 0 0 0-5.3-2.8M8.4 11.1a4 4 0 0 1 7.2 0"/><path d="M12 21s-4.1-2.4-4.1-5.3A2.1 2.1 0 0 1 12 14.9a2.1 2.1 0 0 1 4.1.8c0 2.9-4.1 5.3-4.1 5.3Z"/>'
 };
 const msIcon=k=>`<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${MS_ICON[k]||''}</svg>`;
-const MS={ W:1760, H:820, cx:320, cy:395, disc:260, arc:305, icon:400, r:62, ang:[-38.7,0,38.7], rowTop:[100,350,600], t:[.91,1.51,2.11] };
+const MS={ W:1760, H:872, cx:320, cy:430, disc:250, arc:294, icon:390, r:62, ang:[-38.7,0,38.7], rowTop:[141,385,629], t:[.91,1.51,2.11] };
 function missionHTML(s){
   const it=(s.items||[]).slice(0,3), P=(a,d)=>[MS.cx+d*Math.cos(a*Math.PI/180), MS.cy+d*Math.sin(a*Math.PI/180)];
   const dS=`style="left:${MS.cx-MS.disc}px; top:${MS.cy-MS.disc}px; width:${MS.disc*2}px; height:${MS.disc*2}px"`;
@@ -2774,13 +2936,13 @@ function missionHTML(s){
         <h3><b>${escH(x.strong||'')}</b> <span>${escH(x.word||'')}</span></h3>
         ${x.toLine?`<p class="be">${escH(x.toLine)}</p>`:x.be?`<p class="be">To <b>be</b> ${escH(x.be)}</p>`:''}${x.become?`<p class="become">To <b>become</b> ${escH(x.become)}</p>`:''}</div>`; }).join('');
   return `<div class="sc-mission stage-box"><div class="ms-stage stage" style="width:${MS.W}px; height:${MS.H}px">
-      ${s.title?`<h2 class="sc-t ms-title">${escH(s.title)}</h2>`:''}${svg}${disc}${nodes}${rows}</div></div>`;
+      ${s.title?`<h2 class="sc-t ms-title bi">${escH(s.title)}</h2>`:''}${svg}${disc}${nodes}${rows}</div></div>`;
 }
 /* A cycle of coloured rings (GROW, ACT, the Learning Practice), in the form of the school's own diagrams.
    Rings pop in order, each bar draws on to the next, the words slide out, then a dot runs the loop once. */
-const LP_AT={ sq:{tl:[745,300],tr:[1015,300],br:[1015,570],bl:[745,570], c:[880,435]}, tri:{top:[880,265],br:[1075,590],bl:[685,590], c:[880,482]} };
+const LP_AT={ sq:{tl:[700,290],tr:[1060,290],br:[1060,650],bl:[700,650], c:[880,470]}, tri:{top:[880,240],br:[1112,652],bl:[648,652], c:[880,515]} };
 function loopHTML(s){
-  const it=s.items||[], n=it.length, geo=n===4?LP_AT.sq:LP_AT.tri, R=95, W=1760, H=820;
+  const it=s.items||[], n=it.length, geo=n===4?LP_AT.sq:LP_AT.tri, R=110, W=1760, H=820;
   const def4=['tr','br','bl','tl'], def3=['top','br','bl'];
   const pos=it.map((x,i)=>geo[x.at||(n===4?def4:def3)[i]]||geo.top), t=it.map((_,i)=>.5+.6*i), T0=t[n-1]+.9;
   const rich=q=>escH(q).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
@@ -2792,7 +2954,7 @@ function loopHTML(s){
     return `<div class="lp-txt${left?' left':''}" style="${box}; top:${cy-R+4}px; --t:${t[i]}s; --h:${x.ink||x.color}"><h4>${escH(x.head||'')}</h4>${(x.qs||[]).map(q=>`<p>${rich(q)}</p>`).join('')}</div>`; }).join('');
   const path='M'+pos.map(p=>p.join(' ')).join(' L')+' Z', c=geo.c;
   return `<div class="sc-loop stage-box"><div class="lp-stage stage" style="width:${W}px; height:${H}px">
-      ${s.title?`<h2 class="sc-t lp-title">${escH(s.title)}</h2>`:''}
+      ${s.title?`<h2 class="sc-t lp-title bi">${escH(s.title)}</h2>`:''}
       <svg class="lp-lines" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">${bars}</svg>
       ${s.centre?`<div class="lp-core" style="left:${c[0]}px; top:${c[1]}px">${escH(s.centre)}</div>`:''}
       ${rings}${txt}
@@ -2827,7 +2989,7 @@ function stairsHTML(s){
   const bars=(arr,x0,w,gap,cls,col)=>arr.map((h,i)=>`<rect class="st2-bar ${cls}" data-i="${i}" x="${x0+i*(w+gap)}" y="${800-h}" width="${w}" height="${h}" rx="3" fill="${typeof col==='function'?col(i):col}"/>`).join('');
   const habCol=i=>i===0?'#1E8C4E':`rgba(30,140,78,${(1-i*.06).toFixed(2)})`, leapCol=i=>LC[i];
   return `<div class="sc-stairs2 stage-box"><div class="st2-stage stage" style="width:${g.W}px; height:${g.H}px">
-    <h2 class="sc-t st2-title">${escH(s.title||'Perspective')}</h2>${s.sub?`<p class="st2-sub">${escH(s.sub)}</p>`:''}
+    <h2 class="sc-t st2-title bi">${escH(s.title||'Perspective')}</h2>${s.sub?`<p class="st2-sub">${escH(s.sub)}</p>`:''}
     <svg class="st2-svg" viewBox="0 0 ${g.W} ${g.H}" width="${g.W}" height="${g.H}">
       <path class="st2-spiral-bg" d="${G.spiralD}"/><path class="st2-spiral" d="${G.spiralD}" pathLength="1000"/><path class="st2-spiral-back" d="${G.spiralBack}"/><circle class="st2-sdot" r="13" cx="${g.spiral.cx+g.spiral.r0}" cy="${g.spiral.y0}"/>
       <text class="st2-cap" x="0" y="770">A virtuous spiral:</text><text class="st2-cap good" x="0" y="806">quicker each turn</text>
@@ -2921,7 +3083,7 @@ function slideHTML(s){
     /* ---------- photos and pages (Phase 11) ---------- */
     case 'cover': { const tl=s.rainbow ? rainbowText(s.title, s.tints) : escH(s.title);
       const bg = !s.img ? '' : s.whole
-        ? `<img class="ph-blur" src="${IMG(s.img)}" alt=""><div class="cv-area fit-box whole">${FIG(s.img)}</div><div class="cv-wash side"></div>`
+        ? `<img class="ph-blur" src="${IMG(s.img)}" alt=""><div class="cv-area fit-box whole" data-align="end">${FIG(s.img)}</div><div class="cv-wash side"></div>`
         : `<div class="cv-bg"><img src="${IMG(s.img)}" alt="" style="object-position:${escH(s.pos||'50% 50%')}"></div><div class="cv-wash"></div>`;
       return `<div class="sc-bleed sc-cover${s.img?'':' plain'}${s.whole?' whole':''}${s.day?' has-day':''}${s.align==='center'?' center':''}">
         ${bg}${s.day?dayBar(s.day):''}
@@ -2956,7 +3118,7 @@ function slideHTML(s){
         ${it.slice(0,4).map((x,i)=>`<div class="vn-q q${i} arrive" style="--d:${400+i*420}ms"><h4>${escH(x.title)}</h4><p>${escH(x.q||'')}</p></div>`).join('')}
       </div>${s.foot?`<p class="vn-foot arrive" style="--d:${400+4*420}ms">${escH(s.foot)}</p>`:''}`; }
     case 'table': return `${T(s.title,' sm')}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<table class="sc-table bi"${D_(260)}>
-        ${s.head?`<thead><tr>${s.head.map(h=>`<th>${escH(h)}</th>`).join('')}</tr></thead>`:''}<tbody>${(s.rows||[]).map(r=>`<tr>${r.map((c,ci)=>`<td${ci===0&&c===''?' class="cont"':''}>${escH(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>
+        ${s.head?`<thead><tr>${s.head.map(h=>`<th>${escH(h)}</th>`).join('')}</tr></thead>`:''}<tbody>${(s.rows||[]).map(r=>`<tr class="bi">${r.map((c,ci)=>`<td${ci===0&&c===''?' class="cont"':''}>${escH(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>
         ${s.note?`<p class="sc-note bi"${D_(500)}>${escH(s.note)}</p>`:''}`;
     case 'links': return `${T(s.title,' sm')}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<div class="sc-links">${(s.items||[]).map((x,i)=>`<div class="lk bi"${D_(220+i*160)}>
         <span class="qr">${BTY.qrSVG(x.url,{label:x.label})}</span>${x.icon?`<span class="li">${BTY.icon(x.icon)}</span>`:''}<b>${escH(x.label||'')}</b><span>${escH(String(x.url).replace(/^https?:\/\//,''))}</span></div>`).join('')}</div>`;
@@ -3081,7 +3243,7 @@ function paintSceneLive(){
   }
 }
 function countUp(el, from, to, ms, suffixHTML=''){ const t0=performance.now();
-  if(matchMedia('(prefers-reduced-motion: reduce)').matches){ el.innerHTML=to+suffixHTML; return; }
+  if(CALM){ el.innerHTML=to+suffixHTML; return; }
   (function tick(now){ const p=Math.min(1,(now-t0)/ms), e=1-Math.pow(1-p,3); el.innerHTML=Math.round(from+(to-from)*e)+suffixHTML; if(p<1 && el.isConnected) requestAnimationFrame(tick); })(t0); }
 function slideImgs(s){ if(!s) return []; return [s.img && (typeof s.img==='string'?s.img:s.img.src), ...(s.imgs||[]).map(x=>typeof x==='string'?x:x.src), ...((s.items||[]).map(x=>x&&x.img))].filter(Boolean); }
 const preloaded=new Set();
@@ -3090,17 +3252,24 @@ function paintScene(){
   const st=journeySteps[currentStep], d=deckFor(st); const body=document.getElementById('scBody'); if(!d || !body) return;
   sceneIdx=Math.max(0,Math.min(sceneIdx,d.slides.length-1));
   const s=d.slides[sceneIdx];
-  body.classList.remove('sc-leave'); const seq=++paintSeq, live=()=>seq===paintSeq;
+  body.style.transition='none'; body.classList.remove('sc-leave'); void body.offsetWidth; body.style.transition='';   // the new slide builds itself in
+  const seq=++paintSeq, live=()=>seq===paintSeq;
   const scEl=document.getElementById('scene');
   journeyContent.classList.toggle('respond', s.kind==='ask');            // gold frame = "phones, it's your turn"
   scEl?.classList.toggle('cream', s.tone==='cream' && s.kind!=='ask');   // a cream page: navy words, red accents
   scEl?.classList.toggle('bleed', s.kind==='cover' || s.kind==='photo');
   const chEl=scEl?.querySelector('.sc-ch'); if(chEl){ const ch=s.ch||d.chapter||st.ch||''; if(chEl.dataset.ch!==ch){ chEl.dataset.ch=ch; chEl.innerHTML=BTY.icon(CH_ICON[ch]||'hex')+escH(ch); } }
+  body.classList.remove('gal-side'); delete body.dataset.galTried; body.style.removeProperty('--side-w');
   body.innerHTML=slideHTML(s);
   sizeRows(body);
+  body.querySelectorAll('.sc-feat, .sc-qimg').forEach(f=>{ balanceFeature(f); fitObserver?.observe(f); });
   body.querySelectorAll('.fit-box').forEach(b=>{ fitPhotos(b); fitObserver?.observe(b); });
   body.querySelectorAll('.stage-box').forEach(b=>{ fitStage(b); stageObserver?.observe(b); });
-  setTxt('scNum', `${String(sceneIdx+1).padStart(2,'0')} / ${String(d.slides.length).padStart(2,'0')}`);
+  if(FILL_KINDS.has(s.kind)) autoFill(body);
+  // Reading order: title, then each block and photo in turn, all on screen within about 1.4 s.
+  const order=[...body.querySelectorAll('.bi:not(.fit-box), .fit-box > figure')], stepMs=Math.max(60,Math.min(150,1100/Math.max(1,order.length)));
+  order.forEach((el,i)=>el.style.setProperty('--d', Math.round(120+i*stepMs)+'ms'));
+  setTxt('scNum', `${String(sceneIdx+1).padStart(2,'0')} / ${String(d.slides.length).padStart(2,'0')}`); paintRoadmap();
   document.querySelectorAll('#scDots i').forEach((el,i)=>{ el.classList.toggle('on',i===sceneIdx); el.classList.toggle('done',i<sceneIdx); });
   // School-data motion: numbers count up, rings and bars draw in.
   body.querySelectorAll('.sc-stat .n[data-count]').forEach((el,i)=>{ const raw=el.dataset.count, n=parseInt(raw,10); if(isNaN(n) || String(n)!==raw) return; const suf=el.querySelector('small')?.outerHTML||''; el.innerHTML='0'+suf; setTimeout(()=>{ if(live()) countUp(el,0,n,1500,suf); }, 260+i*200); });
@@ -3208,7 +3377,7 @@ function renderStep(){
   if(step.type==='globe'||step.type==='industry_map') paintNexusStats();
   if(deckFor(step)) paintScene();
 
-  progFill.style.width=`${((currentStep+1)/journeySteps.length)*100}%`;
+  progFill.style.width=`${((currentStep+1)/journeySteps.length)*100}%`; paintRoadmap();
   prevBtn.style.display = currentStep>0?'inline-block':'none';
   let label='Next ❯';
   if(step.type==='poll' && !step.revealed) label='Reveal Answer';
@@ -3223,8 +3392,8 @@ function renderStep(){
 function goRender(){
   const c=journeyContent;
   if(c && c.children.length){ c.classList.add('step-exit');
-    setTimeout(()=>{ c.classList.remove('step-exit'); renderStep(); c.classList.add('step-enter'); setTimeout(()=>c.classList.remove('step-enter'),600); },260); }
-  else { renderStep(); c.classList.add('step-enter'); setTimeout(()=>c.classList.remove('step-enter'),600); }
+    setTimeout(()=>{ c.classList.remove('step-exit'); renderStep(); if(!deckFor(journeySteps[currentStep])){ c.classList.add('step-enter'); setTimeout(()=>c.classList.remove('step-enter'),600); } },260); }
+  else { renderStep(); if(!deckFor(journeySteps[currentStep])){ c.classList.add('step-enter'); setTimeout(()=>c.classList.remove('step-enter'),600); } }
 }
 
 function beginJourney(){
@@ -3238,6 +3407,8 @@ function beginJourney(){
 }
 document.getElementById('beginBtn').addEventListener('click', beginJourney);
 
+let navIdle=null; const navWake=()=>{ document.body.classList.add('nav-on'); clearTimeout(navIdle); navIdle=setTimeout(()=>document.body.classList.remove('nav-on'),3000); };
+addEventListener('mousemove',navWake,{passive:true}); addEventListener('touchstart',navWake,{passive:true});
 nextBtn.addEventListener('click',(e)=>{
   if(!started){ beginJourney(); return; }   // footer button also starts the journey (Begin may be scrolled off)
   ripple(e, nextBtn);
@@ -3257,6 +3428,7 @@ prevBtn.addEventListener('click',(e)=>{ if(!started) return; ripple(e,prevBtn);
 
 window.__stepIndex=id=>journeySteps.findIndex(x=>x.id===id);
 window.__stepId=k=>(journeySteps[k]||{}).id||null;   // for the tests: a step's position by its id
+window.__lay={ photoSpec, planPhotos, balanceFeature, autoFill };   // for the layout tests
 window.__jump=(id,i)=>{ const k=typeof id==='number'?id:journeySteps.findIndex(x=>x.id===id); if(k<0) return false; if(!started) beginJourney(); currentStep=k; sceneIdx=i||0; renderStep(); return true; };   // for the audit script: go straight to a step and slide
 function finishJourney(){
   journeyContent.innerHTML=`<div class="wrap" style="width:100%">${renderClosing(true)}</div>`;
@@ -3333,7 +3505,7 @@ function ripple(e,btn){ const r=document.createElement('span'); r.className='rip
   btn.appendChild(r); setTimeout(()=>r.remove(),600); }
 
 function launchConfetti(){
-  if(matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  if(CALM) return;
   const ov=document.getElementById('confettiOverlay'); const cols=['#FFE200','#EC3237','#12299c','#ffffff','#E4C400'];
   for(let i=0;i<70;i++){ const p=document.createElement('div'); p.className='confetti-piece';
     p.style.left=Math.random()*100+'%'; p.style.background=cols[Math.random()*cols.length|0];
@@ -3344,7 +3516,7 @@ function launchConfetti(){
 let reactTimes=[];
 function spawnReaction(emoji){
   reactTimes.push(Date.now());
-  if(matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  if(CALM) return;
   const ov=document.getElementById('reactionOverlay'); if(!ov) return; while(ov.childElementCount>=48) ov.firstElementChild.remove();   // a full hall tapping at once stays smooth
   const el=document.createElement('span'); el.className='floating-reaction'; const dur=2.8+Math.random()*1.4;
   el.textContent=emoji; el.style.left=(Math.random()*(ov.clientWidth-40))+'px'; el.style.fontSize=(2+Math.random()*1.5)+'rem'; el.style.setProperty('--dur',dur.toFixed(2)+'s');
@@ -3357,7 +3529,7 @@ setInterval(()=>{ const now=Date.now(); reactTimes=reactTimes.filter(t=>now-t<10
 /* Pollen / bees drifting */
 (function pollen(){
   const c=document.getElementById('pollenCanvas'); if(!c) return; const ctx=c.getContext('2d');
-  if(matchMedia('(prefers-reduced-motion:reduce)').matches){ return; }
+  if(CALM){ return; }
   let ps=[]; const N=42;
   function rs(){ c.width=innerWidth; c.height=innerHeight; } rs(); addEventListener('resize',rs);
   for(let i=0;i<N;i++) ps.push({x:Math.random()*c.width,y:Math.random()*c.height,vx:(Math.random()-.5)*.28,vy:(Math.random()-.5)*.28,r:Math.random()*2+1,a:Math.random()*.3+.05});
