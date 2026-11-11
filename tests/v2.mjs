@@ -69,26 +69,50 @@ c.ok(!bad.top.length, 'every header starts at one height on dark and cream pages
 c.ok(!bad.dots.length, 'nothing runs into the chapter roadmap ' + bad.dots.slice(0, 6).join(' | '));
 c.ok(!bad.dash.length, 'no em dash on any slide ' + bad.dash.slice(0, 6).join(', '));
 
+// Find a slide by what it is, not by its place (the decks keep changing).
+const at = (id, pred) => pr.evaluate(([id, f]) => window.BTY_DECKS[id].slides.findIndex(new Function('s', 'return ' + f)), [id, pred]);
+const iCrest = await at('deck_a', "s.kind==='crest'"), iMix = await at('deck_b', "s.kind==='mix'"), iStairs = await at('deck_b', "s.kind==='stairs'"), iTie = await at('deck_f', "s.kind==='tiebreak'");
 // A slide's motion starts over every time it is shown: timers from an earlier visit never fire on a later one.
 const revisit = async (id, i, ms, probe) => { await pr.evaluate(([id, i]) => window.__jump(id, i), [id, i]); await sleep(1000);
   await pr.click('#nextBtn'); await sleep(900); await pr.click('#prevBtn'); await sleep(ms); return pr.evaluate(probe); };
-const crest = await revisit('deck_a', 1, 1300, () => [...document.querySelectorAll('#scBody .cr-list li')].findIndex(l => l.classList.contains('now')));
-const fsbb = await revisit('deck_b', 4, 1500, () => document.querySelector('#scBody .mx-phase')?.dataset.p);
-const ties = await revisit('deck_f', 6, 1500, () => document.querySelectorAll('#scBody .tb-col.on').length);
-const stairs = await revisit('deck_b', 1, 800, () => document.querySelectorAll('#scBody .st2-bar.on').length);
+const crest = await revisit('deck_a', iCrest, 600, () => [...document.querySelectorAll('#scBody .cr-list li')].findIndex(l => l.classList.contains('now')));
+const fsbb = await revisit('deck_b', iMix, 1500, () => document.querySelector('#scBody .mx-phase')?.dataset.p);
+const ties = await revisit('deck_f', iTie, 1500, () => document.querySelectorAll('#scBody .tb-col.on').length);
+const stairs = await revisit('deck_b', iStairs, 800, () => document.querySelectorAll('#scBody .st2-bar.on').length);
 c.ok(crest === 0 && fsbb === '1' && ties === 1 && stairs === 0, `coming back to a slide replays its motion from the start (crest ${crest}, FSBB ${fsbb}, tie breakers ${ties}, stairs ${stairs})`);
 // A poll's reveal arms again whenever the show comes back to it.
 await pr.evaluate(() => window.__jump('poll_dream', 0)); await sleep(700); await pr.click('#nextBtn'); await sleep(500); await pr.click('#nextBtn'); await sleep(900);
 await pr.evaluate(() => window.__jump('poll_dream', 0)); await sleep(700);
 c.ok(/reveal/i.test(await pr.$eval('#nextBtn', e => e.textContent)), 'a poll shown again offers its reveal again');
 // Perspective: every "Inspiration" sits in its own stair pocket (right of its riser, between its treads).
-await pr.evaluate(() => window.__jump('deck_b', 1)); await sleep(1200);
+await pr.evaluate(i => window.__jump('deck_b', i), iStairs); await sleep(1200);
 const pockets = await pr.evaluate(() => [...document.querySelectorAll('#scBody .st2-insp')].map(t => { const b = t.getBBox(), d = t.dataset;
   return b.x >= +d.x0 && b.x + b.width <= +d.x1 && b.y >= +d.y0 - 2 && b.y + b.height <= +d.y1 + 2; }));
 c.ok(pockets.length === 4 && pockets.every(Boolean), `each "Inspiration" label sits in its stair pocket ${JSON.stringify(pockets)}`);
 
+// Round 4: the show as asked.
+const shape = await pr.evaluate(() => { const D = window.BTY_DECKS, all = Object.values(D).flatMap(d => d.slides);
+  const b = D.deck_b.slides.map(s => s.title || '');
+  return { motto: all.some(s => s.eyebrow === 'Our motto'), gig: all.some(s => /gig economy/i.test(s.title || '')), ask: all.some(s => s.id === 'grow_value'),
+    order: ['Learning Practice', 'MAP your learning', 'GROW your thinking', 'ACT on feedback'].map(t => b.findIndex(x => x.includes(t))),
+    hanoi: D.deck_d.slides[0].pins.some(p => /Hanoi/.test(p.label)), stat: D.deck_d.slides[0].stat?.n }; });
+c.ok(!shape.motto && !shape.gig && !shape.ask, 'the motto, gig economy and value-ask slides are gone');
+c.ok(shape.order.every((v, k, a) => v >= 0 && (!k || v === a[k - 1] + 1)), `Learning Practice, MAP, GROW, ACT run in order ${shape.order}`);
+c.ok(shape.hanoi && shape.stat === 124, 'the exchange map has Hanoi and the 124 headline');
+await pr.evaluate(i => window.__jump('deck_a', i), iCrest); await sleep(6500);
+const bees = await pr.evaluate(() => { const box = document.querySelector('#scBody .cr-img'), B = box.getBoundingClientRect();
+  return { rings: document.querySelectorAll('#scBody .cr-ring').length, off: [...box.querySelectorAll('.cr-bee')].map(b => { const r = b.getBoundingClientRect();
+    return Math.round(Math.hypot(r.left - B.left - parseFloat(b.style.left) / 100 * B.width, r.top - B.top - parseFloat(b.style.top) / 100 * B.height)); }) }; });
+c.ok(bees.rings === 0 && bees.off.length === 9 && bees.off.every(d => d <= 3), `the crest has no rings and its 9 bees land in place ${JSON.stringify(bees)}`);
+await pr.evaluate(() => window.__jump('values', 0)); await sleep(900);
+const flipSound = await pr.evaluate(() => { let n = 0; const o = window.AudioContext && AudioContext.prototype.createOscillator; if (o) AudioContext.prototype.createOscillator = function () { n++; return o.apply(this, arguments); };
+  document.querySelector('.dcard')?.click(); return new Promise(r => setTimeout(() => r(n), 400)); });
+c.ok(flipSound === 0, 'flipping a value card makes no sound');
+await pr.evaluate(() => window.__jump('nexus_local', 0)); await sleep(1500);
+c.ok(await pr.evaluate(() => /ITE College Central/.test(document.getElementById('journeyContent').innerText)), 'the attachment map shows ITE College Central');
+
 // The roadmap lights the chapter the room is in.
-await pr.evaluate(() => window.__jump('deck_b', 6)); await sleep(600);
+await pr.evaluate(i => window.__jump('deck_b', i), iMix + 2); await sleep(600);
 const lit = await pr.evaluate(() => [...document.querySelectorAll('#roadmap .rm.on b')].map(b => b.textContent));
 await pr.evaluate(() => window.__jump('nexus_global', 0)); await sleep(600);
 const lit2 = await pr.evaluate(() => [...document.querySelectorAll('#roadmap .rm.on b')].map(b => b.textContent));
@@ -96,6 +120,20 @@ c.ok(lit.join() === 'A day at Beatty' && lit2.join() === 'NEXUS@BTY', `the roadm
 
 const errs = [v1, pr, ...phones].flatMap(p => p.errs);
 c.ok(errs.length === 0, 'no page errors ' + JSON.stringify(errs.slice(0, 5)));
+// The show fits any window: Back and Next always on screen, the 1920x1080 stage fully visible, nothing scrolls.
+const fits = [];
+for (const [w, h] of [[1280, 720], [1366, 768], [1440, 900], [1536, 864], [1920, 969], [2560, 1080], [1024, 768]]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h } }); const p = await ctx.newPage();
+  await p.goto(srv.url + '/v2.html?presenter=true', { waitUntil: 'domcontentloaded' });
+  await until(() => p.evaluate(() => typeof dbReady !== 'undefined' && dbReady).catch(() => false), 10000);
+  await p.click('#beginBtn'); await sleep(400); await p.evaluate(() => window.__jump('deck_b', 3)); await sleep(1200); await p.mouse.move(w / 2, h / 2);
+  const r = await p.evaluate(() => { const q = id => document.getElementById(id).getBoundingClientRect(), n = q('nextBtn'), b = q('prevBtn'), c = q('canvas');
+    const inside = x => x.left >= 0 && x.top >= 0 && x.right <= innerWidth && x.bottom <= innerHeight;
+    return { next: inside(n), prev: inside(b), canvas: inside(c) && Math.abs((c.left + c.right) / 2 - innerWidth / 2) < 2, scroll: document.documentElement.scrollHeight > innerHeight || document.documentElement.scrollWidth > innerWidth }; });
+  if (!r.next || !r.prev || !r.canvas || r.scroll) fits.push(`${w}x${h} ${JSON.stringify(r)}`);
+  await ctx.close();
+}
+c.ok(!fits.length, 'the show fits every window (Next and Back on screen, no scrolling) ' + fits.join(' | '));
 await browser.close(); await srv.close();
 console.log(c.fails.length ? `\nFAILED ${c.fails.length}: ${c.fails.join(' | ')}` : '\nALL PASS');
 process.exit(c.fails.length ? 1 : 0);

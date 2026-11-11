@@ -54,33 +54,28 @@ window.BTY_DECKS = {
     { kind:'cover', img:'a/identity.jpg', pos:'70% 35%', title:'Identity', sub:'Unity, hard work, and skill over force',
       notes:'Who we are begins with one Coat of Arms.' },
     { kind:'crest', tone:'cream', img:'a/crest.png', title:'Our crest', items:[
-        { title:'Unity', body:'As symbolised by the admiral command colours of navy blue and yellow', area:[50,34,43,34] },
-        { title:'Hard work', body:'As symbolised by the bees around the bee hive', area:[49,45,31,19] },
-        { title:'Not by force, but with skill', body:'As symbolised by our motto, Non Vi Sed Arte', area:[50,72,47,10] } ],
+        { title:'Unity', body:'As symbolised by the admiral command colours of navy blue and yellow' },
+        { title:'Hard work', body:'As symbolised by the bees, working together around the hive' },
+        { title:'Non Vi Sed Arte', body:'Not with force, but with skill: our motto' } ],
       phone:{ title:'Our crest', line:'Unity, hard work, and skill over force.' },
-      notes:'Three things our crest stands for. The screen lights each part in turn: the navy and yellow for unity, the bees for hard work, the motto for skill over force.' },
-    { kind:'statement', icon:'school', eyebrow:'Our motto', title:'Non Vi Sed Arte', latin:true, sub:'Not with force but with skill.',
-      body:'Chosen by Mr Meyer, our first principal, from the Coat of Arms of Admiral Earl David Beatty.',
-      notes:'Say it slowly. We will shout it together when the boats set sail; ask them to remember it.' },
+      notes:'Three things our crest stands for. The navy and yellow: unity. Watch the bees: they come in together, circle the hive and each takes its place. That is hard work, done together. Then our motto, Non Vi Sed Arte: not with force, but with skill. We will shout it together when the boats set sail; ask them to remember it.' },
     { kind:'gallery', title:'They took charge of their future', imgs:[
         { src:'a/clip-future.jpg', fit:'contain' }, { src:'a/nabilah.jpg' }, { src:'a/results.jpg' }, { src:'a/clip-st.jpg', fit:'contain' }, { src:'a/clip-bh.jpg', fit:'contain' } ],
       phone:{ title:'They took charge of their future', line:'Our graduates, in the news.' },
-      notes:'Our graduates in The Straits Times and Berita Harian. Cheryl, an auditory learner, read her notes out loud so she could understand them better. Others overcame family duties, migraines and hospital stays to do well.' },
+      notes:'Our graduates in The Straits Times and Berita Harian: they turned their results around, with friends, teachers and their CCA beside them.' },
     { kind:'quotes', tone:'cream', title:'In their words', items:[
-        { q:'Cheryl considers herself more of an auditory learner, so she made it a point to read her learning materials out loud just so she could understand them better.', by:'The Straits Times' },
-        { q:'I believe that good and positive friends are important because we can help each other.', by:'A Beatty graduate' },
-        { q:'I had many duties, like helping my younger sibling with homework, keeping the house clean, and more. Our parents are working hard and we too must help.', by:'A Beatty graduate, Berita Harian' },
-        { q:'I would schedule Zoom consultations with my teachers and watch YouTube videos to understand geography concepts better.', by:'A Beatty graduate' } ],
-      phone:{ title:'In their words', line:'Our graduates on how they took charge.' },
-      notes:'Four graduates, four habits: learning the way that suits you, good friends, responsibility at home, and reaching out to teachers.' },
-    { kind:'slope', title:'The world is changing, fast', sub:'The top ten skills, then and next: watch two of them move', mark:['Judgment & Decision Making','Complex Problem Solving'], cols:[
+        { tag:'Friends', icon:'heart', q:'I believe that good and positive friends are important because we can help each other.', by:'A Beatty graduate' },
+        { tag:'Teachers', icon:'school', q:'I would schedule Zoom consultations with my teachers and watch YouTube videos to understand geography concepts better.', by:'A Beatty graduate' },
+        { tag:'CCA', icon:'flame', q:'Instead of going home to rest after training, we decided it was better to revise after training, especially on Saturdays, for three or four hours before heading home.', by:'Anisah, in Berita Harian (translated from Malay)' } ],
+      phone:{ title:'In their words', line:'What helped our graduates: friends, teachers and their CCA.' },
+      notes:'What helped them was the place, not luck: good friends who help each other, teachers they could reach any time, and a CCA where they trained hard and then studied together. That is the environment we build.' },
+    { kind:'slope', title:'The world is changing, fast', sub:'The top ten skills, then and next', mark:['Judgment & Decision Making','Complex Problem Solving'],
+      bty:[['Fluency of Ideas','ALP design thinking'],['Active Learning','our Learning Practice'],['Learning Strategies','MAP · GROW · ACT']],
+      bridge:'Every one of these is a habit: habits of learning, habits of living.', cols:[
         { head:'In 2015', items:['Complex Problem Solving','Coordinating with Others','People Management','Critical Thinking','Negotiation','Quality Control','Service Orientation','Judgment & Decision Making','Active Listening','Creativity'] },
         { head:'In 2020', items:['People Management','Complex Problem Solving','Critical Thinking','Creativity','Coordinating with Others','Emotional Intelligence','Judgment & Decision Making','Service Orientation','Negotiation','Cognitive Flexibility'] },
         { head:'In 2030', items:['Judgment & Decision Making','Fluency of Ideas','Active Learning','Learning Strategies','Originality','System Evaluation','Deductive Reasoning','Complex Problem Solving','Systems Analysis','Monitoring'] } ],
-      notes:'The red line: Judgment and Decision Making climbs from 8th to 1st. The gold line: Complex Problem Solving slips from 1st to 8th; new skills like Learning Strategies and Originality arrive. This is why we teach how to learn, not only what to learn.' },
-    { kind:'bars', tone:'cream', title:'Top reasons for working in the gig economy', suffix:'%', groups:[
-        { label:'Gig workers say', rows:[['Make extra money on the side',55],['Balancing career and family needs',48],['Autonomy and control',48],['Only way to make an income',22],['Earning while seeking a better job',19]] } ],
-      notes:'Work itself is changing: more people choose gig work, for money, family and autonomy. Our children need to be adaptive.' },
+      notes:'The red line: Judgment and Decision Making climbs from 8th to 1st. The gold line: Complex Problem Solving slips from 1st to 8th. Now watch the teal: three of tomorrow\'s top skills are what we already grow every day. Fluency of Ideas, in our ALP\'s design thinking. Active Learning, in our Learning Practice. Learning Strategies, in MAP, GROW and ACT. And every one of them is a habit: habits of learning, habits of living. Hold that thought; you will see each of them in a day at Beatty.' },
     { kind:'mission', tone:'cream', title:'Beattyian identity',
       belief:{ head:'Fundamental belief', text:'Every Beattyian has latent giftings who, when given opportunities and time, can develop talents that they can share with the community.' },
       items:[
@@ -89,7 +84,7 @@ window.BTY_DECKS = {
         { icon:'community', strong:'Active',   word:'Contributors', be:'driven, to serve and to add value', become:'impactful changemakers, compassionate connectors and community builders' } ],
       phone:{ title:'Beattyian identity', line:'Adaptive Thinkers, Agile Learners, Active Contributors.' },
       notes:'Start with the circle: our fundamental belief. Every Beattyian has latent giftings who, given opportunities and time, can develop talents to share with the community. From that belief come our three outcomes, our mission: Adaptive Thinkers, Agile Learners, Active Contributors. Each has who they are now (to be) and who they become.' },
-    { kind:'venn', tone:'cream', title:'Purpose', centre:'BTY', foot:'Every Beattyian A Purpose Driven Steward', items:[
+    { kind:'venn', tone:'cream', title:'Purpose', centre:'BTY', foot:'Every Beattyian A Purpose-Driven Steward', items:[
         { tag:'VS', title:'Valued by self', q:'What allows you to live out your values, and help you find meaning and purpose?' },
         { tag:'RC', title:'Relatedness and community', q:'What is that which allows you to relate and connect with others?' },
         { tag:'PG', title:'Personal growth', q:'What area creates that desire to continue to improve?' },
@@ -102,16 +97,13 @@ window.BTY_DECKS = {
 
   /* ---------- Step 7 · A day at Beatty (after the DREAM poll and the value cards) ---------- */
   deck_b: { use:true, chapter:'Our values', slides:[
-    { kind:'ask', id:'grow_value', question:'Which value do you most want to grow?',
-      options:['Discipline','Resilience','Empathy','Adaptability','Mindfulness'],
-      notes:'Phones answer now. Read out the leader; there is no wrong answer.' },
     { kind:'stairs', tone:'cream', title:'Perspective', sub:'Inspiration starts you. Habits carry you.',
       notes:'Watch the two climbers. On the right, inspiration alone: every leap needs a bigger burst, takes longer to gather, and fails more often; it gets harder each time. On the left, one burst of inspiration starts you, then routines become habits: small steps that get easier and quicker, like a spiral that rises faster as it turns.' },
     { kind:'cover', ch:'A day at Beatty', img:'b/morning.jpg', whole:true, day:'morning', title:'Morning', sub:'Reset, Refreshed, Ready',
       notes:'Let us walk through a day at Beatty, starting with the morning.' },
     { ch:'A day at Beatty', kind:'quote', tone:'cream', title:'Habits to build the child for life',
       quote:'You don\'t determine your future. You determine your habits. Your habits determine your future.', by:'F. M. Alexander',
-      also:{ quote:'Schools are also social institutions and coming to school isn\'t just about tests; it\'s also about spending meaningful time with your peers. Early starts are also about forming habits that set students up for life, like how to start the day right.', by:'Our principal, in The Straits Times' },
+      also:{ quote:'Schools are also social institutions and coming to school isn\'t just about tests; it\'s also about spending meaningful time with your peers. Early starts are also about forming habits that set students up for life, like how to start the day right.', by:'Harman Johll, in The Straits Times' },
       img:{ src:'b/clip-habits-v2.jpg', fit:'contain', cap:'The Straits Times, on our 7.30am start' },
       notes:'We kept our 7.30am start. Early starts are about forming habits that set students up for life.' },
     { ch:'A day at Beatty', kind:'mix', title:'FSBB@Beatty', phase1:'Subject classes: each student at their own level', phase2:'Form classes: mixed, together for the Common Core', legend:'subject levels', chip:'Common Core',
@@ -131,12 +123,14 @@ window.BTY_DECKS = {
     { ch:'A day at Beatty', kind:'gallery', tone:'cream', title:'Makerspace@Beatty', sub:'A flexible learning space as a playground for learning through "structured" and "unstructured" play',
       imgs:[{ src:'b/maker-space.jpg' },{ src:'b/maker-neon.jpg' },{ src:'b/maker-drone.jpg', cap:'Drone programming' },{ src:'b/maker-heatpress.jpg', cap:'Heat press' },{ src:'b/maker-sewing.jpg', cap:'Sewing' },{ src:'b/maker-3d.jpg', cap:'3D printing' },{ src:'b/maker-laser.jpg', cap:'Laser cutting' }],
       notes:'Drones, heat press, sewing, 3D printing and laser cutting, all in one space.' },
-    { ch:'A day at Beatty', kind:'feature', title:'ALP 3.0', sub:'Tech enabled Design Thinker', img:'b/alp3-v2.jpg', fit:'contain',
-      items:[{ icon:'futurist', title:'Machine learning', body:'Design thinking, now with the tools of AI' }],
-      notes:'The next version of our ALP: the tech enabled design thinker. [confirm] the line under Machine learning.' },
+    { ch:'A day at Beatty', kind:'feature', title:'ALP 3.0', img:'b/alp3-v2.jpg', fit:'contain',
+      items:[{ icon:'heart', label:'Why', title:'Tech for Good', body:'Technology that serves people and the community' },
+        { icon:'futurist', label:'How', title:'Tech-enabled Design Thinker', body:'Design thinking, now with the tools of AI and machine learning' },
+        { icon:'rocket', label:'Who', title:'Tech-enabled Changemaker', body:'Our mission, lived: to become impactful changemakers' }],
+      notes:'ALP 3.0 in three lines. Why: Tech for Good, technology that serves people. How: our students become Tech-enabled Design Thinkers, design thinking now with AI and machine learning. Who they become: Tech-enabled Changemakers, the same impactful changemakers our mission names. [confirm] the wording.' },
     { ch:'A day at Beatty', kind:'gallery', title:'Think. Create. Innovate.', imgs:['b/alp-4.jpg','b/alp-1.jpg','b/alp-2.jpg','b/alp-3.jpg'],
       notes:'ALP in action.' },
-    { ch:'A day at Beatty', kind:'gallery', tone:'cream', title:'On the world stage', imgs:[{ src:'b/award-table.jpg', fit:'contain', cap:'Country award winners, ages 13 to 18' },{ src:'b/award-team.jpg', whole:true },{ src:'b/rockwell.jpg', cap:'Rockwell Automation', whole:true },{ src:'b/award-3.jpg' }],
+    { ch:'A day at Beatty', kind:'gallery', tone:'cream', title:'On the world stage', sub:'Country award winners, ages 13 to 18, and learning with industry at Rockwell Automation', imgs:[{ src:'b/award-table.jpg', fit:'contain' },{ src:'b/award-team.jpg', whole:true },{ src:'b/rockwell.jpg', whole:true },{ src:'b/award-3.jpg' }],
       notes:'Our students among the country award winners. [confirm] the name of the competition.' },
     { ch:'A day at Beatty', kind:'feature', side:'right', title:'Personal Learning Devices', imgs:['b/pld-1.jpg','b/pld-2.jpg'], items:[
         'Personal Learning Devices (PLDs) are meant to support, modify and enhance what and how Beattyians learn',
@@ -148,10 +142,16 @@ window.BTY_DECKS = {
         { at:'bl', icon:'check',     head:'Prepare',     color:'#1BA39C', ink:'#0F7F79', qs:['Have I completed my homework?','Have I read ahead of the lesson?'] },
         { at:'top', icon:'curious',  head:'Participate', color:'#1F4E9C', ink:'#1F4E9C', qs:['Am I listening actively?','Am I asking questions to clarify my thinking?'] },
         { at:'br', icon:'innovator', head:'Process',     color:'#2E7BC4', ink:'#1F5F9E', qs:['What have I understood, and what am I yet to understand?','What notes should I make?'] } ],
-      foot:'Learning to live: gratitude journaling and self awareness',
       phone:{ title:'Our Learning Practice', line:'Prepare, participate, process: proactive learners.' },
-      notes:'Learning to learn starts with a practice: prepare before the lesson, participate during it, process after it. Proactive learners ask these questions themselves. Learning to live: gratitude journaling and self awareness.' },
-    { ch:'A day at Beatty', kind:'loop', tone:'cream', title:'GROW: our metacognition model', centre:'Believe you can',
+      notes:'Learning to learn starts with a practice: prepare before the lesson, participate during it, process after it. Proactive learners ask these questions themselves.' },
+    { ch:'A day at Beatty', kind:'feature', tone:'cream', title:'MAP your learning', sub:'Note making is a critical skill, and we teach it',
+      imgs:[{ src:'b/notes-1.jpg', fit:'contain' },{ src:'b/notes-2.jpg', fit:'contain' }],
+      items:[{ letter:'M', color:'#1F4E9C', title:'Make notes', body:'Capture the key ideas in your own words' },
+        { letter:'A', color:'#2E7BC4', title:'Arrange', body:'Connect the ideas in a mind map' },
+        { letter:'P', color:'#1BA39C', title:'Practise', body:'Test yourself from your notes' }],
+      phone:{ title:'MAP your learning', line:'Make notes, arrange them, practise from them.' },
+      notes:'MAP your learning, GROW your thinking, ACT on feedback. Note making is taught, not assumed: these are real student notes, with teacher feedback. [confirm] what M, A and P stand for: this draft reads Make notes, Arrange (mind map), Practise.' },
+    { ch:'A day at Beatty', kind:'loop', tone:'cream', title:'GROW your thinking', centre:'Believe you can',
       items:[
         { letter:'G', head:'Gift yourself success',      color:'#F2A51A', ink:'#B06A00', qs:['What is one thing **I understand** from the lesson?'] },
         { letter:'R', head:'Rise above with small steps', color:'#E2463F', ink:'#C2312C', qs:['What will I do **to improve** on one thing that I **do not yet understand**?'] },
@@ -166,9 +166,6 @@ window.BTY_DECKS = {
         { letter:'T', head:'Test',        color:'#EC3237', ink:'#C2312C', qs:['What habit will I adjust? What will I do differently?','How will I know I am improving?'] } ],
       phone:{ title:'ACT on feedback', line:'Acknowledge, Connect, Test.' },
       notes:'When feedback comes back, students ACT on it: Acknowledge how they feel and how it helps; Connect it to the success criteria, their goals and earlier feedback; Test a change in habit, and check that they are improving. This is the ACT journal in the E21CC Log.' },
-    { ch:'A day at Beatty', kind:'feature', tone:'cream', title:'Note making is taught', sub:'To know how to learn: note making is a critical skill, and we teach it',
-      imgs:[{ src:'b/notes-1.jpg', fit:'contain' },{ src:'b/notes-2.jpg', fit:'contain' }],
-      notes:'Note making is taught, not assumed. These are real student notes, with teacher feedback.' },
     { ch:'A day at Beatty', kind:'photo', img:'b/gifts-1.jpg', title:'Discovering and uncovering gifts',
       notes:'Every Beattyian has latent giftings; we help them find them.' },
     { ch:'A day at Beatty', kind:'gallery', title:'Education and career guidance', sub:'Professionals share their work with our classes', imgs:[{ src:'b/ecg-1.jpg', cap:'A pharmacist' },{ src:'b/ecg-2.jpg', cap:'A police officer' },{ src:'b/ecg-3.jpg', cap:'A healthcare professional' }],
@@ -193,7 +190,7 @@ window.BTY_DECKS = {
 
   /* ---------- Step 11 · Passions: enrichment and NEXUS (after the CCA fact, fold A and the CCA poll) ---------- */
   deck_c: { use:true, chapter:'Passions', slides:[
-    { kind:'feature', tone:'cream', title:'The joy of stewardship', sub:'Purpose driven stewards',
+    { kind:'feature', tone:'cream', title:'The joy of stewardship', sub:'Purpose-driven stewards',
       imgs:[{ src:'c/wheel.png', fit:'contain' },'c/stewards.jpg'], items:[
         { title:'Practices of leadership', body:'Model the way, inspire a shared vision, challenge the process, enable others to act, encourage the heart' },
         { title:'Joy of leadership', body:'Strengths, health, absorption, relationship, purpose' },
@@ -201,20 +198,23 @@ window.BTY_DECKS = {
       notes:'Our leadership model: the practices of leadership, the joy of leadership, and DREAM at the centre.' },
     { kind:'gallery', title:'Stewardship in action', imgs:['c/lead-1.jpg','c/lead-2.jpg','c/lead-3.jpg'],
       notes:'Student leaders at work.' },
-    { kind:'feature', title:'English Language and Literature enrichment', imgs:['c/el-1.jpg','c/el-2.jpg','c/el-4.jpg','c/el-3.jpg'], items:[
-        'Developing students\' communication and critical thinking skills',
-        'Challenge students to navigate the complexities of news reporting',
-        { title:'heartBEAT', body:'Beatty Radio Station' } ],
-      tags:['Readers\' Theatre','Debate Fest','Your Say'],
-      notes:'Radio, debate, readers\' theatre and news.' },
-    { kind:'feature', tone:'cream', side:'right', title:'Mother Tongue Languages Fortnight', imgs:['c/mt-1.jpg','c/mt-2.jpg','c/mt-3.jpg'], items:[
-        'Create an immersive environment for students to learn and use their Mother Tongue',
-        'Develop an appreciation of cultures in Singapore' ],
-      notes:'Two weeks of language and culture.' },
-    { kind:'feature', title:'Math enrichment', imgs:['c/math-1.jpg','c/math-2.jpg','c/math-3.jpg',{ src:'c/simc.jpg', fit:'contain' }], items:[
+    { kind:'feature', title:'English Language and Literature enrichment', sub:'Developing students\' communication and critical thinking skills',
+      imgs:['c/el-1.jpg','c/el-2.jpg','c/el-3.jpg'], items:[
+        { icon:'voice', title:'PESA', body:'YMCA Plain English Speaking Awards: public speaking on a national stage' },
+        { icon:'chart', title:'Debates', body:'Debate Fest, and debating beyond school' },
+        { icon:'heart', title:'Community Engagement', body:'Using language to reach and serve the community' },
+        { icon:'wave', title:'Reading the news', body:'Navigating the complexities of news reporting' } ],
+      tags:['Readers\' Theatre','Your Say'],
+      notes:'Public speaking at PESA, debates, community engagement, and learning to read the news well. [confirm] the lines under Debates and Community Engagement.' },
+    { kind:'feature', tone:'cream', layout:'stack', title:'Mother Tongue Languages Fortnight', imgs:['c/mt-1.jpg','c/mt-2.jpg','c/mt-3.jpg'], items:[
+        { title:'Immersion', body:'An immersive environment for students to learn and use their Mother Tongue' },
+        { title:'Cultures', body:'An appreciation of the cultures in Singapore' },
+        { title:'Community Engagement', body:'In dialects' } ],
+      notes:'Two weeks of language and culture, and community engagement in dialects.' },
+    { kind:'feature', title:'Math enrichment', imgs:['c/math-1.jpg','c/math-2.jpg','c/math-3.jpg',{ src:'c/simc.jpg', fit:'contain', cap:'SIMC² 2022' }], items:[
         { title:'Math Olympiad' }, { title:'Financial Literacy Workshop' },
-        { title:'SIMC²', body:'Singapore International Mathematical Challenge 2022 (Junior Challenge): our winning Beatty team' } ],
-      notes:'Our team won at the Singapore International Mathematical Challenge.' },
+        { title:'SIMC²', body:'Singapore International Mathematical Challenge: our teams did well in 2022, 2024 and 2026', years:['2022','2024','2026'] } ],
+      notes:'Our teams did well at the Singapore International Mathematical Challenge in 2022, 2024 and 2026; the photo is the 2022 team.' },
     { kind:'feature', tone:'cream', side:'right', title:'Science enrichment', sub:'A curriculum of practice and identity', imgs:['c/sci-1.jpg','c/sci-2.jpg','c/sci-3.jpg','c/sci-4.jpg'], items:[
         { title:'Competitions', body:'International competitions, Physics Olympiad, Chemistry Olympiad, Engineering Innovation Challenge' },
         { title:'Research', body:'Science research, microbiology workshops, Science Day @ Beatty' },
@@ -266,8 +266,10 @@ window.BTY_DECKS = {
         { x:76.4, y:25.9, lx:78,   ly:31,   label:'Science Research Exchange with SSH in Mihara, Hiroshima', sub:'10 to 12 Sec 3 students' },
         { x:72.9, y:63.7, lx:48,   ly:58,   label:'Geographical Investigation, Bali', sub:'All Sec 3 Geography students' },
         { x:74.1, y:68.6, lx:77,   ly:62,   label:'Literary Adventures, Bali', sub:'All Sec 3 Literature students' },
-        { x:93.6, y:88.1, lx:70,   ly:82,   label:'Leadership x Language Arts Exchange with Aorere College', sub:'8 to 10 Sec 3 students' } ],
-      notes:'Seven programmes across the region. [confirm] the Hanoi exchange, which is on tonight\'s globe but not on last year\'s map.' },
+        { x:93.6, y:88.1, lx:70,   ly:82,   label:'Leadership x Language Arts Exchange with Aorere College', sub:'8 to 10 Sec 3 students' },
+        { x:65.8, y:37.6, lx:41,   ly:37,   label:'Ecostewardship Exchange, Hanoi, Vietnam', sub:'16 to 20 Sec 3 students' } ],
+      stat:{ n:124, pre:'Up to', label:'Sec 3 students on an exchange each year', sub:'close to half the cohort', x:-16, y:50 },
+      notes:'Eight programmes across the region, now with Ecostewardship in Hanoi. Count them up: up to 124 Secondary 3 students a year, close to half the cohort, go on an exchange (the other programmes at their maximum, plus about 40 Geography and Literature students in Bali).' },
     { kind:'gallery', title:'NX3014: Leadership x Language Arts @ New Zealand', sub:'An exchange with Aorere College', imgs:[{ src:'d/nz-1.jpg', whole:true },'d/nz-2.jpg','d/nz-3.jpg','d/nz-4.jpg'],
       notes:'Leadership and language arts with Aorere College.' },
     { kind:'gallery', tone:'cream', title:'NX3011 and NX3012: Japan', sub:'Mihara City International Exchange · Mutsuzawa High School International Exchange',
@@ -279,8 +281,8 @@ window.BTY_DECKS = {
 
   /* ---------- NEXUS@BTY · industry attachments (between the globe and the map pick) ---------- */
   deck_d2: { use:true, chapter:'NEXUS@BTY', slides:[
-    { kind:'gallery', title:'NX302: Industry Attachments', imgs:['d/ind-1.jpg','d/ind-2.jpg','d/ind-3.jpg','d/ind-4.jpg'],
-      notes:'Selected students spend time with our industry partners.' },
+    { kind:'gallery', title:'NX302: Industry Attachments', sub:'40 to 50 students each year', imgs:['d/ind-1.jpg','d/ind-2.jpg','d/ind-3.jpg','d/ind-4.jpg'],
+      notes:'Selected students, 40 to 50 each year, spend time with our industry partners.' },
     { kind:'logos', tone:'cream', title:'Our industry partners', items:[
         { img:'d/logo-rockwell.png', name:'Rockwell Automation' },{ img:'d/logo-pil.png', name:'PIL' },{ img:'d/logo-astar.png', name:'A*STAR' },{ img:'d/logo-nus.png', name:'NUS' },
         { img:'d/logo-sph.png', name:'SPH' },{ img:'d/logo-deloitte.png', name:'Deloitte' },{ img:'d/logo-ite.png', name:'ITE' },{ img:'d/logo-science.png', name:'Science Centre Singapore' } ],
@@ -288,6 +290,12 @@ window.BTY_DECKS = {
     { kind:'gallery', title:'European Union @ BTY', imgs:['d/eu-1.jpg',{ src:'d/eu-2.jpg', cap:'Estonia: Digital Transformation & Sustainability', whole:true },'d/eu-3.jpg'],
       sub:'Ms Eszter Nemeth, Deputy Head of Mission of the EU in Singapore, on the roles youths can play in EU Singapore ties',
       notes:'The EU came to us.' },
+    { kind:'stats', tone:'cream', title:'NEXUS@BTY: out into the world', items:[
+        { n:'124', label:'Sec 3s on an international exchange, at most', ring:48 },
+        { n:'40–50', label:'on an industry attachment', ring:17 },
+        { n:'2 in 3', label:'Sec 3s on one or both', ring:65 } ],
+      phone:{ title:'Out into the world', line:'About 2 in 3 of our Sec 3s go on an exchange or an attachment.' },
+      notes:'Put together: up to 124 on an international exchange and 40 to 50 on an industry attachment. That is about 2 in 3 of our Secondary 3s out in the world through NEXUS@BTY. [confirm] the cohort size behind the rings (about 260).' },
   ]},
 
   /* ---------- Step 19 · Your pathway: our teachers and our spaces ---------- */
@@ -324,7 +332,7 @@ window.BTY_DECKS = {
         { img:'f/alum-loh.jpg', name:'Prof Loh Hong Sai', role:'Dental Surgeon' } ],
       notes:'Some of those who came before. [confirm] roles (some are former).' },
     { kind:'people', tone:'cream', title:'Beatty\'s future', sub:'Our students today. Next year, you.', items:[
-        { img:'f/future-1.jpg' },{ img:'f/future-2.jpg' },{ img:'f/future-3.jpg' },{ img:'f/future-4.jpg' },{ you:true, icon:'smile', name:'You', role:'Sec 1, 2027' } ],
+        { img:'f/future-1.jpg' },{ img:'f/future-2.jpg' },{ img:'f/future-3.jpg' },{ img:'f/future-4.jpg' },{ you:true, icon:'smile', name:'You', role:'Class of 2030' } ],
       phone:{ title:'Beatty\'s future', line:'Our students today. And next year, you.' },
       notes:'Those who come next: our students today, and the last circle is for them. You.' },
     { kind:'stats', tone:'cream', title:'Where Beattyians go next', items:[

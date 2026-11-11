@@ -2520,7 +2520,7 @@ const CHAPTER_LINES = {
     'Our values': ['heart', 'D.R.E.A.M.: Discipline, Resilience, Empathy, Adaptability, Mindfulness.'],
     'Passions': ['spark', '17 CCAs: a place for every kind of bee.'],
     'NEXUS@BTY': ['globe', '8 international exchanges · 6 industry attachments.'],
-    'Your pathway': ['explorer', 'Every Beattyian A Purpose Driven Steward.'],
+    'Your pathway': ['explorer', 'Every Beattyian A Purpose-Driven Steward.'],
     'Set sail': ['sail', 'Your boat sails with the whole hall.'],
     'Your journey': ['wave', 'Nurturing Adaptive Thinkers, Agile Learners and Active Contributors.'],
 };
