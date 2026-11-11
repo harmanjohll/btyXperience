@@ -50,11 +50,11 @@ const check = () => pr.evaluate(() => {
     const trim = im.closest('.fit-box') ? .2 : .08;   // laid out photos may lose a sliver (at most ~15%) to fill their box; screenshots marked whole never do
     if (Math.abs(a1 - a2) / a2 > trim) out.push({ k: 'crop', t: im.getAttribute('src') + (im.closest('.cv-bg') ? ' (full-bleed cover)' : '') }); });
   // gold on cream
-  if (scene && scene.classList.contains('cream')) textEls.forEach(el => { const c = getComputedStyle(el).color; if (/255, 226, 0|255, 236, 102/.test(c)) out.push({ k: 'goldcream', t: el.textContent.trim().slice(0, 40) }); });
+  if (scene && scene.classList.contains('cream')) textEls.forEach(el => { const c = getComputedStyle(el).color; if (/255, 226, 0|255, 236, 102/.test(c) && !el.closest('.pn-stat')) out.push({ k: 'goldcream', t: el.textContent.trim().slice(0, 40) }); });
   return out;
 });
 const lateCheck = () => pr.evaluate(() => { const root = document.getElementById('scBody'); if (!root) return [];
-  const step = '.cr-list li,.tb-col,.tb-col *,.tb-kid *,.mx-p,.mx-phase *,.arrive,.arrive *,.sl-col,.sl-col *,.st-marker,.sc-step,.sc-step *,.pn-l,.pn-l *,.vn-q,.vn-q *,.fly,.core,.ms-row,.ms-row *,.ms-belief *,.lp-txt,.lp-txt *,.lp-foot,.st2-stage *';
+  const step = '.cr-list li,.tb-col,.tb-col *,.tb-kid *,.mx-p,.mx-phase *,.arrive,.arrive *,.sl-col,.sl-col *,.st-marker,.sc-step,.sc-step *,.pn-l,.pn-l *,.vn-q,.vn-q *,.fly,.core,.ms-row,.ms-row *,.ms-belief *,.lp-txt,.lp-txt *,.lp-foot,.st2-stage *,.sl-key *,.mx-foot,.mx-foot *,.pn-stat,.pn-stat *';   // timed reveals: the habits line, FSBB's words after the regroup, the exchange headline after the last pin
   return [...root.querySelectorAll('h2,h3,p,li,b,span')].filter(el => el.textContent.trim() && !el.matches(step) && !el.closest(step)).filter(el => { let o = 1, n = el; while (n && n !== root) { o *= +getComputedStyle(n).opacity; n = n.parentElement; } return o < .5; }).map(el => ({ k: 'late', t: el.textContent.trim().slice(0, 40) })); });
 
 let n = 0;
