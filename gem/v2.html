@@ -1546,7 +1546,7 @@ html.calm .sc-body .mx-foot{opacity:1; transform:none}
 @keyframes yearPop{to{transform:none}}
 html.calm .ft-list .fi-years em{transform:none; animation:none}
 /* Stacked feature: photos fill a wide row and keep moving gently; the points sit beneath in a row. */
-.sc-stack{flex:1 1 0; min-height:0; width:100%; display:flex; flex-direction:column; gap:clamp(18px,calc(2.6*var(--vh)),30px)}
+.sc-stack{flex:1 1 0; min-height:0; width:100%; display:flex; flex-direction:column; justify-content:center; gap:clamp(24px,calc(3.4*var(--vh)),40px)}
 .st-media.fit-box{flex:1 1 0; min-height:0; position:relative}
 .st-media.alive > figure .fx img{animation:alive 16s ease-in-out infinite alternate; animation-delay:calc(var(--d,0ms) * -9)}
 .st-media.alive > figure:nth-child(2n) .fx img{animation-name:alive2}
@@ -2875,6 +2875,7 @@ function fitPhotos(box){
     for(let i=x0;i<x1;i++){ const el=figs[i], w=A[i]*h0*(Wh[i]?1:1+(.12)*f); Object.assign(el.style,{position:'absolute',left:x+'px',top:y+'px',width:w+'px',height:(h+caps[ri])+'px'}); el.style.setProperty('--cap',caps[ri]+'px'); x+=w+g; }
     y+=h+caps[ri]+g; });
   box.classList.add('fitted');
+  if(box.classList.contains('st-media') && tot<H-2){ box.style.flex='none'; box.style.height=Math.ceil(tot)+'px'; }   // a stacked feature: the photo row is as tall as its photos, and the words sit right under it
 }
 // Slides built from words and simple shapes (bars, steps, cards, faces, logos, codes, tables) grow to use the
 // space under the title: everything below the title scales up together (never past 1.4×), so a slide with little
