@@ -1162,3 +1162,33 @@ a.bp-qr { display: block; }
 .bp-kept { margin: 0 0 12px; padding: 12px 14px; border-radius: 14px; background: rgba(255,226,0,.1); border: 1px solid rgba(255,226,0,.4); color: #fff; font-size: .85rem; line-height: 1.4; text-align: center; }
 .bp-kept b { color: var(--accent-gold); }
 .bp-kept button { display: block; margin: 8px auto 0; padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.3); background: transparent; color: #fff; font-weight: 700; font-size: .78rem; cursor: pointer; }
+
+/* ---------- The keepsake: the boat unfolds into a letter from 2030 ---------- */
+.letter-pass .lt-seal { text-align: center; padding: 6px 0 4px; }
+.lt-boat { display: block; width: 100%; background: none; border: 0; padding: 0; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.lt-boat .cc-boat-tilt { animation: ltBob 3.4s ease-in-out infinite; }
+@keyframes ltBob { 0%, 100% { transform: translateY(0) rotate(-1.5deg); } 50% { transform: translateY(-7px) rotate(1.5deg); } }
+.lt-tease { font-family: Georgia, serif; font-size: 1.3rem; color: #fff; margin: 4px 0 0; transition: opacity .4s; }
+.lt-tease2 { font-size: .9rem; color: rgba(255,255,255,.72); margin: 4px 0 16px; transition: opacity .4s; }
+.lt-tease.gone, .lt-tease2.gone { opacity: 0; }
+.lt-paper { position: relative; margin: 14px -6px 0; padding: 20px 18px 16px; background: #F6EFE1; color: #000C53; border-radius: 6px; box-shadow: 0 10px 26px rgba(0,0,0,.4); overflow: hidden; }
+.lt-creases { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.lt-creases path { fill: none; stroke: rgba(0,12,83,.08); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.lt-stamp { float: right; width: 96px; height: 96px; margin: -6px -6px 4px 10px; transform: rotate(5deg); position: relative; z-index: 1; filter: drop-shadow(0 4px 6px rgba(0,12,83,.25)); }
+.lt-stamp .cc-boat-tilt { position: relative; width: 96px; height: 96px; }
+.lt-stamp .cc-hand { top: 79%; }
+.lt-date { position: relative; margin: 0 0 10px; font-weight: 800; font-size: .6rem; letter-spacing: .22em; text-transform: uppercase; color: rgba(0,12,83,.55); }
+.lt-p { position: relative; margin: 0 0 .7em; font-family: Georgia, 'Iowan Old Style', serif; font-size: 1.02rem; line-height: 1.5; }
+.lt-p.dear { font-style: italic; font-size: 1.15rem; }
+.lt-paper .ink { font-family: 'Caveat','Segoe Script','Bradley Hand','Snell Roundhand','Savoye LET','Noteworthy','Chalkboard SE','Comic Sans MS',cursive; font-weight: 600; font-size: 1.28em; line-height: 1; color: #1F3FB0; }
+.lt-sign { position: relative; clear: both; display: flex; align-items: baseline; gap: 10px; margin: 6px 0 0; }
+.lt-sign .ink { font-size: 2.1rem; }
+.lt-sign span { font-weight: 800; font-size: .62rem; letter-spacing: .18em; text-transform: uppercase; color: rgba(0,12,83,.6); }
+.lt-foot { position: relative; display: flex; flex-direction: column; gap: 3px; margin: 16px 0 0; padding-top: 10px; border-top: 1px solid rgba(0,12,83,.12); font-size: .7rem; color: rgba(0,12,83,.55); }
+.lt-foot em { font-family: Georgia, serif; font-size: .82rem; color: rgba(0,12,83,.75); }
+/* just unfolded: the sheet opens, then the lines arrive one after another, as if being written */
+.letter-pass.fresh .lt-paper { animation: ltOpen .7s cubic-bezier(.2,.9,.3,1.1) both; transform-origin: 50% 20%; }
+@keyframes ltOpen { from { transform: scale(.55) rotate(-3deg); opacity: 0; } to { transform: none; opacity: 1; } }
+.letter-pass.fresh .lt-p, .letter-pass.fresh .lt-sign, .letter-pass.fresh .lt-foot { opacity: 0; animation: ltLine .6s ease forwards; animation-delay: calc(.6s + var(--i) * .32s); }
+@keyframes ltLine { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .letter-pass.fresh .lt-paper, .letter-pass.fresh .lt-p, .letter-pass.fresh .lt-sign, .letter-pass.fresh .lt-foot, .lt-boat .cc-boat-tilt { animation: none; opacity: 1; } }

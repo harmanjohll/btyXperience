@@ -1,7 +1,7 @@
 // THE SHOW (gem/index.html + gem/join/): the version to present. This walks it end to end and checks what the
 // audit changed: one name, one chapter list on both screens, a quiz poll that hides its split until the reveal,
-// questions from the phones on a wall, the card straight after "Choose Beatty!", a Boarding Pass that says why,
-// carries links that can be tapped, and survives a second session; and the fallback (v2.html) still drives the phones.
+// questions from the phones on a wall, the keepsake straight after "Choose Beatty!": the boat unfolds into a letter
+// from 2030 written from the visitor's own answers, with links that can be tapped, and it survives a second session; and the fallback (v2.html) still drives the phones.
 import { startServer } from './lib/server.mjs';
 import { loadPlaywright, checker, presenter, phone, board, goStepId, sleep, until, phoneState, foldTo, shot, decodeQR, OUT } from './lib/harness.mjs';
 import fs from 'fs';
@@ -93,19 +93,25 @@ await until(async () => (await Promise.all(phones.map(p => p.$('.ready-screen'))
 await pr.click('#setSailBtn');
 c.ok(await until(async () => (await Promise.all(phones.map(phoneState))).every(d => d.launched), 15000), 'the boats set sail together');
 await pr.evaluate(() => window.__jump('card', 0));
-c.ok(await until(() => phones[0].$('.boarding-pass'), 8000), 'phones land on their Boarding Pass');
-const card = await phones[0].evaluate(() => ({ why: document.querySelector('.bp-you p')?.textContent || '', belief: document.querySelector('.bp-you em')?.textContent || '',
+c.ok(await until(() => phones[0].$('.letter-pass.sealed #unfoldBtn'), 8000), 'phones land on their boat: "There is a letter inside"');
+await shot(phones[0], 'show-phone-sealed');
+for (const p of phones) await p.click('#unfoldBtn');
+c.ok(await until(async () => (await Promise.all(phones.map(p => p.$('#ltPaper')))).every(Boolean), 8000), 'the boat unfolds into a letter');
+await sleep(5200);
+const card = await phones[0].evaluate(() => ({ text: document.getElementById('ltPaper').innerText, ink: [...document.querySelectorAll('#ltPaper .ink')].map(b => b.textContent),
   links: [...document.querySelectorAll('.bp-links a')].map(a => a.href), qr: document.querySelector('a.bp-qr')?.href || '', ask: !!document.getElementById('askCardBtn') }));
-c.ok(card.why.length > 40 && card.belief === 'Each child is a gift.', `the pass says why Beatty, for this visitor ("${card.why.slice(0, 46)}…")`);
-c.ok(card.links.length >= 4 && card.links.every(u => /^https:\/\/go\.gov\.sg\//.test(u)) && /^https:/.test(card.qr) && card.ask, 'under the pass: links to tap, the QR is a link, and Ask a question');
-await phones[0].setViewportSize({ width: 390, height: 1500 }); await sleep(300); await shot(phones[0], 'show-phone-pass'); await phones[0].setViewportSize({ width: 390, height: 844 });
+c.ok(/Dear P6 me/.test(card.text) && card.ink.includes('Pilot') && card.ink.some(t => /clubs exist/.test(t)) && /Each child is a gift/.test(card.text),
+  `the letter is written from this visitor's answers: their word, their question (${card.ink.length} handwritten parts)`);
+c.ok(card.ink.some(t => /1 other/.test(t)) && /D\.R\.E\.A\.M\./.test(card.text) && /9 in 10/.test(card.text), 'it quotes the hall (the fleet), and their poll answers back to them');
+c.ok(card.links.length >= 4 && card.links.every(u => /^https:\/\/go\.gov\.sg\//.test(u)) && /^https:/.test(card.qr) && card.ask, 'under the letter: links to tap, the QR is a link, and Ask a question');
+await phones[0].setViewportSize({ width: 390, height: 1700 }); await sleep(300); await shot(phones[0], 'show-phone-letter'); await phones[0].setViewportSize({ width: 390, height: 844 });
 const png = await phones[0].evaluate(() => window.__renderCard());
-if (png) fs.writeFileSync(path.join(OUT, 'show-pass-saved.png'), Buffer.from(png.split(',')[1], 'base64'));
-c.ok(png && png.length > 50000, 'the pass saves as an image');
+if (png) fs.writeFileSync(path.join(OUT, 'show-letter-saved.png'), Buffer.from(png.split(',')[1], 'base64'));
+c.ok(png && png.length > 50000, 'the letter saves as an image');
 // The tail keeps the pass on the phone; a question can still be asked from under it.
 await pr.evaluate(() => window.__jump('deck_tail', 0));
 const kept = await until(() => state().scene && state().scene.keep === 1, 5000); await sleep(700);
-c.ok(kept && await phones[0].$('.boarding-pass'), 'after the card the phones keep their pass');
+c.ok(kept && await phones[0].$('.boarding-pass'), 'after the card the phones keep their letter');
 
 // The fallback: the copy kept from before the audit drives the same phones, with nothing to scan again.
 const old = await presenter(browser, srv.url, '', 'v2.html'); watch(old);
@@ -120,12 +126,12 @@ await pr.evaluate(() => { document.getElementById('resetInput').value = 'RESET';
 await until(() => state().epoch && state().epoch !== e1, 8000);
 await sleep(2600); await until(() => pr.evaluate(() => typeof dbReady !== 'undefined' && dbReady).catch(() => false), 10000); await pr.click('#beginBtn'); await sleep(600);
 c.ok(state().epoch !== e1, 'Reset starts a new show');
-c.ok(await until(() => phones[0].$('#joinNewBtn'), 6000) && await phones[0].$('.boarding-pass') && (await phoneState(phones[0])).aspiration === 'Pilot', 'a first session phone keeps its Boarding Pass');
+c.ok(await until(() => phones[0].$('#joinNewBtn'), 6000) && await phones[0].$('.boarding-pass') && (await phoneState(phones[0])).aspiration === 'Pilot', 'a first session phone keeps its letter');
 await shot(phones[0], 'show-phone-pass-kept');
 await pr.evaluate(() => window.__jump('poll_dream', 0)); await sleep(1200);
 c.ok(await phones[0].$('.boarding-pass') && !(await phones[0].$('.answer-opt')), 'and it no longer follows the new session');
 await phones[0].reload({ waitUntil: 'domcontentloaded' }); await sleep(2500);
-c.ok(await phones[0].$('.boarding-pass'), 'reopening the page later still shows the pass');
+c.ok(await phones[0].$('#ltPaper'), 'reopening the page later still shows the letter, already unfolded');
 const fresh = await phone(browser, srv.url, 'c', '/join/'); watch(fresh); await board(fresh);
 c.ok(await until(async () => /1 in the Hive · 1 ready/.test(await pr.$eval('#pCount', e => e.textContent)), 8000), 'the new session counts only its own phones');
 await phones[1].click('#joinNewBtn'); await sleep(300); await phones[1].click('#joinNewBtn'); await sleep(600);

@@ -329,7 +329,7 @@ window.BTY_DECKS = {
       notes:'Lead into the final fold beat.' },
   ]},
 
-  /* ---------- Your journey (after Set Sail and the Hive of aspirations): straight to the card ---------- */
+  /* ---------- Your journey (after Set Sail and the Hive of aspirations): straight to the letter ---------- */
   deck_f: { use:true, chapter:'Your journey', slides:[
     { kind:'cover', img:'f/rainbow-v2.jpg', whole:true, eyebrow:'DREAM', title:'Chase the rainbow at Beatty', sub:'where your aspirations take flight',
       notes:'Chase the rainbow at Beatty.' },
@@ -351,17 +351,17 @@ window.BTY_DECKS = {
     { kind:'quote', tone:'cream', quote:'Don\'t choose what you think is the best school, but what is the best school for your child.',
       by:'A Beatty parent, in MOE\'s #ProudOfP6ers', img:'f/parent-quote.jpg', fit:'contain',
       notes:'A Beatty parent, with her daughter Caitlin, in MOE\'s guide to choosing a school. [confirm] the spelling of her name before saying it (the poster has Ferrmancis Quek).' },
-    { kind:'photo', img:'f/choose.jpg', title:'Choose Beatty!', notes:'Choose Beatty. Next press: the Boarding Pass lands on every phone.' },
+    { kind:'photo', img:'f/choose.jpg', title:'Choose Beatty!', notes:'Choose Beatty. Next press: every boat is ready to unfold.' },
   ]},
 
-  /* ---------- After the card · phones stay on their boarding pass: how to choose, then questions ---------- */
+  /* ---------- After the letter · phones keep it on screen: how to choose, then questions ---------- */
   deck_tail: { use:true, keepCard:true, chapter:'Your journey', slides:[
     { kind:'pillars', layout:'rows', heads:['MOE\'s advice','First','Then'], title:'Choosing a secondary school', items:[
         { icon:'curious', title:'Ask', body:'What are their strengths, interests and abilities?', more:'What courses and programmes will develop these? Will the pace of learning suit them?' },
         { icon:'eye', title:'Consider', body:'School culture; courses; programmes, subjects and CCAs offered; location and transport', more:'If your child has special educational needs, schools with specialised facilities or resources' },
         { icon:'check', title:'Submit', body:'6 school options, so your child is more likely to get a school of choice', more:'Include 2 to 3 schools where your child\'s PSLE score is better than the school\'s cut off point' },
         { icon:'globe', title:'Refer to', body:'MOE\'s SchoolFinder', more:'Subjects, CCAs, location and contact details of every school' } ],
-      notes:'Every phone now holds its Boarding Pass and keeps it to the end. How to choose, MOE\'s advice in four words: ask, consider, submit, refer.' },
+      notes:'Every phone now holds its letter and keeps it to the end. How to choose, MOE\'s advice in four words: ask, consider, submit, refer.' },
     { kind:'statement', tone:'cream', title:'Your ranking of school choices matters',
       body:'The higher you rank your preferred school in your choice order, the better your child\'s chance of being posted there if there is a tie breaker. Schools\' PSLE score ranges can vary from year to year.',
       notes:'Rank the school you want first.' },
@@ -376,7 +376,7 @@ window.BTY_DECKS = {
       notes:'How subject based banding works with AL scores.' },
     { kind:'cover', crest:true, title:'Thank you!', sub:'Harmonising Hearts, Thriving Together',
       notes:'Thank the hall.' },
-    { kind:'live', show:'questions', title:'Your questions', sub:'Ask from your phone: tap Ask a question under your Boarding Pass',
+    { kind:'live', show:'questions', title:'Your questions', sub:'Ask from your phone: tap Ask a question under your letter',
       notes:'Questions sent from the phones appear here, newest first. Click a question to bring it to the front; click its cross to take it off the screen. Questions from the floor are welcome too.' },
     { kind:'feature', tone:'cream', title:'Getting to Beatty', img:'f/map.jpg', items:[
         { icon:'pin', title:'Buses', body:'13, 28, 56, 73, 88, 93, 104, 105, 152, 153, 155, 157, 159, 163, 231, 232, 235, 238' },

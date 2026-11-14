@@ -1,7 +1,8 @@
 # The Beatty Experience
 
 The Open House show for Beatty Secondary School: one big screen, every phone in the hall following it.
-Phones answer polls, fold a paper boat in four beats, name it, set sail together, and leave with a Boarding Pass.
+Phones answer polls, fold a paper boat in four beats, name it, set sail together, and at the end the boat unfolds
+into a letter from the visitor's 2030 self, written from their own answers.
 
 ## The show (use this one)
 
@@ -18,15 +19,15 @@ Without `?presenter=true` the big screen is a mirror: it shows the show but does
 
 1. Open the big screen address in Chrome, press Begin, press `N` for the presenter view.
 2. **Between the two sessions press Reset** (start screen, type RESET). It starts a new show:
-   the counts go back to zero, new phones join as usual, and every phone from the first session **keeps its Boarding Pass**.
+   the counts go back to zero, new phones join as usual, and every phone from the first session **keeps its letter**.
 3. If the big screen ever misbehaves, open the fallback (below). The phones carry on following; nobody scans again.
 
 ### Before the day: four blanks to fill
 
 | Where | What |
 | --- | --- |
-| `gem/join/app.js`, `SCHOOL_CODE` | Beatty's S1 Posting school code. It replaces "Make Beatty your 1st choice" on the pass. |
-| `gem/join/app.js`, `CHOICE_WINDOW` and `CHOICE_OPENS` | The S1 choice dates. The pass shows them and offers "Remind me when choices open". |
+| `gem/join/app.js`, `SCHOOL_CODE` | Beatty's S1 Posting school code. It replaces "Make Beatty your 1st choice" on the letter's gold stub. |
+| `gem/join/app.js`, `CHOICE_WINDOW` and `CHOICE_OPENS` | The S1 choice dates. The stub shows them and the phone offers "Remind me when choices open". |
 | `gem/join/app.js`, `CARD_LINKS` | The feedback link is last year's (`go.gov.sg/oh25survey`). Change it here and in `gem/deck/slides.js`. |
 | `gem/index.html`, `JOIN_SHORT` | A short link to `gem/join/` (for example a go.gov.sg link), shown under the QR for anyone who cannot scan. |
 
@@ -44,8 +45,12 @@ Use one big screen at a time.
 ## What the audit changed in the show
 
 * One name: The Beatty Experience. No "Version 2" on any screen.
-* The Boarding Pass now says why Beatty, for that visitor; its links can be tapped; it survives a second session.
-* The pass lands straight after "Choose Beatty!". How to choose a school (MOE's advice, ranking, tie breakers) follows it.
+* The keepsake is no longer a card. The boat each visitor folded unfolds into a letter from their Sec 4 self,
+  written from what they chose tonight: their bee, their one tap answers, their poll guesses, their exchange and
+  attachment picks, their word, even their own question. Their words appear as handwriting.
+  The wording lives in `letterParas()` in `gem/join/app.js`.
+* Its links can be tapped, it saves as an image, and it survives a second session.
+* It lands straight after "Choose Beatty!". How to choose a school (MOE's advice, ranking, tie breakers) follows it.
 * A quiz poll counts votes but hides the split until the reveal.
 * Phones can ask a question at any time; the "Your questions" slide shows them. Click a question to bring it to the front; click its cross to hide it.
 * Three more one tap questions inside the long stretches (Makerspace, habits, enrichment).

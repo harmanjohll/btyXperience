@@ -1879,7 +1879,7 @@ const journeySteps=[
   { id:'set_sail', type:'fleet', title:"Set Sail, Beatty!", desc:"Every boat is a Beattyian setting sail from our Hive. Look up: here comes the fleet." },
   { id:'finale', type:'finale', title:"Our Hive of Aspirations", desc:"Every cell is a dream from someone in this room tonight." },
   { id:'deck_f', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vQx7tJCZ8s5AD5S9F7S2kNmAgfEX7KnIP6fLMQfcFCfQr4-9JeUVxFcyYRhzNtZYbBaCvLM1Wz8p1sX/pubembed?start=false&loop=false&delayms=60000" },
-  { id:'card', type:'memento', title:"Your Journey Begins", desc:"Check your phone: your Beatty Boarding Pass." },
+  { id:'card', type:'memento', title:"Your Journey Begins", desc:"Check your phone: there is a letter inside your boat." },
   { id:'deck_tail', type:'slide' }, // native only: thank you, FAQs, getting here, links. Phones stay on their card.
 ];
 
@@ -2265,11 +2265,11 @@ const CARD_URL='https://go.gov.sg/probeatty', CARD_URL_LABEL='beattysec.moe.edu.
 const WHY_BEATTY=[['8','international exchanges'],['6','industry attachments'],['17','CCAs to belong to']];
 function renderClosing(thanks){
   return `<div class="closing">
-    <div class="cl-phone"><div class="cl-screen"><img src="pass-sample.jpg" alt="A Beatty Boarding Pass"></div><span class="cl-tag">${BTY.icon('phone')} On every phone now</span></div>
+    <div class="cl-phone"><div class="cl-screen"><img src="letter-sample.jpg" alt="A letter from 2030"></div><span class="cl-tag">${BTY.icon('phone')} On every phone now</span></div>
     <div class="cl-side">
       <p class="eyebrow">${thanks?'Thank you for sailing with us':'Your journey begins'}</p>
       <h2 class="stage-title">Make Beatty your<br><span class="gold">1st choice</span></h2>
-      <p class="stage-sub">Your Boarding Pass is on your phone: from P6 to your dream, by way of Beatty. Save it now, and open it again when you choose your schools.</p>
+      <p class="stage-sub">There is a letter inside your boat. It is from you, four years from now. Unfold it, read it, keep it.</p>
       <div class="cl-why">${WHY_BEATTY.map(([n,t])=>`<p><b>${n}</b><span>${t}</span></p>`).join('')}</div>
       <div class="cl-cta">
         <span class="cl-qr">${BTY.qrSVG(CARD_URL,{label:'Explore Beatty'})}</span>
@@ -3482,10 +3482,10 @@ const STEP_NOTES={
   fold_l:'Fold with us: L. The last two: the point up, then pull the boat open. Five folds in all.',
   pulse_check:'Read the room: phones tap a mood.',
   deck_d2:'Industry attachments: who our students work with.',
-  deck_tail:'After the card: phones stay on their Boarding Pass. How to choose a school, then questions.',
+  deck_tail:'After the letter: phones keep it on screen. How to choose a school, then questions.',
   set_sail:'Phones name their boats. When most are ready, press SET SAIL and lead the call: Non Vi! Sed Arte! Three times; the boats leave together.',
   finale:'Every cell is a word from a boat. Click a cell to hide it if needed.',
-  card:'Their Boarding Pass is on every phone: their boat, their bee, their route through Beatty, and why Beatty, for them. Ask them to press Save now. Make Beatty your 1st choice in S1 Posting.',
+  card:'Every boat now holds a letter. Ask the hall to press Unfold together: the boat opens into a letter from their 2030 self, written from their own answers tonight. Give them a quiet half minute to read it. Then: save it, and make Beatty your 1st choice in S1 Posting.',
 };
 const notesCh=('BroadcastChannel' in window) ? new BroadcastChannel('bty-speaker') : null;
 let showStartedAt=0, stepStartedAt=0, notesStepSeen=-1;

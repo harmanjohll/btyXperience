@@ -446,7 +446,7 @@ let sessionBeat = null;
 let linkEl = null;
 function setLink(state, step) {
     if (!linkEl) { linkEl = document.createElement('div'); linkEl.id = 'linkPill'; document.body.appendChild(linkEl); }
-    const t = { connecting: 'Connecting…', live: '● Live', kept: 'Your pass is saved on this phone', waiting: 'Live · waiting for the presenter', offline: 'Offline · your own copy' }[state] || state;
+    const t = { connecting: 'Connecting…', live: '● Live', kept: 'Your letter is kept on this phone', waiting: 'Live · waiting for the presenter', offline: 'Offline · your own copy' }[state] || state;
     linkEl.textContent = t; linkEl.dataset.state = state;
 }
 let onSetSailCue = null;   // legacy hook (unused in session/state mode)
@@ -522,7 +522,7 @@ function adoptEpoch(ep) {
     renderBoard();
     return true;
 }
-/* A kept pass: the phone shows its Boarding Pass and offers the new session; nothing on it changes unless its owner asks. */
+/* A kept letter: the phone shows its keepsake and offers the new session; nothing on it changes unless its owner asks. */
 function keepPass() {
     followMode = false; setLink('kept');
     if (window.__pollUnsub) { window.__pollUnsub(); window.__pollUnsub = null; }
@@ -531,7 +531,7 @@ function keepPass() {
 function joinNewShow(btn) {
     if (!resetArmed) {
         resetArmed = setTimeout(() => { resetArmed = null; if (btn && btn.isConnected) btn.textContent = 'Join the new session'; }, 4000);
-        if (btn) btn.textContent = 'Tap again: this pass is replaced';
+        if (btn) btn.textContent = 'Tap again: this letter is replaced';
         feel('tick'); return;
     }
     clearTimeout(resetArmed); resetArmed = null;
@@ -1682,7 +1682,7 @@ function remindFile() {
     const next = new Date(Date.UTC(+d.slice(0, 4), +d.slice(4, 6) - 1, +d.slice(6, 8) + 1)).toISOString().slice(0, 10).replace(/-/g, '');
     const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:Beatty Open House', 'BEGIN:VEVENT', 'UID:beatty-s1-' + d + '@beattysec', 'DTSTAMP:' + d + 'T000000Z',
         'DTSTART;VALUE=DATE:' + d, 'DTEND;VALUE=DATE:' + next, 'SUMMARY:S1 choices open: make Beatty your 1st choice',
-        'DESCRIPTION:' + (SCHOOL_CODE ? 'School code ' + SCHOOL_CODE + '. ' : '') + 'Open your Beatty Boarding Pass. ' + CARD_URL, 'URL:' + CARD_URL, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+        'DESCRIPTION:' + (SCHOOL_CODE ? 'School code ' + SCHOOL_CODE + '. ' : '') + 'Read your letter from 2030 again. ' + CARD_URL, 'URL:' + CARD_URL, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
     return URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
 }
 const CARD_URL_LABEL = 'beattysec.moe.edu.sg';
@@ -1785,52 +1785,125 @@ function passRoute() {
         { k: 'Then', t: D.aspiration || 'Your dream', d: 'Non Vi Sed Arte', dream: true },
     ];
 }
+/* ---------- THE KEEPSAKE: the boat unfolds into a letter from 2030 ----------
+   Everyone folded a boat. At the end it unfolds, and inside is a letter from the Sec 4 they could become,
+   written from what this visitor chose tonight: their bee, their answers, their picks, their word, even their
+   own question. Words in «…» are theirs: shown as if written by hand. Nothing here is typed by the visitor
+   except the word and the question, and both are escaped. */
+const BEE_LINE = {
+    'The Innovator': 'the one who builds what the others only talk about',
+    'The Global Explorer': 'the first to go and see',
+    'The Industry Trailblazer': 'the one who brings real work back to the hive',
+    'The Community Steward': 'the one who makes sure nobody stands alone',
+    'The Creative Artist': 'the one who shows the others the way, beautifully',
+    'The STEM Futurist': 'the one who works out how it all fits together',
+    'The Voice Amplifier': 'the one who makes every voice heard',
+    'The Eco-Strategist': 'the one who looks after the place we all share',
+};
+const MADE = { 'program a drone': 'programmed a drone to fly', '3d print something': '3D printed a design of my own', 'laser cut a design': 'laser cut my first design', 'press my own tee': 'pressed a tee I designed myself' };
+const HABIT = { 'prepare before class': 'preparing before every class', 'map my notes': 'MAPping my notes', 'grow after each lesson': 'a GROW after each lesson', 'act on feedback': 'ACTing on feedback' };
+const TRIED = { 'debate and public speaking': 'debating, out loud, in front of people', 'math olympiad': 'the Math Olympiad', 'science research': 'real science research', 'mother tongue fortnight': 'the Mother Tongue Fortnight' };
+const MY_PEOPLE = { 'uniformed groups': 'a Uniformed Group', 'performing arts': 'the Performing Arts', 'sports & games': 'Sports and Games', 'clubs': 'a Club' };
+const WENT = { GeoBali: 'stood on a volcano in Bali, for Geography', LitBali: 'wrote my way through Bali, for Literature', NZ: 'flew to New Zealand to learn to lead, with Aorere College',
+    Korea: 'flew to South Korea to work on A.I.', MiharaJapan: 'flew to Mihara, Japan, on a research exchange', MutsuzawaJapan: 'flew to Mutsuzawa, Japan, for science and mathematics',
+    Estonia: 'worked with students in Estonia on digital citizenship', Hanoi: 'flew to Hanoi to learn ecostewardship' };
+const WORKED = { Rockwell: 'Rockwell Automation', PIL: 'PIL, the shipping line', ASTAR: 'A*STAR', Journalism: 'the Berita Harian newsroom', TamilMurasu: 'the Tamil Murasu newsroom', Makita: 'ITE College Central' };
+const LETTER_FROM = 'Sec 4 · 2030', LETTER_SIGN = 'Class of 2030', LETTER_FOOT = 'One possible future. Yours to write.';
+const inkSafe = t => String(t == null ? '' : t).replace(/[«»]/g, '').trim();
+const answered = (id, map) => { const t = inkSafe((D.askText || {})[id]); return t ? (map[t.toLowerCase()] || t) : ''; };
+function letterParas() {
+    const P = [], ink = t => '«' + inkSafe(t) + '»';
+    const word = inkSafe(D.aspiration), made = answered('maker_first', MADE), habit = answered('habit_first', HABIT), tried = answered('enrich_first', TRIED), people = answered('cca_family', MY_PEOPLE);
+    P.push('Dear P6 me,');
+    P.push(word ? `I am writing from Sec 4 at Beatty. The word on my boat still says ${ink(word)}, and I am closer to it than you would believe.`
+                : 'I am writing from Sec 4 at Beatty. I still have the boat we folded.');
+    P.push('In Sec 1, I tested the water of the Kallang River for my first Critical Inquiry. ' + (made ? `In the Makerspace, I ${ink(made)}.` : 'In the Makerspace, I made things with my own hands.'));
+    const cca = pollOf('cca'), guess = cca ? (cca.correct ? ' You guessed it: 9 in 10 of us get our 1st or 2nd choice CCA.' : ` You guessed ${ink(cca.choiceText)}. It is 9 in 10 of us who get our 1st or 2nd choice CCA.`) : '';
+    if (habit || people) P.push((habit ? `One small habit carried me: ${ink(habit)}. ` : '') + (people ? `I found my people in ${ink(people)}.` : '') + guess);
+    else if (guess) P.push(guess.trim());
+    P.push('In Sec 2, every one of us learnt how A.I. works' + (tried ? `, and I tried ${ink(tried)}.` : '.'));
+    const went = D.global ? (WENT[D.global.id] || 'went on exchange: ' + shortDest(D.global.text)) : '', at = D.local ? (WORKED[D.local.id] || shortDest(D.local.text)) : '';
+    if (went || at) P.push('In Sec 3, ' + (went ? `I ${ink(went)}.` : 'close to half of us went on an exchange abroad.') + (at ? ` Then I spent months learning beside the people at ${ink(at)}.` : ''));
+    else P.push('In Sec 3, close to half of us went on an exchange abroad, and many learnt inside real workplaces.');
+    if (D.bee) P.push(`Here they know me as a ${ink(D.beeTag || 'Beattyian')}: ${BEE_LINE[D.bee] || 'a bee with a place in the Hive'}.`);
+    const dream = pollOf('dream_poll');
+    if (dream) P.push(dream.correct ? 'You already knew what D.R.E.A.M. stands for. It took me four years to live it.'
+                                    : 'That night you did not know what D.R.E.A.M. stood for. I do now: Discipline, Resilience, Empathy, Adaptability, Mindfulness.');
+    const q = (D.qs || []).slice(-1)[0];
+    if (q && q.t) P.push(`You asked: ${ink('“' + q.t + '”')} A good question. Come and find the answer.`);
+    P.push('It all began the night I folded a paper boat with ' + (D.fleetTotal > 1 ? ink((D.fleetTotal - 1) + (D.fleetTotal === 2 ? ' other' : ' others')) : 'a whole hall') + ', and we shouted Sed Arte.');
+    P.push('Choose well. I will be waiting at the gate.');
+    return P;
+}
+const paraHTML = p => escP(p).replace(/«([^»]*)»/g, '<b class="ink">$1</b>');
+// The creases a paper boat leaves behind, drawn faintly on the sheet.
+const CREASES = '<svg class="lt-creases" viewBox="0 0 100 150" preserveAspectRatio="none" aria-hidden="true"><path d="M50 0V150M0 75H100M0 36H100M0 114H100M50 0L0 36M50 0L100 36M50 150L0 114M50 150L100 114M0 36L50 75L100 36M0 114L50 75L100 114"/></svg>';
 function renderMemento() {
     stopAmbient(); hideCornerBoat(); stampBoat();
-    if (!D.cardSeen) { D.cardSeen = true; save(); }          // from here on the pass is a keepsake (see adoptEpoch)
-    const kept = !!D.newShow, remind = CHOICE_OPENS ? remindFile() : null;
-    const c = colors(), sail = D.sailColor || '#FFE200', prof = beeProfile(), word = D.aspiration || 'Beattyian', route = passRoute();
-    const toSize = Math.max(26, Math.min(44, 300 / Math.max(5, word.length)));
+    if (!D.cardSeen) { D.cardSeen = true; save(); }          // from here on the letter is a keepsake (see adoptEpoch)
+    const kept = !!D.newShow, remind = CHOICE_OPENS ? remindFile() : null, open = !!D.letterOpen;
+    const c = colors(), sail = D.sailColor || '#FFE200', prof = beeProfile(), word = D.aspiration || 'Beattyian';
+    const boat = (px, cls) => `<div class="cc-boat-tilt ${cls || ''}">${buildOrigamiSVG(c, 9, px, { ...extras(), aspiration: '' })}<div class="hand-word cc-hand" style="font-size:${Math.max(px > 150 ? 13 : 7, Math.min(px > 150 ? 20 : 10, (px > 150 ? 160 : 76) / Math.max(6, word.length)))}px">${escP(word)}</div></div>`;
+    const paras = letterParas();
     $app.innerHTML = `
     <div class="sail-screen card-screen fade-up">
         <div class="content-zone" style="max-width:400px;">
-            ${kept ? `<div class="bp-kept"><b>A new session has started.</b> Your pass stays here.<button id="joinNewBtn" type="button">Join the new session</button></div>` : ''}
-            <article class="compass-card boarding-pass" id="memento-card" style="--sail:${sail};--bee:${prof.color}">
+            ${kept ? `<div class="bp-kept"><b>A new session has started.</b> Your letter stays here.<button id="joinNewBtn" type="button">Join the new session</button></div>` : ''}
+            <article class="compass-card boarding-pass letter-pass${open ? ' open' : ' sealed'}${D.letterFresh ? ' fresh' : ''}" id="memento-card" style="--sail:${sail};--bee:${prof.color}">
                 <header class="bp-head">
                     <img src="${LOGO_URL}" alt="" onerror="this.style.display='none'">
-                    <div><b>Beatty Secondary School</b><small>Boarding Pass · Open House 2026</small></div>
+                    <div><b>Beatty Secondary School</b><small>${open ? 'A letter from 2030' : 'Your boat'} · Open House 2026</small></div>
                 </header>
-                <div class="bp-fromto">
-                    <div><small>From</small><b>P6</b></div>
-                    <span class="bp-arrow">${ico('sail')}</span>
-                    <div class="to"><small>To</small><b style="font-size:${toSize}px">${escP(word)}</b></div>
-                </div>
-                <div class="bp-boat" id="ccBoat"><div class="cc-boat-tilt">${buildOrigamiSVG(c, 9, 220, { ...extras(), aspiration: '' })}<div class="hand-word cc-hand" style="font-size:${Math.max(13, Math.min(20, 160 / Math.max(6, word.length)))}px">${escP(word)}</div></div><div class="cc-water"></div></div>
-                <div class="bp-fields">
-                    <div><small>Passenger</small><b>${escP((D.bee || 'A Beattyian').replace(/^The /, ''))}</b><span>${escP(D.beeTag || 'In the Hive')}</span></div>
-                    <div><small>Departs</small><b>${DEPARTS}</b><span>Beatty Secondary</span></div>
-                    <div class="wide"><small>Fleet</small><b id="ccFleetN">${fleetLine()}</b></div>
-                </div>
-                <div class="bp-route"><small>Your route</small>${route.map(r => `<div class="bp-stop${r.dream ? ' dream' : ''}"><i></i><em>${r.k}</em><b>${escP(r.t)}</b><span>${escP(r.d)}</span></div>`).join('')}</div>
-                <div class="bp-you"><small>Why Beatty, for you</small><p>${escP(whyLine())}</p><em>${BELIEF_LINE}</em></div>
-                <div class="bp-why">${[...WHY_BEATTY, OUTCOME].map(([n, t]) => `<p><b>${n}</b><span>${t}</span></p>`).join('')}</div>
+                ${open ? `
+                <div class="lt-paper" id="ltPaper">${CREASES}
+                    <div class="lt-stamp" id="ccBoat">${boat(96, 'mini')}</div>
+                    <p class="lt-date">${LETTER_FROM}</p>
+                    ${paras.map((p, i) => `<p class="lt-p${i === 0 ? ' dear' : ''}" style="--i:${i}">${paraHTML(p)}</p>`).join('')}
+                    <p class="lt-sign" style="--i:${paras.length}"><b class="ink">You,</b><span>${LETTER_SIGN}</span></p>
+                    <p class="lt-foot" style="--i:${paras.length + 1}"><em>${BELIEF_LINE}</em><span>${LETTER_FOOT}</span></p>
+                </div>` : `
+                <div class="lt-seal">
+                    <button type="button" class="bp-boat lt-boat" id="unfoldBoat" aria-label="Unfold your boat"><span id="ccBoat">${boat(220)}</span><span class="cc-water"></span></button>
+                    <p class="lt-tease">There is a letter inside your boat.</p>
+                    <p class="lt-tease2">It is from you, four years from now.</p>
+                    <button type="button" id="unfoldBtn" class="nav-btn primary w-full text-base uppercase tracking-wide">Unfold it</button>
+                </div>`}
                 <div class="bp-perf"></div>
                 <footer class="bp-stub">
                     <div><small>S1 Posting · Choice #1</small><b>Beatty Secondary School</b><span>${stubLine()}</span><em>${stubWhen()}</em></div>
                     <a class="bp-qr" href="${CARD_URL}" target="_blank" rel="noopener" aria-label="Explore Beatty">${window.BTY ? window.BTY.qrSVG(CARD_URL, { label: 'Explore Beatty' }) : ''}</a>
                 </footer>
             </article>
-            <button id="shareCardBtn" class="nav-btn primary w-full mt-4 text-base uppercase tracking-wide">${navigator.share ? 'Save or share my pass' : 'Save my pass'}</button>
+            ${open ? `<button id="shareCardBtn" class="nav-btn primary w-full mt-4 text-base uppercase tracking-wide">${navigator.share ? 'Save or share my letter' : 'Save my letter'}</button>
             ${navigator.share ? '<button id="downloadCardBtn" class="nav-btn secondary w-full mt-2 text-sm uppercase tracking-wide">Save image</button>' : ''}
-            <p class="cc-after">Save it now. Open it again when you choose your schools.</p>
-            ${remind ? `<a class="nav-btn secondary w-full mt-2 text-sm uppercase tracking-wide bp-remind" download="Beatty-S1-choices.ics" href="${remind}">Remind me when choices open</a>` : ''}
+            <p class="cc-after">Save it now. Read it again when you choose your schools.</p>
+            ${remind ? `<a class="nav-btn secondary w-full mt-2 text-sm uppercase tracking-wide bp-remind" download="Beatty-S1-choices.ics" href="${remind}">Remind me when choices open</a>` : ''}` : ''}
             <div class="bp-links">${kept ? '' : `<button type="button" id="askCardBtn" class="bp-link ask">${ico('curious')}Ask a question</button>`}${CARD_LINKS.map(([l, u]) => `<a class="bp-link" href="${u}" target="_blank" rel="noopener">${l}</a>`).join('')}</div>
             <button id="resetBtn" class="mt-2 w-full text-sm underline pb-6" style="color:var(--text-muted);">Start over</button>
         </div>
     </div>`;
-    // The fleet's size (from the show's saved state), then pre-render the PNG so a share can fire inside the tap.
-    loadFleetRank().then(r => { const n = document.getElementById('ccFleetN'); if (r && n) n.textContent = fleetLine(); }).finally(() => { cardFile = null; cardRendering = renderCardPNG().then(f => { cardFile = f; return f; }).catch(() => null); });
-    const boat = document.querySelector('.cc-boat-tilt'); if (boat) enableTilt(boat);
+    if (D.letterFresh) { delete D.letterFresh; save(); }
+    // The fleet's size (from the show's saved state) is part of the letter: once known, the letter is written again with it, and the image is drawn ready for a share.
+    const before = D.fleetTotal || 0;
+    loadFleetRank().then(() => { if (open && (D.fleetTotal || 0) !== before && document.getElementById('ltPaper')) renderMemento(); })
+        .finally(() => { if (!open) return; cardFile = null; cardRendering = renderCardPNG().then(f => { cardFile = f; return f; }).catch(() => null); });
+    const tilt = document.querySelector('.cc-boat-tilt'); if (tilt && !open) enableTilt(tilt);
+}
+/* The unfolding: the boat goes back through its folds to a flat sheet, and the sheet is the letter. */
+let unfolding = false;
+function unfoldLetter() {
+    if (unfolding || D.letterOpen) return; unfolding = true;
+    const host = document.getElementById('ccBoat'), btn = document.getElementById('unfoldBtn'), c = colors();
+    if (btn) { btn.disabled = true; btn.textContent = 'Unfolding…'; }
+    document.querySelectorAll('.lt-tease, .lt-tease2').forEach(e => e.classList.add('gone'));
+    const stages = [8, 7, 6, 5, 4, 3, 2, 1, 0]; let k = 0;
+    (function step() {
+        if (!host || !host.isConnected) { unfolding = false; return; }
+        host.innerHTML = `<div class="cc-boat-tilt">${buildOrigamiSVG(c, stages[k], 220, { ...extras(), aspiration: '' })}</div>`;
+        try { playCreasePitched(1.5 - k * 0.09); } catch (e) {} feel('tick');
+        if (++k < stages.length) { setTimeout(step, 190); return; }
+        setTimeout(() => { unfolding = false; D.letterOpen = true; D.letterFresh = true; save(); try { playRevealSound(); } catch (e) {} feel('reveal'); renderMemento(); }, 420);
+    })();
 }
 window.__renderCard = () => renderCardPNG().then(f => new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(f); }));   // for the checks: the saved PNG as a data URL
 function fleetLine() { return D.fleetTotal > 1 ? `One of ${D.fleetTotal} boats that set sail together` : (D.launched ? 'Set sail with the Hive' : FOLDED_LINE); }
@@ -1848,69 +1921,57 @@ function wrapText(ctx, text, x, y, maxW, lineH, maxLines = 2) {   // returns the
     return y + lines.length * lineH;
 }
 async function renderCardPNG() {
-    // 1080×1920 (a phone story): the Boarding Pass, drawn in-house.
-    const W = 1080, H = 1920, X = 80, CW = W - 2 * X, gold = '#FFE200', navy = '#000C53', cream = '#F6EFE1', red = '#EC3237', word = D.aspiration || 'Beattyian';
-    const prof = beeProfile(), route = passRoute();
+    // 1080×1920 (a phone story): the unfolded sheet with the letter on it, drawn in-house.
+    const W = 1080, H = 1920, X = 80, CW = W - 2 * X, gold = '#FFE200', navy = '#000C53', cream = '#F6EFE1', inkCol = '#1F3FB0', word = D.aspiration || 'Beattyian';
     const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const ctx = cv.getContext('2d');
     const SANS = 'Calibri, "Segoe UI", system-ui, sans-serif', SERIF = 'Georgia, "Iowan Old Style", serif';
-    const [boatImg, crest, sailIc] = await Promise.all([
-        svgToImg(buildOrigamiSVG(colors(), 9, 640, { ...extras(), aspiration: '', gradientId: 'cardSail' })), loadImg(CREST_BIG),
-        window.BTY ? window.BTY.iconImage('sail', gold, 96) : null]);
+    try { if (document.fonts && document.fonts.load) await Promise.race([document.fonts.load(`600 40px ${HAND_FONT}`), new Promise(r => setTimeout(r, 1200))]); } catch (e) {}
+    const [boatImg, crest] = await Promise.all([svgToImg(buildOrigamiSVG(colors(), 9, 640, { ...extras(), aspiration: '', gradientId: 'cardSail' })), loadImg(CREST_BIG)]);
     const fit = (txt, font, max, start, min) => { let z = start; do { ctx.font = font.replace('$', z); if (ctx.measureText(txt).width <= max) break; z -= 2; } while (z > min); return z; };
-    // ground and the pass
+    // ground
     ctx.fillStyle = '#00061f'; ctx.fillRect(0, 0, W, H);
     const bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#071246'); bg.addColorStop(.55, '#0a1650'); bg.addColorStop(1, '#040a33');
     ctx.fillStyle = bg; roundRect(ctx, 28, 28, W - 56, H - 56, 44); ctx.fill();
     ctx.strokeStyle = 'rgba(255,226,0,.4)'; ctx.lineWidth = 3; roundRect(ctx, 28, 28, W - 56, H - 56, 44); ctx.stroke();
     // head
     ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
-    if (crest) ctx.drawImage(crest, X, 72, 72, 90);
-    ctx.fillStyle = '#fff'; ctx.font = `700 40px ${SERIF}`; ctx.fillText('Beatty Secondary School', X + 96, 114);
-    ctx.fillStyle = gold; ctx.font = `700 22px ${SANS}`; ctx.fillText('BOARDING PASS  ·  OPEN HOUSE 2026', X + 98, 150);
-    // from → to
-    const fy = 230;
-    ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font = `700 22px ${SANS}`; ctx.fillText('FROM', X, fy);
-    ctx.fillStyle = '#fff'; ctx.font = `700 104px ${SERIF}`; ctx.fillText('P6', X, fy + 100);
-    ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font = `700 22px ${SANS}`; ctx.fillText('TO', W - X, fy);
-    const tz = fit(word, `700 $px ${SERIF}`, 520, 104, 44); ctx.fillStyle = gold; ctx.font = `700 ${tz}px ${SERIF}`; ctx.fillText(word, W - X, fy + 100);
-    ctx.textAlign = 'left';
-    ctx.strokeStyle = 'rgba(255,226,0,.5)'; ctx.lineWidth = 3; ctx.setLineDash([10, 10]); ctx.beginPath(); ctx.moveTo(X + 170, fy + 64); ctx.lineTo(W - X - Math.min(540, ctx.measureText(word).width) - 40, fy + 64); ctx.stroke(); ctx.setLineDash([]);
-    if (sailIc) ctx.drawImage(sailIc, (X + 170 + W - X - Math.min(540, ctx.measureText(word).width) - 40) / 2 - 30, fy + 34, 60, 60);
-    // their boat
-    const bw = 380, by = 350;
-    const water = ctx.createRadialGradient(W / 2, by + 354, 10, W / 2, by + 354, 230); water.addColorStop(0, 'rgba(127,211,247,.4)'); water.addColorStop(.6, 'rgba(18,41,156,.2)'); water.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = water; ctx.beginPath(); ctx.ellipse(W / 2, by + 354, 230, 32, 0, 0, Math.PI * 2); ctx.fill();
-    if (boatImg) { ctx.save(); ctx.translate(W / 2, by + bw / 2); ctx.transform(.95, -.05, .03, 1, 0, 0); ctx.shadowColor = 'rgba(0,0,0,.5)'; ctx.shadowBlur = 30; ctx.shadowOffsetY = 18; ctx.drawImage(boatImg, -bw / 2, -bw / 2, bw, bw); ctx.restore(); }
-    ctx.save(); ctx.translate(W / 2 + 16, by + 313); ctx.rotate(-.035); ctx.fillStyle = '#fff6c8'; ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 6;
-    ctx.font = `600 ${Math.max(23, Math.min(36, 265 / Math.max(6, word.length)))}px ${HAND_FONT}`; ctx.textAlign = 'center'; ctx.fillText(word, 0, 0); ctx.restore(); ctx.textAlign = 'left';
-    // fields
-    const field = (x, y, w, label, main, sub, mainCol) => { ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = `700 19px ${SANS}`; ctx.fillText(label.toUpperCase(), x, y);
-        ctx.fillStyle = mainCol || '#fff'; ctx.font = `700 ${fit(main, `700 $px ${SERIF}`, w, 36, 22)}px ${SERIF}`; ctx.fillText(main, x, y + 44);
-        if (sub) { ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font = `21px ${SANS}`; ctx.fillText(sub, x, y + 76, w); } };
-    const fy2 = 800; ctx.strokeStyle = 'rgba(255,255,255,.12)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(X, fy2 - 34); ctx.lineTo(W - X, fy2 - 34); ctx.stroke();
-    field(X, fy2, CW / 2 - 20, 'Passenger', (D.bee || 'A Beattyian').replace(/^The /, ''), D.beeTag || 'In the Hive', prof.color);
-    field(X + CW / 2 + 20, fy2, CW / 2 - 20, 'Departs', DEPARTS, 'Beatty Secondary');
-    field(X, fy2 + 110, CW, 'Fleet', fleetLine(), '');
-    // route
-    const ry = 1010; ctx.fillStyle = 'rgba(255,226,0,.9)'; ctx.font = `700 19px ${SANS}`; ctx.fillText('Y O U R   R O U T E', X, ry);
-    const sy0 = ry + 44, sg = 80;
-    ctx.strokeStyle = 'rgba(255,226,0,.45)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(X + 14, sy0 + 10); ctx.lineTo(X + 14, sy0 + 10 + sg * (route.length - 1)); ctx.stroke();
-    route.forEach((r, i) => { const y = sy0 + i * sg;
-        ctx.fillStyle = r.dream ? gold : '#0a1650'; ctx.strokeStyle = gold; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(X + 14, y + 10, r.dream ? 14 : 11, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font = `700 20px ${SANS}`; ctx.fillText(r.k.toUpperCase(), X + 48, y + 2);
-        ctx.fillStyle = r.dream ? gold : '#fff'; ctx.font = `700 ${fit(r.t, `700 $px ${SANS}`, CW - 200, 32, 22)}px ${SANS}`; ctx.fillText(r.t, X + 160, y + 4);
-        ctx.fillStyle = 'rgba(255,255,255,.66)'; ctx.font = `21px ${SANS}`; ctx.fillText(r.d, X + 160, y + 34, CW - 170); });
-    // why Beatty, for you
-    const yy = 1378; ctx.fillStyle = 'rgba(255,226,0,.9)'; ctx.font = `700 19px ${SANS}`; ctx.fillText('W H Y   B E A T T Y ,   F O R   Y O U', X, yy);
-    ctx.fillStyle = '#fff'; ctx.font = `26px ${SANS}`; const yEnd = wrapText(ctx, whyLine(), X, yy + 38, CW, 33, 3);
-    ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font = `italic 22px ${SERIF}`; ctx.textAlign = 'right'; ctx.fillText(BELIEF_LINE, W - X, yy); ctx.textAlign = 'left';
-    const wy = 1568, why = [...WHY_BEATTY, OUTCOME];
-    why.forEach(([n, t], i) => { const x = X + i * (CW / 4); ctx.fillStyle = gold; ctx.font = `700 ${n.length > 3 ? 42 : 54}px ${SERIF}`; ctx.fillText(n, x, wy);
-        ctx.fillStyle = 'rgba(255,255,255,.78)'; ctx.font = `19px ${SANS}`; wrapText(ctx, t, x, wy + 30, CW / 4 - 18, 23, 2); });
-    // perforation and the stub
-    const py = 1662;
-    ctx.fillStyle = '#00061f'; ctx.beginPath(); ctx.arc(28, py, 26, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(W - 28, py, 26, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 3; ctx.setLineDash([14, 12]); ctx.beginPath(); ctx.moveTo(70, py); ctx.lineTo(W - 70, py); ctx.stroke(); ctx.setLineDash([]);
+    if (crest) ctx.drawImage(crest, X, 64, 68, 85);
+    ctx.fillStyle = '#fff'; ctx.font = `700 38px ${SERIF}`; ctx.fillText('Beatty Secondary School', X + 90, 104);
+    ctx.fillStyle = gold; ctx.font = `700 21px ${SANS}`; ctx.fillText('A LETTER FROM 2030  ·  OPEN HOUSE 2026', X + 92, 138);
+    // the sheet, with the creases the boat left
+    const px = 56, py = 178, pw = W - 2 * px, ph = 1466;
+    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 30; ctx.shadowOffsetY = 12; ctx.fillStyle = cream; roundRect(ctx, px, py, pw, ph, 18); ctx.fill(); ctx.restore();
+    ctx.save(); roundRect(ctx, px, py, pw, ph, 18); ctx.clip(); ctx.strokeStyle = 'rgba(0,12,83,.07)'; ctx.lineWidth = 2;
+    const L = (x1, y1, x2, y2) => { ctx.beginPath(); ctx.moveTo(px + x1 * pw, py + y1 * ph); ctx.lineTo(px + x2 * pw, py + y2 * ph); ctx.stroke(); };
+    [[.5, 0, .5, 1], [0, .5, 1, .5], [0, .24, 1, .24], [0, .76, 1, .76], [.5, 0, 0, .24], [.5, 0, 1, .24], [.5, 1, 0, .76], [.5, 1, 1, .76], [0, .24, .5, .5], [.5, .5, 1, .24], [0, .76, .5, .5], [.5, .5, 1, .76]].forEach(a => L(...a));
+    ctx.restore();
+    // their boat, set on the sheet like a stamp
+    const bs = 210, bx = px + pw - bs - 26, by = py + 16;
+    if (boatImg) { ctx.save(); ctx.translate(bx + bs / 2, by + bs / 2); ctx.rotate(.06); ctx.shadowColor = 'rgba(0,12,83,.28)'; ctx.shadowBlur = 16; ctx.shadowOffsetY = 8; ctx.drawImage(boatImg, -bs / 2, -bs / 2, bs, bs); ctx.restore();
+        ctx.save(); ctx.translate(bx + bs / 2 + 8, by + bs * .83); ctx.rotate(.03); ctx.fillStyle = '#fff6c8'; ctx.textAlign = 'center'; ctx.font = `600 ${Math.max(13, Math.min(20, 150 / Math.max(6, word.length)))}px ${HAND_FONT}`; ctx.fillText(word, 0, 0); ctx.restore(); }
+    ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(0,12,83,.55)'; ctx.font = `700 20px ${SANS}`; ctx.fillText(LETTER_FROM.toUpperCase().split('').join(' '), px + 54, py + 66);
+    // the letter: printed words in serif, the visitor's own in a hand
+    const tx = px + 54, tw = pw - 108, top = py + 124, bottom = py + ph - 150, paras = letterParas();
+    const lay = (z) => { const lh = Math.round(z * 1.42), gap = Math.round(z * .5), out = []; let y = top;
+        const fontOf = k => k ? `600 ${Math.round(z * 1.22)}px ${HAND_FONT}` : `${z}px ${SERIF}`;
+        paras.forEach((p, pi) => { const toks = []; p.split(/(«[^»]*»)/).forEach(seg => { if (!seg) return; const k = seg[0] === '«', tight = !k && /^\S/.test(seg) && toks.length > 0; (k ? seg.slice(1, -1) : seg).split(/\s+/).filter(Boolean).forEach((w, n) => toks.push({ w, k, g: tight && n === 0 })); });
+            if (pi === 0) toks.forEach(t => t.d = 1);
+            let x = tx; toks.forEach((t, i) => { ctx.font = t.d ? `italic ${Math.round(z * 1.12)}px ${SERIF}` : fontOf(t.k); const ww = ctx.measureText(t.w).width, sp = z * .28;
+                const max = (y < by + bs + 10) ? tw - bs - 20 : tw;                           // lines beside the boat stop short of it
+                if (t.g && x > tx) x -= sp * .8;                                              // a full stop or comma after their words
+                else if (x > tx && x + ww > tx + max) { x = tx; y += lh; }
+                out.push({ ...t, x, y, font: ctx.font }); x += ww + sp; });
+            y += lh + gap; });
+        return { out, end: y - gap }; };
+    let Z = 33, laid = lay(Z); while (laid.end > bottom && Z > 21) { Z -= 2; laid = lay(Z); }
+    laid.out.forEach(t => { ctx.font = t.font; ctx.fillStyle = t.k ? inkCol : navy; ctx.fillText(t.w, t.x, t.y); });
+    // signed
+    const sy0 = Math.min(laid.end + 34, py + ph - 108);
+    ctx.fillStyle = inkCol; ctx.font = `600 62px ${HAND_FONT}`; ctx.fillText('You,', tx, sy0 + 26);
+    ctx.fillStyle = 'rgba(0,12,83,.6)'; ctx.font = `700 21px ${SANS}`; ctx.fillText(LETTER_SIGN.toUpperCase(), tx + 132, sy0 + 22);
+    ctx.fillStyle = 'rgba(0,12,83,.72)'; ctx.font = `italic 23px ${SERIF}`; ctx.fillText(BELIEF_LINE, tx, py + ph - 34);
+    ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(0,12,83,.5)'; ctx.font = `21px ${SANS}`; ctx.fillText(LETTER_FOOT, px + pw - 54, py + ph - 34); ctx.textAlign = 'left';
+    // the stub: the ask
     const sy = 1688, sh = 196;
     ctx.fillStyle = gold; roundRect(ctx, X - 20, sy, CW + 40, sh, 28); ctx.fill();
     ctx.fillStyle = navy; ctx.font = `700 22px ${SANS}`; ctx.fillText('S1 POSTING  ·  CHOICE #1', X + 14, sy + 44);
@@ -1921,23 +1982,23 @@ async function renderCardPNG() {
     ctx.fillStyle = '#fff'; roundRect(ctx, qx - 8, qy - 8, qs + 16, qs + 16, 16); ctx.fill();
     if (window.BTY) window.BTY.qrDraw(ctx, CARD_URL, qx, qy, qs, { margin: 1 });
     const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
-    return new File([blob], 'Beatty-Boarding-Pass.png', { type: 'image/png' });
+    return new File([blob], 'Beatty-Letter-from-2030.png', { type: 'image/png' });
 }
 
 /* Share first (inside the tap when the PNG is ready), then a full-screen image to press-and-hold, then download. */
 function shareCard() {
     const btn = document.getElementById('shareCardBtn');
-    const text = `My Beatty boarding pass: from P6 to ${D.aspiration || 'my dream'} ⛵ Beatty Open House 2026`;
+    const text = `A letter from my 2030 self ⛵ Beatty Open House 2026`;
     const tryShare = (file) => {
         if (file && navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
-            return navigator.share({ files: [file], title: 'My Beatty Boarding Pass', text }).then(() => true).catch(e => (e && e.name === 'AbortError') ? true : false);
+            return navigator.share({ files: [file], title: 'My letter from 2030', text }).then(() => true).catch(e => (e && e.name === 'AbortError') ? true : false);
         }
         return Promise.resolve(false);
     };
     feel('tick');
     if (cardFile) { tryShare(cardFile).then(done => { if (!done) showSaveOverlay(cardFile); }); return; }
     if (btn) { btn.textContent = 'Preparing…'; btn.disabled = true; }
-    (cardRendering || renderCardPNG()).then(f => { if (btn) { btn.textContent = navigator.share ? 'Save or share my pass' : 'Save my pass'; btn.disabled = false; } if (!f) { showSaveOverlay(null); return; } cardFile = f; tryShare(f).then(done => { if (!done) showSaveOverlay(f); }); });
+    (cardRendering || renderCardPNG()).then(f => { if (btn) { btn.textContent = navigator.share ? 'Save or share my letter' : 'Save my letter'; btn.disabled = false; } if (!f) { showSaveOverlay(null); return; } cardFile = f; tryShare(f).then(done => { if (!done) showSaveOverlay(f); }); });
 }
 function saveCard() {
     const btn = document.getElementById('downloadCardBtn');
@@ -1949,9 +2010,9 @@ function showSaveOverlay(file) {
     const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     const ov = document.createElement('div'); ov.className = 'save-ov';
     ov.innerHTML = `
-        <p class="save-hint">${url ? (isIOS ? 'Press and hold the card → <b>Save to Photos</b>' : 'Press and hold to save · or tap Download') : 'Take a screenshot to keep your pass'}</p>
-        ${url ? `<img src="${url}" alt="Your Beatty Boarding Pass">` : ''}
-        <div class="save-actions">${url && !isIOS ? `<a class="nav-btn primary" download="Beatty-Boarding-Pass.png" href="${url}">Download</a>` : ''}<button class="nav-btn secondary" id="saveDone">Done</button></div>`;
+        <p class="save-hint">${url ? (isIOS ? 'Press and hold the letter → <b>Save to Photos</b>' : 'Press and hold to save · or tap Download') : 'Take a screenshot to keep your letter'}</p>
+        ${url ? `<img src="${url}" alt="Your letter from 2030">` : ''}
+        <div class="save-actions">${url && !isIOS ? `<a class="nav-btn primary" download="Beatty-Letter-from-2030.png" href="${url}">Download</a>` : ''}<button class="nav-btn secondary" id="saveDone">Done</button></div>`;
     document.body.appendChild(ov);
     requestAnimationFrame(() => ov.classList.add('on'));
     ov.querySelector('#saveDone').onclick = () => { ov.classList.remove('on'); setTimeout(() => { ov.remove(); if (url) URL.revokeObjectURL(url); }, 300); };
@@ -1960,7 +2021,7 @@ let resetArmed = null;
 function startOver(btn) {
     if (!resetArmed) {
         resetArmed = setTimeout(() => { resetArmed = null; if (btn && btn.isConnected) btn.textContent = 'Start over'; }, 4000);
-        if (btn) btn.textContent = 'Tap again to erase your card and start over';
+        if (btn) btn.textContent = 'Tap again to erase your letter and start over';
         feel('tick'); return;
     }
     clearTimeout(resetArmed); resetArmed = null;
@@ -2761,7 +2822,7 @@ function showAsk(a, sc) {
         const i = parseInt(b.dataset.ask, 10);
         document.querySelectorAll('.answer-opt').forEach(o => o.disabled = true);
         b.classList.add('sel'); haptic(40);
-        D.asks = { ...(D.asks || {}), [a.id]: i }; save();
+        D.asks = { ...(D.asks || {}), [a.id]: i }; D.askText = { ...(D.askText || {}), [a.id]: String((a.o || [])[i] || '') }; save();
         pushMine({ m: { [a.id]: i } });
         setTimeout(() => { if (lastSessionState?.scene?.phone?.ask?.id === a.id) showAsk(a, sc); }, 450);
     }));
@@ -3015,6 +3076,7 @@ $app.addEventListener('click', (e) => {
     if (t.id === 'shareCardBtn')   { shareCard(); }
     if (t.id === 'resetBtn')       { startOver(t); }
     if (t.id === 'joinNewBtn')     { joinNewShow(t); }
+    if (t.id === 'unfoldBtn' || t.id === 'unfoldBoat') { unfoldLetter(); }
     if (t.id === 'askBtn' || t.id === 'askCardBtn') { haptic(12); openAsk(); }
 });
 
