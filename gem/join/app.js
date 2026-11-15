@@ -1649,14 +1649,8 @@ const EVENT_LINE = 'Beatty Open House 2026';
 const BOOTH_LINE = 'Show this card at the Hive booth.';
 const VISION_LINE = 'Harmonising Hearts · Thriving Together';
 const FOLDED_LINE = 'You folded it. You named it. You set it sailing.';
-/* The ask, and where the card's QR goes. SCHOOL_CODE: Beatty's S1 Posting school code — shown on the card once filled in. */
+/* The ask, and where the letter's QR goes. */
 const ASK_LINE = 'Make Beatty your 1st choice';
-const SCHOOL_CODE = '';
-/* When S1 choices are made. Fill both in once MOE confirms the dates; while empty, nothing is shown.
-   CHOICE_WINDOW: the words on the pass, e.g. '25 Nov to 1 Dec'.  CHOICE_OPENS: the first day, e.g. '2026-11-25':
-   it adds a "Remind me" button that puts that day in the phone's calendar. */
-const CHOICE_WINDOW = '';
-const CHOICE_OPENS = '';
 const CARD_URL = 'https://go.gov.sg/probeatty';
 /* The links under the pass (the same ones the closing slides show as QR codes; keep them in step with deck/slides.js). */
 const CARD_LINKS = [['Explore Beatty', CARD_URL], ['Give feedback', 'https://go.gov.sg/oh25survey'], ['Facebook', 'https://go.gov.sg/beattyfb'], ['Instagram', 'https://go.gov.sg/beattyig'], ['LinkedIn', 'https://go.gov.sg/beattyin']];
@@ -1674,17 +1668,6 @@ const WHY_FOR = {
 const WHY_DEFAULT = 'Every Beattyian has gifts waiting to be found. Here you get the time, and the chances, to find yours.';
 const BELIEF_LINE = 'Each child is a gift.';
 function whyLine() { return WHY_FOR[D.bee] || WHY_DEFAULT; }
-function stubLine() { return SCHOOL_CODE ? 'School code ' + SCHOOL_CODE : ASK_LINE; }
-function stubWhen() { return CHOICE_WINDOW ? 'S1 choices: ' + CHOICE_WINDOW : 'Non Vi Sed Arte'; }
-/* "Remind me": the day choices open, as a calendar entry the phone can add. */
-function remindFile() {
-    const d = CHOICE_OPENS.replace(/-/g, ''); if (!/^\d{8}$/.test(d)) return null;
-    const next = new Date(Date.UTC(+d.slice(0, 4), +d.slice(4, 6) - 1, +d.slice(6, 8) + 1)).toISOString().slice(0, 10).replace(/-/g, '');
-    const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:Beatty Open House', 'BEGIN:VEVENT', 'UID:beatty-s1-' + d + '@beattysec', 'DTSTAMP:' + d + 'T000000Z',
-        'DTSTART;VALUE=DATE:' + d, 'DTEND;VALUE=DATE:' + next, 'SUMMARY:S1 choices open: make Beatty your 1st choice',
-        'DESCRIPTION:' + (SCHOOL_CODE ? 'School code ' + SCHOOL_CODE + '. ' : '') + 'Read your letter from 2030 again. ' + CARD_URL, 'URL:' + CARD_URL, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
-    return URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
-}
 const CARD_URL_LABEL = 'beattysec.moe.edu.sg';
 const WHY_BEATTY = [['8', 'international exchanges'], ['6', 'industry attachments'], ['17', 'CCAs to belong to']];
 const CREST_BIG = 'crest-640.png';
@@ -1844,7 +1827,7 @@ function renderMemento() {
     if (unfolding) return;                                   // mid unfold: nothing redraws the boat under the animation
     stopAmbient(); hideCornerBoat(); stampBoat();
     if (!D.cardSeen) { D.cardSeen = true; save(); }          // from here on the letter is a keepsake (see adoptEpoch)
-    const kept = !!D.newShow, remind = CHOICE_OPENS ? remindFile() : null, open = !!D.letterOpen;
+    const kept = !!D.newShow, open = !!D.letterOpen;
     // At the card step itself the hall unfolds together, on the presenter's count: the button waits a little for it.
     const together = !open && !kept && followMode && !!lastSessionState && lastSessionState.currentView === 'memento' && !lastSessionState.unfolded;
     const c = colors(), sail = D.sailColor || '#FFE200', prof = beeProfile(), word = D.aspiration || 'Beattyian';
@@ -1876,14 +1859,13 @@ function renderMemento() {
                 </div>`}
                 <div class="bp-perf"></div>
                 <footer class="bp-stub">
-                    <div><small>S1 Posting · Choice #1</small><b>Beatty Secondary School</b><span>${stubLine()}</span><em>${stubWhen()}</em></div>
+                    <div><small>S1 Posting · Choice #1</small><b>Beatty Secondary School</b><span>${ASK_LINE}</span><em>Non Vi Sed Arte</em></div>
                     <a class="bp-qr" href="${CARD_URL}" target="_blank" rel="noopener" aria-label="Explore Beatty">${window.BTY ? window.BTY.qrSVG(CARD_URL, { label: 'Explore Beatty' }) : ''}</a>
                 </footer>
             </article>
             ${open ? `<button id="shareCardBtn" class="nav-btn primary w-full mt-4 text-base uppercase tracking-wide">${navigator.share ? 'Save or share my letter' : 'Save my letter'}</button>
             ${navigator.share ? '<button id="downloadCardBtn" class="nav-btn secondary w-full mt-2 text-sm uppercase tracking-wide">Save image</button>' : ''}
-            <p class="cc-after">Save it now. Read it again when you choose your schools.</p>
-            ${remind ? `<a class="nav-btn secondary w-full mt-2 text-sm uppercase tracking-wide bp-remind" download="Beatty-S1-choices.ics" href="${remind}">Remind me when choices open</a>` : ''}` : ''}
+            <p class="cc-after">Save it now. Read it again when you choose your schools.</p>` : ''}
             <div class="bp-links">${kept ? '' : `<button type="button" id="askCardBtn" class="bp-link ask">${ico('curious')}Ask a question</button>`}${CARD_LINKS.map(([l, u]) => `<a class="bp-link" href="${u}" target="_blank" rel="noopener">${l}</a>`).join('')}</div>
             <button id="resetBtn" class="mt-2 w-full text-sm underline pb-6" style="color:var(--text-muted);">Start over</button>
         </div>
@@ -1994,8 +1976,8 @@ async function renderCardPNG() {
     ctx.fillStyle = gold; roundRect(ctx, X - 20, sy, CW + 40, sh, 28); ctx.fill();
     ctx.fillStyle = navy; ctx.font = `700 22px ${SANS}`; ctx.fillText('S1 POSTING  ·  CHOICE #1', X + 14, sy + 44);
     ctx.font = `700 ${fit('Beatty Secondary School', `700 $px ${SERIF}`, CW - 250, 50, 34)}px ${SERIF}`; ctx.fillText('Beatty Secondary School', X + 14, sy + 98);
-    ctx.font = `700 26px ${SANS}`; ctx.fillText(stubLine(), X + 14, sy + 138, CW - 250);
-    ctx.font = `italic 22px ${SERIF}`; ctx.fillStyle = 'rgba(0,12,83,.75)'; ctx.fillText(stubWhen() + '  ·  ' + CARD_URL_LABEL, X + 14, sy + 174, CW - 250);
+    ctx.font = `700 26px ${SANS}`; ctx.fillText(ASK_LINE, X + 14, sy + 138, CW - 250);
+    ctx.font = `italic 22px ${SERIF}`; ctx.fillStyle = 'rgba(0,12,83,.75)'; ctx.fillText('Non Vi Sed Arte  ·  ' + CARD_URL_LABEL, X + 14, sy + 174, CW - 250);
     const qs = 152, qx = W - X - qs + 6, qy = sy + (sh - qs) / 2;
     ctx.fillStyle = '#fff'; roundRect(ctx, qx - 8, qy - 8, qs + 16, qs + 16, 16); ctx.fill();
     if (window.BTY) window.BTY.qrDraw(ctx, CARD_URL, qx, qy, qs, { margin: 1 });

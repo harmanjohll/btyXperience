@@ -24,14 +24,12 @@ Without `?presenter=true` the big screen is a mirror: it shows the show but does
    the counts go back to zero, new phones join as usual, and every phone from the first session **keeps its letter**.
 4. If the big screen ever misbehaves, open the fallback (below). The phones carry on following; nobody scans again.
 
-### Before the day: three blanks to fill, one link to confirm
+### Before the day: one link to confirm, one optional
 
 | Where | What |
 | --- | --- |
-| `gem/join/app.js`, `SCHOOL_CODE` | Beatty's S1 Posting school code. It replaces "Make Beatty your 1st choice" on the letter's gold stub. |
-| `gem/join/app.js`, `CHOICE_WINDOW` and `CHOICE_OPENS` | The S1 choice dates. The stub shows them and the phone offers "Remind me when choices open". |
 | `gem/join/app.js`, `CARD_LINKS` | The feedback link is last year's (`go.gov.sg/oh25survey`). Change it here and in `gem/deck/slides.js`. |
-| `gem/index.html`, `JOIN_SHORT` | A short link to `gem/join/` (for example a go.gov.sg link), shown under the QR for anyone who cannot scan. |
+| `gem/index.html`, `JOIN_SHORT` | Optional: a short link to `gem/join/` (for example a go.gov.sg link), shown under the QR for anyone who cannot scan. |
 
 ## The fallback (the show exactly as it was on 13 Nov 2026)
 
