@@ -1192,3 +1192,9 @@ a.bp-qr { display: block; }
 .letter-pass.fresh .lt-p, .letter-pass.fresh .lt-sign, .letter-pass.fresh .lt-foot { opacity: 0; animation: ltLine .6s ease forwards; animation-delay: calc(.6s + var(--i) * .32s); }
 @keyframes ltLine { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .letter-pass.fresh .lt-paper, .letter-pass.fresh .lt-p, .letter-pass.fresh .lt-sign, .letter-pass.fresh .lt-foot, .lt-boat .cc-boat-tilt { animation: none; opacity: 1; } }
+
+/* waiting for the hall's count, then the count itself */
+.lt-wait { font-size: .9rem; font-weight: 700; color: var(--accent-gold); margin: 0 0 14px; transition: opacity .4s; }
+.lt-wait.count { font-family: Georgia, serif; font-size: 4.2rem; line-height: 1; margin: 0 0 10px; }
+.lt-wait.gone { opacity: 0; }
+.letter-pass .nav-btn.later { visibility: hidden; }

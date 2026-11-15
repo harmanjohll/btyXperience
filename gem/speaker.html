@@ -130,12 +130,12 @@ footer button:active{transform:scale(.98)}
     $('nowTitle').textContent=c.title||'';
     $('nowPips').innerHTML=pips(c.scene);
     const nn=$('nowNotes'); nn.textContent=c.notes||'No notes for this one.'; nn.classList.toggle('empty',!c.notes);
-    $('cue').classList.toggle('hidden',!st.reveal);
+    $('cue').classList.toggle('hidden',!(st.reveal||st.unfold)); $('cue').firstElementChild.textContent= st.unfold ? 'Next press unfolds every boat, together' : 'Next press reveals the answer';
     $('nextCh').textContent=n?(n.ch||''):'';
     $('nextTitle').textContent=n?(n.title||''):'The end: thank the hall';
     $('nextNotes').textContent=n?(n.notes||''):'';
     $('room').innerHTML=(window.BTY?BTY.icon('bee'):'')+`${st.room?st.room.joined:0} in the Hive · ${st.room?st.room.ready:0} ready`;
-    $('nNext').textContent=st.reveal?'Reveal answer ❯':(n?'Next ❯':'Finish');
+    $('nNext').textContent=st.reveal?'Reveal answer ❯':st.unfold?'Unfold together ❯':(n?'Next ❯':'Finish');
     // What the room has done on this step ("42 of 60 voted"): gold once most are in, so you know when to move on.
     const d=st.done, de=$('done'); de.classList.toggle('hidden',!d);
     if(d){ de.textContent= d.of ? `${d.n} of ${d.of} ${d.w}` : `${d.n} ${d.w}`; de.classList.toggle('most', d.of>0 && d.n/d.of>=.8); }

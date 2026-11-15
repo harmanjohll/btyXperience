@@ -1815,8 +1815,9 @@ function letterParas() {
     const P = [], ink = t => '«' + inkSafe(t) + '»';
     const word = inkSafe(D.aspiration), made = answered('maker_first', MADE), habit = answered('habit_first', HABIT), tried = answered('enrich_first', TRIED), people = answered('cca_family', MY_PEOPLE);
     P.push('Dear P6 me,');
-    P.push(word ? `I am writing from Sec 4 at Beatty. The word on my boat still says ${ink(word)}, and I am closer to it than you would believe.`
-                : 'I am writing from Sec 4 at Beatty. I still have the boat we folded.');
+    const said = D.quizFirst || {}, future = inkSafe(said[4]), alive = inkSafe(said[1]);
+    P.push((word ? `I am writing from Sec 4 at Beatty. The word on my boat still says ${ink(word)}, and I am closer to it than you would believe.`
+                : 'I am writing from Sec 4 at Beatty. I still have the boat we folded.') + (future ? ` You said a good future means ${ink(future)}. It still does.` : ''));
     P.push('In Sec 1, I tested the water of the Kallang River for my first Critical Inquiry. ' + (made ? `In the Makerspace, I ${ink(made)}.` : 'In the Makerspace, I made things with my own hands.'));
     const cca = pollOf('cca'), guess = cca ? (cca.correct ? ' You guessed it: 9 in 10 of us get our 1st or 2nd choice CCA.' : ` You guessed ${ink(cca.choiceText)}. It is 9 in 10 of us who get our 1st or 2nd choice CCA.`) : '';
     if (habit || people) P.push((habit ? `One small habit carried me: ${ink(habit)}. ` : '') + (people ? `I found my people in ${ink(people)}.` : '') + guess);
@@ -1825,7 +1826,8 @@ function letterParas() {
     const went = D.global ? (WENT[D.global.id] || 'went on exchange: ' + shortDest(D.global.text)) : '', at = D.local ? (WORKED[D.local.id] || shortDest(D.local.text)) : '';
     if (went || at) P.push('In Sec 3, ' + (went ? `I ${ink(went)}.` : 'close to half of us went on an exchange abroad.') + (at ? ` Then I spent months learning beside the people at ${ink(at)}.` : ''));
     else P.push('In Sec 3, close to half of us went on an exchange abroad, and many learnt inside real workplaces.');
-    if (D.bee) P.push(`Here they know me as a ${ink(D.beeTag || 'Beattyian')}: ${BEE_LINE[D.bee] || 'a bee with a place in the Hive'}.`);
+    const sc = Array.isArray(D.beeScores) ? D.beeScores : [], me = BEES.findIndex(b => b.name === D.bee); let two = -1; sc.forEach((v, i) => { if (i !== me && v > 0 && (two < 0 || v > sc[two])) two = i; });
+    if (D.bee) P.push(`Here they know me as a ${ink(D.beeTag || 'Beattyian')}` + (two >= 0 ? `, with a streak of ${ink(BEES[two].tag)}` : '') + `: ${BEE_LINE[D.bee] || 'a bee with a place in the Hive'}.` + (alive ? ` I am still most alive when ${ink(alive)}.` : ''));
     const dream = pollOf('dream_poll');
     if (dream) P.push(dream.correct ? 'You already knew what D.R.E.A.M. stands for. It took me four years to live it.'
                                     : 'That night you did not know what D.R.E.A.M. stood for. I do now: Discipline, Resilience, Empathy, Adaptability, Mindfulness.');
@@ -1839,9 +1841,12 @@ const paraHTML = p => escP(p).replace(/«([^»]*)»/g, '<b class="ink">$1</b>');
 // The creases a paper boat leaves behind, drawn faintly on the sheet.
 const CREASES = '<svg class="lt-creases" viewBox="0 0 100 150" preserveAspectRatio="none" aria-hidden="true"><path d="M50 0V150M0 75H100M0 36H100M0 114H100M50 0L0 36M50 0L100 36M50 150L0 114M50 150L100 114M0 36L50 75L100 36M0 114L50 75L100 114"/></svg>';
 function renderMemento() {
+    if (unfolding) return;                                   // mid unfold: nothing redraws the boat under the animation
     stopAmbient(); hideCornerBoat(); stampBoat();
     if (!D.cardSeen) { D.cardSeen = true; save(); }          // from here on the letter is a keepsake (see adoptEpoch)
     const kept = !!D.newShow, remind = CHOICE_OPENS ? remindFile() : null, open = !!D.letterOpen;
+    // At the card step itself the hall unfolds together, on the presenter's count: the button waits a little for it.
+    const together = !open && !kept && followMode && !!lastSessionState && lastSessionState.currentView === 'memento' && !lastSessionState.unfolded;
     const c = colors(), sail = D.sailColor || '#FFE200', prof = beeProfile(), word = D.aspiration || 'Beattyian';
     const boat = (px, cls) => `<div class="cc-boat-tilt ${cls || ''}">${buildOrigamiSVG(c, 9, px, { ...extras(), aspiration: '' })}<div class="hand-word cc-hand" style="font-size:${Math.max(px > 150 ? 13 : 7, Math.min(px > 150 ? 20 : 10, (px > 150 ? 160 : 76) / Math.max(6, word.length)))}px">${escP(word)}</div></div>`;
     const paras = letterParas();
@@ -1866,7 +1871,8 @@ function renderMemento() {
                     <button type="button" class="bp-boat lt-boat" id="unfoldBoat" aria-label="Unfold your boat"><span id="ccBoat">${boat(220)}</span><span class="cc-water"></span></button>
                     <p class="lt-tease">There is a letter inside your boat.</p>
                     <p class="lt-tease2">It is from you, four years from now.</p>
-                    <button type="button" id="unfoldBtn" class="nav-btn primary w-full text-base uppercase tracking-wide">Unfold it</button>
+                    <p class="lt-wait" id="ltWait"${together ? '' : ' hidden'}>We unfold together. Wait for the count.</p>
+                    <button type="button" id="unfoldBtn" class="nav-btn primary w-full text-base uppercase tracking-wide${together ? ' later' : ''}">Unfold it</button>
                 </div>`}
                 <div class="bp-perf"></div>
                 <footer class="bp-stub">
@@ -1888,6 +1894,18 @@ function renderMemento() {
     loadFleetRank().then(() => { if (open && (D.fleetTotal || 0) !== before && document.getElementById('ltPaper')) renderMemento(); })
         .finally(() => { if (!open) return; cardFile = null; cardRendering = renderCardPNG().then(f => { cardFile = f; return f; }).catch(() => null); });
     const tilt = document.querySelector('.cc-boat-tilt'); if (tilt && !open) enableTilt(tilt);
+    if (together) setTimeout(() => { const b = document.getElementById('unfoldBtn'), w = document.getElementById('ltWait'); if (b && b.classList.contains('later') && !unfolding) { b.classList.remove('later'); if (w && !w.classList.contains('count')) w.hidden = true; } }, 15000);   // no count came: unfold it yourself
+}
+/* Together: the big screen counts 3, 2, 1 and every boat in the hall opens on the same beat. */
+function unfoldTogether(localAt) {
+    localAt = Math.min(localAt, Date.now() + 6000);
+    (function tick() {
+        if (D.letterOpen || unfolding) return;
+        const rem = localAt - Date.now(), w = document.getElementById('ltWait');
+        if (rem <= 0) { if (document.getElementById('unfoldBoat')) unfoldLetter(); return; }
+        if (w) { w.hidden = false; w.classList.add('count'); w.textContent = String(Math.max(1, Math.ceil(rem / 1200))); }
+        setTimeout(tick, Math.min(200, rem));
+    })();
 }
 /* The unfolding: the boat goes back through its folds to a flat sheet, and the sheet is the letter. */
 let unfolding = false;
@@ -1895,14 +1913,14 @@ function unfoldLetter() {
     if (unfolding || D.letterOpen) return; unfolding = true;
     const host = document.getElementById('ccBoat'), btn = document.getElementById('unfoldBtn'), c = colors();
     if (btn) { btn.disabled = true; btn.textContent = 'Unfolding…'; }
-    document.querySelectorAll('.lt-tease, .lt-tease2').forEach(e => e.classList.add('gone'));
+    document.querySelectorAll('.lt-tease, .lt-tease2, .lt-wait').forEach(e => e.classList.add('gone'));
     const stages = [8, 7, 6, 5, 4, 3, 2, 1, 0]; let k = 0;
     (function step() {
         if (!host || !host.isConnected) { unfolding = false; return; }
         host.innerHTML = `<div class="cc-boat-tilt">${buildOrigamiSVG(c, stages[k], 220, { ...extras(), aspiration: '' })}</div>`;
         try { playCreasePitched(1.5 - k * 0.09); } catch (e) {} feel('tick');
         if (++k < stages.length) { setTimeout(step, 190); return; }
-        setTimeout(() => { unfolding = false; D.letterOpen = true; D.letterFresh = true; save(); try { playRevealSound(); } catch (e) {} feel('reveal'); renderMemento(); }, 420);
+        setTimeout(() => { unfolding = false; D.letterOpen = true; D.letterFresh = true; save(); pushMine({ lo: 1 }); try { playRevealSound(); } catch (e) {} feel('reveal'); renderMemento(); }, 420);
     })();
 }
 window.__renderCard = () => renderCardPNG().then(f => new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(f); }));   // for the checks: the saved PNG as a data URL
@@ -2486,6 +2504,7 @@ function handleCue(cue) {
     if (!cue || !cue.id || cue.id === handledCueId) return;
     handledCueId = cue.id;
     if (cue.kind === 'bloom') { startBloomSequence(cue.at + clockOffset); return; }
+    if (cue.kind === 'unfold') { unfoldTogether(cue.at + clockOffset); return; }
     if (cue.kind !== 'sail' || D.launched) return;
     clearTimeout(uncuedTimer);
     if (!D.boarded) { D.boarded = true; save(); }   // a late scanner still sails with everyone
@@ -2646,7 +2665,7 @@ const CHAPTER_LINES = {
     'Our values': ['heart', 'Five values guide every Beattyian.'],
     'A day at Beatty': ['smile', 'Habits of learning, habits of living.'],
     'Passions': ['spark', '17 CCAs: a place for every kind of bee.'],
-    'NEXUS@BTY': ['globe', 'Out into the world: exchanges abroad, attachments in industry.'],
+    'NEXUS@BTY': ['globe', '8 international exchanges · 6 industry attachments.'],
     'Heart and home': ['heart', 'Each child is a gift.'],
     'Your journey': ['wave', 'Nurturing Adaptive Thinkers, Agile Learners and Active Contributors.'],
 };
@@ -2919,6 +2938,7 @@ function renderQuiz() {
         if (i === first) return;
         b.classList.add('second'); b.querySelector('.qo-rank').textContent = '2nd'; feel('tick'); playCreaseSound();
         qScores[first] += 2; qScores[i] += 1;
+        D.quizFirst = { ...(D.quizFirst || {}), [qIndex]: String(item.o[first] || '') };
         $app.querySelectorAll('.quiz-opt').forEach(o => o.disabled = true);
         setTimeout(() => { qIndex++; if (qIndex >= QUIZ.length) finishQuiz(); else renderQuiz(); }, 380);
     }));
@@ -3076,7 +3096,7 @@ $app.addEventListener('click', (e) => {
     if (t.id === 'shareCardBtn')   { shareCard(); }
     if (t.id === 'resetBtn')       { startOver(t); }
     if (t.id === 'joinNewBtn')     { joinNewShow(t); }
-    if (t.id === 'unfoldBtn' || t.id === 'unfoldBoat') { unfoldLetter(); }
+    if (t.id === 'unfoldBtn' || t.id === 'unfoldBoat') { const b = document.getElementById('unfoldBtn'); if (!(b && b.classList.contains('later'))) unfoldLetter(); }
     if (t.id === 'askBtn' || t.id === 'askCardBtn') { haptic(12); openAsk(); }
 });
 

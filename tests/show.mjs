@@ -37,6 +37,23 @@ c.ok(shape.tail0 === 'Choosing a secondary school' && shape.wall > shape.thanks 
 c.ok(shape.asks === 4, `four one tap questions through the slides (${shape.asks})`);
 c.ok(shape.dash === 0 && shape.steps[3] === -1, 'no dash on any slide, and the repeated "8" fun fact is gone');
 
+// The design rules, on every slide: one left edge for every title, one height for every header, nothing runs into the roadmap.
+{ const decks = await pr.evaluate(() => Object.fromEntries(Object.entries(window.BTY_DECKS).map(([k, d]) => [k, d.slides.length])));
+  const off = { edge: [], dots: [], left: [], top: [] }; let L0 = null, T0 = null, n = 0;
+  for (const [id, cnt] of Object.entries(decks)) for (let i = 0; i < cnt; i++) {
+    await pr.evaluate(([id, i]) => window.__jump(id, i), [id, i]); await sleep(i ? 1500 : 2000); n++;
+    const r = await pr.evaluate(() => { const body = document.getElementById('scBody'), foot = document.querySelector('footer'); if (!body || !foot) return null;
+      const L = body.getBoundingClientRect().left, D = foot.getBoundingClientRect().top - 8, t = body.querySelector(':scope > .sc-t, :scope .stage > .sc-t');
+      const vis = el => { const cs = getComputedStyle(el); return cs.display !== 'none' && cs.visibility !== 'hidden' && +cs.opacity > .05 && el.getClientRects().length; };
+      const over = [...body.querySelectorAll('h2,h3,h4,p,li,b,figure,img,blockquote,.sc-row,.pp,.lg,.lk,.qcard,.q-none')].filter(el => vis(el) && !el.closest('.sc-bleed')).filter(el => el.getBoundingClientRect().bottom > D + 2).map(el => el.tagName + ' ' + (el.textContent || el.getAttribute('src') || '').trim().slice(0, 30));
+      const hd = body.querySelector(':scope > .sc-hint, :scope > .eyebrow, :scope > .sc-t');
+      return { edge: t ? Math.abs(t.getBoundingClientRect().left - L) : 0, over, L: t ? t.getBoundingClientRect().left : null, T: hd && getComputedStyle(hd).position !== 'absolute' ? hd.getBoundingClientRect().top : null, broken: [...body.querySelectorAll('img')].filter(im => im.complete && !im.naturalWidth).map(im => im.getAttribute('src')) }; });
+    if (!r) continue; const k = `${id} ${i + 1}`;
+    if (r.edge > 4) off.edge.push(k); if (r.over.length) off.dots.push(`${k}: ${r.over[0]}`); if (r.broken.length) off.dots.push(`${k}: broken image ${r.broken[0]}`);
+    if (r.L !== null) { L0 ??= r.L; if (Math.abs(r.L - L0) > 4) off.left.push(k); } if (r.T !== null) { T0 ??= r.T; if (Math.abs(r.T - T0) > 6) off.top.push(k); } }
+  c.ok(n >= 80 && !off.edge.length && !off.left.length && !off.top.length, `all ${n} slides keep one left edge and one header height ${[...off.edge, ...off.left, ...off.top].slice(0, 6).join(', ')}`);
+  c.ok(!off.dots.length, 'nothing runs into the roadmap, and every photo loads ' + off.dots.slice(0, 6).join(' | ')); }
+
 // One chapter list: the phone names the chapter the roadmap lights.
 const iMorning = await pr.evaluate(() => window.BTY_DECKS.deck_b.slides.findIndex(s => s.title === 'Morning'));
 await pr.evaluate(i => window.__jump('deck_b', i), iMorning); await sleep(1200);
@@ -93,16 +110,20 @@ await until(async () => (await Promise.all(phones.map(p => p.$('.ready-screen'))
 await pr.click('#setSailBtn');
 c.ok(await until(async () => (await Promise.all(phones.map(phoneState))).every(d => d.launched), 15000), 'the boats set sail together');
 await pr.evaluate(() => window.__jump('card', 0));
-c.ok(await until(() => phones[0].$('.letter-pass.sealed #unfoldBtn'), 8000), 'phones land on their boat: "There is a letter inside"');
-await shot(phones[0], 'show-phone-sealed');
-for (const p of phones) await p.click('#unfoldBtn');
-c.ok(await until(async () => (await Promise.all(phones.map(p => p.$('#ltPaper')))).every(Boolean), 8000), 'the boat unfolds into a letter');
+c.ok(await until(() => phones[0].$('.letter-pass.sealed #unfoldBtn.later'), 8000) && /together/i.test(await phones[0].$eval('#ltWait', e => e.textContent)), 'phones land on their boat: "There is a letter inside", and wait for the hall\'s count');
+await shot(phones[0], 'show-phone-sealed'); await shot(pr, 'show-big-sealed');
+c.ok(/Unfold together/.test(await pr.$eval('#nextBtn', e => e.textContent)) && await pr.$('#closing.sealed'), 'the big screen holds a sealed boat, and Next reads "Unfold together"');
+await pr.click('#nextBtn'); const tU = Date.now();
+c.ok(await until(async () => (await Promise.all(phones.map(p => p.$('#ltPaper')))).every(Boolean), 9000), `one press, and every boat unfolds into a letter (${Date.now() - tU} ms)`);
+c.ok(await until(async () => /2 letters unfolded/.test(await pr.$eval('#clOpened', e => e.textContent).catch(() => '')), 6000) && await pr.$('#closing.open') && /^Next/.test(await pr.$eval('#nextBtn', e => e.textContent)), 'the big screen opens to the ask and counts the letters');
+await shot(pr, 'show-big-open');
 await sleep(5200);
 const card = await phones[0].evaluate(() => ({ text: document.getElementById('ltPaper').innerText, ink: [...document.querySelectorAll('#ltPaper .ink')].map(b => b.textContent),
   links: [...document.querySelectorAll('.bp-links a')].map(a => a.href), qr: document.querySelector('a.bp-qr')?.href || '', ask: !!document.getElementById('askCardBtn') }));
 c.ok(/Dear P6 me/.test(card.text) && card.ink.includes('Pilot') && card.ink.some(t => /clubs exist/.test(t)) && /Each child is a gift/.test(card.text),
   `the letter is written from this visitor's answers: their word, their question (${card.ink.length} handwritten parts)`);
 c.ok(card.ink.some(t => /1 other/.test(t)) && /D\.R\.E\.A\.M\./.test(card.text) && /9 in 10/.test(card.text), 'it quotes the hall (the fleet), and their poll answers back to them');
+c.ok(card.ink.includes('bridging cultures') && card.ink.includes('Builder Bee'), 'it quotes their bee quiz back: what a good future means to them, and their second bee');
 c.ok(card.links.length >= 4 && card.links.every(u => /^https:\/\/go\.gov\.sg\//.test(u)) && /^https:/.test(card.qr) && card.ask, 'under the letter: links to tap, the QR is a link, and Ask a question');
 await phones[0].setViewportSize({ width: 390, height: 1700 }); await sleep(300); await shot(phones[0], 'show-phone-letter'); await phones[0].setViewportSize({ width: 390, height: 844 });
 const png = await phones[0].evaluate(() => window.__renderCard());

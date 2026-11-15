@@ -187,6 +187,16 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .cl-screen{width:min(calc(36*var(--vh)),400px,calc(24*var(--vw))) !important; transform:rotate(-2deg)}   /* the pass is the climax: show it big */
 .cl-tag{display:inline-flex; align-items:center; gap:8px; margin-top:22px; color:var(--ink-dim); font-size:clamp(.75rem,calc(1*var(--vw)),.95rem); letter-spacing:.18em; text-transform:uppercase}
 .cl-tag .ico{width:18px; height:18px; color:var(--gold)}
+/* the card step: a sealed boat, the count, then the letter and the ask */
+.cl-screen{position:relative}
+.cl-screen .cl-im{position:absolute; inset:10px; width:calc(100% - 20px); height:calc(100% - 20px); transition:opacity .9s ease, transform .9s cubic-bezier(.2,.9,.3,1.1)}
+.closing.sealed .cl-im.opened{opacity:0; transform:scale(.8) rotate(-4deg)} .closing.open .cl-im.sealed{opacity:0}
+.closing.sealed .cl-after, .closing.open .cl-before{display:none}
+.closing.just .cl-after > *{animation:biUp .8s var(--ease) both} .closing.just .cl-after > *:nth-child(2){animation-delay:.15s} .closing.just .cl-after > *:nth-child(n+3){animation-delay:.3s}
+.cl-count{font-family:var(--serif); font-weight:700; color:var(--gold); font-size:clamp(5rem,calc(12*var(--vw)),13rem); line-height:1; min-height:1em; margin-top:calc(2*var(--vh))}
+.cl-count.pop{animation:clPop .9s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes clPop{ from{transform:scale(.4); opacity:0} 40%{opacity:1} to{transform:scale(1); opacity:1} }
+.cl-opened{color:var(--gold); font-weight:800; letter-spacing:.06em; min-height:1.4em; margin:0 0 calc(1.2*var(--vh)); font-size:clamp(1rem,calc(1.3*var(--vw)),1.5rem)}
 .cl-side .stage-title{font-size:clamp(2.4rem,calc(5*var(--vw)),5rem); line-height:1.02}
 .cl-side .stage-sub{margin:18px 0 0}
 .cl-why{display:flex; gap:clamp(24px,calc(3.4*var(--vw)),60px); margin-top:clamp(20px,calc(3.4*var(--vh)),40px)}
@@ -703,7 +713,10 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 .sc-cloud span.d{color:var(--ink-dim)}
 /* The question wall: cards from the phones, newest first; the presenter's pick sits in front, in gold */
 .sc-qwall{display:grid; grid-template-columns:1fr 1fr; gap:clamp(10px,calc(1.6*var(--vh)),18px) clamp(14px,calc(1.4*var(--vw)),26px); width:min(100%,1640px); margin:0 auto; align-content:start; min-height:calc(34*var(--vh))}
-.sc-qwall .sc-empty{grid-column:1/-1; align-self:center}
+.sc-qwall .q-none{grid-column:1/-1; align-self:center; justify-self:center; text-align:center; padding:calc(4*var(--vh)) calc(5*var(--vw)); border:2px dashed rgba(255,226,0,.35); border-radius:28px; width:min(100%,1100px)}
+.q-none span .ico{width:clamp(56px,calc(6*var(--vw)),110px); height:clamp(56px,calc(6*var(--vw)),110px); color:var(--gold)}
+.q-none b{display:block; font-family:var(--serif); color:#fff; font-size:clamp(2rem,calc(4.2*var(--vw)),4.6rem); line-height:1.1; margin-top:calc(1.4*var(--vh))}
+.q-none p{margin:calc(1.2*var(--vh)) 0 0; color:var(--ink-dim); font-size:clamp(1.1rem,calc(1.7*var(--vw)),1.9rem)}
 .qcard{position:relative; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14); border-left:5px solid var(--gold); border-radius:16px; padding:clamp(12px,calc(1.8*var(--vh)),20px) clamp(40px,calc(3*var(--vw)),56px) clamp(12px,calc(1.8*var(--vh)),20px) clamp(16px,calc(1.4*var(--vw)),26px); cursor:pointer; animation:biUp .6s var(--ease) both; transition:background .3s, transform .3s}
 .qcard p{margin:0; font-family:var(--serif); color:#fff; font-size:clamp(1.3rem,calc(2.1*var(--vw)),2.5rem); line-height:1.25; overflow-wrap:anywhere}
 .qcard.spot{grid-column:1/-1; background:var(--gold); border-color:var(--gold)} .qcard.spot p{color:var(--navy); font-size:clamp(1.7rem,calc(3*var(--vw)),3.5rem)}
@@ -1949,7 +1962,7 @@ function initListeners(){
   startClockListener();
   onSnapshot(collection(db,"compassQuiz"), snap=>{
     const r={total:0,joined:0,breakdown:{}}, polls={}, asks={}, nexus={global:{total:0,breakdown:{}},local:{total:0,breakdown:{}}}, pulse={}, words=[], folds={}, landed=[], seen={}, qs=[];
-    let fleet=0;
+    let fleet=0, letters=0;
     snap.forEach(d=>{ const x=d.data()||{}; const id=d.id, prev=mineSeen[id]||{};
       if(EPOCH && x.e!==EPOCH) return;                       // a phone from a rehearsal (or an earlier show)
       r.joined++; const v=x.archetype;
@@ -1959,6 +1972,7 @@ function initListeners(){
       if(x.n) for(const ty of ['global','local']){ const k=x.n[ty]; if(!k) continue; const t=nexus[ty]; t.total++; t.breakdown[k]=(t.breakdown[k]||0)+1; }
       if(x.p) pulse[x.p]=(pulse[x.p]||0)+1;
       if(x.w) words.push(x.w);
+      if(x.lo) letters++;                                    // this phone has unfolded its letter
       if(Array.isArray(x.q)) x.q.slice(0,3).forEach((q,k)=>{ if(q && typeof q.t==='string' && q.t.trim()) qs.push({ id:id+':'+(q.s||k), t:q.t.trim().slice(0,140), s:+q.s||0 }); });   // questions for the wall
       folds[id]=x.f||0;
       if(x.boat && (x.boat.launched || (x.f||0)>=8)) fleet++;
@@ -1966,7 +1980,7 @@ function initListeners(){
       seen[id]={a:v||null, s:rx?rx.s:null};
     });
     mineSeen=seen; minePrimed=true;
-    live.compass=r; live.polls=polls; live.nexusByType=nexus; live.pulse=pulse; live.aspirations=words; live.folds=folds; live.fleet=fleet; live.asks=asks; live.questions=qs;
+    live.compass=r; live.polls=polls; live.nexusByType=nexus; live.pulse=pulse; live.aspirations=words; live.folds=folds; live.fleet=fleet; live.asks=asks; live.questions=qs; live.letters=letters;
     updateParticipant(r.joined, r.total);
     const t=journeySteps[currentStep]?.type, s=journeySteps[currentStep];
     if(t==='chart'){ paintCompass(); landed.slice(0,14).forEach((k,i)=>setTimeout(()=>landBee(k), i*170)); }
@@ -1975,6 +1989,7 @@ function initListeners(){
     else if(t==='finale') paintHive();
     else if(t==='pulse_check') paintPulse();
     else if(t==='fold') paintFoldCount();
+    else if(t==='memento') paintOpened();
     else if(t==='slide' && deckFor(s)) paintSceneLive();
     postNotes();
   }, err=>{ console.warn(err); syncFail(err); });
@@ -2007,7 +2022,7 @@ function broadcastSession(){
   setDoc(doc(db,"session",STATE_DOC),{
     currentView:step.type, pollData:step.pollData||null, nexusData:step.nexusData||null,
     title:step.title||'', description:step.desc||'', url:step.url||null,
-    revealed: !!step.revealed, step: currentStep,
+    revealed: !!step.revealed, unfolded: !!step.unfolded, step: currentStep,
     chapter: roadChapter()||step.ch||'', funfact: step.funfactData||null, card: PHONE_CARD[step.id]||null, fold: step.fold||null,
     staticContent: step.type==='values'?true:null,
     tally: (step.type==='poll' && step.revealed) ? pollTally(step.pollData) : null,   // phones draw the result bars from this — they never read the votes
@@ -2099,6 +2114,20 @@ function fireBaton(){ const b=document.getElementById('setSailBtn'); if(b && b.d
    on zero every phone blooms yellow in the same instant while the honeycomb on
    the big screen lights from the front of the hall to the back. */
 const BLOOM_LEAD=12000;
+/* ---------- UNFOLD: every boat in the hall opens into its letter at the same moment ----------
+   One cue a few seconds ahead, on the shared clock. The big screen counts 3, 2, 1; every phone holding a
+   boat unfolds it on the beat. A phone that misses the cue simply gets its Unfold button. */
+const UNFOLD_LEAD=3600;
+let unfoldTimers=[];
+function fireUnfold(step){
+  step.unfolded=true; pendingCue={ id:'unfold-'+Date.now(), kind:'unfold', at: serverNow()+UNFOLD_LEAD };
+  broadcastSession(); postNotes(); nextBtn.textContent='Next ❯';
+  unfoldTimers.forEach(clearTimeout); unfoldTimers=[];
+  const c=document.getElementById('clCount'); const say=(t)=>{ if(c && c.isConnected){ c.textContent=t; c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop'); } sailSound('count'); };
+  [3,2,1].forEach((n,i)=>unfoldTimers.push(setTimeout(()=>say(String(n)), i*UNFOLD_LEAD/3)));
+  unfoldTimers.push(setTimeout(()=>{ const el=document.getElementById('closing'); if(el){ el.classList.remove('sealed'); el.classList.add('open','just'); } sfx('reveal'); launchConfetti(); paintOpened(); }, UNFOLD_LEAD));
+}
+function paintOpened(){ const el=document.getElementById('clOpened'); if(!el) return; const n=live.letters||0; el.textContent= n>0 ? `${n} ${n===1?'letter':'letters'} unfolded in this hall` : ''; }
 function renderBloom(){
   const cols=22, rows=10; let cells='';
   for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) cells+=`<i style="--r:${r}"></i>`;
@@ -2264,12 +2293,20 @@ function renderContent(step){
 const CARD_URL='https://go.gov.sg/probeatty', CARD_URL_LABEL='beattysec.moe.edu.sg', SCHOOL_CODE='';
 const WHY_BEATTY=[['8','international exchanges'],['6','industry attachments'],['17','CCAs to belong to']];
 function renderClosing(thanks){
-  return `<div class="closing">
-    <div class="cl-phone"><div class="cl-screen"><img src="letter-sample.jpg" alt="A letter from 2030"></div><span class="cl-tag">${BTY.icon('phone')} On every phone now</span></div>
-    <div class="cl-side">
+  const cardStep=journeySteps.find(s=>s.type==='memento'), open= thanks || !isPresenter || !!(cardStep && cardStep.unfolded);   // a mirror cannot hear the cue: it shows the letter
+  return `<div class="closing ${open?'open':'sealed'}" id="closing">
+    <div class="cl-phone"><div class="cl-screen"><img class="cl-im sealed" src="letter-sealed.jpg" alt="A paper boat, with a letter inside"><img class="cl-im opened" src="letter-sample.jpg" alt="A letter from 2030"></div><span class="cl-tag">${BTY.icon('phone')} On every phone now</span></div>
+    <div class="cl-side cl-before">
+      <p class="eyebrow">Before you go</p>
+      <h2 class="stage-title">There is a letter<br><span class="gold">inside your boat</span></h2>
+      <p class="stage-sub">It is from you, four years from now. Hold your phone up: on the count, the whole hall unfolds together.</p>
+      <div class="cl-count" id="clCount"></div>
+    </div>
+    <div class="cl-side cl-after">
       <p class="eyebrow">${thanks?'Thank you for sailing with us':'Your journey begins'}</p>
       <h2 class="stage-title">Make Beatty your<br><span class="gold">1st choice</span></h2>
-      <p class="stage-sub">There is a letter inside your boat. It is from you, four years from now. Unfold it, read it, keep it.</p>
+      <p class="stage-sub">Your letter is written from your own answers today. Read it. Save it. Open it again when you choose your schools.</p>
+      <p class="cl-opened" id="clOpened">${(live.letters||0)>0?`${live.letters} ${live.letters===1?'letter':'letters'} unfolded in this hall`:''}</p>
       <div class="cl-why">${WHY_BEATTY.map(([n,t])=>`<p><b>${n}</b><span>${t}</span></p>`).join('')}</div>
       <div class="cl-cta">
         <span class="cl-qr">${BTY.qrSVG(CARD_URL,{label:'Explore Beatty'})}</span>
@@ -3405,7 +3442,7 @@ function paintSceneLive(){
     setTxt('scN',all.length); setTxt('scNl',all.length===1?'question from the hall':'questions from the hall');
     const sig=shown.map(q=>q.id).join('|')+'#'+spotQ; if(host.dataset.sig===sig) return; host.dataset.sig=sig;
     host.innerHTML= shown.length ? shown.map(q=>`<div class="qcard${q.id===spotQ?' spot':''}" data-q="${escH(q.id)}"><p>${escH(q.t)}</p>${isPresenter?'<button class="qx" type="button" title="Take this question off the screen" aria-label="Hide this question">×</button>':''}</div>`).join('')
-      : `<p class="sc-empty">No questions yet. Ask from your phone, or raise a hand.</p>`;
+      : `<div class="q-none"><span>${BTY.icon('curious')}</span><b>Ask us anything</b><p>Type it on your phone, or raise a hand.</p></div>`;
   } else if(s.show==='fleet'){
     const el=document.getElementById('scN'); if(!el) return; const to=live.fleet||0, from=+el.dataset.count||0; if(to===from && el.textContent==String(to)) return; el.dataset.count=to; countUp(el, from, to, 1400);
   }
@@ -3485,7 +3522,7 @@ const STEP_NOTES={
   deck_tail:'After the letter: phones keep it on screen. How to choose a school, then questions.',
   set_sail:'Phones name their boats. When most are ready, press SET SAIL and lead the call: Non Vi! Sed Arte! Three times; the boats leave together.',
   finale:'Every cell is a word from a boat. Click a cell to hide it if needed.',
-  card:'Every boat now holds a letter. Ask the hall to press Unfold together: the boat opens into a letter from their 2030 self, written from their own answers tonight. Give them a quiet half minute to read it. Then: save it, and make Beatty your 1st choice in S1 Posting.',
+  card:'Every phone shows its boat: there is a letter inside. Ask the hall to hold their phones up, then press Next (it reads Unfold together): the screen counts 3, 2, 1 and every boat opens at the same moment into a letter from their 2030 self, written from their own answers today. Give them a quiet half minute to read. Then: save it, and make Beatty your 1st choice in S1 Posting.',
 };
 const notesCh=('BroadcastChannel' in window) ? new BroadcastChannel('bty-speaker') : null;
 let showStartedAt=0, stepStartedAt=0, notesStepSeen=-1;
@@ -3500,6 +3537,7 @@ function roomDone(){ const st=journeySteps[currentStep]||{}, of=live.compass.tot
   if(st.type==='fold' && st.fold) return { n:Object.values(live.folds||{}).filter(f=>f>=st.fold.to).length, of, w:'folded' };
   if(st.type==='globe'||st.type==='industry_map') return { n:(live.nexusByType[st.nexusData.type]||{}).total||0, of, w:'chose' };
   if(st.type==='fleet') return { n:(live.aspirations||[]).length, of, w:'named a boat' };
+  if(st.type==='memento') return { n:live.letters||0, of, w:'unfolded' };
   if(sl && sl.kind==='ask') return { n:(live.asks[askId(sl)]||{}).total||0, of, w:'answered' };
   if(sl && sl.kind==='live' && sl.show==='questions') return { n:wallQuestions().length, of:0, w:'questions' };
   return null; }
@@ -3509,7 +3547,7 @@ function postNotes(){
   const d=deckFor(journeySteps[currentStep]);
   const next = (d && sceneIdx<d.slides.length-1) ? itemAt(currentStep, sceneIdx+1) : itemAt(currentStep+1, 0);
   try{ notesCh.postMessage({ type:'state', total:journeySteps.length, cur:itemAt(currentStep, d?sceneIdx:0), next, startedAt:showStartedAt, stepAt:stepStartedAt,
-    room:{ joined:live.compass.joined||0, ready:live.compass.total||0 }, done:roomDone(), pace:roadPace(), reveal: journeySteps[currentStep].type==='poll' && !journeySteps[currentStep].revealed }); }catch(e){}
+    room:{ joined:live.compass.joined||0, ready:live.compass.total||0 }, done:roomDone(), pace:roadPace(), reveal: journeySteps[currentStep].type==='poll' && !journeySteps[currentStep].revealed, unfold: journeySteps[currentStep].type==='memento' && !journeySteps[currentStep].unfolded }); }catch(e){}
 }
 if(notesCh) notesCh.onmessage=(e)=>{ const m=e.data||{};
   if(!isPresenter) return;
@@ -3559,6 +3597,7 @@ function renderStep(){
   prevBtn.style.display = currentStep>0?'inline-block':'none';
   let label='Next ❯';
   if(step.type==='poll' && !step.revealed) label='Reveal Answer';
+  else if(step.type==='memento' && isPresenter && !step.unfolded) label='Unfold together ❯';
   else if(currentStep===journeySteps.length-1 && !(deckFor(step) && sceneIdx<deckFor(step).slides.length-1)) label='Finish';
   nextBtn.textContent=label;
   if(isPresenter) updatePPStep();
@@ -3592,6 +3631,7 @@ nextBtn.addEventListener('click',(e)=>{
   ripple(e, nextBtn);
   const step=journeySteps[currentStep];
   if(step.type==='poll' && !step.revealed){ step.revealed=true; revealPollInPlace(step); broadcastSession(); postNotes(); sfx('reveal'); launchConfetti(); return; }
+  if(step.type==='memento' && isPresenter && !step.unfolded){ fireUnfold(step); return; }   // first press: every boat unfolds, together
   const dk=deckFor(step);
   if(dk && sceneIdx<dk.slides.length-1){ gotoScene(sceneIdx+1); return; }   // page within a native deck
   let to=currentStep+1; while(to<journeySteps.length && stepGone(journeySteps[to])) to++;
