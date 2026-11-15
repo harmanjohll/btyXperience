@@ -1157,7 +1157,6 @@ a.bp-qr { display: block; }
 .bp-link { display: inline-flex; align-items: center; gap: 7px; padding: 9px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.22); background: rgba(255,255,255,.06); color: #fff; font-weight: 700; font-size: .8rem; text-decoration: none; cursor: pointer; }
 .bp-link.ask { border-color: rgba(255,226,0,.5); color: var(--accent-gold); background: rgba(255,226,0,.08); }
 .bp-link .ico { width: 1.1em; height: 1.1em; }
-.bp-remind { display: block; text-align: center; text-decoration: none; }
 /* A pass kept from an earlier session */
 .bp-kept { margin: 0 0 12px; padding: 12px 14px; border-radius: 14px; background: rgba(255,226,0,.1); border: 1px solid rgba(255,226,0,.4); color: #fff; font-size: .85rem; line-height: 1.4; text-align: center; }
 .bp-kept b { color: var(--accent-gold); }

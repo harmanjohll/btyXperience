@@ -2290,7 +2290,7 @@ function renderContent(step){
 }
 
 /* The close: their card (on every phone now) beside the ask. */
-const CARD_URL='https://go.gov.sg/probeatty', CARD_URL_LABEL='beattysec.moe.edu.sg', SCHOOL_CODE='';
+const CARD_URL='https://go.gov.sg/probeatty', CARD_URL_LABEL='beattysec.moe.edu.sg';
 const WHY_BEATTY=[['8','international exchanges'],['6','industry attachments'],['17','CCAs to belong to']];
 function renderClosing(thanks){
   const cardStep=journeySteps.find(s=>s.type==='memento'), open= thanks || !isPresenter || !!(cardStep && cardStep.unfolded);   // a mirror cannot hear the cue: it shows the letter
@@ -2310,7 +2310,7 @@ function renderClosing(thanks){
       <div class="cl-why">${WHY_BEATTY.map(([n,t])=>`<p><b>${n}</b><span>${t}</span></p>`).join('')}</div>
       <div class="cl-cta">
         <span class="cl-qr">${BTY.qrSVG(CARD_URL,{label:'Explore Beatty'})}</span>
-        <div><b>Explore Beatty</b><span>${CARD_URL_LABEL}</span><small>${SCHOOL_CODE?'S1 Posting school code '+SCHOOL_CODE+' · ':''}<i>Non Vi Sed Arte</i></small></div>
+        <div><b>Explore Beatty</b><span>${CARD_URL_LABEL}</span><small><i>Non Vi Sed Arte</i></small></div>
       </div>
       ${thanks?`<div class="cl-links"><a href="${CARD_URL}" target="_blank" rel="noopener" class="btn btn-primary">Explore Beatty ${BTY.icon('arrow')}</a><a href="https://www.beattysec.moe.edu.sg/" target="_blank" rel="noopener" class="btn btn-ghost">Our website</a></div>`:''}
     </div></div>`;
