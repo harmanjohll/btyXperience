@@ -18,11 +18,13 @@ Without `?presenter=true` the big screen is a mirror: it shows the show but does
 ### On the day
 
 1. Open the big screen address in Chrome, press Begin, press `N` for the presenter view.
-2. **Between the two sessions press Reset** (start screen, type RESET). It starts a new show:
+2. At the card step the Next button reads **Unfold together**. Ask the hall to hold their phones up, then press it:
+   the screen counts 3, 2, 1 and every boat opens into its letter at the same moment.
+3. **Between the two sessions press Reset** (start screen, type RESET). It starts a new show:
    the counts go back to zero, new phones join as usual, and every phone from the first session **keeps its letter**.
-3. If the big screen ever misbehaves, open the fallback (below). The phones carry on following; nobody scans again.
+4. If the big screen ever misbehaves, open the fallback (below). The phones carry on following; nobody scans again.
 
-### Before the day: four blanks to fill
+### Before the day: three blanks to fill, one link to confirm
 
 | Where | What |
 | --- | --- |
@@ -49,6 +51,7 @@ Use one big screen at a time.
   written from what they chose tonight: their bee, their one tap answers, their poll guesses, their exchange and
   attachment picks, their word, even their own question. Their words appear as handwriting.
   The wording lives in `letterParas()` in `gem/join/app.js`.
+* The whole hall unfolds together, on the big screen's count; the big screen then counts the letters opened.
 * Its links can be tapped, it saves as an image, and it survives a second session.
 * It lands straight after "Choose Beatty!". How to choose a school (MOE's advice, ranking, tie breakers) follows it.
 * A quiz poll counts votes but hides the split until the reveal.
@@ -59,7 +62,8 @@ Use one big screen at a time.
 
 ## Still to confirm (facts only the school knows)
 
-* Industry partners: the logo slide shows 8, the poll and the pass say 6, the map offers 6 (a different set), and Hive Rush says 7 and 7.
+* The numbers are 8 international exchanges and 6 industry attachments, everywhere (the show, the letter, Hive Rush).
+  The partner logo slide shows 8 logos: partners, not attachments. Say so if that should change.
 * Exchange names differ between the globe and the map slide (New Zealand; Mihara, Japan).
 * "Express", "4E" and "4N" appear beside the Full SBB slide.
 * Lines marked `[confirm]` in the notes of `gem/deck/slides.js`.
@@ -69,9 +73,11 @@ Use one big screen at a time.
 | Folder | What it is |
 | --- | --- |
 | `games/hiverush/` | Hive Rush, the booth quiz game. Stands alone; see `games/README.md`. |
-| `gem/btx27.html`, `gem/joinbtx27.html`, `gem/x/index.html`, `gem/deck/content.js` | Version 1 of the show. Kept until the Open House is over. |
-| `gem/sail/`, `experience/`, `app/`, `content/`, `data/` | Earlier prototypes and source material. Not used by the show. |
-| `tests/` | `npm test` plays the whole show with a stand in database. `node tests/run.mjs show` checks the show alone. |
+| `gem/x/fleet.*`, `gem/x/boat.js` | The fleet at sea, shown inside the big screen at Set Sail. Used by the show and by the fallback. |
+| `tests/` | `npm test` plays the show with a stand in database: `show` (end to end), `layout`, `motion`, and `v2` (the fallback). |
 
-After the Open House: delete version 1, the fallback and the earlier prototypes in one sweep, then rename `gem/` to `show/`.
-`gem/x/fleet.*` and `gem/x/boat.js` are still used by the show (the fleet at sea), so keep those.
+Version 1 and the earlier prototypes (`btx*.html`, `gem/sail/`, `experience/`, `app/`, `content/`, `data/`) were retired on 15 Nov 2026.
+They remain in the history and on the branch `backup/openhouse-v2-13nov2026`.
+
+After the Open House: delete the fallback (`gem/v2.html`, `gem/notes.html`, `gem/x/v2.html`, `gem/x/app-v2.js`, `gem/deck/content-v2.js`,
+`gem/card-sample-v2.jpg`), then rename `gem/` to `show/`.

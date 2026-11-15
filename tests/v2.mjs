@@ -1,6 +1,7 @@
 // Version 2 (gem/v2.html + gem/x/v2.html) is a separate copy of the show. It keeps its own saved
 // state (session/v2) and its own phone storage, so both versions can run on the same database at
-// the same time without seeing each other. This walks version 2 end to end beside version 1.
+// the same time without seeing each other. (Version 1 is retired: this now guards the FALLBACK, v2.html + x/v2.html,
+// the show exactly as it was on 13 Nov 2026.)
 import { startServer } from './lib/server.mjs';
 import { loadPlaywright, checker, presenter, phone, board, goStepId, sleep, until, phoneState, foldTo, shot, decodeQR } from './lib/harness.mjs';
 
@@ -8,12 +9,11 @@ const { chromium } = await loadPlaywright();
 const srv = await startServer();
 const browser = await chromium.launch({ headless: true });
 const c = checker('v2');
-console.log('VERSION 2 · beside version 1');
+console.log('THE FALLBACK · v2.html + x/v2.html');
 
-const v1 = await presenter(browser, srv.url);                       // version 1 running at the same time
 const pr = await presenter(browser, srv.url, '', 'v2.html');
-const s1 = () => srv.api.get('session/state') || {}, s2 = () => srv.api.get('session/v2') || {};
-c.ok(await until(() => s2().epoch, 5000) && s1().epoch && s1().epoch !== s2().epoch, 'each version keeps its own saved state (session/state and session/v2) and its own show id');
+const s2 = () => srv.api.get('session/v2') || {};
+c.ok(await until(() => s2().epoch, 5000), 'the fallback keeps its saved state in session/v2');
 c.ok(/VERSION 2/.test(await pr.$eval('#modeNote', e => e.textContent)), 'the v2 start screen says VERSION 2');
 const join = await decodeQR(pr, '#qrPill .qr-svg');
 c.ok(join === srv.url + '/x/v2.html', `the v2 join QR scans to the v2 audience page (${join})`);
@@ -21,11 +21,10 @@ c.ok(join === srv.url + '/x/v2.html', `the v2 join QR scans to the v2 audience p
 const phones = [await phone(browser, srv.url, 'v2a', '/x/v2.html'), await phone(browser, srv.url, 'v2b', '/x/v2.html')];
 await Promise.all(phones.map(p => board(p)));
 c.ok(await until(async () => /2 in the Hive · 2 ready/.test(await pr.$eval('#pCount', e => e.textContent)), 8000), 'v2 counts its 2 phones');
-c.ok(/Warming up/.test(await v1.$eval('#pCount', e => e.textContent)), 'version 1 does not see version 2\'s phones');
-c.ok(await phones[0].evaluate(() => !!localStorage.getItem('btySail_show2') && !localStorage.getItem('btySail_v7')), 'v2 phones keep their own storage (version 1\'s is untouched)');
+c.ok(await phones[0].evaluate(() => !!localStorage.getItem('btySail_show2')), 'phones keep their saved state under btySail_show2');
 
 await goStepId(pr, 'fold_s');
-c.ok(await until(() => phones[0].$('#origamiStage .fold-overlay'), 6000) && s2().currentView === 'fold' && s1().currentView !== 'fold', 'v2 fold beat reaches v2 phones only (version 1 stays put)');
+c.ok(await until(() => phones[0].$('#origamiStage .fold-overlay'), 6000) && s2().currentView === 'fold', 'the fold beat reaches the phones');
 c.ok(await foldTo(phones[0], 1), 'a v2 phone folds');
 await goStepId(pr, 'deck_a');
 c.ok(await until(() => s2().scene && s2().scene.deck === 'deck_a', 4000) && await until(() => phones[0].$('.scene-companion'), 5000), 'v2 slides and their phone companions run on session/v2');
@@ -37,7 +36,6 @@ c.ok(await until(async () => (await Promise.all(phones.map(phoneState))).every(d
 await goStepId(pr, 'card');
 c.ok(await until(() => phones[0].$('.boarding-pass'), 8000), 'v2 phones land on their Boarding Pass');
 await shot(pr, 'v2-card'); await shot(phones[0], 'v2-phone-pass');
-c.ok(!s1().cue && s1().currentView !== 'memento', 'version 1\'s saved state never moved');
 
 // The version 2 design rules, on every slide: one left edge for the chapter line and every title,
 // nothing runs into the slide dots or off the page, and no em dash on screen.
@@ -118,7 +116,7 @@ await pr.evaluate(() => window.__jump('nexus_global', 0)); await sleep(600);
 const lit2 = await pr.evaluate(() => [...document.querySelectorAll('#roadmap .rm.on b')].map(b => b.textContent));
 c.ok(lit.join() === 'A day at Beatty' && lit2.join() === 'NEXUS@BTY', `the roadmap lights the chapter (${lit} · ${lit2})`);
 
-const errs = [v1, pr, ...phones].flatMap(p => p.errs);
+const errs = [pr, ...phones].flatMap(p => p.errs);
 c.ok(errs.length === 0, 'no page errors ' + JSON.stringify(errs.slice(0, 5)));
 // The show fits any window: Back and Next always on screen, the 1920x1080 stage fully visible, nothing scrolls.
 const fits = [];

@@ -4,6 +4,7 @@
 // screen must still move). ?calm=1 must still calm it.
 // Usage: node tests/motion.mjs
 import { startServer } from './lib/server.mjs';
+const PAGE = process.env.V === '2' ? '/v2.html' : '/index.html';   // the show; V=2 checks the fallback
 import { loadPlaywright, checker, sleep, until } from './lib/harness.mjs';
 
 const { chromium } = await loadPlaywright();
@@ -15,7 +16,7 @@ console.log('MOTION · every slide builds in');
 async function walk(reducedMotion, query = '') {
   const ctx = await browser.newContext({ viewport: { width: 1920, height: 1080 }, reducedMotion });
   const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
-  await p.goto(srv.url + '/v2.html?presenter=true' + query, { waitUntil: 'domcontentloaded' });
+  await p.goto(srv.url + PAGE + '?presenter=true' + query, { waitUntil: 'domcontentloaded' });
   await until(() => p.evaluate(() => typeof dbReady !== 'undefined' && dbReady).catch(() => false), 10000);
   await p.click('#beginBtn'); await sleep(600);
   await p.evaluate(() => window.__jump('deck_a', 0)); await sleep(2500);
@@ -49,7 +50,7 @@ c.ok(a.n > 60 && a.still.length === 0, `every slide builds in visibly (${a.n} sl
 const b = await walk('reduce');
 c.ok(b.n > 60 && b.still.length === 0, `with the laptop asking for reduced motion, the big screen still moves (${b.n} slides) ${b.still.slice(0, 8).join(', ')}`);
 const ctx = await browser.newContext({ viewport: { width: 1920, height: 1080 } }); const p = await ctx.newPage();
-await p.goto(srv.url + '/v2.html?presenter=true&calm=1', { waitUntil: 'domcontentloaded' });
+await p.goto(srv.url + PAGE + '?presenter=true&calm=1', { waitUntil: 'domcontentloaded' });
 c.ok(await p.evaluate(() => document.documentElement.classList.contains('calm')), '?calm=1 turns motion down');
 c.ok(a.errs.length + b.errs.length === 0, 'no page errors ' + JSON.stringify([...a.errs, ...b.errs].slice(0, 3)));
 await browser.close(); await srv.close();

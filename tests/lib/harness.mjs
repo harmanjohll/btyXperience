@@ -38,7 +38,7 @@ export async function newPage(browser, { width, height, label, mobile = false })
 export async function shot(page, name) { await page.screenshot({ path: path.join(OUT, name + '.png') }); }
 
 /* ---------- presenter ---------- */
-export async function presenter(browser, base, query = '', page = 'btx27.html') {   // page: 'v2.html' for version 2
+export async function presenter(browser, base, query = '', page = 'index.html') {   // page: 'v2.html' for the fallback
   const p = await newPage(browser, { width: 1920, height: 1080, label: 'presenter' });
   await p.goto(base + '/' + page + '?presenter=true' + query, { waitUntil: 'domcontentloaded' });
   await until(() => p.evaluate(() => typeof dbReady !== 'undefined' ? dbReady : false).catch(() => false), 10000);
@@ -64,7 +64,7 @@ export async function goStep(p, n) {
 }
 
 /* ---------- phone ---------- */
-export async function phone(browser, base, label, path = '/x/') {   // path: '/x/v2.html' for version 2
+export async function phone(browser, base, label, path = '/join/') {   // path: '/x/v2.html' for the fallback
   const p = await newPage(browser, { width: 390, height: 844, label, mobile: false });   // mouse gestures drive the fold code; hasTouch would switch it to touch-only
   await p.goto(base + path, { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(700);
