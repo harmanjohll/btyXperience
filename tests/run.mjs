@@ -3,7 +3,7 @@ import { spawnSync } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const ALL = ['smoke', 'sync', 'presenter', 'phone', 'scenes', 'v2'];
+const ALL = ['show', 'layout', 'motion', 'v2'];   // show, layout, motion: the version to present (gem/index.html + gem/join/); v2: the fallback
 const pick = process.argv.slice(2).length ? process.argv.slice(2) : ALL;
 const results = [];
 for (const s of pick) {

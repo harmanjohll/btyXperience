@@ -6,8 +6,8 @@
 //   crop       a photo shown cropped (object-fit: cover at the wrong proportions)
 //   goldcream  gold text on a cream page
 //   late       text still invisible at 1.8 s: builds are visible and done by about 1.4 s (diagrams that explain step by step are exempt)
-// Usage: node tests/audit.mjs            (prints the flags; exits 1 if any)
-//        V=2 node tests/audit.mjs        version 2 (v2.html, /x/v2.html) into tests/out/audit-v2/
+// Usage: node tests/audit.mjs            the show (index.html, /join/); prints the flags; exits 1 if any
+//        V=2 node tests/audit.mjs        the fallback (v2.html, /x/v2.html) into tests/out/audit-v2/
 //        ONLY=deck_b,deck_c node tests/audit.mjs   just those steps; TAG=after writes to audit-v2-after/
 import fs from 'fs';
 import path from 'path';
@@ -16,16 +16,16 @@ import { loadPlaywright, presenter, phone, board, sleep, until, OUT } from './li
 
 const V2 = process.env.V === '2', ONLY = (process.env.ONLY || '').split(',').filter(Boolean);
 const DIR = path.join(OUT, 'audit' + (V2 ? '-v2' : '') + (process.env.TAG ? '-' + process.env.TAG : '')); fs.mkdirSync(DIR, { recursive: true });
-const DOC = V2 ? 'session/v2' : 'session/state';
+const DOC = 'session/v2';
 const { chromium } = await loadPlaywright();
 const srv = await startServer();
 const browser = await chromium.launch({ headless: true });
-const pr = await presenter(browser, srv.url, '', V2 ? 'v2.html' : 'btx27.html');
+const pr = await presenter(browser, srv.url, '', V2 ? 'v2.html' : 'index.html');
 const put = (p, data) => fetch(srv.url + '/__fs/write', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ op: 'set', path: p, data, merge: true }) });
 const e = await until(() => srv.api.get(DOC)?.epoch, 4000);
 const A = ['The Innovator', 'The Global Explorer', 'The Industry Trailblazer', 'The Community Steward', 'The Creative Artist', 'The STEM Futurist', 'The Voice Amplifier', 'The Eco-Strategist'];
 for (let i = 0; i < 18; i++) await put('compassQuiz/a' + i, { e, archetype: A[i % 8], done: true, v: { dream_poll: i % 4 ? 1 : 0, cca: 2 }, n: { global: ['Hanoi', 'NZ', 'GeoBali'][i % 3], local: ['ASTAR', 'PIL'][i % 2] }, w: ['Engineer', 'Doctor', 'Artist'][i % 3], f: 8, boat: { launched: true }, m: { grow_value: i % 5, cca_family: i % 4 } });
-const ph = await phone(browser, srv.url, 'phone', V2 ? '/x/v2.html' : '/x/'); await board(ph);
+const ph = await phone(browser, srv.url, 'phone', V2 ? '/x/v2.html' : '/join/'); await board(ph);
 
 const plan = await pr.evaluate(() => { const out = []; let k = 0; while (true) { const id = (window.__stepId ? window.__stepId(k) : null); if (!id) break; out.push(id); k++; } return out; });
 const decks = await pr.evaluate(() => Object.fromEntries(Object.entries(window.BTY_DECKS).map(([k, d]) => [k, d.slides.length])));

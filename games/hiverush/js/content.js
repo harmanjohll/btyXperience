@@ -1,6 +1,5 @@
 /* HIVE RUSH: all words and facts live here, so the game can be edited without touching code.
-   Facts are drawn from the btyXperience app (experience/shared/data.js) and the school site
-   copies in content/raw. Copy rule: no hyphens or dashes in anything a player sees. */
+   Facts are drawn from the Open House show (gem/deck/slides.js) and the school site. Copy rule: no hyphens or dashes in anything a player sees. */
 window.HR = window.HR || {};
 
 HR.CONTENT = {
@@ -37,7 +36,7 @@ HR.CONTENT = {
         { t: 'Every Beattyian must join the same CCA.', fact: false,
           why: 'Myth! There are 17 CCAs: sports, uniformed groups, performing arts and clubs.' },
         { t: 'Beattyians can do an attachment at A*STAR, a real science research lab.', fact: true,
-          why: 'Fact! A*STAR is one of 7 industry attachments.' },
+          why: 'Fact! A*STAR is one of 6 industry attachments.' },
       ],
       fact: 'NEXUS@BTY takes learning beyond the classroom: A.I., real labs, real industry.',
     },
@@ -60,9 +59,9 @@ HR.CONTENT = {
       type: 'hunt', title: 'Passport Hunt', rule: 'Pop every place Beattyians fly to on exchange. Avoid the fakes!',
       limit: 20,
       prompt: 'Pop every REAL Beatty overseas exchange!',
-      targets: ['South Korea', 'Japan', 'New Zealand', 'Estonia', 'Bali'],
+      targets: ['South Korea', 'Japan', 'New Zealand', 'Estonia', 'Bali', 'Vietnam'],
       decoys: ['The Moon', 'Antarctica', 'Atlantis'],
-      fact: '7 international exchanges and 7 industry attachments. Your passport is waiting.',
+      fact: '8 international exchanges and 6 industry attachments. Your passport is waiting.',
     },
     {
       type: 'mcq', title: 'Golden Round', rule: 'Double honey! Anyone can still win this.',

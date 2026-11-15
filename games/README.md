@@ -48,10 +48,10 @@ If a device cannot connect, it offers **Play solo**: the same six rounds offline
 | 2 | Myth or Fact | Swipe 3 cards | NEXUS@BTY and A.I. for every student, 17 CCAs, A*STAR attachment |
 | 3 | Closest Wins | Slider guess | 9 in 10 get their 1st or 2nd choice CCA |
 | 4 | Spell the Dream | Tap in order | DREAM values |
-| 5 | Passport Hunt | Pop floating bubbles | 7 international exchanges, 7 industry attachments |
+| 5 | Passport Hunt | Pop floating bubbles | 8 international exchanges, 6 industry attachments |
 | 6 | Golden Round ×2 | Tap 1 of 4 | Non Vi Sed Arte |
 
-Facts come from `experience/shared/data.js` and the school website copies in `content/raw/`. Please check the 9 in 10 CCA figure and the 17 CCA count are still current before the day.
+Facts come from the Open House show (`gem/deck/slides.js`) and the school website. Please check the 9 in 10 CCA figure and the 17 CCA count are still current before the day.
 
 ### Why it is built this way
 
