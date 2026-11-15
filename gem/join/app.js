@@ -1666,7 +1666,6 @@ const WHY_FOR = {
     'The Eco-Strategist': 'From testing the Kallang River in Sec 1 to ecostewardship in Hanoi: you would learn by caring for real places.',
 };
 const WHY_DEFAULT = 'Every Beattyian has gifts waiting to be found. Here you get the time, and the chances, to find yours.';
-const BELIEF_LINE = 'Each child is a gift.';
 function whyLine() { return WHY_FOR[D.bee] || WHY_DEFAULT; }
 const CARD_URL_LABEL = 'beattysec.moe.edu.sg';
 const WHY_BEATTY = [['8', 'international exchanges'], ['6', 'industry attachments'], ['17', 'CCAs to belong to']];
@@ -1792,6 +1791,8 @@ const WENT = { GeoBali: 'stood on a volcano in Bali, for Geography', LitBali: 'w
     Estonia: 'worked with students in Estonia on digital citizenship', Hanoi: 'flew to Hanoi to learn ecostewardship' };
 const WORKED = { Rockwell: 'Rockwell Automation', PIL: 'PIL, the shipping line', ASTAR: 'A*STAR', Journalism: 'the Berita Harian newsroom', TamilMurasu: 'the Tamil Murasu newsroom', Makita: 'ITE College Central' };
 const LETTER_FROM = 'Sec 4 · 2030', LETTER_SIGN = 'Class of 2030', LETTER_FOOT = 'One possible future. Yours to write.';
+/* The one part not from the child: the school, to whoever is reading over a shoulder. From the school's own belief statement. */
+const LETTER_PS = 'P.S. for the family reading over a shoulder: we believe each child is a gift. Given time and opportunities, yours will uncover theirs here.', LETTER_PS_BY = 'All of us at Beatty';
 const inkSafe = t => String(t == null ? '' : t).replace(/[«»]/g, '').trim();
 const answered = (id, map) => { const t = inkSafe((D.askText || {})[id]); return t ? (map[t.toLowerCase()] || t) : ''; };
 function letterParas() {
@@ -1848,13 +1849,14 @@ function renderMemento() {
                     <p class="lt-date">${LETTER_FROM}</p>
                     ${paras.map((p, i) => `<p class="lt-p${i === 0 ? ' dear' : ''}" style="--i:${i}">${paraHTML(p)}</p>`).join('')}
                     <p class="lt-sign" style="--i:${paras.length}"><b class="ink">You,</b><span>${LETTER_SIGN}</span></p>
-                    <p class="lt-foot" style="--i:${paras.length + 1}"><em>${BELIEF_LINE}</em><span>${LETTER_FOOT}</span></p>
+                    <p class="lt-ps" style="--i:${paras.length + 1}">${LETTER_PS}<span>${LETTER_PS_BY}</span></p>
+                    <p class="lt-foot" style="--i:${paras.length + 2}">${LETTER_FOOT}</p>
                 </div>` : `
                 <div class="lt-seal">
                     <button type="button" class="bp-boat lt-boat" id="unfoldBoat" aria-label="Unfold your boat"><span id="ccBoat">${boat(220)}</span><span class="cc-water"></span></button>
-                    <p class="lt-tease">There is a letter inside your boat.</p>
-                    <p class="lt-tease2">It is from you, four years from now.</p>
-                    <p class="lt-wait" id="ltWait"${together ? '' : ' hidden'}>We unfold together. Wait for the count.</p>
+                    <p class="lt-tease">There is a letter inside your boat</p>
+                    <p class="lt-tease2">It is from you, four years from now</p>
+                    <p class="lt-wait" id="ltWait"${together ? '' : ' hidden'}>We unfold together: wait for the count</p>
                     <button type="button" id="unfoldBtn" class="nav-btn primary w-full text-base uppercase tracking-wide${together ? ' later' : ''}">Unfold it</button>
                 </div>`}
                 <div class="bp-perf"></div>
@@ -1866,7 +1868,8 @@ function renderMemento() {
             ${open ? `<button id="shareCardBtn" class="nav-btn primary w-full mt-4 text-base uppercase tracking-wide">${navigator.share ? 'Save or share my letter' : 'Save my letter'}</button>
             ${navigator.share ? '<button id="downloadCardBtn" class="nav-btn secondary w-full mt-2 text-sm uppercase tracking-wide">Save image</button>' : ''}
             <p class="cc-after">Save it now. Read it again when you choose your schools.</p>` : ''}
-            <div class="bp-links">${kept ? '' : `<button type="button" id="askCardBtn" class="bp-link ask">${ico('curious')}Ask a question</button>`}${CARD_LINKS.map(([l, u]) => `<a class="bp-link" href="${u}" target="_blank" rel="noopener">${l}</a>`).join('')}</div>
+            ${kept ? '' : `<button type="button" id="askCardBtn" class="nav-btn secondary w-full mt-3 text-sm">${ico('curious')}Ask a question</button>`}
+            <p class="bp-links">${CARD_LINKS.map(([l, u]) => `<a href="${u}" target="_blank" rel="noopener">${l}</a>`).join('<i> · </i>')}</p>
             <button id="resetBtn" class="mt-2 w-full text-sm underline pb-6" style="color:var(--text-muted);">Start over</button>
         </div>
     </div>`;
@@ -1937,21 +1940,22 @@ async function renderCardPNG() {
     ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
     if (crest) ctx.drawImage(crest, X, 64, 68, 85);
     ctx.fillStyle = '#fff'; ctx.font = `700 38px ${SERIF}`; ctx.fillText('Beatty Secondary School', X + 90, 104);
-    ctx.fillStyle = gold; ctx.font = `700 21px ${SANS}`; ctx.fillText('A LETTER FROM 2030  ·  OPEN HOUSE 2026', X + 92, 138);
+    ctx.fillStyle = gold; ctx.font = `700 23px ${SANS}`; ctx.fillText('A letter from 2030  ·  Open House 2026', X + 92, 140);
     // the sheet, with the creases the boat left
     const px = 56, py = 178, pw = W - 2 * px, ph = 1466;
     ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 30; ctx.shadowOffsetY = 12; ctx.fillStyle = cream; roundRect(ctx, px, py, pw, ph, 18); ctx.fill(); ctx.restore();
     ctx.save(); roundRect(ctx, px, py, pw, ph, 18); ctx.clip(); ctx.strokeStyle = 'rgba(0,12,83,.07)'; ctx.lineWidth = 2;
-    const L = (x1, y1, x2, y2) => { ctx.beginPath(); ctx.moveTo(px + x1 * pw, py + y1 * ph); ctx.lineTo(px + x2 * pw, py + y2 * ph); ctx.stroke(); };
+    const L = (x1, y1, x2, y2) => { ctx.strokeStyle = 'rgba(0,12,83,.08)'; ctx.beginPath(); ctx.moveTo(px + x1 * pw, py + y1 * ph); ctx.lineTo(px + x2 * pw, py + y2 * ph); ctx.stroke();
+        ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.beginPath(); ctx.moveTo(px + x1 * pw + 2, py + y1 * ph + 2); ctx.lineTo(px + x2 * pw + 2, py + y2 * ph + 2); ctx.stroke(); };   // a crease: a shadow, and the lit edge beside it
     [[.5, 0, .5, 1], [0, .5, 1, .5], [0, .24, 1, .24], [0, .76, 1, .76], [.5, 0, 0, .24], [.5, 0, 1, .24], [.5, 1, 0, .76], [.5, 1, 1, .76], [0, .24, .5, .5], [.5, .5, 1, .24], [0, .76, .5, .5], [.5, .5, 1, .76]].forEach(a => L(...a));
     ctx.restore();
     // their boat, set on the sheet like a stamp
     const bs = 210, bx = px + pw - bs - 26, by = py + 16;
     if (boatImg) { ctx.save(); ctx.translate(bx + bs / 2, by + bs / 2); ctx.rotate(.06); ctx.shadowColor = 'rgba(0,12,83,.28)'; ctx.shadowBlur = 16; ctx.shadowOffsetY = 8; ctx.drawImage(boatImg, -bs / 2, -bs / 2, bs, bs); ctx.restore();
         ctx.save(); ctx.translate(bx + bs / 2 + 8, by + bs * .83); ctx.rotate(.03); ctx.fillStyle = '#fff6c8'; ctx.textAlign = 'center'; ctx.font = `600 ${Math.max(13, Math.min(20, 150 / Math.max(6, word.length)))}px ${HAND_FONT}`; ctx.fillText(word, 0, 0); ctx.restore(); }
-    ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(0,12,83,.55)'; ctx.font = `700 20px ${SANS}`; ctx.fillText(LETTER_FROM.toUpperCase().split('').join(' '), px + 54, py + 66);
+    ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(0,12,83,.6)'; ctx.font = `italic 24px ${SERIF}`; ctx.fillText(LETTER_FROM, px + 54, py + 68);
     // the letter: printed words in serif, the visitor's own in a hand
-    const tx = px + 54, tw = pw - 108, top = py + 124, bottom = py + ph - 150, paras = letterParas();
+    const tx = px + 54, tw = pw - 108, top = py + 124, bottom = py + ph - 290, paras = letterParas();
     const lay = (z) => { const lh = Math.round(z * 1.42), gap = Math.round(z * .5), out = []; let y = top;
         const fontOf = k => k ? `600 ${Math.round(z * 1.22)}px ${HAND_FONT}` : `${z}px ${SERIF}`;
         paras.forEach((p, pi) => { const toks = []; p.split(/(«[^»]*»)/).forEach(seg => { if (!seg) return; const k = seg[0] === '«', tight = !k && /^\S/.test(seg) && toks.length > 0; (k ? seg.slice(1, -1) : seg).split(/\s+/).filter(Boolean).forEach((w, n) => toks.push({ w, k, g: tight && n === 0 })); });
@@ -1963,18 +1967,20 @@ async function renderCardPNG() {
                 out.push({ ...t, x, y, font: ctx.font }); x += ww + sp; });
             y += lh + gap; });
         return { out, end: y - gap }; };
-    let Z = 33, laid = lay(Z); while (laid.end > bottom && Z > 21) { Z -= 2; laid = lay(Z); }
+    let Z = 39, laid = lay(Z); while (laid.end > bottom && Z > 21) { Z -= 2; laid = lay(Z); }   // as large as the sheet allows
     laid.out.forEach(t => { ctx.font = t.font; ctx.fillStyle = t.k ? inkCol : navy; ctx.fillText(t.w, t.x, t.y); });
     // signed
-    const sy0 = Math.min(laid.end + 34, py + ph - 108);
+    const sy0 = Math.min(laid.end + 34, py + ph - 236);
     ctx.fillStyle = inkCol; ctx.font = `600 62px ${HAND_FONT}`; ctx.fillText('You,', tx, sy0 + 26);
-    ctx.fillStyle = 'rgba(0,12,83,.6)'; ctx.font = `700 21px ${SANS}`; ctx.fillText(LETTER_SIGN.toUpperCase(), tx + 132, sy0 + 22);
-    ctx.fillStyle = 'rgba(0,12,83,.72)'; ctx.font = `italic 23px ${SERIF}`; ctx.fillText(BELIEF_LINE, tx, py + ph - 34);
-    ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(0,12,83,.5)'; ctx.font = `21px ${SANS}`; ctx.fillText(LETTER_FOOT, px + pw - 54, py + ph - 34); ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(0,12,83,.6)'; ctx.font = `italic 24px ${SERIF}`; ctx.fillText(LETTER_SIGN, tx + 136, sy0 + 22);
+    ctx.strokeStyle = 'rgba(0,12,83,.14)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(tx, py + ph - 168); ctx.lineTo(tx + tw, py + ph - 168); ctx.stroke();
+    ctx.fillStyle = 'rgba(0,12,83,.78)'; ctx.font = `italic 25px ${SERIF}`; const psEnd = wrapText(ctx, LETTER_PS, tx, py + ph - 126, tw, 34, 2);
+    ctx.fillStyle = 'rgba(0,12,83,.55)'; ctx.font = `21px ${SANS}`; ctx.fillText(LETTER_PS_BY, tx, py + ph - 30);
+    ctx.textAlign = 'right'; ctx.fillText(LETTER_FOOT, px + pw - 54, py + ph - 30); ctx.textAlign = 'left';
     // the stub: the ask
     const sy = 1688, sh = 196;
     ctx.fillStyle = gold; roundRect(ctx, X - 20, sy, CW + 40, sh, 28); ctx.fill();
-    ctx.fillStyle = navy; ctx.font = `700 22px ${SANS}`; ctx.fillText('S1 POSTING  ·  CHOICE #1', X + 14, sy + 44);
+    ctx.fillStyle = navy; ctx.font = `700 23px ${SANS}`; ctx.fillText('S1 Posting  ·  Choice #1', X + 14, sy + 44);
     ctx.font = `700 ${fit('Beatty Secondary School', `700 $px ${SERIF}`, CW - 250, 50, 34)}px ${SERIF}`; ctx.fillText('Beatty Secondary School', X + 14, sy + 98);
     ctx.font = `700 26px ${SANS}`; ctx.fillText(ASK_LINE, X + 14, sy + 138, CW - 250);
     ctx.font = `italic 22px ${SERIF}`; ctx.fillStyle = 'rgba(0,12,83,.75)'; ctx.fillText('Non Vi Sed Arte  ·  ' + CARD_URL_LABEL, X + 14, sy + 174, CW - 250);
@@ -2244,10 +2250,10 @@ function onFoldBeatDone(foldIndex) {
     clearTimeout(foldAssistTimer);
     chapterFlash(D.nextFold);                            // 🎩 at 5, 💎 at 6 — the boat has its own reveal
     if (soloMode || (D.nextFold || 0) >= (D.foldTarget || 0)) saveToFirebase();   // once per beat → the presenter's "N folded" count
-    if (soloMode) { foldFollowActive = false; soloIdx++; renderRest('Beautiful fold.', 'Eyes back on the big screen'); return; }
+    if (soloMode) { foldFollowActive = false; soloIdx++; renderRest('Beautiful fold', 'Eyes back on the big screen'); return; }
     if ((D.nextFold || 0) < (D.foldTarget || 0)) { setTimeout(continueFolding, 380); return; }   // one more in this beat
     foldFollowActive = false;
-    renderRest(D.nextFold >= 8 ? 'Your boat is complete' : 'Beautiful fold.', 'Eyes back on the big screen');
+    renderRest(D.nextFold >= 8 ? 'Your boat is complete' : 'Beautiful fold', 'Eyes back on the big screen');
 }
 
 /* ============================================================
@@ -2280,7 +2286,7 @@ function showPoll(p, revealed) {
 async function votePoll(p, i) {
     const idx = parseInt(i), correct = idx === p.correctAnswer;
     let insight = p.insight || 'Thanks for voting!';
-    if (!correct && p.correctAnswer != null) insight = 'Good guess! ' + (p.insight || '');
+    if (!correct && p.correctAnswer != null) insight = p.insight || '';
     if (!D.polls) D.polls = {};
     D.polls[p.id] = { choice: idx, choiceText: p.options[idx], correct, insight }; save();
     haptic(40);
@@ -2292,7 +2298,7 @@ function showPollResult(p) {
     const revealed = pollRevealed;
     // Before the reveal the phone knows only that you're in and how many have
     // answered — the answer belongs to the big screen, on the presenter's cue.
-    const eyebrow = !revealed ? 'Locked in ✓' : (mine ? (mine.correct ? '✓ You got it!' : 'Good guess!') : 'The answer');
+    const eyebrow = !revealed ? ico('check') + 'Locked in' : (mine ? (mine.correct ? ico('check') + 'You got it' : 'Good guess') : 'The answer');
     $app.innerHTML = `
     <div class="sail-screen fade-up">
         <div class="content-zone" style="padding-top:20px;">
@@ -2367,7 +2373,7 @@ function renderChosenNexus(type) {
     $app.innerHTML = `
     <div class="sail-screen follow-screen fade-up">
         <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
-            <div class="follow-check mb-2">✓</div>
+            <div class="follow-check mb-2">${ico('check')}</div>
             <h1 class="font-serif text-xl mb-1" style="color:var(--accent-gold);">Your bee has landed</h1>
             <p class="text-sm mb-4" style="color:var(--text-secondary);">${pick?.text || ''}: watch the big screen</p>
             <div class="follow-boat">${buildOrigamiSVG(c, stage, 190, extras())}</div>
@@ -2549,10 +2555,10 @@ function renderAtSea() {
         <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
             <p class="text-[10px] mb-2 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">You've set sail</p>
             <h1 class="font-serif text-2xl mb-2" style="color:var(--text-primary);">Look up: you're in the fleet</h1>
-            <div class="atsea-swatch" style="background:${col};color:${col}"></div>
+            <svg class="atsea-sail" viewBox="0 0 64 56" aria-hidden="true"><path d="M29 4V46H7Z" fill="${col}" opacity=".7"/><path d="M33 9V46H57Z" fill="${col}"/><path d="M4 50H60" stroke="${col}" stroke-width="3" stroke-linecap="round"/></svg>
             <p class="text-sm mt-3 max-w-xs" style="color:var(--text-secondary);">Find the <b style="color:${col}">${name}</b> sail${dest && dest.text ? ` bound for <b style="color:var(--text-primary)">${dest.text}</b>` : ''}. Every boat on the big screen is a Beattyian setting sail from our Hive.</p>
             <div class="follow-boat mt-4">${buildOrigamiSVG(c, 9, 150, extras())}</div>
-            <div class="rollcall" id="rollCall" hidden><span class="rc-word">Wave! 👋</span><span class="rc-sub" id="rcSub"></span></div>
+            <div class="rollcall" id="rollCall" hidden><span class="rc-word">Give it a wave</span><span class="rc-sub" id="rcSub"></span></div>
         </div>
     </div>`;
     scheduleRollCall();
@@ -2563,7 +2569,7 @@ function scheduleRollCall() {
     const when = sailLocalAt + 12000 + i * 3000 - Date.now(); if (when < -2500) return;
     setTimeout(() => {
         const rc = document.getElementById('rollCall'), scr = document.getElementById('atSea'); if (!rc || !scr) return;
-        const sub = document.getElementById('rcSub'); if (sub) sub.textContent = (D.global.text || '') + ": that's you!";
+        const sub = document.getElementById('rcSub'); if (sub) sub.textContent = (D.global.text || '') + ": that's you";
         rc.hidden = false; scr.classList.add('rc-flash'); hapticPattern([40, 60, 40]); playPing();
         setTimeout(() => { rc.hidden = true; scr.classList.remove('rc-flash'); }, 2800);
     }, Math.max(0, when));
@@ -2722,7 +2728,7 @@ function renderWatch(state) {
     <div class="sail-screen follow-screen watch-screen fade-up">
         ${chapterStrip()}
         <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
-            <div class="watch-glyph">▲</div>
+            <div class="watch-glyph">${ico('arrow')}</div>
             <p class="text-[10px] mt-3 tracking-[0.3em] uppercase" style="color:var(--text-muted);">Eyes on the screen</p>
             ${state && state.title ? `<h1 class="font-serif text-lg mt-2" style="color:var(--text-secondary);">${state.title}</h1>` : ''}
         </div>
@@ -2911,7 +2917,7 @@ function renderQuiz() {
             <p class="q-eyebrow" style="text-align:center;">Find your bee · ${qIndex + 1} of ${QUIZ.length}</p>
             <h2 class="q-question" style="text-align:center;">${item.q}</h2>
             <p class="q-hint" style="margin:6px 0 12px;">Tap your <b style="color:var(--accent-gold)">first</b> choice, then your <b style="color:var(--accent-gold)">second</b>.</p>
-            <div class="quiz-grid">${item.o.map((t, i) => `<button class="quiz-opt" data-i="${i}"><span class="qo-ic">${BEES[i].icon}</span><span class="qo-t">${t}</span><span class="qo-rank"></span></button>`).join('')}</div>
+            <div class="quiz-grid">${item.o.map((t, i) => `<button class="quiz-opt" data-i="${i}"><span class="qo-ic">${beeIco(BEES[i].name)}</span><span class="qo-t">${t}</span><span class="qo-rank"></span></button>`).join('')}</div>
         </div>
     </div>`;
     $app.querySelectorAll('.quiz-opt').forEach(b => b.addEventListener('click', () => {
@@ -2991,7 +2997,7 @@ function renderRest(title, sub) {
     $app.innerHTML = `
     <div class="sail-screen follow-screen fade-up">
         <div class="flex-1 flex flex-col items-center justify-center p-5 text-center">
-            <div class="follow-check mb-2">✓</div>
+            <div class="follow-check mb-2">${ico('check')}</div>
             <h1 class="font-serif text-xl mb-1" style="color:var(--accent-gold);">${title}</h1>
             <p class="text-sm mb-4" style="color:var(--text-secondary);">${sub}</p>
             <div class="follow-boat" id="restBoat">${buildOrigamiSVG(c, stage, 190, extras())}</div>
