@@ -120,7 +120,7 @@ await shot(pr, 'show-big-open');
 await sleep(5200);
 const card = await phones[0].evaluate(() => ({ text: document.getElementById('ltPaper').innerText, ink: [...document.querySelectorAll('#ltPaper .ink')].map(b => b.textContent),
   links: [...document.querySelectorAll('.bp-links a')].map(a => a.href), qr: document.querySelector('a.bp-qr')?.href || '', ask: !!document.getElementById('askCardBtn') }));
-c.ok(/Dear P6 me/.test(card.text) && card.ink.includes('Pilot') && card.ink.some(t => /clubs exist/.test(t)) && /Each child is a gift/.test(card.text),
+c.ok(/Dear P6 me/.test(card.text) && card.ink.includes('Pilot') && card.ink.some(t => /clubs exist/.test(t)) && /each child is a gift/i.test(card.text) && /All of us at Beatty/.test(card.text),
   `the letter is written from this visitor's answers: their word, their question (${card.ink.length} handwritten parts)`);
 c.ok(card.ink.some(t => /1 other/.test(t)) && /D\.R\.E\.A\.M\./.test(card.text) && /9 in 10/.test(card.text), 'it quotes the hall (the fleet), and their poll answers back to them');
 c.ok(card.ink.includes('bridging cultures') && card.ink.includes('Builder Bee'), 'it quotes their bee quiz back: what a good future means to them, and their second bee');

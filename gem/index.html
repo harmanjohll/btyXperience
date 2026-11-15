@@ -189,12 +189,12 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .cl-tag .ico{width:18px; height:18px; color:var(--gold)}
 /* the card step: a sealed boat, the count, then the letter and the ask */
 .cl-screen{position:relative}
-.cl-screen .cl-im{position:absolute; inset:10px; width:calc(100% - 20px); height:calc(100% - 20px); transition:opacity .9s ease, transform .9s cubic-bezier(.2,.9,.3,1.1)}
+.cl-screen .cl-im{position:absolute; inset:10px; width:calc(100% - 20px); height:calc(100% - 20px); transition:opacity .9s ease, transform .9s cubic-bezier(.2,.8,.2,1)}
 .closing.sealed .cl-im.opened{opacity:0; transform:scale(.8) rotate(-4deg)} .closing.open .cl-im.sealed{opacity:0}
 .closing.sealed .cl-after, .closing.open .cl-before{display:none}
 .closing.just .cl-after > *{animation:biUp .8s var(--ease) both} .closing.just .cl-after > *:nth-child(2){animation-delay:.15s} .closing.just .cl-after > *:nth-child(n+3){animation-delay:.3s}
 .cl-count{font-family:var(--serif); font-weight:700; color:var(--gold); font-size:clamp(5rem,calc(12*var(--vw)),13rem); line-height:1; min-height:1em; margin-top:calc(2*var(--vh))}
-.cl-count.pop{animation:clPop .9s cubic-bezier(.2,.9,.3,1.2) both}
+.cl-count.pop{animation:clPop .7s cubic-bezier(.2,.8,.2,1) both}
 @keyframes clPop{ from{transform:scale(.4); opacity:0} 40%{opacity:1} to{transform:scale(1); opacity:1} }
 .cl-opened{color:var(--gold); font-weight:800; letter-spacing:.06em; min-height:1.4em; margin:0 0 calc(1.2*var(--vh)); font-size:clamp(1rem,calc(1.3*var(--vw)),1.5rem)}
 .cl-side .stage-title{font-size:clamp(2.4rem,calc(5*var(--vw)),5rem); line-height:1.02}
@@ -346,8 +346,7 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
   background:linear-gradient(150deg, rgba(255,226,0,.10), rgba(0,6,31,.7)); border:1px solid var(--card-line);
   border-radius:32px; backdrop-filter:var(--glass); max-width:min(calc(90*var(--vw)),1100px); width:100%}
 .fact-num{font-family:var(--serif); font-weight:700; line-height:.9; font-size:clamp(6rem,calc(20*var(--vw)),17rem);
-  background:linear-gradient(160deg,#fff,var(--gold)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
-  filter:drop-shadow(0 10px 40px rgba(255,226,0,.3))}
+  color:var(--gold)}
 .fact-label{font-family:var(--serif); color:#fff; font-size:clamp(1.4rem,calc(3*var(--vw)),2.8rem); margin-top:6px}
 .fact-sub{color:var(--ink-dim); font-size:clamp(1rem,calc(1.7*var(--vw)),1.5rem); margin-top:16px}
 
@@ -367,7 +366,7 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .dfront .bg:after{content:""; position:absolute; inset:0; background:linear-gradient(180deg, transparent 62%, rgba(4,8,26,.72) 84%, var(--navy-900) 96%)}
 .dcard:hover .dfront .bg{filter:brightness(1.12) saturate(1.05)}
 .dfront .txt{position:absolute; left:0; right:0; top:62%; bottom:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:clamp(10px,calc(1.5*var(--vw)),20px); text-align:center; z-index:2}
-.dfront .letter{font-family:var(--serif); font-weight:700; color:var(--gold); font-size:clamp(2.8rem,calc(5.2*var(--vw)),5rem); line-height:.9; text-shadow:0 4px 24px rgba(255,226,0,.25)}
+.dfront .letter{font-family:var(--serif); font-weight:700; color:var(--gold); font-size:clamp(2.8rem,calc(5.2*var(--vw)),5rem); line-height:.9; text-shadow:0 2px 10px rgba(0,0,0,.45)}
 .dfront .word{font-family:var(--serif); color:#fff; font-size:clamp(1.05rem,calc(1.7*var(--vw)),1.75rem); letter-spacing:.02em}
 .dfront .hint{margin-top:8px; font-family:var(--sans); font-size:clamp(.58rem,calc(.82*var(--vw)),.78rem); letter-spacing:.16em; text-transform:uppercase; color:var(--ink-dim)}
 .dback{background:linear-gradient(160deg,var(--navy-700),var(--navy-850)); transform:rotateY(180deg); padding:clamp(24px,calc(4*var(--vh)),46px) clamp(18px,calc(1.7*var(--vw)),30px) clamp(18px,calc(3*var(--vh)),30px); display:flex; flex-direction:column; justify-content:flex-start; text-align:left}
@@ -658,7 +657,7 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 /* acronym */
 .sc-acro{display:grid; gap:clamp(14px,calc(2*var(--vw)),40px); width:min(100%,1640px)}
 .sc-let{text-align:center; display:flex; flex-direction:column; align-items:center}
-.sc-let .L{font-family:var(--serif); font-weight:700; color:var(--gold); font-size:clamp(5rem,calc(10*var(--vw)),11rem); line-height:1; text-shadow:0 0 60px rgba(255,226,0,.25)}
+.sc-let .L{font-family:var(--serif); font-weight:700; color:var(--gold); font-size:clamp(5rem,calc(10*var(--vw)),11rem); line-height:1}
 .sc-let .w{font-family:var(--serif); color:#fff; font-size:clamp(1.4rem,calc(2.2*var(--vw)),2.4rem); margin-top:clamp(6px,calc(1.4*var(--vh)),16px)}
 .sc-let .x{color:var(--ink-dim); font-size:clamp(1.05rem,calc(1.5*var(--vw)),1.6rem); margin-top:clamp(8px,calc(1.4*var(--vh)),14px); line-height:1.35; max-width:16ch}
 
@@ -725,7 +724,7 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 
 /* live · fleet count */
 .sc-fleet{text-align:center}
-.sc-fleet .n{font-family:var(--serif); font-weight:700; color:var(--gold); font-size:clamp(8rem,calc(19*var(--vw)),22rem); line-height:.9; font-variant-numeric:tabular-nums; text-shadow:0 0 90px rgba(255,226,0,.28)}
+.sc-fleet .n{font-family:var(--serif); font-weight:700; color:var(--gold); font-size:clamp(8rem,calc(19*var(--vw)),22rem); line-height:.9; font-variant-numeric:tabular-nums}
 .sc-fleet .l{font-family:var(--serif); color:#fff; font-size:clamp(2rem,calc(3.8*var(--vw)),4rem); margin-top:clamp(8px,calc(2*var(--vh)),24px)}
 .sc-fleet .sails{display:flex; justify-content:center; gap:clamp(8px,calc(1*var(--vw)),18px); margin-top:clamp(20px,calc(4*var(--vh)),46px); color:var(--gold)}
 .sc-fleet .sails .ico{width:clamp(28px,calc(3*var(--vw)),46px); height:clamp(28px,calc(3*var(--vw)),46px); opacity:.85; animation:bob 3.4s ease-in-out infinite; animation-delay:calc(var(--k) * -.4s)}
@@ -1854,7 +1853,7 @@ const journeySteps=[
   { id:'poll_dream', type:'poll', title:"Live Poll · Our Core Values", pollData:{ id:'dream_poll',
      question:"What does D.R.E.A.M. stand for at Beatty?",
      options:["Discipline, Respect, Excellence, Achievement, Mindfulness","Discipline, Resilience, Empathy, Adaptability, Mindfulness","Diligence, Respect, Empathy, Adaptability, Mastery","Determination, Resilience, Excellence, Ambition, Mindfulness"],
-     correctAnswer:1, insight:"Correct! DREAM (Discipline, Resilience, Empathy, Adaptability, Mindfulness) guides every Beattyian." } },
+     correctAnswer:1, insight:"DREAM: Discipline, Resilience, Empathy, Adaptability, Mindfulness. Five values guide every Beattyian." } },
   { id:'values', type:'values', title:"The D.R.E.A.M. We Live By", desc:"Five values that grow a Beattyian. Non\u00A0Vi\u00A0Sed\u00A0Arte: not with force, but with skill." },
   { id:'deck_b', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vSrojJmwv5d-ElzN38A8S1Q_YAYl1_VulE6jPSFy6n8dEjPUnzNltCRstS8VC3fUgSg7Xd0fYN4-NWZ/pubembed?start=false&loop=false&delayms=60000" },
   { id:'funfact_cca', type:'funfact', funfactData:{ number:"17", label:"CCAs to belong to", subtitle:"Across Uniformed Groups, Performing Arts, Sports & Games and Clubs. A hive has a place for every kind of bee." } },
@@ -1871,7 +1870,7 @@ const journeySteps=[
   { id:'poll_industry', type:'poll', title:"Live Poll · Our Pathways", pollData:{ id:'industry',
      question:"Which is NOT an area students can dive into at Beatty?",
      options:["Sustainability","Journalism & Media","Engineering & AI","None: we do all of these"], correctAnswer:3,
-     insight:"A trick! Beatty offers all of these. Every passion has a pathway." } },
+     insight:"A trick question: Beatty offers all of these. Every passion has a pathway." } },
   { id:'fold_i', type:'fold', title:"Fold with us · I", desc:"International & Industry: the sail.", fold:{letter:'I', name:'International & Industry', sub:'The Sail', from:3, to:6} },
   { id:'deck_d', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRIJppB8CD0rLo6qLaE4eiXeJHcYviqju1Gf3QChKnv7XsJY2cfYQ0eU8M7pSf5Bos2DcyuIxl6ZCPX/pubembed?start=false&loop=false&delayms=60000" },
   { id:'nexus_global', type:'globe', title:"Exploring New Skies, Building Ties", desc:"NEXUS@BTY international exchanges. Choose the one that calls to you. Your bee lands on the globe.",
