@@ -46,15 +46,15 @@ Use one big screen at a time.
 
 * One name: The Beatty Experience. No "Version 2" on any screen.
 * The keepsake is no longer a card. The boat each visitor folded unfolds into a letter from their Sec 4 self,
-  written from what they chose tonight: their bee, their one tap answers, their poll guesses, their exchange and
+  written from what they chose tonight: their bee and bee quiz answers, their poll guesses, their exchange and
   attachment picks, their word, even their own question. Their words appear as handwriting.
   The wording lives in `letterParas()` in `gem/join/app.js`.
 * The whole hall unfolds together, on the big screen's count; the big screen then counts the letters opened.
 * Its links can be tapped, it saves as an image, and it survives a second session.
 * It lands straight after "Choose Beatty!". How to choose a school (MOE's advice, ranking, tie breakers) follows it.
-* A quiz poll counts votes but hides the split until the reveal.
+* Three quiz polls only (DREAM, the CCA share, 8 and 6), plus the globe and the map picks. A quiz poll counts votes but hides the split until the reveal.
 * Phones can ask a question at any time; the "Your questions" slide shows them. Click a question to bring it to the front; click its cross to hide it.
-* Three more one tap questions inside the long stretches (Makerspace, habits, enrichment).
+* The light pages are oat paper with a faint honeycomb (they had diamonds), with hairlines where there were shadows.
 * The phone names the same chapter as the big screen's roadmap.
 * The repeated "8" fun fact is gone; the phone no longer shows the answer before the DREAM poll.
 

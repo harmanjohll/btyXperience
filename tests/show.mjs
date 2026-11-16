@@ -34,8 +34,9 @@ const shape = await pr.evaluate(() => { const D = window.BTY_DECKS, all = Object
     steps: [window.__stepIndex('deck_f'), window.__stepIndex('card'), window.__stepIndex('deck_tail'), window.__stepIndex('funfact_nexus')] }; });
 c.ok(shape.lastF === 'Choose Beatty!' && shape.steps[1] === shape.steps[0] + 1 && shape.steps[2] === shape.steps[1] + 1, 'the card comes straight after "Choose Beatty!"');
 c.ok(shape.tail0 === 'Choosing a secondary school' && shape.wall > shape.thanks && shape.thanks > 0, 'how to choose a school comes after the card, then thanks, then the question wall');
-c.ok(shape.asks === 4, `four one tap questions through the slides (${shape.asks})`);
+c.ok(shape.asks === 0, `no one tap questions left in the slides (${shape.asks})`);
 c.ok(shape.dash === 0 && shape.steps[3] === -1, 'no dash on any slide, and the repeated "8" fun fact is gone');
+c.ok(await pr.evaluate(() => window.__stepIndex('poll_industry')) === -1 && (await pr.evaluate(() => ['poll_dream', 'poll_cca', 'poll_nexus_count'].every(id => window.__stepIndex(id) >= 0))), 'three quiz polls remain (DREAM, the CCA share, 8 and 6); the trick poll is gone');
 
 // The design rules, on every slide: one left edge for every title, one height for every header, nothing runs into the roadmap.
 { const decks = await pr.evaluate(() => Object.fromEntries(Object.entries(window.BTY_DECKS).map(([k, d]) => [k, d.slides.length])));
@@ -51,7 +52,7 @@ c.ok(shape.dash === 0 && shape.steps[3] === -1, 'no dash on any slide, and the r
     if (!r) continue; const k = `${id} ${i + 1}`;
     if (r.edge > 4) off.edge.push(k); if (r.over.length) off.dots.push(`${k}: ${r.over[0]}`); if (r.broken.length) off.dots.push(`${k}: broken image ${r.broken[0]}`);
     if (r.L !== null) { L0 ??= r.L; if (Math.abs(r.L - L0) > 4) off.left.push(k); } if (r.T !== null) { T0 ??= r.T; if (Math.abs(r.T - T0) > 6) off.top.push(k); } }
-  c.ok(n >= 80 && !off.edge.length && !off.left.length && !off.top.length, `all ${n} slides keep one left edge and one header height ${[...off.edge, ...off.left, ...off.top].slice(0, 6).join(', ')}`);
+  c.ok(n >= 70 && !off.edge.length && !off.left.length && !off.top.length, `all ${n} slides keep one left edge and one header height ${[...off.edge, ...off.left, ...off.top].slice(0, 6).join(', ')}`);
   c.ok(!off.dots.length, 'nothing runs into the roadmap, and every photo loads ' + off.dots.slice(0, 6).join(' | ')); }
 
 // One chapter list: the phone names the chapter the roadmap lights.
