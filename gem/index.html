@@ -1608,6 +1608,27 @@ footer:hover #prevBtn, footer:hover #nextBtn{opacity:1}   /* over the footer the
 #canvas > header::before{top:-2000px; bottom:0; background:linear-gradient(180deg, rgba(0,6,31,.72) calc(100% - 76px), rgba(0,6,31,.30)); border-bottom:1px solid rgba(255,226,0,.16)}
 #canvas > footer::before{top:0; bottom:-2000px; background:linear-gradient(180deg, rgba(0,6,31,.35) 0, rgba(0,6,31,.82) 48px); border-top:1px solid rgba(255,226,0,.16)}
 #journeyContent.respond::after{content:""; position:absolute; inset:16px 28px; border-radius:22px; box-shadow:inset 0 0 0 3px rgba(255,226,0,.85); pointer-events:none; z-index:5}
+
+/* =====================================================================
+   THE LIGHT PAGE, IN A QUIETER KEY (Japandi, Nordic): oat paper, a faint honeycomb that fades toward the words,
+   hairlines for depth where there were shadows, the red kept to thin lines. Colours and depth only: no layout moves.
+   ===================================================================== */
+:root{ --cream:#F4F0E8; --cream-deep:#E6DFD1; --paper-dim:#4A5068; --paper-line:rgba(0,12,83,.11) }
+.scene.cream{ border-radius:16px; background-color:var(--cream);
+  background-image:
+    linear-gradient(100deg, rgba(244,240,232,1) 0%, rgba(244,240,232,.9) 36%, rgba(244,240,232,.25) 72%, rgba(244,240,232,0) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100' viewBox='0 0 56 100'%3E%3Cpath d='M28 66L0 50L0 16L28 0L56 16L56 50L28 66L28 100' fill='none' stroke='%23000C53' stroke-opacity='.085' stroke-width='.8'/%3E%3C/svg%3E");
+  background-size:auto, 84px 150px; background-position:0 0, right -14px top -22px;
+  box-shadow:0 22px 56px rgba(0,0,0,.36), inset 0 0 0 1px rgba(255,255,255,.55) }
+.scene.cream .sc-card, .scene.cream .sc-pill, .scene.cream .sc-cols .cl, .scene.cream .sc-table, .scene.cream .qs-card{ background:#FBF9F5; border:1px solid var(--paper-line); box-shadow:none }
+.scene.cream .qs-card{ border-top:2px solid var(--red) }
+.scene.cream .sc-pill::before{ height:2px }
+.scene.cream .sc-ic{ background:none; box-shadow:inset 0 0 0 1px rgba(0,12,83,.22) }
+.scene.cream .sc-steps::before{ background:rgba(0,12,83,.18) }
+.scene.cream .sc-people .face{ box-shadow:0 0 0 3px var(--red) }
+.scene.cream .sc-logos .lg, .scene.cream .sc-links .qr{ border:1px solid var(--paper-line); box-shadow:none }
+.scene.cream .ft-media.round figure{ box-shadow:0 0 0 3px var(--red) }
+.scene.cream .sc-gal figure, .scene.cream .ft-media figure, .scene.cream .sc-qimg figure, .scene.cream .fit-box > figure .fx, .scene.cream .fit-box > figure img{ box-shadow:0 1px 2px rgba(0,12,83,.10), 0 10px 24px rgba(0,12,83,.07) }
 </style>
 </head>
 <body>
@@ -1867,10 +1888,6 @@ const journeySteps=[
      question:"How many international exchanges & industry attachments does Beatty offer?",
      options:["4 & 4","6 & 6","8 & 6","10 & 10"], correctAnswer:2,
      insight:"8 international exchanges and 6 industry attachments: 14 doors into the wider world." } },
-  { id:'poll_industry', type:'poll', title:"Live Poll · Our Pathways", pollData:{ id:'industry',
-     question:"Which is NOT an area students can dive into at Beatty?",
-     options:["Sustainability","Journalism & Media","Engineering & AI","None: we do all of these"], correctAnswer:3,
-     insight:"A trick question: Beatty offers all of these. Every passion has a pathway." } },
   { id:'fold_i', type:'fold', title:"Fold with us · I", desc:"International & Industry: the sail.", fold:{letter:'I', name:'International & Industry', sub:'The Sail', from:3, to:6} },
   { id:'deck_d', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRIJppB8CD0rLo6qLaE4eiXeJHcYviqju1Gf3QChKnv7XsJY2cfYQ0eU8M7pSf5Bos2DcyuIxl6ZCPX/pubembed?start=false&loop=false&delayms=60000" },
   { id:'nexus_global', type:'globe', title:"Exploring New Skies, Building Ties", desc:"NEXUS@BTY international exchanges. Choose the one that calls to you. Your bee lands on the globe.",
