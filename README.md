@@ -20,9 +20,11 @@ Without `?presenter=true` the big screen is a mirror: it shows the show but does
 1. Open the big screen address in Chrome, press Begin, press `N` for the presenter view.
 2. At the card step the Next button reads **Unfold together**. Ask the hall to hold their phones up, then press it:
    the screen counts 3, 2, 1 and every boat opens into its letter at the same moment.
-3. **Between the two sessions press Reset** (start screen, type RESET). It starts a new show:
+3. At Set Sail, give the room a full minute or two to write on their hulls. The presenter view shows how many boats are
+   named and turns gold at 4 in 5; if you press SET SAIL earlier, the first press only tells you the count.
+4. **Between the two sessions press Reset** (start screen, type RESET). It starts a new show:
    the counts go back to zero, new phones join as usual, and every phone from the first session **keeps its letter**.
-4. If the big screen ever misbehaves, open the fallback (below). The phones carry on following; nobody scans again.
+5. If the big screen ever misbehaves, open the fallback (below). The phones carry on following; nobody scans again.
 
 ### Before the day: one link to confirm, one optional
 
@@ -60,9 +62,12 @@ Use one big screen at a time.
 
 ## Still to confirm (facts only the school knows)
 
-* The numbers are 8 international exchanges and 6 industry attachments, everywhere (the show, the letter, Hive Rush).
-  The partner logo slide shows 8 logos: partners, not attachments. Say so if that should change.
-* Exchange names differ between the globe and the map slide (New Zealand; Mihara, Japan).
+* **Exchange module codes.** The exchanges are listed in module order. Only four codes are known (NX3011 Mihara, NX3012 Mutsuzawa,
+  NX3014 Aorere College, NX3015 Geography in Bali). South Korea is placed third, then Literature in Bali, Estonia and Hanoi after
+  NX3015: correct the order in `gem/deck/slides.js` (the map) and in the step list in `gem/index.html` (the globe) if that is wrong.
+* **Continuous improvement photos.** New images are wanted: replace `gem/deck/img/e/future-1.jpg`, `future-2.jpg`, `future-3.jpg`.
+* **Beatty Express.** It replaced "Reading the news" and has no description line yet.
+* The partner logo slide shows 8 logos: partners, not the 6 attachments.
 * "Express", "4E" and "4N" appear beside the Full SBB slide.
 * Lines marked `[confirm]` in the notes of `gem/deck/slides.js`.
 

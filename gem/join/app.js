@@ -259,7 +259,7 @@ function playPencil(sec) {         // a pencil writing on paper, for as long as 
 
 /* The haptic map. Android: real ticks. iOS has no web vibration, so the paper
    itself shakes 2–3 px instead of the phone. */
-const HAPTIC = { tick: 18, lock: 45, chapter: [25, 40, 25], reveal: [50, 30, 100, 30, 80], depart: [15, 30, 15, 30, 120], test: [45, 60, 45] };
+const HAPTIC = { tick: 35, lock: 80, chapter: [60, 60, 60], reveal: [90, 50, 160, 50, 120], depart: [40, 50, 40, 50, 200], test: [90, 80, 90] };   // short pulses (under about 30 ms) cannot be felt on most Android phones
 // What this phone can do, said once and plainly. Only the vibration API exists on the web:
 // Android browsers have it (and honour the phone's vibration setting); iPhones do not.
 function hapticsProbe(buzz) {
@@ -1668,7 +1668,7 @@ const WHY_FOR = {
 const WHY_DEFAULT = 'Every Beattyian has gifts waiting to be found. Here you get the time, and the chances, to find yours.';
 function whyLine() { return WHY_FOR[D.bee] || WHY_DEFAULT; }
 const CARD_URL_LABEL = 'beattysec.moe.edu.sg';
-const WHY_BEATTY = [['8', 'international exchanges'], ['6', 'industry attachments'], ['17', 'CCAs to belong to']];
+const WHY_BEATTY = [['8', 'international exchanges'], ['6', 'industry attachments'], ['17', 'CCAs to choose from']];
 const CREST_BIG = 'crest-640.png';
 const ico = (n, c) => (window.BTY ? window.BTY.icon(n, c) : '');
 const beeIco = name => ico((window.BTY && window.BTY.ARCH[name]) || 'bee');
@@ -1798,10 +1798,10 @@ const answered = (id, map) => { const t = inkSafe((D.askText || {})[id]); return
 function letterParas() {
     const P = [], ink = t => '«' + inkSafe(t) + '»';
     const word = inkSafe(D.aspiration), made = answered('maker_first', MADE), habit = answered('habit_first', HABIT), tried = answered('enrich_first', TRIED), people = answered('cca_family', MY_PEOPLE);
-    P.push('Dear P6 me,');
+    P.push('Dear P6 Me,');
     const said = D.quizFirst || {}, future = inkSafe(said[4]), alive = inkSafe(said[1]);
-    P.push((word ? `I am writing from Sec 4 at Beatty. The word on my boat still says ${ink(word)}, and I am closer to it than you would believe.`
-                : 'I am writing from Sec 4 at Beatty. I still have the boat we folded.') + (future ? ` You said a good future means ${ink(future)}. It still does.` : ''));
+    P.push('This is your future self, a Sec 4 student graduating from Beatty.' + (word ? ` The word on my boat still says ${ink(word)}, and I am closer to it than you would believe.`
+                : ' I still have the boat we folded.') + (future ? ` You said a good future means ${ink(future)}. It still does.` : ''));
     P.push('In Sec 1, I tested the water of the Kallang River for my first Critical Inquiry. ' + (made ? `In the Makerspace, I ${ink(made)}.` : 'In the Makerspace, I made things with my own hands.'));
     const cca = pollOf('cca'), guess = cca ? (cca.correct ? ' You guessed it: 9 in 10 of us get our 1st or 2nd choice CCA.' : ` You guessed ${ink(cca.choiceText)}. It is 9 in 10 of us who get our 1st or 2nd choice CCA.`) : '';
     if (habit || people) P.push((habit ? `One small habit carried me: ${ink(habit)}. ` : '') + (people ? `I found my people in ${ink(people)}.` : '') + guess);
@@ -1810,15 +1810,14 @@ function letterParas() {
     const went = D.global ? (WENT[D.global.id] || 'went on exchange: ' + shortDest(D.global.text)) : '', at = D.local ? (WORKED[D.local.id] || shortDest(D.local.text)) : '';
     if (went || at) P.push('In Sec 3, ' + (went ? `I ${ink(went)}.` : 'close to half of us went on an exchange abroad.') + (at ? ` Then I spent months learning beside the people at ${ink(at)}.` : ''));
     else P.push('In Sec 3, close to half of us went on an exchange abroad, and many learnt inside real workplaces.');
-    const sc = Array.isArray(D.beeScores) ? D.beeScores : [], me = BEES.findIndex(b => b.name === D.bee); let two = -1; sc.forEach((v, i) => { if (i !== me && v > 0 && (two < 0 || v > sc[two])) two = i; });
-    if (D.bee) P.push(`Here they know me as a ${ink(D.beeTag || 'Beattyian')}` + (two >= 0 ? `, with a streak of ${ink(BEES[two].tag)}` : '') + `: ${BEE_LINE[D.bee] || 'a bee with a place in the Hive'}.` + (alive ? ` I am still most alive when ${ink(alive)}.` : ''));
+    if (D.bee && D.beeTag) P.push(`Remember the bee you found when you came into the Hive? Here they know me as a ${ink(D.beeTag)}: ${BEE_LINE[D.bee] || 'a bee with a place in the Hive'}.` + (alive ? ` I am still most alive when ${ink(alive)}.` : ''));
     const dream = pollOf('dream_poll');
     if (dream) P.push(dream.correct ? 'You already knew what D.R.E.A.M. stands for. It took me four years to live it.'
-                                    : 'That night you did not know what D.R.E.A.M. stood for. I do now: Discipline, Resilience, Empathy, Adaptability, Mindfulness.');
+                                    : 'That day you did not know what D.R.E.A.M. stood for. I do now: Discipline, Resilience, Empathy, Adaptability, Mindfulness.');
     const q = (D.qs || []).slice(-1)[0];
     if (q && q.t) P.push(`You asked: ${ink('“' + q.t + '”')} A good question. Come and find the answer.`);
-    P.push('It all began the night I folded a paper boat with ' + (D.fleetTotal > 1 ? ink((D.fleetTotal - 1) + (D.fleetTotal === 2 ? ' other' : ' others')) : 'a whole hall') + ', and we shouted Sed Arte.');
-    P.push('Choose well. I will be waiting at the gate.');
+    P.push('It all began the day I folded a paper boat with ' + (D.fleetTotal > 1 ? ink((D.fleetTotal - 1) + (D.fleetTotal === 2 ? ' other' : ' others')) : 'a whole room') + ', and we shouted Non Vi Sed Arte.');
+    P.push('I am so glad to have chosen Beatty. The experiences were simply joyful. You will choose Beatty and know that you have chosen well.');
     return P;
 }
 const paraHTML = p => escP(p).replace(/«([^»]*)»/g, '<b class="ink">$1</b>');
@@ -2108,7 +2107,7 @@ function renderReadyToSail() {
                 <span class="ready-dot"></span>
                 <span class="text-sm" style="color:var(--text-secondary); text-wrap:balance;">Hold it: waiting for the captain's cue…</span>
             </div>
-            <p class="text-[11px] max-w-xs" style="color:var(--text-muted);">When the whole hall sets sail together, your boat joins the fleet on the big screen. Look up.</p>
+            <p class="text-[11px] max-w-xs" style="color:var(--text-muted);">When the whole room sets sail together, your boat joins the fleet on the big screen. Look up.</p>
             <button id="sailNowBtn" class="nav-btn secondary mt-8" style="opacity:0;transition:opacity .5s;">Set sail now</button>
         </div>
     </div>`;
@@ -2472,7 +2471,8 @@ function triggerSetSail() {
     if (D.dreamSent) renderReadyToSail(); else showName();     // get to the gate
     // No cue for a long while (the button was never pressed)? Launch anyway.
     clearTimeout(uncuedTimer);
-    uncuedTimer = setTimeout(() => { if (!D.launched && !sailSeq) launchNow(); }, 25000);
+    // (Four minutes, and never while someone is still writing on their hull: the room sails on the presenter's cue.)
+    uncuedTimer = setTimeout(() => { if (!D.launched && !sailSeq && D.dreamSent && !document.getElementById('dreamInput')) launchNow(); }, 240000);
 }
 function renderSetSailDone() { renderAtSea(); }
 function showCard() { renderMemento(); }
@@ -2494,6 +2494,9 @@ function handleCue(cue) {
     if (cue.kind === 'bloom') { startBloomSequence(cue.at + clockOffset); return; }
     if (cue.kind === 'unfold') { unfoldTogether(cue.at + clockOffset); return; }
     if (cue.kind !== 'sail' || D.launched) return;
+    // Still writing when the count begins? What is typed so far goes on the hull.
+    { const f = document.getElementById('dreamInput'); if (f && !D.dreamSent) { const w = cleanWord(f.value);
+        if (w && wordOK(w)) { D.aspiration = w; D.dreamSent = true; save(); pushMine({ boat: boatPayload(), f: D.nextFold || 0, w }); } else { D.aspiration = ''; save(); } } }
     clearTimeout(uncuedTimer);
     if (!D.boarded) { D.boarded = true; save(); }   // a late scanner still sails with everyone
     startSailSequence(cue.at + clockOffset);
@@ -2558,7 +2561,7 @@ function renderAtSea() {
             <svg class="atsea-sail" viewBox="0 0 64 56" aria-hidden="true"><path d="M29 4V46H7Z" fill="${col}" opacity=".7"/><path d="M33 9V46H57Z" fill="${col}"/><path d="M4 50H60" stroke="${col}" stroke-width="3" stroke-linecap="round"/></svg>
             <p class="text-sm mt-3 max-w-xs" style="color:var(--text-secondary);">Find the <b style="color:${col}">${name}</b> sail${dest && dest.text ? ` bound for <b style="color:var(--text-primary)">${dest.text}</b>` : ''}. Every boat on the big screen is a Beattyian setting sail from our Hive.</p>
             <div class="follow-boat mt-4">${buildOrigamiSVG(c, 9, 150, extras())}</div>
-            <div class="rollcall" id="rollCall" hidden><span class="rc-word">Give it a wave</span><span class="rc-sub" id="rcSub"></span></div>
+            <div class="rollcall" id="rollCall" hidden><span class="rc-word">Raise your hand</span><span class="rc-sub" id="rcSub"></span></div>
         </div>
     </div>`;
     scheduleRollCall();
@@ -2569,7 +2572,7 @@ function scheduleRollCall() {
     const when = sailLocalAt + 12000 + i * 3000 - Date.now(); if (when < -2500) return;
     setTimeout(() => {
         const rc = document.getElementById('rollCall'), scr = document.getElementById('atSea'); if (!rc || !scr) return;
-        const sub = document.getElementById('rcSub'); if (sub) sub.textContent = (D.global.text || '') + ": that's you";
+        const sub = document.getElementById('rcSub'); if (sub) sub.textContent = (D.global.text || '') + ': that is your boat on the big screen';
         rc.hidden = false; scr.classList.add('rc-flash'); hapticPattern([40, 60, 40]); playPing();
         setTimeout(() => { rc.hidden = true; scr.classList.remove('rc-flash'); }, 2800);
     }, Math.max(0, when));
@@ -2780,8 +2783,10 @@ function renderSceneCompanion(state) {
         body = `<div class="glance-num" id="glanceNum">${whole ? '0' : escP(p.n)}${p.suffix ? `<small>${escP(p.suffix)}</small>` : ''}</div><div class="glance-label">${escP(p.label)}</div>${p.title ? `<p class="glance-sub">${escP(p.title)}</p>` : ''}`;
         if (whole) setTimeout(() => { const el = document.getElementById('glanceNum'); if (!el) return; const suf = p.suffix ? `<small>${escP(p.suffix)}</small>` : '', t0 = performance.now();
             (function tick(now) { const k = Math.min(1, (now - t0) / 1200); el.innerHTML = Math.round(n * (1 - Math.pow(1 - k, 3))) + suf; if (k < 1 && el.isConnected) requestAnimationFrame(tick); })(t0); }, 60);
+    } else if (p.t === 'stats') {
+        body = `<div class="glance-title">${escP(p.title)}</div><div class="glance-stats">${(p.items || []).map(x => `<div class="gs-row"><b>${escP(x.n)}</b><span>${escP(x.l)}</span></div>`).join('')}</div>`;
     } else if (p.t === 'keys') {
-        body = `<div class="glance-title">${escP(p.title)}</div><ul class="glance-keys">${(p.keys || []).map(k => `<li>${escP(k)}</li>`).join('')}</ul>`;
+        body = `<div class="glance-title">${escP(p.title)}</div><ul class="glance-keys${(p.keys || []).length > 5 ? ' many' : ''}">${(p.keys || []).map(k => `<li>${escP(k)}</li>`).join('')}</ul>`;
     } else if (p.t === 'links') {
         body = `<div class="glance-ic">${ico('qr')}</div><div class="glance-title" style="margin-top:14px">${escP(p.title)}</div>${p.line ? `<p class="glance-line">${escP(p.line)}</p>` : ''}<div class="ph-links">${(p.links || []).filter(l => /^https:\/\//.test(l.url || '')).map(l => `<a class="answer-opt" href="${escP(l.url)}" target="_blank" rel="noopener">${escP(l.label || l.url)}<span>${escP(String(l.url).replace(/^https:\/\//, ''))}</span></a>`).join('')}</div>`;
     } else if (p.t === 'chips') {
@@ -2809,7 +2814,7 @@ function showAsk(a, sc) {
                 <h2 class="q-question" style="font-size:1.15rem;">${escP(a.q)}</h2>
                 <div class="q-locked mt-4">
                     <div class="q-locked-pick">You chose <b>${escP((a.o || [])[mine])}</b></div>
-                    <div class="q-locked-count">Look up: the hall's answers fill the big screen</div>
+                    <div class="q-locked-count">Look up: the room's answers fill the big screen</div>
                 </div>
             </div>
             ${reactBarHTML()}
@@ -2967,7 +2972,7 @@ function renderAboard() {
             <div class="aboard-ic mb-2">${beeIco(D.bee)}</div>
             <p class="text-[10px] mb-1 tracking-[0.3em] uppercase" style="color:var(--accent-gold);">You're in the Hive</p>
             <h1 class="font-serif text-2xl mb-1" style="color:var(--text-primary);">${D.beeTag || 'Beattyian'}</h1>
-            <p class="text-sm mb-5 max-w-xs" style="color:var(--text-secondary);">Find yourself on the big screen. You'll fold a boat, chart a course and set sail with the whole hall.</p>
+            <p class="text-sm mb-5 max-w-xs" style="color:var(--text-secondary);">Find yourself on the big screen. You'll fold a boat, chart a course and set sail with the whole room.</p>
             <div class="follow-boat">${buildOrigamiSVG(c, Math.min(D.nextFold || 0, 8), 170, extras())}</div>
             ${hapticsLineHTML()}
         </div>

@@ -570,7 +570,8 @@ export function iosTap() {
     } catch (e) {}
 }
 export function buzz(pattern) {
-    if (navigator.vibrate) { try { navigator.vibrate(pattern); } catch (e) {} return; }
+    // Android: buzzes shorter than about 35 ms are not felt, so every buzz is given a floor (pauses are left alone).
+    if (navigator.vibrate) { try { navigator.vibrate(Array.isArray(pattern) ? pattern.map((ms, i) => i % 2 === 0 ? Math.max(35, ms) : ms) : Math.max(35, pattern || 0)); } catch (e) {} return; }
     if (!IS_IOS) return;
     const p = Array.isArray(pattern) ? pattern : [pattern]; let t = 0;
     p.forEach((ms, i) => { if (i % 2 === 0) { if (t === 0) iosTap(); else setTimeout(iosTap, t); } t += ms; });
