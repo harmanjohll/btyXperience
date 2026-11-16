@@ -293,7 +293,7 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
 .finale-hive{position:absolute; left:0; right:0; top:0; height:70%; pointer-events:none}
 .finale-hive .hive-cell{pointer-events:auto}
 .hive-count{position:absolute; right:clamp(24px,calc(4*var(--vw)),70px); top:clamp(88px,calc(13*var(--vh)),150px); font-family:var(--serif); font-weight:800; color:var(--gold); font-size:clamp(1.4rem,calc(3*var(--vw)),2.6rem); letter-spacing:.04em; text-shadow:0 4px 30px rgba(0,0,0,.6); pointer-events:none}
-.hive-cell .hive-n{display:block; font-size:.62em; font-weight:800; color:rgba(0,12,83,.72); letter-spacing:.06em; margin-top:2px}
+.hive-cell .hive-n{display:block; font-size:.7em; font-weight:800; color:rgba(0,12,83,.72); letter-spacing:.04em; margin-top:.25em; font-family:var(--sans)}
 .hive-cell.many{box-shadow:0 0 44px rgba(255,226,0,.6)}
 .bloom-field{position:absolute; inset:0; display:grid; grid-template-columns:repeat(22,1fr); grid-auto-rows:1fr; gap:8px; padding:clamp(24px,calc(4*var(--vh)),56px) clamp(24px,calc(5*var(--vw)),90px)}
 .bloom-field i{display:block; clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); background:rgba(255,226,0,.055); transition:background .22s ease, box-shadow .22s ease, transform .22s ease; transition-delay:calc((9 - var(--r)) * 95ms)}
@@ -347,6 +347,7 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
   border-radius:32px; backdrop-filter:var(--glass); max-width:min(calc(90*var(--vw)),1100px); width:100%}
 .fact-num{font-family:var(--serif); font-weight:700; line-height:.9; font-size:clamp(6rem,calc(20*var(--vw)),17rem);
   color:var(--gold)}
+.fact-num{margin-top:-.08em; margin-bottom:.1em}   /* the number sits a little higher, clear of its label */
 .fact-label{font-family:var(--serif); color:#fff; font-size:clamp(1.4rem,calc(3*var(--vw)),2.8rem); margin-top:6px}
 .fact-sub{color:var(--ink-dim); font-size:clamp(1rem,calc(1.7*var(--vw)),1.5rem); margin-top:16px}
 
@@ -502,7 +503,9 @@ main{position:relative; z-index:20; flex:1 1 auto; overflow:hidden; display:flex
   clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
   background:linear-gradient(160deg, var(--navy-700), var(--navy-850)); border:0; color:#fff;
   font-family:var(--serif); font-weight:700; padding:14px; opacity:0; transform:scale(.4);
-  transition:opacity 1s var(--ease), transform 1s var(--ease), background 1s var(--ease); overflow:hidden; word-break:break-word}
+  transition:opacity 1s var(--ease), transform 1s var(--ease), background 1s var(--ease); overflow:hidden;
+  flex-direction:column; line-height:1.08; box-sizing:border-box; padding:0 10px; word-break:normal; overflow-wrap:normal; hyphens:none}
+.hive-cell .hive-w{display:block; text-transform:uppercase; letter-spacing:.01em}
 .hive-cell.on{opacity:1; transform:scale(1); background:linear-gradient(160deg, rgba(255,226,0,.85), var(--gold-deep)); color:var(--navy);
   box-shadow:0 0 30px rgba(255,226,0,.4)}
 .hive-empty{position:absolute; top:30%; left:50%; transform:translateX(-50%); color:var(--ink-dim); font-size:clamp(1.2rem,calc(2.4*var(--vw)),2rem); font-family:var(--serif); background:rgba(0,6,31,.72); padding:10px 26px; border-radius:16px; border:1px solid var(--card-line); white-space:nowrap}
@@ -1588,6 +1591,11 @@ html.calm .st-media.alive > figure .fx img{animation:none}
 .pn-stat{position:absolute; z-index:4; width:20%; padding:20px 22px 18px; background:var(--paper-ink); color:var(--cream); border-radius:var(--r); box-shadow:0 18px 40px rgba(0,12,83,.25); border-top:5px solid var(--gold);
   opacity:0; transform:translateY(18px) scale(.96); animation:pnStat .7s var(--ease) forwards; animation-delay:var(--d)}
 @keyframes pnStat{to{opacity:1; transform:none}}
+.sc-sub2.has-stat{position:relative}
+.gal-stat{position:absolute; right:0; bottom:0; z-index:3; display:flex; text-align:left; align-items:center; gap:clamp(10px,calc(1*var(--vw)),18px); padding:10px clamp(16px,calc(1.4*var(--vw)),26px) 12px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14); border-top:4px solid var(--gold); border-radius:var(--r)}
+.gal-stat .pre{font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); font-size:clamp(1rem,calc(1.3*var(--vw)),1.5rem)}
+.gal-stat b{font-family:var(--serif); color:#fff; font-size:clamp(3rem,calc(4.4*var(--vw)),5.2rem); line-height:1; font-variant-numeric:tabular-nums; min-width:1.2em; text-align:center}
+.gal-stat .l{color:var(--cream-ink); font-size:clamp(1rem,calc(1.3*var(--vw)),1.5rem); line-height:1.2; max-width:10ch}
 .pn-stat .pre{display:block; font-weight:800; font-size:max(20px,var(--t-label)); letter-spacing:.16em; text-transform:uppercase; color:var(--gold)}
 .pn-stat b{display:block; font-family:var(--serif); font-size:clamp(3.4rem,calc(5*var(--vw)),6rem); line-height:1; color:#fff; font-variant-numeric:tabular-nums}
 .pn-stat .l{display:block; margin-top:6px; font-size:clamp(1.15rem,calc(1.4*var(--vw)),1.6rem); line-height:1.3}
@@ -1877,7 +1885,7 @@ const journeySteps=[
      correctAnswer:1, insight:"DREAM: Discipline, Resilience, Empathy, Adaptability, Mindfulness. Five values guide every Beattyian." } },
   { id:'values', type:'values', title:"The D.R.E.A.M. We Live By", desc:"Five values that grow a Beattyian. Non\u00A0Vi\u00A0Sed\u00A0Arte: not with force, but with skill." },
   { id:'deck_b', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vSrojJmwv5d-ElzN38A8S1Q_YAYl1_VulE6jPSFy6n8dEjPUnzNltCRstS8VC3fUgSg7Xd0fYN4-NWZ/pubembed?start=false&loop=false&delayms=60000" },
-  { id:'funfact_cca', type:'funfact', funfactData:{ number:"17", label:"CCAs to belong to", subtitle:"Across Uniformed Groups, Performing Arts, Sports & Games and Clubs. A hive has a place for every kind of bee." } },
+  { id:'funfact_cca', type:'funfact', funfactData:{ number:"17", label:"CCAs to choose from", subtitle:"across Uniformed Groups, Performing Arts, Sports & Games, and Clubs. A hive has a place for every kind of bee." } },
   { id:'fold_a', type:'fold', title:"Fold with us · A", desc:"Applied Learning: the structure.", fold:{letter:'A', name:'Applied Learning', sub:'The Structure', from:1, to:3} },
   { id:'poll_cca', type:'poll', title:"Live Poll · Pursuing Passions", pollData:{ id:'cca',
      question:"What share of students get their 1st or 2nd choice CCA?",
@@ -1891,7 +1899,7 @@ const journeySteps=[
   { id:'fold_i', type:'fold', title:"Fold with us · I", desc:"International & Industry: the sail.", fold:{letter:'I', name:'International & Industry', sub:'The Sail', from:3, to:6} },
   { id:'deck_d', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRIJppB8CD0rLo6qLaE4eiXeJHcYviqju1Gf3QChKnv7XsJY2cfYQ0eU8M7pSf5Bos2DcyuIxl6ZCPX/pubembed?start=false&loop=false&delayms=60000" },
   { id:'nexus_global', type:'globe', title:"Exploring New Skies, Building Ties", desc:"NEXUS@BTY international exchanges. Choose the one that calls to you. Your bee lands on the globe.",
-     nexusData:{ type:'global', options:[ {id:'GeoBali',text:'Bali (Geography)'},{id:'LitBali',text:'Bali (Literature)'},{id:'NZ',text:'New Zealand'},{id:'Korea',text:'South Korea (A.I.)'},{id:'MiharaJapan',text:'Japan (Social Sciences)'},{id:'MutsuzawaJapan',text:'Japan (STEM)'},{id:'Estonia',text:'Estonia (Cyber)'},{id:'Hanoi',text:'Vietnam (Hanoi)'} ] } },
+     nexusData:{ type:'global', options:[ {id:'MiharaJapan',text:'Japan (Social Sciences)'},{id:'MutsuzawaJapan',text:'Japan (STEM)'},{id:'Korea',text:'South Korea (A.I.)'},{id:'NZ',text:'New Zealand'},{id:'GeoBali',text:'Bali (Geography)'},{id:'LitBali',text:'Bali (Literature)'},{id:'Estonia',text:'Estonia (Cyber)'},{id:'Hanoi',text:'Vietnam (Hanoi)'} ] } },   // in module order
   { id:'deck_d2', type:'slide' },   // native only: the industry half of the NEXUS deck, before the map (the Google deck_d holds both halves)
   { id:'nexus_local', type:'industry_map', title:"Dive into the Wonders of Work", desc:"NEXUS@BTY industry attachments across Singapore. Where would you thrive?",
      // Real places (lat, lon). Each label sits at (ax, ay) on the 1086×800 map image, joined to its dot by a leader line.
@@ -1906,7 +1914,7 @@ const journeySteps=[
   { id:'deck_e', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vRxw0Yj77fW9I87q0-XgXfqwGPwdi6RPDXBHb7CMGmEJTdBhELve0N5rAg5WbtS2vivKyV5WZO9gB_m/pubembed?start=false&loop=false&delayms=60000" },
   { id:'fold_l', type:'fold', title:"Fold with us · L", desc:"Learning to Live, Learn & Love: the flag. Pull it open: a boat.", fold:{letter:'L', name:'Learning to Live, Learn & Love', sub:'The Flag', from:6, to:8} },
   { id:'set_sail', type:'fleet', title:"Set Sail, Beatty!", desc:"Every boat is a Beattyian setting sail from our Hive. Look up: here comes the fleet." },
-  { id:'finale', type:'finale', title:"Our Hive of Aspirations", desc:"Every cell is a dream from someone in this room tonight." },
+  { id:'finale', type:'finale', title:"Our Hive of Aspirations", desc:"Every cell is a dream from someone in this room today." },
   { id:'deck_f', type:'slide', url:"https://docs.google.com/presentation/d/e/2PACX-1vQx7tJCZ8s5AD5S9F7S2kNmAgfEX7KnIP6fLMQfcFCfQr4-9JeUVxFcyYRhzNtZYbBaCvLM1Wz8p1sX/pubembed?start=false&loop=false&delayms=60000" },
   { id:'card', type:'memento', title:"Your Journey Begins", desc:"Check your phone: there is a letter inside your boat." },
   { id:'deck_tail', type:'slide' }, // native only: thank you, FAQs, getting here, links. Phones stay on their card.
@@ -1936,8 +1944,8 @@ const RESPOND_TYPES=['chart','poll','globe','industry_map','pulse_check','finale
 
 const modalData={
   GeoBali:{ title:"Geography @ Bali", students:30, duration:"1 Week", desc:"An immersive study of Bali's living landscape: its volcanic geography and the communities who adapt to it.", highlights:["Read a real volcanic landscape","See how communities adapt to their environment","Learn on-site, beyond the classroom"] },
-  LitBali:{ title:"Literature @ Bali", duration:"1 Week", desc:"Literature on location: reading and writing about Bali's stories, culture and people, where they come from.", highlights:["Read texts in the place they describe","Write from first-hand experience","Learn on-site, beyond the classroom"] },
-  NZ:{ title:"Leadership & Sustainability @ Aorere College, New Zealand", students:10, duration:"1 Week", desc:"Co designed with Aorere College: leadership grown through service and sustainability.", highlights:["Sharpen critical & creative thinking","Develop real leadership qualities","See language's role in leading others"] },
+  LitBali:{ title:"Re-Imagining Shakespeare: Cross-Cultural Literature Immersion in Bali", duration:"1 Week", desc:"Literature on location: reading and writing about Bali's stories, culture and people, where they come from.", highlights:["Read texts in the place they describe","Write from first-hand experience","Learn on-site, beyond the classroom"] },
+  NZ:{ title:"Leadership in Sustainability @ Aorere College, New Zealand", students:10, duration:"1 Week", desc:"Co-designed with Aorere College: leadership grown through service and sustainability.", highlights:["Sharpen critical & creative thinking","Develop real leadership qualities","See language's role in leading others"] },
   Korea:{ title:"Artificial Intelligence @ South Korea", students:12, duration:"1 Week", desc:"Step into the future of technology in one of the world's most innovative societies.", highlights:["Hands-on with applied A.I.","Learn from a leading tech culture","Bring the future home to Beatty"] },
   MiharaJapan:{ title:"Social Sciences @ Mihara, Japan", students:14, duration:"1 Week", desc:"A transformative exchange with Hiroshima University High School.", highlights:["Deepen global & cultural literacy","Grow social-emotional competencies","Live rich Japanese culture"] },
   MutsuzawaJapan:{ title:"STEM @ Mutsuzawa, Japan", students:14, duration:"1 Week", desc:"Shaping future leaders in science and technology innovation.", highlights:["Deepen global & cultural literacy","Grow social-emotional competencies","Live rich Japanese culture"] },
@@ -2078,9 +2086,13 @@ let pendingCue=null;
 const SAIL_LEAD=8000;
 const SAIL_WORDS=[[6000,'NON VI',false],[5000,'SED ARTE',true],[4000,'NON VI',false],[3000,'SED ARTE',true],[2000,'NON VI',false],[1000,'SED ARTE!',true]]   // ms remaining before the release;
 const DEST_ROLL=[{id:'Hanoi',name:'Hanoi',col:'#8E7CFF'},{id:'GeoBali',name:'Bali · Geography',col:'#F28C28'},{id:'LitBali',name:'Bali · Literature',col:'#FFB36B'},{id:'NZ',name:'New Zealand',col:'#2BB3A8'},{id:'Korea',name:'South Korea',col:'#D64FA0'},{id:'MiharaJapan',name:'Mihara, Japan',col:'#EC5A5F'},{id:'MutsuzawaJapan',name:'Mutsuzawa, Japan',col:'#B5D334'},{id:'Estonia',name:'Estonia',col:'#7FD3F7'}];
+let sailAskedAt=0;
 function fireSetSail(){
   if(!isPresenter) return;
   if(pendingCue && pendingCue.at > serverNow()) { showToast('Already counting…'); return; }
+  // Give the room time to write on their hulls: with fewer than 4 in 5 boats named, the first press only says so.
+  const named=(live.aspirations||[]).length, of=live.compass.total||0;
+  if(of>0 && named/of<0.8 && Date.now()-sailAskedAt>10000){ sailAskedAt=Date.now(); showToast(`${named} of ${of} boats are named. Give the room a moment, or press SET SAIL again to go now.`, 7000); return; }
   pendingCue={ id:'sail-'+Date.now(), kind:'sail', at: serverNow()+SAIL_LEAD };
   broadcastSession();
   runSailOverlay(pendingCue.at + clockOffset);
@@ -2107,7 +2119,7 @@ function runSailOverlay(localAt){
     if(fired){
       const t=-rem;                                   // ms since launch
       if(t>=12000 && t<12000+DEST_ROLL.length*3000){ const i=Math.floor((t-12000)/3000); if(i!==rc){ rc=i; const d=DEST_ROLL[i];
-        callEl.innerHTML=`<span class="sail-ov-swatch" style="background:${d.col}"></span>${d.name}: <em>wave!</em>`; callEl.classList.remove('pop'); void callEl.offsetWidth; callEl.classList.add('pop'); sailSound('chime'); } }
+        callEl.innerHTML=`<span class="sail-ov-swatch" style="background:${d.col}"></span>${d.name}: <em>raise your hand</em>`; callEl.classList.remove('pop'); void callEl.offsetWidth; callEl.classList.add('pop'); sailSound('chime'); } }
       else if(t>=12000+DEST_ROLL.length*3000 && callEl.textContent){ callEl.textContent=''; }
       if(t>=42000){ done=true; ov.classList.add('out'); setTimeout(()=>ov.remove(),800); return; }
     }
@@ -2143,7 +2155,7 @@ function fireUnfold(step){
   [3,2,1].forEach((n,i)=>unfoldTimers.push(setTimeout(()=>say(String(n)), i*UNFOLD_LEAD/3)));
   unfoldTimers.push(setTimeout(()=>{ const el=document.getElementById('closing'); if(el){ el.classList.remove('sealed'); el.classList.add('open','just'); } sfx('reveal'); launchConfetti(); paintOpened(); }, UNFOLD_LEAD));
 }
-function paintOpened(){ const el=document.getElementById('clOpened'); if(!el) return; const n=live.letters||0; el.textContent= n>0 ? `${n} ${n===1?'letter':'letters'} unfolded in this hall` : ''; }
+function paintOpened(){ const el=document.getElementById('clOpened'); if(!el) return; const n=live.letters||0; el.textContent= n>0 ? `${n} ${n===1?'letter':'letters'} unfolded in this room` : ''; }
 function renderBloom(){
   const cols=22, rows=10; let cells='';
   for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) cells+=`<i style="--r:${r}"></i>`;
@@ -2295,7 +2307,7 @@ function renderContent(step){
     case 'finale': return renderFinale();
     case 'bloom': return renderBloom();
     case 'fold': return renderFold(step);
-    case 'fleet': return `<div style="width:100%; height:100%; position:relative; background:#00061f">${iframeLoading()}<iframe src="x/fleet.html?embed=1&v=2" title="The Fleet Sets Sail" style="width:100%; height:100%; border:0; display:block; position:relative; z-index:1" allow="autoplay"></iframe></div>`;
+    case 'fleet': return `<div style="width:100%; height:100%; position:relative; background:#00061f">${iframeLoading()}<iframe src="x/fleet.html?embed=1&v=2&call=raise%20your%20hand" title="The Fleet Sets Sail" style="width:100%; height:100%; border:0; display:block; position:relative; z-index:1" allow="autoplay"></iframe></div>`;
     case 'memento': return renderClosing(false);
     case 'video': return `<div style="width:100%; height:100%; background:#000; position:relative; display:flex; align-items:center; justify-content:center">${iframeLoading()}<iframe src="${step.url}" style="width:100%; height:100%; border:0; position:relative; z-index:1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`;
     case 'slide': if(deckFor(step)) return renderScene(step);
@@ -2307,7 +2319,7 @@ function renderContent(step){
 
 /* The close: their card (on every phone now) beside the ask. */
 const CARD_URL='https://go.gov.sg/probeatty', CARD_URL_LABEL='beattysec.moe.edu.sg';
-const WHY_BEATTY=[['8','international exchanges'],['6','industry attachments'],['17','CCAs to belong to']];
+const WHY_BEATTY=[['8','international exchanges'],['6','industry attachments'],['17','CCAs to choose from']];
 function renderClosing(thanks){
   const cardStep=journeySteps.find(s=>s.type==='memento'), open= thanks || !isPresenter || !!(cardStep && cardStep.unfolded);   // a mirror cannot hear the cue: it shows the letter
   return `<div class="closing ${open?'open':'sealed'}" id="closing">
@@ -2315,14 +2327,14 @@ function renderClosing(thanks){
     <div class="cl-side cl-before">
       <p class="eyebrow">Before you go</p>
       <h2 class="stage-title">There is a letter<br><span class="gold">inside your boat</span></h2>
-      <p class="stage-sub">It is from you, four years from now. Hold your phone up: on the count, the whole hall unfolds together.</p>
+      <p class="stage-sub">It is from you, four years from now. Hold your phone up: on the count, the whole room unfolds together.</p>
       <div class="cl-count" id="clCount"></div>
     </div>
     <div class="cl-side cl-after">
       <p class="eyebrow">${thanks?'Thank you for sailing with us':'Your journey begins'}</p>
       <h2 class="stage-title">Make Beatty your<br><span class="gold">1st choice</span></h2>
       <p class="stage-sub">Your letter is written from your own answers today. Read it. Save it. Open it again when you choose your schools.</p>
-      <p class="cl-opened" id="clOpened">${(live.letters||0)>0?`${live.letters} ${live.letters===1?'letter':'letters'} unfolded in this hall`:''}</p>
+      <p class="cl-opened" id="clOpened">${(live.letters||0)>0?`${live.letters} ${live.letters===1?'letter':'letters'} unfolded in this room`:''}</p>
       <div class="cl-why">${WHY_BEATTY.map(([n,t])=>`<p><b>${n}</b><span>${t}</span></p>`).join('')}</div>
       <div class="cl-cta">
         <span class="cl-qr">${BTY.qrSVG(CARD_URL,{label:'Explore Beatty'})}</span>
@@ -2499,43 +2511,38 @@ function paintHive(){
   const CAP=91, TAIL=12; let shown=entries;
   if(entries.length>CAP){ const fixed=entries.slice(0,CAP-TAIL), tail=entries.slice(CAP-TAIL); const win=[]; for(let k=0;k<TAIL;k++) win.push(tail[(hiveRot+k)%tail.length]); shown=fixed.concat(win);
     if(!hiveRotTimer) hiveRotTimer=setInterval(()=>{ hiveRot+=TAIL; if(!document.getElementById('hiveHost')){ clearInterval(hiveRotTimer); hiveRotTimer=null; return; } paintHive(); },6000); }
-  const W=host.clientWidth, H=host.clientHeight;
-  const cw=Math.max(96, Math.min(150, W/9)), ch=cw*0.88, cx=W/2-cw/2, cy=H*0.5-ch/2;
-  const coords=hexSpiral(shown.length, cw, ch);
-  host.querySelectorAll('.hive-cell').forEach(c=>{ if(+c.dataset.i>=shown.length) c.remove(); });
+  const W=host.clientWidth, H=host.clientHeight, n=shown.length;
+  // Size the comb to the room: as many rings as the words need, every cell inside the frame and clear of the title.
+  let rings=0; while(1+3*rings*(rings+1)<n) rings++;
+  const top=Math.min(150, H*0.24);
+  const cw=Math.max(60, Math.min(140, (W*0.92)/(2*rings+1.1), ((H-top)*0.9)/(0.88*(1.5*rings+1.1)))), ch=cw*0.88;
+  const cx=W/2-cw/2, cy=top+(H-top)/2-ch/2, coords=hexSpiral(n, cw*1.035, ch*1.035);
+  host.querySelectorAll('.hive-cell').forEach(c=>{ if(+c.dataset.i>=n) c.remove(); });
   shown.forEach((e,i)=>{
-    const label=e.n>1?`${e.w}<span class="hive-n">×${e.n}</span>`:e.w;
+    const label=`<span class="hive-w">${escH(e.w)}</span>`+(e.n>1?`<span class="hive-n">×${e.n}</span>`:'');
     let cell=host.querySelector(`.hive-cell[data-i="${i}"]`);
-    if(!cell){ cell=document.createElement('div'); cell.className='hive-cell'; cell.dataset.i=i;
-      cell.style.width=cw+'px'; cell.style.height=ch+'px';
-      host.appendChild(cell);
-      const p=coords[i]; cell.style.left=(cx+p.x)+'px'; cell.style.top=(cy+p.y)+'px';
+    if(!cell){ cell=document.createElement('div'); cell.className='hive-cell'; cell.dataset.i=i; host.appendChild(cell);
       cell.innerHTML=label; cell.dataset.w=e.w;
       if(isPresenter){ cell.title='Click to hide (moderation)'; cell.style.cursor='pointer';
-        cell.onclick=()=>{ hiddenCells.add(e.w.toLowerCase()); cell.remove(); paintHive(); }; }
+        cell.onclick=()=>{ hiddenCells.add(cell.dataset.w.toLowerCase()); cell.remove(); paintHive(); }; }
       setTimeout(()=>{ cell.classList.add('on'); sfx('cell'); }, 40*i+30);
     } else if(cell.dataset.w!==e.w || cell.dataset.n!==String(e.n)){ cell.innerHTML=label; cell.dataset.w=e.w; }
-    cell.dataset.n=e.n; cell.style.fontSize=Math.max(11, Math.min(22, cw/8 + Math.min(6, (e.n-1)*1.5)))+'px';
+    const p=coords[i]; cell.style.width=cw+'px'; cell.style.height=ch+'px'; cell.style.left=(cx+p.x)+'px'; cell.style.top=(cy+p.y)+'px';
+    // The word is set as large as its longest part allows, so it wraps only at a space and never inside a word.
+    const longest=Math.max(...String(e.w).split(/\s+/).map(t=>t.length), 3);
+    cell.dataset.n=e.n; cell.style.fontSize=Math.max(8, Math.min(22, (cw*0.8)/(longest*0.7)))+'px';
     cell.classList.toggle('many', e.n>=3);
   });
 }
+/* A honeycomb, ring by ring from the centre: pointed hexagons, each touching its six neighbours and overlapping none. */
 function hexSpiral(n, cw, ch){
   const out=[{x:0,y:0}]; if(n<=1) return out;
-  const dx=cw*0.78, dyRow=ch*0.75, dyHalf=ch*0.375;
-  let ring=1;
-  while(out.length<n){
-    // 6 directions around a ring (approx axial hex)
-    const dirs=[[dx,dyHalf],[0,dyRow],[-dx,dyHalf],[-dx,-dyHalf],[0,-dyRow],[dx,-dyHalf]];
-    let x=dx*ring, y=-dyHalf*ring; // start
-    for(let side=0; side<6 && out.length<n; side++){
-      for(let step=0; step<ring && out.length<n; step++){
-        out.push({x,y}); x+=dirs[side][0]; y+=dirs[side][1];
-      }
-    }
-    ring++;
-    if(ring>12) break;
+  const D=[[cw,0],[cw/2,-ch*.75],[-cw/2,-ch*.75],[-cw,0],[-cw/2,ch*.75],[cw/2,ch*.75]];   // east, north east, north west, west, south west, south east
+  for(let ring=1; out.length<n; ring++){
+    let x=D[4][0]*ring, y=D[4][1]*ring;
+    for(let side=0; side<6 && out.length<n; side++) for(let step=0; step<ring && out.length<n; step++){ out.push({x,y}); x+=D[side][0]; y+=D[side][1]; }
   }
-  return out.slice(0,n);
+  return out;
 }
 
 /* Globe (procedural gold wireframe, Three.js with fallback) */
@@ -2839,7 +2846,7 @@ function phoneFor(s){
     case 'duo':       return { t:'keys', title:s.title||(s.items||[]).map(x=>x.label).join(' · '), keys:(s.items||[]).map(x=>x.title) };
     case 'pillars':   return { t:'keys', title:s.title||'', keys:(s.items||[]).map(x=>x.title) };
     case 'steps':     return { t:'keys', title:s.title||'', keys:(s.items||[]).map(x=>(x.tag?x.tag+' · ':'')+x.title) };
-    case 'stats':     { const x=(s.items||[])[0]||{}; return { t:'stat', title:s.title||'', n:String(x.n||''), suffix:x.suffix||'', label:x.label||'' }; }
+    case 'stats':     return { t:'stats', title:s.title||'', items:(s.items||[]).map(x=>({ n:String(x.n||'')+(x.suffix||''), l:x.label||'' })) };   // the phone mirrors the slide: every number, every label
     case 'acronym':   return { t:'chips', title:String(s.title||'').split(':')[0], chips:(s.letters||[]).map(l=>({l:l[0], w:l[1]})) };
     case 'bars':      return { t:'point', icon:'chart', title:s.title||'', line:s.sub||'' };
     case 'cover':     return { t:'point', icon:s.icon||'', title:s.title||'', line:s.sub||'' };
@@ -2852,7 +2859,7 @@ function phoneFor(s){
     case 'table':     return { t:'point', icon:'chart', title:s.title||'', line:s.sub||'' };
     case 'links':     return { t:'links', title:s.title||'', line:s.sub||'', links:(s.items||[]).map(x=>({ label:x.label||'', url:x.url })) };
     case 'logos':     return { t:'keys', title:s.title||'', keys:(s.items||[]).map(x=>x.name).filter(Boolean).slice(0,8) };
-    case 'pins':      return { t:'keys', title:s.title||'', keys:(s.pins||[]).map(p=>p.label).slice(0,7) };
+    case 'pins':      return { t:'keys', title:s.title||'', keys:(s.pins||[]).map(p=>p.label) };
     case 'stairs':    return { t:'point', icon:'arrow', title:s.title||'', line:s.sub||'' };
     case 'mix':       return { t:'point', icon:'school', title:s.title||'', line:s.foot||'' };
     case 'crest':     return { t:'keys', title:s.title||'', keys:(s.items||[]).map(x=>x.title) };
@@ -3074,6 +3081,7 @@ function animateSlide(s, body){
   const T=(fn,ms)=>setTimeout(()=>{ if(live()) fn(); }, reduce?0:ms);
   if(s.kind==='pins'){ layoutPins(s, body); requestAnimationFrame(()=>layoutPins(s, body));
     const st=body.querySelector('.pn-stat b[data-to]'); if(st && !reduce){ const to=+st.dataset.to, at=parseInt(getComputedStyle(st.parentElement).getPropertyValue('--d'))||6000; st.textContent='0'; T(()=>countUp(st,0,to,1100,''), at+250); } }
+  { const gs=body.querySelector('.gal-stat b[data-to]'); if(gs && !reduce){ const to=+gs.dataset.to; gs.textContent='0'; T(()=>countUp(gs,0,to,1500,''), 700); } }   // a gallery's counter runs up
   if(s.kind==='crest'){
     const lis=[...body.querySelectorAll('.cr-list li')], now=i=>lis.forEach((li,k)=>{ li.classList.toggle('now',k===i); if(k<=i) li.classList.add('lit'); });
     if(reduce){ lis.forEach(li=>li.classList.add('lit','done')); }
@@ -3298,7 +3306,8 @@ function slideHTML(s){
         <div class="ph-area fit-box whole">${FIG(s.img)}</div>
         ${cap?`<div class="ph-band bi"${D_(200)}>${s.eyebrow?`<p class="eyebrow">${escH(s.eyebrow)}</p>`:''}${s.title?`<h3>${escH(s.title)}</h3>`:''}${s.caption?`<p>${escH(s.caption)}</p>`:''}</div>`:''}</div>`; }
     case 'gallery': { const im=(s.imgs||[]).map(x=>typeof x==='string'?{src:x}:x), n=im.length;
-      return `${T(s.title, s.sub?' sm tight':' sm')}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}
+      const cnt=s.count?`<span class="gal-stat"><span class="pre">${escH(s.count.pre||'')}</span><b data-to="${+s.count.n}">${+s.count.n}</b><span class="l">${escH(s.count.label||'')}</span></span>`:'';   // sits at the right of the header row
+      return `${T(s.title, s.sub?' sm tight':' sm')}${s.sub?`<p class="sc-sub2 bi${cnt?' has-stat':''}"${D_(140)}>${escH(s.sub)}${cnt}</p>`:''}
         <div class="sc-gal fit-box${s.whole?' whole':''} bi"${D_(160)}>${im.map(FIG).join('')}</div>
         ${s.note?`<p class="sc-note bi"${D_(300)}>${escH(s.note)}</p>`:''}`; }
     case 'feature': { const im=(s.imgs||(s.img?[s.img]:[])).map(x=>typeof x==='string'?{src:x}:x).map(x=>s.fit&&!x.fit?{...x,fit:s.fit}:x);
@@ -3390,7 +3399,7 @@ function liveHTML(s){
         <div class="sc-meta bi"${D_(380)}>${BTY.icon('heart')}<b id="scN">0</b><span id="scNl">responses</span></div>`;
     case 'words': return `${T}<div class="sc-cloud" id="scLive"></div>`;
     case 'questions': return `${T}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<div class="sc-qwall bi"${D_(220)} id="scLive"></div>
-        <div class="sc-meta bi"${D_(380)}>${BTY.icon('curious')}<b id="scN">0</b><span id="scNl">questions from the hall</span></div>`;
+        <div class="sc-meta bi"${D_(380)}>${BTY.icon('curious')}<b id="scN">0</b><span id="scNl">questions from the room</span></div>`;
     case 'fleet': return `<div class="sc-fleet"><div class="n bi" id="scN" data-count="0">0</div><div class="l bi"${D_(260)}>${escH(s.title||'boats set sail tonight')}</div>
         <div class="sails bi"${D_(480)}>${Array.from({length:9},(_,k)=>`<span style="--k:${k}">${BTY.icon('sail')}</span>`).join('')}</div></div>`;
   }
@@ -3455,7 +3464,7 @@ function paintSceneLive(){
     if(spotQ && !all.some(q=>q.id===spotQ)) spotQ=null;
     if(spotQ && !shown.some(q=>q.id===spotQ)) shown.splice(5,1,all.find(q=>q.id===spotQ));
     shown.sort((a,b)=>(b.id===spotQ)-(a.id===spotQ));
-    setTxt('scN',all.length); setTxt('scNl',all.length===1?'question from the hall':'questions from the hall');
+    setTxt('scN',all.length); setTxt('scNl',all.length===1?'question from the room':'questions from the room');
     const sig=shown.map(q=>q.id).join('|')+'#'+spotQ; if(host.dataset.sig===sig) return; host.dataset.sig=sig;
     host.innerHTML= shown.length ? shown.map(q=>`<div class="qcard${q.id===spotQ?' spot':''}" data-q="${escH(q.id)}"><p>${escH(q.t)}</p>${isPresenter?'<button class="qx" type="button" title="Take this question off the screen" aria-label="Hide this question">×</button>':''}</div>`).join('')
       : `<div class="q-none"><span>${BTY.icon('curious')}</span><b>Ask us anything</b><p>Type it on your phone, or raise a hand.</p></div>`;
@@ -3536,9 +3545,9 @@ const STEP_NOTES={
   pulse_check:'Read the room: phones tap a mood.',
   deck_d2:'Industry attachments: who our students work with.',
   deck_tail:'After the letter: phones keep it on screen. How to choose a school, then questions.',
-  set_sail:'Phones name their boats. When most are ready, press SET SAIL and lead the call: Non Vi! Sed Arte! Three times; the boats leave together.',
+  set_sail:'Phones name their boats. Give the room a full minute or two: the presenter view shows how many are named and turns gold at 4 in 5. Then press SET SAIL and lead the call: Non Vi! Sed Arte! Three times; the boats leave together.',
   finale:'Every cell is a word from a boat. Click a cell to hide it if needed.',
-  card:'Every phone shows its boat: there is a letter inside. Ask the hall to hold their phones up, then press Next (it reads Unfold together): the screen counts 3, 2, 1 and every boat opens at the same moment into a letter from their 2030 self, written from their own answers today. Give them a quiet half minute to read. Then: save it, and make Beatty your 1st choice in S1 Posting.',
+  card:'Every phone shows its boat: there is a letter inside. Ask the room to hold their phones up, then press Next (it reads Unfold together): the screen counts 3, 2, 1 and every boat opens at the same moment into a letter from their 2030 self, written from their own answers today. Give them a quiet half minute to read. Then: save it, and make Beatty your 1st choice in S1 Posting.',
 };
 const notesCh=('BroadcastChannel' in window) ? new BroadcastChannel('bty-speaker') : null;
 let showStartedAt=0, stepStartedAt=0, notesStepSeen=-1;

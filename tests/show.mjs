@@ -121,10 +121,10 @@ await shot(pr, 'show-big-open');
 await sleep(5200);
 const card = await phones[0].evaluate(() => ({ text: document.getElementById('ltPaper').innerText, ink: [...document.querySelectorAll('#ltPaper .ink')].map(b => b.textContent),
   links: [...document.querySelectorAll('.bp-links a')].map(a => a.href), qr: document.querySelector('a.bp-qr')?.href || '', ask: !!document.getElementById('askCardBtn') }));
-c.ok(/Dear P6 me/.test(card.text) && card.ink.includes('Pilot') && card.ink.some(t => /clubs exist/.test(t)) && /each child is a gift/i.test(card.text) && /All of us at Beatty/.test(card.text),
+c.ok(/Dear P6 Me/.test(card.text) && /This is your future self, a Sec 4 student graduating from Beatty/.test(card.text) && /Non Vi Sed Arte/.test(card.text) && /You will choose Beatty and know that you have chosen well/.test(card.text) && card.ink.includes('Pilot') && card.ink.some(t => /clubs exist/.test(t)) && /each child is a gift/i.test(card.text) && /All of us at Beatty/.test(card.text),
   `the letter is written from this visitor's answers: their word, their question (${card.ink.length} handwritten parts)`);
 c.ok(card.ink.some(t => /1 other/.test(t)) && /D\.R\.E\.A\.M\./.test(card.text) && /9 in 10/.test(card.text), 'it quotes the hall (the fleet), and their poll answers back to them');
-c.ok(card.ink.includes('bridging cultures') && card.ink.includes('Builder Bee'), 'it quotes their bee quiz back: what a good future means to them, and their second bee');
+c.ok(card.ink.includes('bridging cultures') && card.ink.includes('Scout Bee') && !/streak/.test(card.text), 'it quotes their bee quiz back: what a good future means to them, and the one bee they found (no second bee)');
 c.ok(card.links.length >= 4 && card.links.every(u => /^https:\/\/go\.gov\.sg\//.test(u)) && /^https:/.test(card.qr) && card.ask, 'under the letter: links to tap, the QR is a link, and Ask a question');
 await phones[0].setViewportSize({ width: 390, height: 1700 }); await sleep(300); await shot(phones[0], 'show-phone-letter'); await phones[0].setViewportSize({ width: 390, height: 844 });
 const png = await phones[0].evaluate(() => window.__renderCard());

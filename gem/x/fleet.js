@@ -507,7 +507,8 @@ function gust() { fleetArea.classList.remove('gust'); void fleetArea.offsetWidth
 function rollCall(dest, last) {
     let cap = document.getElementById('fleetCall');
     if (!cap) { cap = document.createElement('div'); cap.id = 'fleetCall'; cap.className = 'fleet-call'; document.body.appendChild(cap); }
-    cap.innerHTML = `<span class="fc-swatch" style="background:${dest.col};color:${dest.col}"></span>${dest.name} — <em>wave!</em>`;
+    const say = (new URLSearchParams(location.search).get('call') || '').replace(/[<>&"']/g, '').slice(0, 40);   // the embedding page may word the call
+    cap.innerHTML = `<span class="fc-swatch" style="background:${dest.col};color:${dest.col}"></span>${dest.name}` + (say ? `: <em>${say}</em>` : ` — <em>wave!</em>`);
     cap.classList.remove('pop', 'out'); void cap.offsetWidth; cap.classList.add('pop');
     boatElements.forEach((el, uid) => { const d = boats.get(uid); el.classList.toggle('called', !!(d && d.global && d.global.id === dest.id)); });
     setTimeout(() => { boatElements.forEach(el => el.classList.remove('called')); if (last) cap.classList.add('out'); }, 2800);
