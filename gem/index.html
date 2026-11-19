@@ -1661,6 +1661,16 @@ footer:hover #prevBtn, footer:hover #nextBtn{opacity:1}   /* over the footer the
 @keyframes fsCap{from{opacity:0; transform:translate(-50%,60%)} to{opacity:1; transform:translate(-50%,0)}}
 .fs-w{display:inline-block; animation:fsWord .6s cubic-bezier(.2,1.4,.3,1) both; animation-delay:calc(200ms + var(--w)*620ms)}
 @keyframes fsWord{from{opacity:0; transform:translateY(.45em) scale(.92)} to{opacity:1; transform:none}}
+/* The join code in the header, for anyone who arrives late: large enough to scan from a seat (it hangs a little
+   below the header line, into the gap above the slide), with the short link beside it for anyone who cannot scan. */
+header{--hh:clamp(60px,calc(7*var(--vh)),80px)}
+.qr-pill{--qs:clamp(56px,calc(7.5*var(--vh)),86px); padding:3px 16px 3px 3px; gap:12px; border-radius:13px; transform:translateY(calc((var(--qs) + 6px - var(--hh))/2 + 2px))}
+.qr-pill .qr-svg{width:var(--qs); height:var(--qs); padding:0; border-radius:9px; overflow:hidden}
+.qr-svg img{display:block; width:100%; height:100%; object-fit:contain; background:#fff}
+#qrOverlay .qr-big .qr-svg img{width:100%; height:100%}
+.qr-pill .qp-t{display:flex; flex-direction:column; gap:4px; text-align:left}
+.qr-pill .qp-t i{font-style:normal; font-weight:700; letter-spacing:0; text-transform:none; color:#fff; font-size:clamp(.9rem,calc(1.2*var(--vw)),1.3rem)}
+.qr-pill .qp-t i:empty{display:none}
 html.calm .fs-plate, html.calm .fs-bob, html.calm .fs-w, html.calm .fs-plate figcaption, html.calm .fs-side img{animation:none} html.calm .fs-flip{transition:none}
 </style>
 </head>
@@ -1737,7 +1747,7 @@ html.calm .fs-plate, html.calm .fs-bob, html.calm .fs-w, html.calm .fs-plate fig
       <span class="pulse-bar"></span><span class="pulse-bar"></span><span class="pulse-bar"></span><span class="pulse-bar"></span><span class="pulse-bar"></span>
     </div>
     <div class="pill" id="liveBadge" title="Only a screen opened with ?presenter=true drives the phones">VIEW ONLY</div>
-    <div class="pill qr-pill hidden" id="qrPill" title="Show the join QR large"><img src="joinbtyqr.png" alt="Scan to join" onerror="this.style.display='none'"><span>Scan<br>to join</span></div>
+    <div class="pill qr-pill hidden" id="qrPill" title="Show the join QR large"><img src="joinbtyqr.png" alt="Scan to join" onerror="this.style.display='none'"><span class="qp-t"><b>Scan to join</b><i id="qrPillUrl"></i></span></div>
     <div class="pill" id="participantPill" aria-live="polite"><span class="pp-bee"></span><span class="n" id="pCount">Warming up…</span></div>
   </div>
 </header>
@@ -1836,16 +1846,21 @@ const STATE_DOC = 'v2';
 /* Where phones join. Worked out from this page's own address, so it is right wherever the show is hosted.
    If you have a short link (e.g. 'go.gov.sg/joinbtx') that points at the audience page, put it in JOIN_SHORT:
    the QR codes and the text on screen will use it instead. */
-const JOIN_SHORT = '';
+const JOIN_SHORT = 'go.gov.sg/btyoh26';
+/* The official GO.gov.sg QR code for that short link (a picture, cut square). Set to '' to draw a plain code from JOIN_LINK instead;
+   if the picture ever fails to load, a plain code is drawn in its place. */
+const JOIN_QR_IMG = JOIN_SHORT ? 'join-qr.png' : '';
 const JOIN_URL = new URL('join/', location.href).href.split('?')[0];   // the audience page
 const JOIN_LINK = JOIN_SHORT ? 'https://' + JOIN_SHORT.replace(/^https?:\/\//,'') : JOIN_URL;
 const JOIN_LABEL = JOIN_LINK.replace(/^https?:\/\//,'').replace(/\/$/,'');
-// Every join QR on this screen is drawn here from JOIN_LINK (no image file to keep in step).
+// Every join QR on this screen comes from here: the official picture, or a code drawn from JOIN_LINK.
+function joinQR(){ return JOIN_QR_IMG ? `<img src="${JOIN_QR_IMG}" alt="Scan to join: ${JOIN_LABEL}" onerror="this.outerHTML=BTY.qrSVG(JOIN_LINK,{label:'Scan to join'})">` : BTY.qrSVG(JOIN_LINK,{label:'Scan to join'}); }
 (function drawJoinQRs(){
   if(!window.BTY) return;
   const pb=document.querySelector('#participantPill .pp-bee'); if(pb) pb.innerHTML=BTY.icon('bee');
-  document.querySelectorAll('img[src="joinbtyqr.png"]').forEach(img=>{ const w=document.createElement('span'); w.className='qr-svg'; w.innerHTML=BTY.qrSVG(JOIN_LINK,{label:'Scan to join'}); img.replaceWith(w); });
+  document.querySelectorAll('img[src="joinbtyqr.png"]').forEach(img=>{ const w=document.createElement('span'); w.className='qr-svg'; w.innerHTML=joinQR(); img.replaceWith(w); });
   const u=document.getElementById('qrUrl'); if(u) u.textContent=JOIN_LABEL;
+  const pu=document.getElementById('qrPillUrl'); if(pu) pu.textContent=JOIN_SHORT ? JOIN_LABEL : '';   // a link short enough to type, for anyone who cannot scan
 })();
 const isPresenter = new URLSearchParams(location.search).get('presenter')==='true';
 
@@ -2374,7 +2389,7 @@ function renderCompass(){
   const s=journeySteps[currentStep];
   return `<div class="wrap"><div class="join">
     <div class="join-qr">
-      <div class="jq-card"><span class="qr-svg">${BTY.qrSVG(JOIN_LINK,{label:'Scan to join'})}</span></div>
+      <div class="jq-card"><span class="qr-svg">${joinQR()}</span></div>
       <div class="jq-cta">Scan to join the Hive</div>
       <div class="jq-url">${JOIN_LABEL}</div>
       <div class="jq-live"><div><b id="jqIn">${live.compass.joined||0}</b><span>in the Hive</span></div><div><b class="ready" id="jqReady">${live.compass.total||0}</b><span>found their bee</span></div></div>

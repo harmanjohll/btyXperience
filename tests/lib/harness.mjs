@@ -123,6 +123,11 @@ const JSQR = readFileSync(path.join(HERE, 'jsQR.js'), 'utf8');
 export async function decodeQR(page, selector) {
   await page.addScriptTag({ content: JSQR });
   return page.evaluate(async sel => {
+    const pic = document.querySelector(sel + ' img') || (document.querySelector(sel)?.tagName === 'IMG' ? document.querySelector(sel) : null);
+    if (pic) {   // a QR that is a picture (the official code): read it as drawn
+      await pic.decode(); const cv = document.createElement('canvas'); cv.width = cv.height = 440; const x = cv.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, 440, 440); x.drawImage(pic, 20, 20, 400, 400);
+      const d = x.getImageData(0, 0, 440, 440); const r = window.jsQR(d.data, 440, 440); return r ? r.data : null;
+    }
     const svg = document.querySelector(sel + ' svg') || document.querySelector(sel); if (!svg) return null;
     let xml = new XMLSerializer().serializeToString(svg).replace('<svg ', '<svg width="400" height="400" ');
     if (!/xmlns=/.test(xml)) xml = xml.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
