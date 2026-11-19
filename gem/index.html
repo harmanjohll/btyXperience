@@ -1661,10 +1661,11 @@ footer:hover #prevBtn, footer:hover #nextBtn{opacity:1}   /* over the footer the
 @keyframes fsCap{from{opacity:0; transform:translate(-50%,60%)} to{opacity:1; transform:translate(-50%,0)}}
 .fs-w{display:inline-block; animation:fsWord .6s cubic-bezier(.2,1.4,.3,1) both; animation-delay:calc(200ms + var(--w)*620ms)}
 @keyframes fsWord{from{opacity:0; transform:translateY(.45em) scale(.92)} to{opacity:1; transform:none}}
-/* The join code in the header, for anyone who arrives late: large enough to scan from a seat (it hangs a little
-   below the header line, into the gap above the slide), with the short link beside it for anyone who cannot scan. */
-header{--hh:clamp(60px,calc(7*var(--vh)),80px)}
-.qr-pill{--qs:clamp(56px,calc(7.5*var(--vh)),86px); padding:3px 16px 3px 3px; gap:12px; border-radius:13px; transform:translateY(calc((var(--qs) + 6px - var(--hh))/2 + 2px))}
+/* The join code in the header, for anyone who arrives late: large enough to scan from a seat, with the short link
+   beside it for anyone who cannot scan. The header band is a little taller so the code sits wholly inside it:
+   nothing hangs over the header line or over what is shown below it. */
+header{--hh:clamp(68px,calc(8.6*var(--vh)),98px); height:var(--hh)}
+.qr-pill{--qs:calc(var(--hh) - 18px); padding:3px 16px 3px 3px; gap:12px; border-radius:13px}
 .qr-pill .qr-svg{width:var(--qs); height:var(--qs); padding:0; border-radius:9px; overflow:hidden}
 .qr-svg img{display:block; width:100%; height:100%; object-fit:contain; background:#fff}
 #qrOverlay .qr-big .qr-svg img{width:100%; height:100%}
