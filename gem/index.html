@@ -1637,6 +1637,31 @@ footer:hover #prevBtn, footer:hover #nextBtn{opacity:1}   /* over the footer the
 .scene.cream .sc-logos .lg, .scene.cream .sc-links .qr{ border:1px solid var(--paper-line); box-shadow:none }
 .scene.cream .ft-media.round figure{ box-shadow:0 0 0 3px var(--red) }
 .scene.cream .sc-gal figure, .scene.cream .ft-media figure, .scene.cream .sc-qimg figure, .scene.cream .fit-box > figure .fx, .scene.cream .fit-box > figure img{ box-shadow:0 1px 2px rgba(0,12,83,.10), 0 10px 24px rgba(0,12,83,.07) }
+
+/* ============================================================================================================
+   THE FEAST (kind:'feast'): the canteen's dishes as round plates on the table. They are served one by one,
+   the plates shot from above turn slowly, and each plate turns over to show who cooks it, then the next dish.
+   ============================================================================================================ */
+.sc-feast{flex:1 1 0; min-height:0; width:100%; max-height:calc(70*var(--vh)); container-type:size; display:flex; flex-direction:column; align-items:center; justify-content:center; --pd:min(46cqh,19.4cqw)}
+.fs-row{display:flex; justify-content:center; gap:calc(var(--pd)*.14)}
+.fs-row:first-child{margin-right:calc(var(--pd)*.57)} .fs-row + .fs-row{margin-left:calc(var(--pd)*.57); margin-top:calc(var(--pd)*.02)}
+.fs-plate{position:relative; flex:none; width:var(--pd); height:var(--pd); margin:0; animation:fsIn .95s cubic-bezier(.2,.9,.25,1) both; animation-delay:calc(450ms + var(--i)*130ms)}
+@keyframes fsIn{0%{opacity:0; transform:translate(var(--fx),var(--fy)) rotate(var(--fr)) scale(.5)} 68%{opacity:1; transform:translate(0,0) rotate(7deg) scale(1.05)} 100%{opacity:1; transform:none}}
+.fs-bob{position:absolute; inset:0; perspective:1400px; animation:fsBob 4.4s ease-in-out infinite alternate; animation-delay:calc(var(--i)*-.83s)}
+@keyframes fsBob{from{transform:translateY(-1.6%)} to{transform:translateY(1.6%)}}
+.fs-flip{position:absolute; inset:0; transform-style:preserve-3d; transform:rotateY(calc(var(--t,0)*180deg)); transition:transform .95s cubic-bezier(.3,1.25,.4,1)}
+.fs-side{position:absolute; inset:0; border-radius:50%; overflow:hidden; backface-visibility:hidden; -webkit-backface-visibility:hidden; background:var(--cream-deep);
+  box-shadow:0 calc(var(--pd)*.06) calc(var(--pd)*.09) calc(var(--pd)*-.05) rgba(70,48,12,.5), 0 0 0 1px rgba(0,12,83,.07)}
+.fs-back{transform:rotateY(180deg)}
+.fs-side img{display:block; width:100%; height:100%; object-fit:cover; border-radius:50%}
+.fs-plate.spin .fs-side img.dish{animation:fsSpin 90s linear infinite} .fs-plate.spin:nth-child(even) .fs-side img.dish{animation-direction:reverse}
+@keyframes fsSpin{to{transform:rotate(360deg)}}
+.fs-plate figcaption{position:absolute; z-index:3; left:50%; bottom:-3%; transform:translateX(-50%); white-space:nowrap; background:var(--cream); color:var(--paper-ink); border:1px solid var(--paper-line); border-radius:999px;
+  padding:.22em .9em .26em; font-family:var(--sans); font-weight:700; font-size:max(20px,calc(1.12*var(--vw))); line-height:1.2; animation:fsCap .5s var(--ease) both; animation-delay:calc(1300ms + var(--i)*130ms)}
+@keyframes fsCap{from{opacity:0; transform:translate(-50%,60%)} to{opacity:1; transform:translate(-50%,0)}}
+.fs-w{display:inline-block; animation:fsWord .6s cubic-bezier(.2,1.4,.3,1) both; animation-delay:calc(200ms + var(--w)*620ms)}
+@keyframes fsWord{from{opacity:0; transform:translateY(.45em) scale(.92)} to{opacity:1; transform:none}}
+html.calm .fs-plate, html.calm .fs-bob, html.calm .fs-w, html.calm .fs-plate figcaption, html.calm .fs-side img{animation:none} html.calm .fs-flip{transition:none}
 </style>
 </head>
 <body>
@@ -2852,6 +2877,7 @@ function phoneFor(s){
     case 'cover':     return { t:'point', icon:s.icon||'', title:s.title||'', line:s.sub||'' };
     case 'photo':     return { t:'look', icon:'eye', title:s.title||'Look up', line:s.caption||'' };
     case 'gallery':   return { t:'look', icon:'eye', title:s.title||'Look up', line:s.sub||s.note||'' };
+    case 'feast':     return { t:'look', icon:'eye', title:s.title||'Look up', line:s.sub||'' };
     case 'feature':   { const k=(s.items||[]).map(x=>typeof x==='string'?x:(x.title||x.body)).filter(Boolean).slice(0,4); return k.length ? { t:'keys', title:s.title||'', keys:k } : { t:'point', icon:'', title:s.title||'', line:s.sub||'' }; }
     case 'people':    return { t:'keys', title:s.title||'', keys:(s.items||[]).map(x=>[x.name,x.role].filter(Boolean).join(' · ')).filter(Boolean).slice(0,5) };
     case 'columns':   return { t:'keys', title:s.title||'', keys:(s.cols||[]).map(c=>c.head+': '+(c.items[0]||'')) };
@@ -3090,6 +3116,13 @@ function animateSlide(s, body){
       T(()=>{ now(2); body.querySelector('.cr-shine')?.classList.add('go'); }, landed+150);
       T(()=>lis.forEach(li=>{ li.classList.remove('now'); li.classList.add('lit','done'); }), landed+2200); } }
   if(s.kind==='stairs') runStairs(body, live, reduce);
+  if(s.kind==='feast' && !reduce){   // every two seconds a plate turns over: the dish, who cooks it, the next dish
+    const ps=[...body.querySelectorAll('.fs-plate')].map(el=>({ el, faces:JSON.parse(el.dataset.faces||'[]'), k:0, t:0 })).filter(p=>p.faces.length>1);
+    const turn=p=>{ p.k=(p.k+1)%p.faces.length; p.t++; const f=p.faces[p.k], im=p.el.querySelector(p.t%2?'.fs-back img':'.fs-front img');
+      if(im.getAttribute('src')!==IMG(f.s)) im.src=IMG(f.s); im.classList.toggle('dish', f.t==='dish'); p.el.querySelector('.fs-flip').style.setProperty('--t', p.t); return f; };
+    const order=[0,5,2,7,1,4,3,6].filter(i=>i<ps.length); let n=0;
+    const tick=()=>{ if(!ps.length) return; const p=ps[order[n++%order.length]], f=turn(p); if(f.t==='by') T(()=>turn(p), 3800); T(tick, 2000); };
+    T(tick, 3400); }
   if(s.kind==='mix'){ const box=body.querySelector('.sc-mixer'); if(!box) return; const W=box.clientWidth, H=box.clientHeight, nC=+box.dataset.classes, nL=+box.dataset.levels, dots=[...box.querySelectorAll('.mx-dot')];
       const gap=W*.02;
       // One box height for both phases (the tallest), and the biggest dots that fit it, so the boxes fill the
@@ -3310,6 +3343,14 @@ function slideHTML(s){
       return `${T(s.title, s.sub?' sm tight':' sm')}${s.sub?`<p class="sc-sub2 bi${cnt?' has-stat':''}"${D_(140)}>${escH(s.sub)}${cnt}</p>`:''}
         <div class="sc-gal fit-box${s.whole?' whole':''} bi"${D_(160)}>${im.map(FIG).join('')}</div>
         ${s.note?`<p class="sc-note bi"${D_(300)}>${escH(s.note)}</p>`:''}`; }
+    case 'feast': {   // round plates: each is { a, b, by, cap, spin } = a dish, a second dish, who cooks it, a label, and whether it was shot from above (so it may turn)
+      const P=s.plates||[], half=Math.ceil(P.length/2), words=String(s.title||'').match(/[^.!?]+[.!?]*/g)||[];
+      const plate=(p,i)=>{ const faces=[{s:p.a,t:'dish'}, ...(p.by?[{s:p.by,t:'by'}]:[]), ...(p.b?[{s:p.b,t:'dish'}]:[]), ...(p.by&&p.b?[{s:p.by,t:'by'}]:[])], nx=faces[1]||faces[0], side=i%2?1:-1;
+        return `<figure class="fs-plate${p.spin?' spin':''}" style="--i:${i}; --fx:${side*(260+(i%3)*90)}px; --fy:${-(180+(i%4)*60)}px; --fr:${side*(150+(i%3)*40)}deg" data-faces="${escH(JSON.stringify(faces))}">
+          <div class="fs-bob"><div class="fs-flip"><span class="fs-side fs-front"><img class="dish" src="${IMG(p.a)}" alt="${escH(p.cap||'')}"></span><span class="fs-side fs-back"><img${nx.t==='dish'?' class="dish"':''} src="${IMG(nx.s)}" alt=""></span></div></div>
+          ${p.cap?`<figcaption>${escH(p.cap)}</figcaption>`:''}</figure>`; };
+      return `<h2 class="sc-t sm${s.sub?' tight':''} bi"${D_(60)}>${words.map((w,i)=>`<span class="fs-w" style="--w:${i}">${escH(w.trim())}</span>`).join(' ')}</h2>${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}
+        <div class="sc-feast"><div class="fs-row">${P.slice(0,half).map(plate).join('')}</div><div class="fs-row">${P.slice(half).map((p,i)=>plate(p,i+half)).join('')}</div></div>`; }
     case 'feature': { const im=(s.imgs||(s.img?[s.img]:[])).map(x=>typeof x==='string'?{src:x}:x).map(x=>s.fit&&!x.fit?{...x,fit:s.fit}:x);
       const media = s.round
         ? `<div class="ft-media round bi"${D_(140)}>${im.slice(0,1).map(x=>`<figure><img src="${IMG(x.src)}" alt="" style="object-position:${escH(x.pos||s.pos||'50% 30%')}"></figure>`).join('')}</div>`
@@ -3475,7 +3516,7 @@ function paintSceneLive(){
 function countUp(el, from, to, ms, suffixHTML=''){ const t0=performance.now();
   if(CALM){ el.innerHTML=to+suffixHTML; return; }
   (function tick(now){ const p=Math.min(1,(now-t0)/ms), e=1-Math.pow(1-p,3); el.innerHTML=Math.round(from+(to-from)*e)+suffixHTML; if(p<1 && el.isConnected) requestAnimationFrame(tick); })(t0); }
-function slideImgs(s){ if(!s) return []; return [s.img && (typeof s.img==='string'?s.img:s.img.src), ...(s.imgs||[]).map(x=>typeof x==='string'?x:x.src), ...((s.items||[]).map(x=>x&&x.img))].filter(Boolean); }
+function slideImgs(s){ if(!s) return []; return [s.img && (typeof s.img==='string'?s.img:s.img.src), ...(s.imgs||[]).map(x=>typeof x==='string'?x:x.src), ...((s.items||[]).map(x=>x&&x.img)), ...(s.plates||[]).flatMap(p=>[p.a,p.b,p.by])].filter(Boolean); }
 const preloaded=new Set();
 function preloadSlide(s){ slideImgs(s).forEach(p=>{ const u=IMG(p); if(preloaded.has(u)) return; preloaded.add(u); const im=new Image(); im.src=u; }); }
 function paintScene(){
@@ -3506,6 +3547,7 @@ function paintScene(){
   setTimeout(()=>{ if(!live()) return; body.querySelectorAll('[data-ring]').forEach(c=>c.style.strokeDashoffset=String(100-(+c.dataset.ring||0))); body.querySelectorAll('.sc-row .trk i[data-w]').forEach((el,i)=>setTimeout(()=>el.style.width=el.dataset.w+'%', i*60)); }, 420);
   if(s.kind==='live' || s.kind==='ask') setTimeout(paintSceneLive, 40);
   animateSlide(s, body);
+  d.slides.forEach(x=>{ if(x.kind==='feast') preloadSlide(x); });   // many small photos: fetched when the chapter opens, so the plates never arrive empty
   preloadSlide(d.slides[sceneIdx+1]) ; preloadSlide(journeySteps[currentStep+1] && deckFor(journeySteps[currentStep+1])?.slides[0]);
   if(isPresenter) updatePPStep();
   const lastOne=currentStep===journeySteps.length-1 && sceneIdx===d.slides.length-1; if(!(st.type==='poll' && !st.revealed)) nextBtn.textContent=lastOne?'Finish':'Next ❯';

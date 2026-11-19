@@ -55,6 +55,12 @@ c.ok(await pr.evaluate(() => window.__stepIndex('poll_industry')) === -1 && (awa
   c.ok(n >= 70 && !off.edge.length && !off.left.length && !off.top.length, `all ${n} slides keep one left edge and one header height ${[...off.edge, ...off.left, ...off.top].slice(0, 6).join(', ')}`);
   c.ok(!off.dots.length, 'nothing runs into the roadmap, and every photo loads ' + off.dots.slice(0, 6).join(' | ')); }
 
+// The canteen slide: eight round plates, every photo loaded, and the plates turn over by themselves.
+{ const i = await pr.evaluate(() => window.BTY_DECKS.deck_e.slides.findIndex(s => s.kind === 'feast')); await pr.evaluate(i => window.__jump('deck_e', i), i);
+  const ok = await until(() => pr.evaluate(() => { const p = [...document.querySelectorAll('.fs-plate')];
+    return p.length === 8 && [...document.querySelectorAll('.fs-plate img')].every(im => im.complete && im.naturalWidth) && p.some(el => +el.querySelector('.fs-flip').style.getPropertyValue('--t') >= 1); }), 9000);
+  c.ok(i > 0 && ok, 'the canteen slide serves eight plates, every photo loads, and a plate turns over by itself'); }
+
 // One chapter list: the phone names the chapter the roadmap lights.
 const iMorning = await pr.evaluate(() => window.BTY_DECKS.deck_b.slides.findIndex(s => s.title === 'Morning'));
 await pr.evaluate(i => window.__jump('deck_b', i), iMorning); await sleep(1200);

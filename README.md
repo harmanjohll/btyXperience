@@ -66,6 +66,9 @@ Use one big screen at a time.
   NX3014 Aorere College, NX3015 Geography in Bali). South Korea is placed third, then Literature in Bali, Estonia and Hanoi after
   NX3015: correct the order in `gem/deck/slides.js` (the map) and in the step list in `gem/index.html` (the globe) if that is wrong.
 * **Continuous improvement photos.** New images are wanted: replace `gem/deck/img/e/future-1.jpg`, `future-2.jpg`, `future-3.jpg`.
+* **Canteen plates.** The eight labels on "Wide selection. Nutritious. Yummy!" (Noodles, Tandoori & naan, and so on) are read off the photos.
+  Correct each `cap` in `gem/deck/slides.js`; delete a `cap` to show that plate with no label. The round photos are in `gem/deck/img/e/food/`
+  (640 px, about 70 KB each; the originals stay in Google Drive, folder "Canteen").
 * **Beatty Express.** It replaced "Reading the news" and has no description line yet.
 * The partner logo slide shows 8 logos: partners, not the 6 attachments.
 * "Express", "4E" and "4N" appear beside the Full SBB slide.
