@@ -1,6 +1,6 @@
 // THE SHOW (gem/index.html + gem/join/): the version to present. This walks it end to end and checks what the
 // audit changed: one name, one chapter list on both screens, a quiz poll that hides its split until the reveal,
-// questions from the phones on a wall, the keepsake straight after "Choose Beatty!": the boat unfolds into a letter
+// the official join QR, the keepsake straight after "Choose Beatty!": the boat unfolds into a letter
 // from 2030 written from the visitor's own answers, with links that can be tapped, and it survives a second session; and the fallback (v2.html) still drives the phones.
 import { startServer } from './lib/server.mjs';
 import { loadPlaywright, checker, presenter, phone, board, goStepId, sleep, until, phoneState, foldTo, shot, decodeQR, OUT } from './lib/harness.mjs';
@@ -20,7 +20,7 @@ const pr = await presenter(browser, srv.url, '', 'index.html'); watch(pr);
 c.ok(await pr.title() === 'The Beatty Experience', 'the show is called The Beatty Experience (no "Version 2")');
 c.ok(!/version/i.test(await pr.$eval('#modeNote', e => e.textContent)), 'the start screen has no version label');
 const join = await decodeQR(pr, '#qrPill .qr-svg');
-c.ok(join === srv.url + '/join/', `the join QR scans to join/ (${join})`);
+c.ok(join === 'https://go.gov.sg/btyoh26' && await pr.$eval('#qrPillUrl', e => e.textContent) === 'go.gov.sg/btyoh26', `the join QR is the official code and scans to the short link, which is also written beside it (${join})`);
 
 const phones = [await phone(browser, srv.url, 'a', '/join/'), await phone(browser, srv.url, 'b', '/join/')]; phones.forEach(watch);
 c.ok(await phones[0].title() === 'The Beatty Experience · Join' && !/build|version/i.test(await phones[0].$eval('#app', e => e.innerText)), 'the phone page is named, and shows no build text');
@@ -33,7 +33,7 @@ const shape = await pr.evaluate(() => { const D = window.BTY_DECKS, all = Object
     asks: all.filter(s => s.kind === 'ask').length, dash: all.filter(s => /[–—]/.test(JSON.stringify({ ...s, notes: '' }))).length,
     steps: [window.__stepIndex('deck_f'), window.__stepIndex('card'), window.__stepIndex('deck_tail'), window.__stepIndex('funfact_nexus')] }; });
 c.ok(shape.lastF === 'Choose Beatty!' && shape.steps[1] === shape.steps[0] + 1 && shape.steps[2] === shape.steps[1] + 1, 'the card comes straight after "Choose Beatty!"');
-c.ok(shape.tail0 === 'Choosing a secondary school' && shape.wall > shape.thanks && shape.thanks > 0, 'how to choose a school comes after the card, then thanks, then the question wall');
+c.ok(shape.tail0 === 'Choosing a secondary school' && shape.wall === -1 && shape.thanks > 0, 'how to choose a school comes after the card, then thanks; there is no questions slide');
 c.ok(shape.asks === 0, `no one tap questions left in the slides (${shape.asks})`);
 c.ok(shape.dash === 0 && shape.steps[3] === -1, 'no dash on any slide, and the repeated "8" fun fact is gone');
 c.ok(await pr.evaluate(() => window.__stepIndex('poll_industry')) === -1 && (await pr.evaluate(() => ['poll_dream', 'poll_cca', 'poll_nexus_count'].every(id => window.__stepIndex(id) >= 0))), 'three quiz polls remain (DREAM, the CCA share, 8 and 6); the trick poll is gone');
@@ -86,20 +86,9 @@ await pr.click('#nextBtn'); await sleep(900);
 const shown = await pr.evaluate(() => [...document.querySelectorAll('.poll-opt')].map(r => r.querySelector('.pc').textContent).join());
 c.ok(shown === '1,1,0,0' && await pr.$('.poll-opt.win'), `the reveal shows the split and the answer (${shown})`);
 
-// Ask a question from the phone: an unkind one is turned back, a real one reaches the wall.
-await pr.evaluate(() => window.__jump('deck_a', 2)); await until(() => phones[0].$('#askBtn'), 5000);
-await phones[0].click('#askBtn'); await phones[0].waitForSelector('#askText');
-await phones[0].fill('#askText', 'this is shit'); await phones[0].click('#askSend'); await sleep(300);
-c.ok(/another way/.test(await phones[0].$eval('#askHint', e => e.textContent)) && !(await phoneState(phones[0])).qs, 'an unkind question is turned back on the phone');
-await phones[0].fill('#askText', 'Which clubs exist for students who like to build things?'); await phones[0].click('#askSend'); await sleep(2400);
-await phones[1].click('#askBtn'); await phones[1].waitForSelector('#askText'); await phones[1].fill('#askText', 'What time does school end on CCA days?'); await phones[1].click('#askSend'); await sleep(2400);
-const iWall = shape.wall;
-await pr.evaluate(i => window.__jump('deck_tail', i), iWall); await sleep(1400);
-c.ok(await until(async () => (await pr.$$('.sc-qwall .qcard')).length === 2, 5000) && /2/.test(await pr.$eval('#scN', e => e.textContent)), 'both questions are on the wall');
-await pr.click('.sc-qwall .qcard >> nth=1'); await sleep(400);
-c.ok(await pr.$('.sc-qwall .qcard.spot'), 'a click brings a question to the front'); await shot(pr, 'show-question-wall');
-await pr.hover('.sc-qwall .qcard.spot'); await pr.click('.sc-qwall .qcard.spot .qx'); await sleep(400);
-c.ok((await pr.$$('.sc-qwall .qcard')).length === 1, 'its cross takes a question off the screen');
+// The questions slide is gone, so the phones do not offer "Ask a question" (their answers would reach no screen).
+await pr.evaluate(() => window.__jump('deck_a', 2));
+c.ok(await until(() => phones[0].$('#reactBar'), 5000) && !(await phones[0].$('#askBtn')), 'beside a slide the phone offers reactions, and no Ask a question button');
 
 // The presenter view hears how many have answered.
 const sp = await pr.context().newPage(); await sp.setViewportSize({ width: 1180, height: 760 }); watch(sp);
@@ -127,16 +116,16 @@ await shot(pr, 'show-big-open');
 await sleep(5200);
 const card = await phones[0].evaluate(() => ({ text: document.getElementById('ltPaper').innerText, ink: [...document.querySelectorAll('#ltPaper .ink')].map(b => b.textContent),
   links: [...document.querySelectorAll('.bp-links a')].map(a => a.href), qr: document.querySelector('a.bp-qr')?.href || '', ask: !!document.getElementById('askCardBtn') }));
-c.ok(/Dear P6 Me/.test(card.text) && /This is your future self, a Sec 4 student graduating from Beatty/.test(card.text) && /Non Vi Sed Arte/.test(card.text) && /You will choose Beatty and know that you have chosen well/.test(card.text) && card.ink.includes('Pilot') && card.ink.some(t => /clubs exist/.test(t)) && /each child is a gift/i.test(card.text) && /All of us at Beatty/.test(card.text),
-  `the letter is written from this visitor's answers: their word, their question (${card.ink.length} handwritten parts)`);
+c.ok(/Dear P6 Me/.test(card.text) && /This is your future self, a Sec 4 student graduating from Beatty/.test(card.text) && /Non Vi Sed Arte/.test(card.text) && /You will choose Beatty and know that you have chosen well/.test(card.text) && card.ink.includes('Pilot') && /each child is a gift/i.test(card.text) && /All of us at Beatty/.test(card.text),
+  `the letter is written from this visitor's answers: their word (${card.ink.length} handwritten parts)`);
 c.ok(card.ink.some(t => /1 other/.test(t)) && /D\.R\.E\.A\.M\./.test(card.text) && /9 in 10/.test(card.text), 'it quotes the hall (the fleet), and their poll answers back to them');
 c.ok(card.ink.includes('bridging cultures') && card.ink.includes('Scout Bee') && !/streak/.test(card.text), 'it quotes their bee quiz back: what a good future means to them, and the one bee they found (no second bee)');
-c.ok(card.links.length >= 4 && card.links.every(u => /^https:\/\/go\.gov\.sg\//.test(u)) && /^https:/.test(card.qr) && card.ask, 'under the letter: links to tap, the QR is a link, and Ask a question');
+c.ok(card.links.length >= 4 && card.links.every(u => /^https:\/\/go\.gov\.sg\//.test(u)) && /^https:/.test(card.qr) && !card.ask, 'under the letter: links to tap, and the QR is a link');
 await phones[0].setViewportSize({ width: 390, height: 1700 }); await sleep(300); await shot(phones[0], 'show-phone-letter'); await phones[0].setViewportSize({ width: 390, height: 844 });
 const png = await phones[0].evaluate(() => window.__renderCard());
 if (png) fs.writeFileSync(path.join(OUT, 'show-letter-saved.png'), Buffer.from(png.split(',')[1], 'base64'));
 c.ok(png && png.length > 50000, 'the letter saves as an image');
-// The tail keeps the pass on the phone; a question can still be asked from under it.
+// The tail keeps the letter on the phone.
 await pr.evaluate(() => window.__jump('deck_tail', 0));
 const kept = await until(() => state().scene && state().scene.keep === 1, 5000); await sleep(700);
 c.ok(kept && await phones[0].$('.boarding-pass'), 'after the card the phones keep their letter');

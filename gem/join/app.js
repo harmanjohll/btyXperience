@@ -1867,7 +1867,7 @@ function renderMemento() {
             ${open ? `<button id="shareCardBtn" class="nav-btn primary w-full mt-4 text-base uppercase tracking-wide">${navigator.share ? 'Save or share my letter' : 'Save my letter'}</button>
             ${navigator.share ? '<button id="downloadCardBtn" class="nav-btn secondary w-full mt-2 text-sm uppercase tracking-wide">Save image</button>' : ''}
             <p class="cc-after">Save it now. Read it again when you choose your schools.</p>` : ''}
-            ${kept ? '' : `<button type="button" id="askCardBtn" class="nav-btn secondary w-full mt-3 text-sm">${ico('curious')}Ask a question</button>`}
+            ${kept || !ASK_ON ? '' : `<button type="button" id="askCardBtn" class="nav-btn secondary w-full mt-3 text-sm">${ico('curious')}Ask a question</button>`}
             <p class="bp-links">${CARD_LINKS.map(([l, u]) => `<a href="${u}" target="_blank" rel="noopener">${l}</a>`).join('<i> · </i>')}</p>
             <button id="resetBtn" class="mt-2 w-full text-sm underline pb-6" style="color:var(--text-muted);">Start over</button>
         </div>
@@ -2675,10 +2675,11 @@ function chapterStrip() {
 }
 /* --- Reactions: a tap here floats up the big screen (and the phone shows it leaving) --- */
 const REACTIONS = ['👏', '🔥', '❤️', '🐝'];
+const ASK_ON = false;   // "Ask a question" on the phones. Off: the show no longer has a questions slide to show them on. true brings the button back.
 let lastReactAt = 0, reactWindow = [], rxSeq = 0, rxTotal = 0;
 const RX_GAP = 1500, RX_MAX = 15;          // one every 1.5 s, fifteen a show: a full hall still stays well inside the free database limits
 function reactBarHTML() {
-    return `<div class="react-bar" id="reactBar" aria-label="React on the big screen">${REACTIONS.map(e => `<button class="react-btn" type="button" data-e="${e}" aria-label="Send ${e}">${e}</button>`).join('')}<span class="react-hint">tap one · it floats up the big screen</span><button class="ask-chip" type="button" id="askBtn">${ico('curious')}Ask a question</button></div>`;
+    return `<div class="react-bar" id="reactBar" aria-label="React on the big screen">${REACTIONS.map(e => `<button class="react-btn" type="button" data-e="${e}" aria-label="Send ${e}">${e}</button>`).join('')}<span class="react-hint">tap one · it floats up the big screen</span>${ASK_ON ? `<button class="ask-chip" type="button" id="askBtn">${ico('curious')}Ask a question</button>` : ''}</div>`;
 }
 function wireReactBar() {
     const bar = document.getElementById('reactBar'); if (!bar) return;

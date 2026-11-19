@@ -26,12 +26,12 @@ Without `?presenter=true` the big screen is a mirror: it shows the show but does
    the counts go back to zero, new phones join as usual, and every phone from the first session **keeps its letter**.
 5. If the big screen ever misbehaves, open the fallback (below). The phones carry on following; nobody scans again.
 
-### Before the day: one link to confirm, one optional
+### Before the day: one link to confirm
 
 | Where | What |
 | --- | --- |
 | `gem/join/app.js`, `CARD_LINKS` | The feedback link is last year's (`go.gov.sg/oh25survey`). Change it here and in `gem/deck/slides.js`. |
-| `gem/index.html`, `JOIN_SHORT` | Optional: a short link to `gem/join/` (for example a go.gov.sg link), shown under the QR for anyone who cannot scan. |
+| `gem/index.html`, `JOIN_SHORT` | The official short link, `go.gov.sg/btyoh26` (it leads to `gem/join/`). Every join QR on the big screen is the official GO.gov.sg code, `gem/join-qr.png`, and the link is written beside it for anyone who cannot scan. If the link ever changes, change `JOIN_SHORT` and replace that picture. |
 
 ## The fallback (the show exactly as it was on 13 Nov 2026)
 
@@ -49,13 +49,14 @@ Use one big screen at a time.
 * One name: The Beatty Experience. No "Version 2" on any screen.
 * The keepsake is no longer a card. The boat each visitor folded unfolds into a letter from their Sec 4 self,
   written from what they chose tonight: their bee and bee quiz answers, their poll guesses, their exchange and
-  attachment picks, their word, even their own question. Their words appear as handwriting.
+  attachment picks, their word. Their words appear as handwriting.
   The wording lives in `letterParas()` in `gem/join/app.js`.
 * The whole hall unfolds together, on the big screen's count; the big screen then counts the letters opened.
 * Its links can be tapped, it saves as an image, and it survives a second session.
 * It lands straight after "Choose Beatty!". How to choose a school (MOE's advice, ranking, tie breakers) follows it.
 * Three quiz polls only (DREAM, the CCA share, 8 and 6), plus the globe and the map picks. A quiz poll counts votes but hides the split until the reveal.
-* Phones can ask a question at any time; the "Your questions" slide shows them. Click a question to bring it to the front; click its cross to hide it.
+* The join code stays in the top right corner for latecomers; click it to show it full screen.
+* There is no questions slide, so the phones no longer offer "Ask a question" (`ASK_ON` in `gem/join/app.js` brings the button back; a slide `{ kind:'live', show:'questions' }` shows what is asked).
 * The light pages are oat paper with a faint honeycomb (they had diamonds), with hairlines where there were shadows.
 * The phone names the same chapter as the big screen's roadmap.
 * The repeated "8" fun fact is gone; the phone no longer shows the answer before the DREAM poll.

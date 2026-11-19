@@ -357,7 +357,7 @@ window.BTY_DECKS = {
     { kind:'photo', img:'f/choose.jpg', title:'Choose Beatty!', notes:'Choose Beatty. Next press: every boat is ready to unfold.' },
   ]},
 
-  /* ---------- After the letter · phones keep it on screen: how to choose, then questions ---------- */
+  /* ---------- After the letter · phones keep it on screen: how to choose, then thanks and how to reach us ---------- */
   deck_tail: { use:true, keepCard:true, chapter:'Your journey', slides:[
     { kind:'pillars', layout:'rows', heads:['MOE\'s advice','First','Then'], title:'Choosing a secondary school', items:[
         { icon:'curious', title:'Ask', body:'What are their strengths, interests and abilities?', more:'What courses and programmes will develop these? Will the pace of learning suit them?' },
@@ -379,8 +379,6 @@ window.BTY_DECKS = {
       notes:'How subject based banding works with AL scores.' },
     { kind:'cover', crest:true, title:'Thank you!', sub:'Harmonising Hearts, Thriving Together',
       notes:'Thank the room.' },
-    { kind:'live', show:'questions', title:'Your questions', sub:'Ask from your phone: tap Ask a question under your letter',
-      notes:'Questions sent from the phones appear here, newest first. Click a question to bring it to the front; click its cross to take it off the screen. Questions from the floor are welcome too.' },
     { kind:'feature', tone:'cream', title:'Getting to Beatty', img:'f/map.jpg', items:[
         { icon:'pin', title:'Buses', body:'13, 28, 56, 73, 88, 93, 104, 105, 152, 153, 155, 157, 159, 163, 231, 232, 235, 238' },
         { icon:'arrow', title:'MRT', body:'Braddell, Caldecott' },
