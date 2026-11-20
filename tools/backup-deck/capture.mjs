@@ -29,7 +29,8 @@ fs.mkdirSync(OUT, { recursive: true });
 /* What the recording leaves out of the picture: the join code, the head count, the Back and Next buttons (there are
    no phones and no presenter in a PowerPoint file), the drifting specks behind the slide, and the vote counts. */
 const HIDE = `#qrPill, #participantPill, #hivePulse, #liveBadge, #prevBtn, #nextBtn, #pollenCanvas, #toast,
-  .votes-chip, .poll-wait, .poll-n { visibility: hidden !important }`;
+  .votes-chip, .poll-wait, .poll-n { visibility: hidden !important }
+  .with-phones { display: none !important }`;                      // words that only make sense while phones hold the letter
 
 /* Runs in the page before the show's own code.
    1. A clock that only moves when told to: timers, animation frames and "what time is it" all read it once it is

@@ -29,11 +29,14 @@ c.ok(await until(async () => /2 in the Hive · 2 ready/.test(await pr.$eval('#pC
 
 // The shape of the show.
 const shape = await pr.evaluate(() => { const D = window.BTY_DECKS, all = Object.values(D).flatMap(d => d.slides), f = D.deck_f.slides, t = D.deck_tail.slides;
-  return { lastF: f[f.length - 1].title, tail0: t[0].title, wall: t.findIndex(s => s.kind === 'live' && s.show === 'questions'), thanks: t.findIndex(s => /Thank you/.test(s.title || '')),
+  const at = re => t.findIndex(s => re.test(s.title || ''));
+  return { order: [at(/^Connect@Beatty/), at(/^Your voice matters/), at(/^Thank you/), at(/^Frequently asked/), at(/^Where Beattyians go next/), at(/^Choosing a secondary school/), at(/^Getting to Beatty/)], tailN: t.length, fStats: f.some(s => s.kind === 'stats'),
+    lastF: f[f.length - 1].title, tail0: t[0].title, wall: t.findIndex(s => s.kind === 'live' && s.show === 'questions'), thanks: t.findIndex(s => /Thank you/.test(s.title || '')),
     asks: all.filter(s => s.kind === 'ask').length, dash: all.filter(s => /[–—]/.test(JSON.stringify({ ...s, notes: '' }))).length,
     steps: [window.__stepIndex('deck_f'), window.__stepIndex('card'), window.__stepIndex('deck_tail'), window.__stepIndex('funfact_nexus')] }; });
 c.ok(shape.lastF === 'Choose Beatty!' && shape.steps[1] === shape.steps[0] + 1 && shape.steps[2] === shape.steps[1] + 1, 'the card comes straight after "Choose Beatty!"');
-c.ok(shape.tail0 === 'Choosing a secondary school' && shape.wall === -1 && shape.thanks > 0, 'how to choose a school comes after the card, then thanks; there is no questions slide');
+c.ok(shape.tail0 === 'Connect@Beatty' && shape.order.every((v, k) => v >= 0 && (k === 0 || v > shape.order[k - 1])) && shape.order[2] === 2 && shape.order[6] === shape.tailN - 1 && !shape.fStats && shape.wall === -1,
+  `after the letter: socials, feedback, Thank you; then the FAQ (where Beattyians go next, choosing a school, getting here) (${shape.order})`);
 c.ok(shape.asks === 0, `no one tap questions left in the slides (${shape.asks})`);
 c.ok(shape.dash === 0 && shape.steps[3] === -1, 'no dash on any slide, and the repeated "8" fun fact is gone');
 c.ok(await pr.evaluate(() => window.__stepIndex('poll_industry')) === -1 && (await pr.evaluate(() => ['poll_dream', 'poll_cca', 'poll_nexus_count'].every(id => window.__stepIndex(id) >= 0))), 'three quiz polls remain (DREAM, the CCA share, 8 and 6); the trick poll is gone');
