@@ -346,50 +346,56 @@ window.BTY_DECKS = {
         { img:'f/future-1.jpg' },{ img:'f/future-2.jpg' },{ img:'f/future-3.jpg' },{ img:'f/future-4.jpg' },{ you:true, icon:'smile', name:'You', role:'Class of 2030' } ],
       phone:{ title:'Beatty\'s future', line:'Our students today. And next year, you.' },
       notes:'Those who come next: our students today, and the last circle is for them. You.' },
-    { kind:'stats', tone:'cream', title:'Where Beattyians go next', items:[
-        { n:'9 in 10', label:'4E students qualify for JC', ring:90 },
-        { n:'~100%', label:'of 4E students qualify for Poly or JC', ring:99 },
-        { n:'1 in 2', label:'4N students qualify for PFP', ring:50 } ],
-      notes:'Nine in ten Express students qualify for JC; nearly all qualify for Poly or JC; one in two Normal students qualify for the Polytechnic Foundation Programme. [confirm] this year\'s figures.' },
     { kind:'quote', tone:'cream', quote:'Don\'t choose what you think is the best school, but what is the best school for your child.',
       by:'A Beatty parent, in MOE\'s #ProudOfP6ers', img:'f/parent-quote.jpg', fit:'contain',
       notes:'A Beatty parent, with her daughter Caitlin, in MOE\'s guide to choosing a school. [confirm] the spelling of her name before saying it (the poster has Ferrmancis Quek).' },
     { kind:'photo', img:'f/choose.jpg', title:'Choose Beatty!', notes:'Choose Beatty. Next press: every boat is ready to unfold.' },
   ]},
 
-  /* ---------- After the letter · phones keep it on screen: how to choose, then thanks and how to reach us ---------- */
+  /* ---------- After the letter · phones keep it on screen: stay in touch, feedback, thanks. Then the questions parents ask. ---------- */
   deck_tail: { use:true, keepCard:true, chapter:'Your journey', slides:[
-    { kind:'pillars', layout:'rows', heads:['MOE\'s advice','First','Then'], title:'Choosing a secondary school', items:[
-        { icon:'curious', title:'Ask', body:'What are their strengths, interests and abilities?', more:'What courses and programmes will develop these? Will the pace of learning suit them?' },
-        { icon:'eye', title:'Consider', body:'School culture; courses; programmes, subjects and CCAs offered; location and transport', more:'If your child has special educational needs, schools with specialised facilities or resources' },
-        { icon:'check', title:'Submit', body:'6 school options, so your child is more likely to get a school of choice', more:'Include 2 to 3 schools where your child\'s PSLE score is better than the school\'s cut off point' },
-        { icon:'globe', title:'Refer to', body:'MOE\'s SchoolFinder', more:'Subjects, CCAs, location and contact details of every school' } ],
-      notes:'Every phone now holds its letter and keeps it to the end. How to choose, MOE\'s advice in four words: ask, consider, submit, refer.' },
-    { kind:'statement', tone:'cream', title:'Your ranking of school choices matters',
-      body:'The higher you rank your preferred school in your choice order, the better your child\'s chance of being posted there if there is a tie breaker. Schools\' PSLE score ranges can vary from year to year.',
-      notes:'Rank the school you want first.' },
-    { kind:'tiebreak', title:'Tie breakers in the new S1 Posting System',
-      sub:'Used only if two or more students with the same PSLE score vie for the last place(s) in a school. A simplified example.',
-      notes:'Five students, last places. Jane scores better, so she goes first to School A. The other four tie. Citizenship: Bryan and Mary are Singapore Citizens, so they get School B before Alan and Rina. Choice order: Bryan ranked School B higher than Mary, so Bryan gets it; Mary goes to School C. Ballot: Alan and Rina both ranked School D third; the ballot gives Alan School D, and Rina goes to School E.' },
+    { kind:'links', title:'Connect@Beatty', subPhone:'Scan a code, or tap the same links under your letter.', items:[
+        { label:'Facebook', url:'https://go.gov.sg/beattyfb' },{ label:'Instagram', url:'https://go.gov.sg/beattyig' },{ label:'LinkedIn', url:'https://go.gov.sg/beattyin' } ],
+      notes:'Every phone now holds its letter and keeps it to the end. Stay in touch: scan a code, or tap the same links under the letter.' },
+    { kind:'links', tone:'cream', title:'Your voice matters', sub:'Please share your feedback using this form.', subPhone:'Scan the code, or tap Give feedback under your letter.', items:[
+        { label:'Feedback form', url:'https://go.gov.sg/btyssoh26survey', qr:'f/survey-qr.png' } ],   // qr: the official GO.gov.sg code, as a picture (leave it out and a plain code is drawn from the url)
+      notes:'The feedback form for this Open House. On the phones it is the Give feedback link under the letter. Give the room a moment to open it before you thank them.' },
+    { kind:'cover', crest:true, title:'Thank you!', sub:'Harmonising Hearts, Thriving Together',
+      notes:'Thank the room. This is the end of the show. The slides after this one are for questions: go to the ones you are asked about.' },
+    // Everything after the thanks is for questions. Show the slides you are asked about; none of them has to be shown.
+    { kind:'pillars', title:'Frequently asked questions', items:[
+        { icon:'school', title:'Learning at Beatty', body:'Where Beattyians go next', more:'Full SBB under the new AL system' },
+        { icon:'check', title:'S1 posting', body:'Choosing a secondary school', more:'Your ranking of school choices matters. Tie breakers.' },
+        { icon:'pin', title:'Visiting us', body:'Getting to Beatty', more:'Buses, MRT, website and contacts' } ],
+      notes:'For questions from the floor. The six slides after this one answer the questions parents ask most; show the ones you are asked about.' },
+    { kind:'stats', tone:'cream', title:'Where Beattyians go next', items:[
+        { n:'9 in 10', label:'4E students qualify for JC', ring:90 },
+        { n:'~100%', label:'of 4E students qualify for Poly or JC', ring:99 },
+        { n:'1 in 2', label:'4N students qualify for PFP', ring:50 } ],
+      notes:'Nine in ten Express students qualify for JC; nearly all qualify for Poly or JC; one in two Normal students qualify for the Polytechnic Foundation Programme. [confirm] this year\'s figures.' },
     { kind:'table', title:'Full SBB under the new AL system',
       sub:'To provide them with opportunities to reach their fullest potential, eligible students will be able to take selected subjects at a more demanding level.',
       head:['','PG2 and PG1 students who scored','May take'],
       rows:[['Standard Level','AL 5 or better','G3 EL, MA, SC and MTL'],['','AL 6 or better','G2 EL, MA, SC and MTL'],['Foundation Level','AL A','G2 EL, MA, SC and MTL']],
       note:'Students in PG3 will take all subjects at the G3 level, regardless of their individual AL scores at the PSLE.',
       notes:'How subject based banding works with AL scores.' },
-    { kind:'cover', crest:true, title:'Thank you!', sub:'Harmonising Hearts, Thriving Together',
-      notes:'Thank the room.' },
+    { kind:'pillars', layout:'rows', heads:['MOE\'s advice','First','Then'], title:'Choosing a secondary school', items:[
+        { icon:'curious', title:'Ask', body:'What are their strengths, interests and abilities?', more:'What courses and programmes will develop these? Will the pace of learning suit them?' },
+        { icon:'eye', title:'Consider', body:'School culture; courses; programmes, subjects and CCAs offered; location and transport', more:'If your child has special educational needs, schools with specialised facilities or resources' },
+        { icon:'check', title:'Submit', body:'6 school options, so your child is more likely to get a school of choice', more:'Include 2 to 3 schools where your child\'s PSLE score is better than the school\'s cut off point' },
+        { icon:'globe', title:'Refer to', body:'MOE\'s SchoolFinder', more:'Subjects, CCAs, location and contact details of every school' } ],
+      notes:'How to choose, MOE\'s advice in four words: ask, consider, submit, refer.' },
+    { kind:'statement', tone:'cream', title:'Your ranking of school choices matters',
+      body:'The higher you rank your preferred school in your choice order, the better your child\'s chance of being posted there if there is a tie breaker. Schools\' PSLE score ranges can vary from year to year.',
+      notes:'Rank the school you want first.' },
+    { kind:'tiebreak', title:'Tie breakers in the new S1 Posting System',
+      sub:'Used only if two or more students with the same PSLE score vie for the last place(s) in a school. A simplified example.',
+      notes:'Five students, last places. Jane scores better, so she goes first to School A. The other four tie. Citizenship: Bryan and Mary are Singapore Citizens, so they get School B before Alan and Rina. Choice order: Bryan ranked School B higher than Mary, so Bryan gets it; Mary goes to School C. Ballot: Alan and Rina both ranked School D third; the ballot gives Alan School D, and Rina goes to School E.' },
     { kind:'feature', tone:'cream', title:'Getting to Beatty', img:'f/map.jpg', items:[
         { icon:'pin', title:'Buses', body:'13, 28, 56, 73, 88, 93, 104, 105, 152, 153, 155, 157, 159, 163, 231, 232, 235, 238' },
         { icon:'arrow', title:'MRT', body:'Braddell, Caldecott' },
         { icon:'globe', title:'Website', body:'beattysec.moe.edu.sg' },
         { icon:'phone', title:'Call or email', body:'6256 9108 · beatty_ss@moe.edu.sg' } ],
       notes:'How to find us.' },
-    { kind:'links', title:'Connect@Beatty', items:[
-        { label:'Facebook', url:'https://go.gov.sg/beattyfb' },{ label:'Instagram', url:'https://go.gov.sg/beattyig' },{ label:'LinkedIn', url:'https://go.gov.sg/beattyin' } ],
-      notes:'Scan to follow us.' },
-    { kind:'links', tone:'cream', title:'Your voice matters', sub:'Please share your feedback using this form.', items:[
-        { label:'Feedback form', url:'https://go.gov.sg/btyssoh26survey', qr:'f/survey-qr.png' } ],   // qr: the official GO.gov.sg code, as a picture (leave it out and a plain code is drawn from the url)
-      notes:'The feedback form for this Open House.' },
   ]},
 };

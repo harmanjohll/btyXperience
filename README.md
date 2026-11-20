@@ -68,7 +68,9 @@ The boat, the fleet, the live maps and the letter are left out. The opening vide
   The wording lives in `letterParas()` in `gem/join/app.js`.
 * The whole hall unfolds together, on the big screen's count; the big screen then counts the letters opened.
 * Its links can be tapped, it saves as an image, and it survives a second session.
-* It lands straight after "Choose Beatty!". How to choose a school (MOE's advice, ranking, tie breakers) follows it.
+* It lands straight after "Choose Beatty!". Then: the social links, the feedback form, and "Thank you!", which ends the show.
+* After the thanks comes an FAQ section for questions from the floor: where Beattyians go next (JC and Poly), Full SBB, choosing a school,
+  ranking, tie breakers, and getting to Beatty. Show the slides you are asked about; none has to be shown.
 * Three quiz polls only (DREAM, the CCA share, 8 and 6), plus the globe and the map picks. A quiz poll counts votes but hides the split until the reveal.
 * The join code stays in the top right corner for latecomers; click it to show it full screen.
 * There is no questions slide, so the phones no longer offer "Ask a question" (`ASK_ON` in `gem/join/app.js` brings the button back; a slide `{ kind:'live', show:'questions' }` shows what is asked).
