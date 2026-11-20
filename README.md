@@ -26,11 +26,11 @@ Without `?presenter=true` the big screen is a mirror: it shows the show but does
    the counts go back to zero, new phones join as usual, and every phone from the first session **keeps its letter**.
 5. If the big screen ever misbehaves, open the fallback (below). The phones carry on following; nobody scans again.
 
-### Before the day: one link to confirm
+### The links the show uses
 
 | Where | What |
 | --- | --- |
-| `gem/join/app.js`, `CARD_LINKS` | The feedback link is last year's (`go.gov.sg/oh25survey`). Change it here and in `gem/deck/slides.js`. |
+| `gem/join/app.js`, `CARD_LINKS` | The feedback link, `go.gov.sg/btyssoh26survey`. It is also on the "Your voice matters" slide in `gem/deck/slides.js`, whose QR is the official picture `gem/deck/img/f/survey-qr.png`. |
 | `gem/index.html`, `JOIN_SHORT` | The official short link, `go.gov.sg/btyoh26` (it leads to `gem/join/`). Every join QR on the big screen is the official GO.gov.sg code, `gem/join-qr.png`, and the link is written beside it for anyone who cannot scan. If the link ever changes, change `JOIN_SHORT` and replace that picture. |
 
 ## The fallback (the show exactly as it was on 13 Nov 2026)
@@ -43,6 +43,21 @@ Without `?presenter=true` the big screen is a mirror: it shows the show but does
 These files are untouched. The same snapshot is also kept on GitHub as the branch `backup/openhouse-v2-13nov2026`.
 The fallback and the show share one saved state, so either big screen can drive phones that joined on either page.
 Use one big screen at a time.
+
+## The backup deck (PowerPoint, no phones, no internet)
+
+If the show cannot run at all, there is a PowerPoint copy of it: every slide, with its animation, and nothing that needs a phone.
+It is made from the show itself, so make it again after any change to the slides:
+
+```
+node tools/backup-deck/capture.mjs            records every slide as a short video (about 15 minutes)
+python3 tools/backup-deck/build_pptx.py       the animated deck
+python3 tools/backup-deck/build_pptx.py --stills   the same slides as pictures only
+```
+
+Both files land in `tests/out/backup-deck/`. In the animated deck each slide is one video that plays by itself and rests on its
+last frame; one press moves on. The quizzes become a show of hands (question, then answer), and the value cards turn one per press.
+The boat, the fleet, the live maps and the letter are left out. The opening video is a link (it is on YouTube).
 
 ## What the audit changed in the show
 

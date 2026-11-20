@@ -905,7 +905,7 @@ footer{position:relative; z-index:40; flex:0 0 auto; background:linear-gradient(
 /* links: QR codes drawn here */
 .sc-links{display:flex; justify-content:center; gap:clamp(24px,calc(4*var(--vw)),80px); flex-wrap:wrap}
 .sc-links .lk{display:flex; flex-direction:column; align-items:center; text-align:center}
-.sc-links .qr{width:clamp(180px,calc(16*var(--vw)),300px); aspect-ratio:1; background:#fff; border-radius:18px; padding:12px; box-shadow:0 20px 50px rgba(0,0,0,.35)} .sc-links .qr svg{width:100%; height:100%; display:block}
+.sc-links .qr{width:clamp(180px,calc(16*var(--vw)),300px); aspect-ratio:1; background:#fff; border-radius:18px; padding:12px; box-shadow:0 20px 50px rgba(0,0,0,.35)} .sc-links .qr svg, .sc-links .qr img{width:100%; height:100%; display:block}
 .sc-links .li{width:44px; height:44px; color:var(--gold); margin-top:16px} .sc-links .li .ico{width:100%; height:100%}
 .sc-links b{font-family:var(--serif); color:#fff; font-size:clamp(1.3rem,calc(1.9*var(--vw)),2rem); margin-top:10px} .sc-links span{color:var(--cream-ink); font-size:clamp(.95rem,calc(1.25*var(--vw)),1.3rem); margin-top:6px}
 /* logos */
@@ -3391,7 +3391,7 @@ function slideHTML(s){
         ${s.head?`<thead><tr>${s.head.map(h=>`<th>${escH(h)}</th>`).join('')}</tr></thead>`:''}<tbody>${(s.rows||[]).map(r=>`<tr class="bi">${r.map((c,ci)=>`<td${ci===0&&c===''?' class="cont"':''}>${escH(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>
         ${s.note?`<p class="sc-note bi"${D_(500)}>${escH(s.note)}</p>`:''}`;
     case 'links': return `${T(s.title,' sm')}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<div class="sc-links">${(s.items||[]).map((x,i)=>`<div class="lk bi"${D_(220+i*160)}>
-        <span class="qr">${BTY.qrSVG(x.url,{label:x.label})}</span>${x.icon?`<span class="li">${BTY.icon(x.icon)}</span>`:''}<b>${escH(x.label||'')}</b><span>${escH(String(x.url).replace(/^https?:\/\//,''))}</span></div>`).join('')}</div>`;
+        <span class="qr">${x.qr?`<img src="${IMG(x.qr)}" alt="${escH(x.label||'')}: ${escH(x.url)}" onerror="this.outerHTML=BTY.qrSVG(this.dataset.u,{label:this.alt})" data-u="${escH(x.url)}">`:BTY.qrSVG(x.url,{label:x.label})}</span>${x.icon?`<span class="li">${BTY.icon(x.icon)}</span>`:''}<b>${escH(x.label||'')}</b><span>${escH(String(x.url).replace(/^https?:\/\//,''))}</span></div>`).join('')}</div>`;
     case 'logos': return `${T(s.title,' sm')}${s.sub?`<p class="sc-sub2 bi"${D_(140)}>${escH(s.sub)}</p>`:''}<div class="sc-logos">${(s.items||[]).map((x,i)=>`<div class="lg bi"${D_(200+i*110)} title="${escH(x.name||'')}"><img src="${IMG(x.img)}" alt="${escH(x.name||'')}"></div>`).join('')}</div>`;
     case 'pins': { const hm=s.home; const arcs=hm?(s.pins||[]).map((p,i)=>{ const mx=(hm.x+p.x)/2, my=Math.min(hm.y,p.y)-Math.max(8,Math.abs(p.x-hm.x)*.35); return `<path class="pn-arc" style="--d:${300+i*700}ms" d="M${hm.x} ${hm.y} Q ${mx} ${my} ${p.x} ${p.y}" pathLength="100"/>`; }).join(''):'';
       return `${T(s.title)}<div class="sc-pins"><div class="pn-map" style="aspect-ratio:${AR(s.img).toFixed(4)}"><img src="${IMG(s.img)}" alt="">
@@ -3532,7 +3532,7 @@ function paintSceneLive(){
 function countUp(el, from, to, ms, suffixHTML=''){ const t0=performance.now();
   if(CALM){ el.innerHTML=to+suffixHTML; return; }
   (function tick(now){ const p=Math.min(1,(now-t0)/ms), e=1-Math.pow(1-p,3); el.innerHTML=Math.round(from+(to-from)*e)+suffixHTML; if(p<1 && el.isConnected) requestAnimationFrame(tick); })(t0); }
-function slideImgs(s){ if(!s) return []; return [s.img && (typeof s.img==='string'?s.img:s.img.src), ...(s.imgs||[]).map(x=>typeof x==='string'?x:x.src), ...((s.items||[]).map(x=>x&&x.img)), ...(s.plates||[]).flatMap(p=>[p.a,p.b,p.by])].filter(Boolean); }
+function slideImgs(s){ if(!s) return []; return [s.img && (typeof s.img==='string'?s.img:s.img.src), ...(s.imgs||[]).map(x=>typeof x==='string'?x:x.src), ...((s.items||[]).flatMap(x=>x?[x.img,x.qr]:[])), ...(s.plates||[]).flatMap(p=>[p.a,p.b,p.by])].filter(Boolean); }
 const preloaded=new Set();
 function preloadSlide(s){ slideImgs(s).forEach(p=>{ const u=IMG(p); if(preloaded.has(u)) return; preloaded.add(u); const im=new Image(); im.src=u; }); }
 function paintScene(){
