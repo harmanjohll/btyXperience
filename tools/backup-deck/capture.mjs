@@ -21,7 +21,7 @@ const OUT = path.resolve(arg('out', path.join(HERE, '../../tests/out/backup-deck
 const ONLY = (arg('only', '') || '').split(',').filter(Boolean);
 const WORKERS = +arg('workers', 3);
 const FPS = 30, FRAME = 1000 / FPS;
-const SETTLE = 36;                                   // this many identical frames in a row (1.2 s) = the slide has finished building
+const SETTLE = { default: 36, mix: 120, tiebreak: 120, stairs: 90, loop: 90, mission: 90, crest: 90 };   // this many identical frames in a row (1.2 s) = the slide has finished building; slides that build in stages, with pauses, wait longer
 const MIN = { default: 75 };                         // never shorter than 2.5 s
 const MAX = { default: 12, feast: 66, crest: 18, mix: 20, stairs: 18, loop: 18, mission: 18, slope: 18, tiebreak: 24, venn: 16, pins: 18 };   // seconds; slides that never stop moving are cut here
 fs.mkdirSync(OUT, { recursive: true });
@@ -133,11 +133,11 @@ async function openShow() {
 async function record(show, item) {
   const { page, cdp, step } = show, base = path.join(OUT, item.key);
   const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'mjpeg', '-i', '-',
-    '-vf', 'scale=in_range=full:out_range=tv:out_color_matrix=bt709,format=yuv420p', '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-profile:v', 'high', '-level', '4.1',
-    '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-color_range', 'tv', '-g', '30', '-movflags', '+faststart', '-r', String(FPS), base + '.mp4'], { stdio: ['pipe', 'inherit', 'inherit'] });
+    '-vf', 'scale=in_range=full:out_range=tv:out_color_matrix=bt709,format=yuv420p', '-c:v', 'libx264', '-preset', 'medium', '-crf', '21', '-profile:v', 'high', '-level', '4.1',
+    '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-color_range', 'tv', '-g', '300', '-movflags', '+faststart', '-r', String(FPS), base + '.mp4'], { stdio: ['pipe', 'inherit', 'inherit'] });
   const done = new Promise(res => ff.on('close', res));
   await page.evaluate(TRIGGER, item.go); await page.evaluate(() => window.__sync());
-  const max = (MAX[item.kind] || MAX.default) * FPS, min = MIN.default; let n = 0, same = 0, prev = ''; const tR = Date.now();
+  const max = (MAX[item.kind] || MAX.default) * FPS, min = MIN.default, quiet = SETTLE[item.kind] || SETTLE.default; let n = 0, same = 0, prev = ''; const tR = Date.now();
   while (n < max) {
     await step();
     const { data } = await cdp.send('Page.captureScreenshot', { format: 'jpeg', quality: 94, optimizeForSpeed: true });
@@ -146,12 +146,12 @@ async function record(show, item) {
     if (!ff.stdin.write(buf)) await new Promise(res => ff.stdin.once('drain', res));
     same = data === prev ? same + 1 : 0; prev = data; n++;
     if (process.env.TIMING && n % 30 === 0) console.log(`      ${item.key} frame ${n} at ${Date.now() - tR} ms, same ${same}`);
-    if (n >= min && same >= SETTLE) break;
+    if (n >= min && same >= quiet) break;
   }
   ff.stdin.end(); await done;
   const still = await cdp.send('Page.captureScreenshot', { format: 'png' });
   fs.writeFileSync(base + '.png', Buffer.from(still.data, 'base64'));
-  return { frames: n, seconds: +(n / FPS).toFixed(2), settled: same >= SETTLE };
+  return { frames: n, seconds: +(n / FPS).toFixed(2), settled: same >= quiet };
 }
 
 // The plan, from one page; then the work is shared out in runs of neighbouring slides.
