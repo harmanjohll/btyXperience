@@ -12,7 +12,7 @@
    Slide kinds (pick one per slide):
      cover      title, sub, eyebrow, img, rainbow, crest      a chapter opener, full screen
      photo      img, title, caption, fit:'contain'           one photo, full screen, caption card
-     gallery    title, sub, imgs:[src or {src,cap,fit}], note  two to seven photos as a mosaic
+     gallery    title, sub, imgs:[src or {src,cap,fit}], note  two to seven photos as a mosaic (rows:[2,2] fixes how many go in each row)
      feature    title, sub, img or imgs, items, tags, round, side:'right'   photos beside words
      statement  title, sub, body, icon (logo:'nexus')         one big idea
      duo        items:[{label,title,body,list}]               two ideas side by side
@@ -130,7 +130,9 @@ window.BTY_DECKS = {
       notes:'ALP 3.0 in three lines. Why: Tech for Good, technology that serves people. How: our students become Tech-enabled Design Thinkers, design thinking now with AI and machine learning. Who they become: Tech-enabled Changemakers, the same impactful changemakers our mission names. [confirm] the wording.' },
     { ch:'A day at Beatty', kind:'gallery', title:'Think. Create. Innovate.', imgs:['b/alp-4.jpg','b/alp-1.jpg','b/alp-2.jpg','b/alp-3.jpg'],
       notes:'ALP in action.' },
-    { ch:'A day at Beatty', kind:'gallery', tone:'cream', title:'On the world stage', sub:'Country award winners, ages 13 to 18, and learning with industry at Rockwell Automation', imgs:[{ src:'b/award-table.jpg', fit:'contain' },{ src:'b/award-team.jpg', whole:true },{ src:'b/rockwell.jpg', whole:true },{ src:'b/award-3.jpg' }],
+    { ch:'A day at Beatty', kind:'gallery', tone:'cream', title:'On the world stage', sub:'Country award winners, ages 13 to 18, and learning with industry at Rockwell Automation',
+      rows:[2,2],   // two photos in each row: the President and the Minister large on top, the award list and Rockwell below
+      imgs:[{ src:'b/award-team.jpg', whole:true },{ src:'b/award-3.jpg', whole:true },{ src:'b/award-table.jpg', fit:'contain' },{ src:'b/rockwell.jpg', whole:true }],
       phone:{ title:'On the world stage', line:'Creating solutions that drive change at a global stage' },
       notes:'Our students among the country award winners. [confirm] the name of the competition.' },
     { ch:'A day at Beatty', kind:'feature', side:'right', title:'Personal Learning Devices', imgs:['b/pld-1.jpg','b/pld-2.jpg'], items:[
