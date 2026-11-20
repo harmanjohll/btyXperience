@@ -371,8 +371,8 @@ window.BTY_DECKS = {
     { kind:'stats', tone:'cream', title:'Where Beattyians go next', items:[
         { n:'9 in 10', label:'4E students qualify for JC', ring:90 },
         { n:'~100%', label:'of 4E students qualify for Poly or JC', ring:99 },
-        { n:'1 in 2', label:'4N students qualify for PFP', ring:50 } ],
-      notes:'Nine in ten Express students qualify for JC; nearly all qualify for Poly or JC; one in two Normal students qualify for the Polytechnic Foundation Programme. [confirm] this year\'s figures.' },
+        { n:'2 in 5', label:'4N students qualify for PFP', ring:40 } ],
+      notes:'Nine in ten Express students qualify for JC; nearly all qualify for Poly or JC; two in five Normal students qualify for the Polytechnic Foundation Programme. [confirm] this year\'s figures.' },
     { kind:'table', title:'Full SBB under the new AL system',
       sub:'To provide them with opportunities to reach their fullest potential, eligible students will be able to take selected subjects at a more demanding level.',
       head:['','PG2 and PG1 students who scored','May take'],
