@@ -55,6 +55,11 @@ c.ok(await pr.evaluate(() => window.__stepIndex('poll_industry')) === -1 && (awa
   c.ok(n >= 70 && !off.edge.length && !off.left.length && !off.top.length, `all ${n} slides keep one left edge and one header height ${[...off.edge, ...off.left, ...off.top].slice(0, 6).join(', ')}`);
   c.ok(!off.dots.length, 'nothing runs into the roadmap, and every photo loads ' + off.dots.slice(0, 6).join(' | ')); }
 
+// The feedback slide: the official code for this year's survey, and the same link under the letter.
+{ const i = await pr.evaluate(() => window.BTY_DECKS.deck_tail.slides.findIndex(s => /Your voice matters/.test(s.title || ''))); await pr.evaluate(i => window.__jump('deck_tail', i), i); await sleep(1500);
+  const to = await decodeQR(pr, '.sc-links .qr');
+  c.ok(i > 0 && to === 'https://go.gov.sg/btyssoh26survey' && /btyssoh26survey/.test(await pr.$eval('.sc-links .lk', e => e.textContent)), `the feedback slide shows the official QR for this year's survey (${to})`); }
+
 // The canteen slide: eight round plates, every photo loaded, and the plates turn over by themselves.
 { const i = await pr.evaluate(() => window.BTY_DECKS.deck_e.slides.findIndex(s => s.kind === 'feast')); await pr.evaluate(i => window.__jump('deck_e', i), i);
   const ok = await until(() => pr.evaluate(() => { const p = [...document.querySelectorAll('.fs-plate')];
@@ -120,7 +125,7 @@ c.ok(/Dear P6 Me/.test(card.text) && /This is your future self, a Sec 4 student 
   `the letter is written from this visitor's answers: their word (${card.ink.length} handwritten parts)`);
 c.ok(card.ink.some(t => /1 other/.test(t)) && /D\.R\.E\.A\.M\./.test(card.text) && /9 in 10/.test(card.text), 'it quotes the hall (the fleet), and their poll answers back to them');
 c.ok(card.ink.includes('bridging cultures') && card.ink.includes('Scout Bee') && !/streak/.test(card.text), 'it quotes their bee quiz back: what a good future means to them, and the one bee they found (no second bee)');
-c.ok(card.links.length >= 4 && card.links.every(u => /^https:\/\/go\.gov\.sg\//.test(u)) && /^https:/.test(card.qr) && !card.ask, 'under the letter: links to tap, and the QR is a link');
+c.ok(card.links.length >= 4 && card.links.every(u => /^https:\/\/go\.gov\.sg\//.test(u)) && card.links.includes('https://go.gov.sg/btyssoh26survey') && /^https:/.test(card.qr) && !card.ask, 'under the letter: links to tap, and the QR is a link');
 await phones[0].setViewportSize({ width: 390, height: 1700 }); await sleep(300); await shot(phones[0], 'show-phone-letter'); await phones[0].setViewportSize({ width: 390, height: 844 });
 const png = await phones[0].evaluate(() => window.__renderCard());
 if (png) fs.writeFileSync(path.join(OUT, 'show-letter-saved.png'), Buffer.from(png.split(',')[1], 'base64'));

@@ -26,11 +26,11 @@ Without `?presenter=true` the big screen is a mirror: it shows the show but does
    the counts go back to zero, new phones join as usual, and every phone from the first session **keeps its letter**.
 5. If the big screen ever misbehaves, open the fallback (below). The phones carry on following; nobody scans again.
 
-### Before the day: one link to confirm
+### The links the show uses
 
 | Where | What |
 | --- | --- |
-| `gem/join/app.js`, `CARD_LINKS` | The feedback link is last year's (`go.gov.sg/oh25survey`). Change it here and in `gem/deck/slides.js`. |
+| `gem/join/app.js`, `CARD_LINKS` | The feedback link, `go.gov.sg/btyssoh26survey`. It is also on the "Your voice matters" slide in `gem/deck/slides.js`, whose QR is the official picture `gem/deck/img/f/survey-qr.png`. |
 | `gem/index.html`, `JOIN_SHORT` | The official short link, `go.gov.sg/btyoh26` (it leads to `gem/join/`). Every join QR on the big screen is the official GO.gov.sg code, `gem/join-qr.png`, and the link is written beside it for anyone who cannot scan. If the link ever changes, change `JOIN_SHORT` and replace that picture. |
 
 ## The fallback (the show exactly as it was on 13 Nov 2026)

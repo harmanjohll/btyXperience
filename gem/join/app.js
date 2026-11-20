@@ -1653,7 +1653,7 @@ const FOLDED_LINE = 'You folded it. You named it. You set it sailing.';
 const ASK_LINE = 'Make Beatty your 1st choice';
 const CARD_URL = 'https://go.gov.sg/probeatty';
 /* The links under the pass (the same ones the closing slides show as QR codes; keep them in step with deck/slides.js). */
-const CARD_LINKS = [['Explore Beatty', CARD_URL], ['Give feedback', 'https://go.gov.sg/oh25survey'], ['Facebook', 'https://go.gov.sg/beattyfb'], ['Instagram', 'https://go.gov.sg/beattyig'], ['LinkedIn', 'https://go.gov.sg/beattyin']];
+const CARD_LINKS = [['Explore Beatty', CARD_URL], ['Give feedback', 'https://go.gov.sg/btyssoh26survey'], ['Facebook', 'https://go.gov.sg/beattyfb'], ['Instagram', 'https://go.gov.sg/beattyig'], ['LinkedIn', 'https://go.gov.sg/beattyin']];
 /* Why Beatty, for you: one line for each bee, drawn from what the show said tonight. */
 const WHY_FOR = {
     'The Innovator': 'Every Beattyian learns A.I. by Sec 2, then builds with it in our Makerspace. You would be making from your first year.',

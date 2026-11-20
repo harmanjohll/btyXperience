@@ -389,7 +389,7 @@ window.BTY_DECKS = {
         { label:'Facebook', url:'https://go.gov.sg/beattyfb' },{ label:'Instagram', url:'https://go.gov.sg/beattyig' },{ label:'LinkedIn', url:'https://go.gov.sg/beattyin' } ],
       notes:'Scan to follow us.' },
     { kind:'links', tone:'cream', title:'Your voice matters', sub:'Please share your feedback using this form.', items:[
-        { label:'Feedback form', url:'https://go.gov.sg/oh25survey' } ],
-      notes:'[confirm] this year\'s feedback link (last year: go.gov.sg/oh25survey).' },
+        { label:'Feedback form', url:'https://go.gov.sg/btyssoh26survey', qr:'f/survey-qr.png' } ],   // qr: the official GO.gov.sg code, as a picture (leave it out and a plain code is drawn from the url)
+      notes:'The feedback form for this Open House.' },
   ]},
 };
