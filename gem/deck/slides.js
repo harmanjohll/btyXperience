@@ -12,7 +12,7 @@
    Slide kinds (pick one per slide):
      cover      title, sub, eyebrow, img, rainbow, crest      a chapter opener, full screen
      photo      img, title, caption, fit:'contain'           one photo, full screen, caption card
-     gallery    title, sub, imgs:[src or {src,cap,fit}], note  two to seven photos as a mosaic
+     gallery    title, sub, imgs:[src or {src,cap,fit}], note  two to seven photos as a mosaic (rows:[2,2] fixes how many go in each row)
      feature    title, sub, img or imgs, items, tags, round, side:'right'   photos beside words
      statement  title, sub, body, icon (logo:'nexus')         one big idea
      duo        items:[{label,title,body,list}]               two ideas side by side
@@ -130,7 +130,9 @@ window.BTY_DECKS = {
       notes:'ALP 3.0 in three lines. Why: Tech for Good, technology that serves people. How: our students become Tech-enabled Design Thinkers, design thinking now with AI and machine learning. Who they become: Tech-enabled Changemakers, the same impactful changemakers our mission names. [confirm] the wording.' },
     { ch:'A day at Beatty', kind:'gallery', title:'Think. Create. Innovate.', imgs:['b/alp-4.jpg','b/alp-1.jpg','b/alp-2.jpg','b/alp-3.jpg'],
       notes:'ALP in action.' },
-    { ch:'A day at Beatty', kind:'gallery', tone:'cream', title:'On the world stage', sub:'Country award winners, ages 13 to 18, and learning with industry at Rockwell Automation', imgs:[{ src:'b/award-table.jpg', fit:'contain' },{ src:'b/award-team.jpg', whole:true },{ src:'b/rockwell.jpg', whole:true },{ src:'b/award-3.jpg' }],
+    { ch:'A day at Beatty', kind:'gallery', tone:'cream', title:'On the world stage', sub:'Country award winners, ages 13 to 18, and learning with industry at Rockwell Automation',
+      rows:[2,2],   // two photos in each row: the President and the Minister large on top, the award list and Rockwell below
+      imgs:[{ src:'b/award-team.jpg', whole:true },{ src:'b/award-3.jpg', whole:true },{ src:'b/award-table.jpg', fit:'contain' },{ src:'b/rockwell.jpg', whole:true }],
       phone:{ title:'On the world stage', line:'Creating solutions that drive change at a global stage' },
       notes:'Our students among the country award winners. [confirm] the name of the competition.' },
     { ch:'A day at Beatty', kind:'feature', side:'right', title:'Personal Learning Devices', imgs:['b/pld-1.jpg','b/pld-2.jpg'], items:[
@@ -371,8 +373,8 @@ window.BTY_DECKS = {
     { kind:'stats', tone:'cream', title:'Where Beattyians go next', items:[
         { n:'9 in 10', label:'4E students qualify for JC', ring:90 },
         { n:'~100%', label:'of 4E students qualify for Poly or JC', ring:99 },
-        { n:'1 in 2', label:'4N students qualify for PFP', ring:50 } ],
-      notes:'Nine in ten Express students qualify for JC; nearly all qualify for Poly or JC; one in two Normal students qualify for the Polytechnic Foundation Programme. [confirm] this year\'s figures.' },
+        { n:'2 in 5', label:'4N students qualify for PFP', ring:40 } ],
+      notes:'Nine in ten Express students qualify for JC; nearly all qualify for Poly or JC; two in five Normal students qualify for the Polytechnic Foundation Programme. [confirm] this year\'s figures.' },
     { kind:'table', title:'Full SBB under the new AL system',
       sub:'To provide them with opportunities to reach their fullest potential, eligible students will be able to take selected subjects at a more demanding level.',
       head:['','PG2 and PG1 students who scored','May take'],

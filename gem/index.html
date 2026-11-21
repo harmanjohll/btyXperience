@@ -2943,7 +2943,9 @@ function sRect(el){ const r=el.getBoundingClientRect(), c=document.getElementByI
 function localPt(e, el){ const r=el.getBoundingClientRect(), sx=r.width?el.offsetWidth/r.width:1, sy=r.height?el.offsetHeight/r.height:1;
   return [(e.clientX-r.left)*sx, (e.clientY-r.top)*sy, sx]; }
 function photoSpec(box){ const figs=[...box.children].filter(e=>e.tagName==='FIGURE'), allWhole=box.classList.contains('whole');
-  return { figs, n:figs.length, A:figs.map(f=>+f.dataset.ar||1.5), C:figs.map(f=>!!f.querySelector('figcaption')), Wh:figs.map(f=>allWhole||f.classList.contains('whole')), allWhole }; }
+  // A gallery may fix how many photos go in each row (rows:[2,2]); otherwise every split is tried.
+  const per=(box.dataset.rows||'').split(',').map(Number).filter(x=>x>0), cuts=[]; if(per.length>1 && per.reduce((p,q)=>p+q,0)===figs.length){ let a=0; per.slice(0,-1).forEach(x=>{ a+=x; cuts.push(a); }); }
+  return { figs, n:figs.length, A:figs.map(f=>+f.dataset.ar||1.5), C:figs.map(f=>!!f.querySelector('figcaption')), Wh:figs.map(f=>allWhole||f.classList.contains('whole')), allWhole, cuts:cuts.length?cuts:null }; }
 // The best arrangement of a set of photos in a W×H box: rows, each photo whole or trimmed a little, biggest total area wins.
 function planPhotos(sp, W, H){
   if(!sp.n||!W||!H) return null;
@@ -2962,7 +2964,7 @@ function planPhotos(sp, W, H){
     const area=rows.reduce((t,[x,y],i)=>t+hs[i]*k*sy*Math.min(W,rowW(x,y,hs[i]*k).w),0);
     if(!best || area>best.area*1.001) best={rows,hs,caps,k,sy,fixed,area}; };
   const comb=(start,left,cuts)=>{ if(left===0){ tryRows(cuts); return; } for(let c=start;c<=n-left;c++) comb(c+1,left-1,[...cuts,c]); };
-  for(let r=1;r<=Math.min(4,n);r++) comb(1,r-1,[]);
+  if(sp.cuts) tryRows(sp.cuts); else for(let r=1;r<=Math.min(4,n);r++) comb(1,r-1,[]);
   if(!best) return null;
   best.usedW=Math.max(...best.rows.map(([x,y],i)=>Math.min(W,rowW(x,y,best.hs[i]*best.k).w)));
   best.usedH=best.rows.reduce((t,_,i)=>t+best.hs[i]*best.k*best.sy,0)+best.fixed;
@@ -2991,7 +2993,7 @@ function fitPhotos(box){
   if(side){ sp.C=sp.C.map(()=>false); box.classList.add('cap-over'); }   // beside a side title, captions go on the photos: no gaps between rows
   const W=box.clientWidth, H=box.clientHeight; if(!W||!H) return;
   const best=planPhotos(sp, W, H); if(!best) return;
-  const {rows,hs,caps,k,sy,fixed,g,rowW,Wh,A}=best, figs=sp.figs, tot=rows.reduce((t,_,i)=>t+hs[i]*k*sy,0)+fixed; let y=side?0:(H-tot)/2;
+  const {rows,hs,caps,k,sy,fixed,g,rowW,Wh,A}=best, figs=sp.figs, tot=rows.reduce((t,_,i)=>t+hs[i]*k*sy,0)+fixed; let y=(side && !sp.cuts)?0:(H-tot)/2;   // fixed rows may not fill the height: they sit in the middle of it
   const al=box.dataset.align;   // a feature's photos sit toward its words
   rows.forEach(([x0,x1],ri)=>{ const h0=hs[ri]*k, h=h0*sy, {f,w:rw}=rowW(x0,x1,h0), spare=W-Math.min(W,rw); let x=al==='end'?spare:al==='start'?0:spare/2;
     for(let i=x0;i<x1;i++){ const el=figs[i], w=A[i]*h0*(Wh[i]?1:1+(.12)*f); Object.assign(el.style,{position:'absolute',left:x+'px',top:y+'px',width:w+'px',height:(h+caps[ri])+'px'}); el.style.setProperty('--cap',caps[ri]+'px'); x+=w+g; }
@@ -3357,7 +3359,7 @@ function slideHTML(s){
     case 'gallery': { const im=(s.imgs||[]).map(x=>typeof x==='string'?{src:x}:x), n=im.length;
       const cnt=s.count?`<span class="gal-stat"><span class="pre">${escH(s.count.pre||'')}</span><b data-to="${+s.count.n}">${+s.count.n}</b><span class="l">${escH(s.count.label||'')}</span></span>`:'';   // sits at the right of the header row
       return `${T(s.title, s.sub?' sm tight':' sm')}${s.sub?`<p class="sc-sub2 bi${cnt?' has-stat':''}"${D_(140)}>${escH(s.sub)}${cnt}</p>`:''}
-        <div class="sc-gal fit-box${s.whole?' whole':''} bi"${D_(160)}>${im.map(FIG).join('')}</div>
+        <div class="sc-gal fit-box${s.whole?' whole':''} bi"${Array.isArray(s.rows)?` data-rows="${s.rows.map(Number).join(',')}"`:''}${D_(160)}>${im.map(FIG).join('')}</div>
         ${s.note?`<p class="sc-note bi"${D_(300)}>${escH(s.note)}</p>`:''}`; }
     case 'feast': {   // round plates: each is { a, b, by, cap, spin } = a dish, a second dish, who cooks it, a label, and whether it was shot from above (so it may turn)
       const P=s.plates||[], half=Math.ceil(P.length/2), words=String(s.title||'').match(/[^.!?]+[.!?]*/g)||[];
